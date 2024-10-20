@@ -5,11 +5,11 @@
   "files": ["dist"],
   "publishConfig": {
     "main": "./dist/index.js",
-    "module": "./dist/esm/index.js",
+    "module": "./dist/index.mjs",
     "types": "./dist/index.d.ts",
     "exports": {
       ".": {
-        "import": "./dist/esm/index.js",
+        "import": "./dist/index.mjs",
         "require": "./dist/index.js",
         "types": "./dist/index.d.ts"
       },
@@ -17,6 +17,6 @@
     }
   },
   "scripts": {
-    "build": "tsup src/index.ts --format cjs,esm --dts --clean --sourcemap --legacy-output --splitting --no-treeshake"
+    "build": "tsup src/index.ts --format cjs,esm --dts --clean --sourcemap"
   }
 }
