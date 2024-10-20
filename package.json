@@ -1,0 +1,30 @@
+{
+  "name": "oid4vc-ts",
+  "private": true,
+  "description": "Environment agnostic TypeScript implementation of OpenID4VC specifications",
+  "packageManager": "pnpm@9.1.0",
+  "repository": {
+    "url": "https://github.com/openwallet-foundation/credo-ts",
+    "type": "git"
+  },
+  "author": "Animo Solutions",
+  "license": "Apache-2.0",
+  "scripts": {
+    "types:check": "tsc --noEmit",
+    "style:check": "biome check --unsafe",
+    "style:fix": "biome check --write --unsafe",
+    "build": "pnpm -r build",
+    "test": "vitest",
+    "release": "pnpm build && pnpm changeset publish --no-git-tag"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
+    "@changesets/cli": "^2.27.9",
+    "tsup": "^8.3.0",
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.3"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
