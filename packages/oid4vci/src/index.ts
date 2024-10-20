@@ -1,1 +1,1 @@
-export const ALL = 42;
+export const ALL = 42
