@@ -72,7 +72,7 @@ jobs:
       - name: Create unstable release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_PUBLISH }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           # this ensures there's always a patch release created
           cat << 'EOF' > .changeset/snapshot-template-changeset.md
