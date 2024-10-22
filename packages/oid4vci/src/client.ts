@@ -60,7 +60,13 @@ export class Oid4vciClient {
   public async createAuthorizationRequestUrl(
     options: Pick<
       CreateAuthorizationRequestUrlOptions,
-      'additionalRequestPayload' | 'authorizationServer' | 'clientId' | 'issuerMetadata' | 'redirectUri' | 'scope'
+      | 'additionalRequestPayload'
+      | 'authorizationServer'
+      | 'clientId'
+      | 'issuerMetadata'
+      | 'redirectUri'
+      | 'scope'
+      | 'pkceCodeVerifier'
     > & { credentialOffer?: CredentialOfferObject }
   ) {
     if (options.credentialOffer) {
@@ -88,6 +94,7 @@ export class Oid4vciClient {
       issuerState: options.credentialOffer?.grants?.authorization_code?.issuer_state,
       redirectUri: options.redirectUri,
       scope: options.scope,
+      pkceCodeVerifier: options.pkceCodeVerifier,
       hashCallback: this.options?.hashCallback,
     })
   }
@@ -105,6 +112,14 @@ export class Oid4vciClient {
   }> {
     if (!credentialOffer.grants?.[preAuthorizedCodeGrantIdentifier]) {
       throw new Oid4vcError(`The credential offer does not contain the '${preAuthorizedCodeGrantIdentifier}' grant.`)
+    }
+
+    if (credentialOffer.grants[preAuthorizedCodeGrantIdentifier].tx_code && !txCode) {
+      // TODO: we could further validate the tx_code, but not sure if that's needed?
+      // the server will do that for us as well
+      throw new Oid4vcError(
+        `Retrieving access token requires a 'tx_code' in the request, but the 'txCode' parameter was not provided.`
+      )
     }
 
     const preAuthorizedCode = credentialOffer.grants[preAuthorizedCodeGrantIdentifier]['pre-authorized_code']
@@ -133,10 +148,10 @@ export class Oid4vciClient {
     additionalRequestPayload,
     authorizationServer,
     authorizationCode,
-    codeVerifier,
+    pkceCodeVerifier,
   }: Pick<
     RetrieveAuthorizationCodeAccessTokenOptions,
-    'issuerMetadata' | 'additionalRequestPayload' | 'authorizationServer' | 'authorizationCode' | 'codeVerifier'
+    'issuerMetadata' | 'additionalRequestPayload' | 'authorizationServer' | 'authorizationCode' | 'pkceCodeVerifier'
   >): Promise<{
     accessTokenResponse: AccessTokenResponse
     authorizationServer: string
@@ -146,7 +161,7 @@ export class Oid4vciClient {
         authorizationServer,
         issuerMetadata,
         authorizationCode,
-        codeVerifier,
+        pkceCodeVerifier,
         additionalRequestPayload,
         fetch: this.options?.fetch,
       }),

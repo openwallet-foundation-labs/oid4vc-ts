@@ -24,6 +24,14 @@ export const vAccessTokenRequest = v.looseObject({
 })
 export type AccessTokenRequest = v.InferOutput<typeof vAccessTokenRequest>
 
+export const vAccessTokenRequestDraft14To11 = v.pipe(
+  vAccessTokenRequest,
+  v.transform(({ tx_code, ...rest }) => ({
+    ...rest,
+    ...(tx_code ? { user_pin: tx_code } : {}),
+  }))
+)
+
 export const vAccessTokenResponse = v.looseObject({
   access_token: v.string(),
   token_type: v.string(),

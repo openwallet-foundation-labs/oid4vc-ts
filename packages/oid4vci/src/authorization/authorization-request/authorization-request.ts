@@ -62,6 +62,13 @@ export interface CreateAuthorizationRequestUrlOptions {
   redirectUri?: string
 
   /**
+   * Secure random pkce code verifier
+   *
+   * @todo should we require a callback for generating secure random? Then we can generate it
+   */
+  pkceCodeVerifier: string
+
+  /**
    * Additional payload to include in the authorizatino request. Items will be encoded and sent
    * using x-www-form-urlencoded format. Nested items (JSON) will be stringified and url encoded.
    */
@@ -90,7 +97,7 @@ export async function createAuthorizationRequestUrl(options: CreateAuthorization
   // PKCE
   const pkce = authorizationServerMetadata.code_challenge_methods_supported
     ? await createPkce({
-        codeVerifier: '',
+        codeVerifier: options.pkceCodeVerifier,
         allowedCodeChallengeMethods: authorizationServerMetadata.code_challenge_methods_supported,
         hashCallback: options.hashCallback,
       })
@@ -135,6 +142,7 @@ export async function createAuthorizationRequestUrl(options: CreateAuthorization
   return {
     authorizationRequestUrl,
     pkce,
+    authorizationServer: authorizationServerMetadata.issuer,
   }
 }
 

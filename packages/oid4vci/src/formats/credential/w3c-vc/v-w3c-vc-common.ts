@@ -17,3 +17,9 @@ const vCredentialSubjectLeafType = v.looseObject({
 const vClaimValueSchema = v.union([v.array(v.any()), v.record(v.string(), v.any()), vCredentialSubjectLeafType])
 
 export const vW3cVcCredentialSubject = v.record(v.string(), vClaimValueSchema)
+
+export const vW3cVcJsonLdCredentialDefinition = v.looseObject({
+  '@context': v.array(v.string()),
+  type: v.array(v.string()),
+  credentialSubject: v.optional(vW3cVcCredentialSubject),
+})

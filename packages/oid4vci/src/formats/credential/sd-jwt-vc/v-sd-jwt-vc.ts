@@ -1,14 +1,10 @@
 import * as v from 'valibot'
-import {
-  vCredentialConfigurationSupportedClaims,
-  vCredentialConfigurationSupportedCommon,
-} from '../../../metadata/credential-issuer/v-credential-configuration-supported-common'
+import { vCredentialConfigurationSupportedClaims } from '../../../metadata/credential-issuer/v-credential-configuration-supported-common'
 
 export const vSdJwtVcFormatIdentifier = v.literal('vc+sd-jwt')
 export type SdJwtVcFormatIdentifier = v.InferOutput<typeof vSdJwtVcFormatIdentifier>
 
 export const vSdJwtVcCredentialIssuerMetadata = v.looseObject({
-  ...vCredentialConfigurationSupportedCommon.entries,
   vct: v.string(),
   format: vSdJwtVcFormatIdentifier,
   claims: v.optional(vCredentialConfigurationSupportedClaims),

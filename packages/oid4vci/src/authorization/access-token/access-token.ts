@@ -15,8 +15,12 @@ import {
   type AccessTokenRequest,
   type AccessTokenResponse,
   vAccessTokenErrorResponse,
+  vAccessTokenRequest,
+  vAccessTokenRequestDraft14To11,
   vAccessTokenResponse,
 } from './v-access-token'
+import { parseWithErrorHandling } from '../../common/validation/parse'
+import { Oid4vciDraftVersion } from '../../versions/draft-version'
 
 export interface RetrievePreAuthorizedCodeAccessTokenOptions {
   /**
@@ -80,9 +84,9 @@ export interface RetrieveAuthorizationCodeAccessTokenOptions {
   issuerMetadata: IssuerMetadataResult
 
   /**
-   * Code verifier that was used in the authorization request.
+   * PKCE Code verifier that was used in the authorization request.
    */
-  codeVerifier?: string
+  pkceCodeVerifier: string
 
   /**
    * The authorization code
@@ -100,9 +104,10 @@ export async function retrieveAuthorizationCodeAccessToken(
   options: RetrieveAuthorizationCodeAccessTokenOptions
 ): Promise<AccessTokenResponse> {
   const request = {
+    ...options.additionalRequestPayload,
     grant_type: authorizationCodeGrantIdentifier,
     code: options.authorizationCode,
-    code_verifier: options.codeVerifier,
+    code_verifier: options.pkceCodeVerifier,
   } satisfies AccessTokenRequest
 
   const accessTokenResponse = await retrieveAccessToken({
@@ -148,7 +153,20 @@ async function retrieveAccessToken(options: RetrieveAccessTokenOptions): Promise
     options.authorizationServer
   )
 
-  const requestQueryParams = objectToQueryParams(options.request)
+  let accessTokenRequest = parseWithErrorHandling(
+    vAccessTokenRequest,
+    options.request,
+    'Error validating access token request'
+  )
+  if (options.issuerMetadata.originalDraftVersion === Oid4vciDraftVersion.Draft11) {
+    accessTokenRequest = parseWithErrorHandling(
+      vAccessTokenRequestDraft14To11,
+      accessTokenRequest,
+      'Error transforming draft 14 access token request into draft 11 request'
+    )
+  }
+
+  const requestQueryParams = objectToQueryParams(accessTokenRequest)
 
   const { response, result } = await fetchWithValibot(
     vAccessTokenResponse,

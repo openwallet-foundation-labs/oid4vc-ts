@@ -1,12 +1,12 @@
 import * as v from 'valibot'
 import { Oid4vcError } from '../error/Oid4vcError'
-import { vMsoMdocCredentialIssuerMetadata } from '../formats/credential/mso-mdoc/v-mso-mdoc'
-import { vSdJwtVcCredentialIssuerMetadata } from '../formats/credential/sd-jwt-vc/v-sd-jwt-vc'
 import {
-  vJwtVcJsonLdCredentialIssuerMetadata,
+  vMsoMdocCredentialIssuerMetadata,
+  vSdJwtVcCredentialIssuerMetadata,
   vLdpVcCredentialIssuerMetadata,
-} from '../formats/credential/w3c-vc/v-w3c-vc-json-ld'
-import { vJwtVcJsonCredentialIssuerMetadata } from '../formats/credential/w3c-vc/v-w3c-vc-jwt'
+  vJwtVcJsonCredentialIssuerMetadata,
+  vJwtVcJsonLdCredentialIssuerMetadata,
+} from '../formats/credential'
 import type { IssuerMetadataResult } from '../metadata/fetch-issuer-metadata'
 import type { CredentialRequestFormats } from './v-credential-request'
 

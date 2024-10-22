@@ -9,7 +9,7 @@ import {
   vCredentialOfferObject,
 } from './v-credential-offer'
 
-export interface ParseCredentialOfferOptions {
+export interface ResolveCredentialOfferOptions {
   /**
    * Custom fetch implementation to use
    */
@@ -21,7 +21,7 @@ export interface ParseCredentialOfferOptions {
  */
 export async function resolveCredentialOffer(
   credentialOffer: string,
-  options?: ParseCredentialOfferOptions
+  options?: ResolveCredentialOfferOptions
 ): Promise<CredentialOfferObject> {
   const parsedQueryParams = getQueryParams(credentialOffer)
 
@@ -54,7 +54,7 @@ export async function resolveCredentialOffer(
 
   if (credentialOfferParseResult.issues) {
     throw new Oid4vcValidationError(
-      `Error validating JSON of credential offer extracted from credential offer '${credentialOffer}'`,
+      `Error parsing credential offer in draft 11, 13 or 14 format extracted from credential offer '${credentialOffer}'`,
       credentialOfferParseResult.issues
     )
   }

@@ -1,6 +1,7 @@
 import { parseWithErrorHandling } from '../common/validation/parse'
 import { Oid4vcError } from '../error/Oid4vcError'
 import type { Fetch } from '../utils/valibot-fetcher'
+import type { Oid4vciDraftVersion } from '../versions/draft-version'
 import { fetchAuthorizationServerMetadata } from './authorization-server/authorization-server-metadata'
 import {
   type AuthorizationServerMetadata,
@@ -33,6 +34,7 @@ export interface ResolveIssuerMetadataOptions {
 }
 
 export interface IssuerMetadataResult {
+  originalDraftVersion: Oid4vciDraftVersion
   credentialIssuer: CredentialIssuerMetadata
   authorizationServers: AuthorizationServerMetadata[]
 }
@@ -44,10 +46,12 @@ export async function resolveIssuerMetadata(
   const allowAuthorizationMetadataFromCredentialIssuerMetadata =
     options?.allowAuthorizationMetadataFromCredentialIssuerMetadata ?? true
 
-  const credentialIssuerMetadata = await fetchCredentialIssuerMetadata(credentialIssuer, options?.fetch)
-  if (!credentialIssuerMetadata) {
+  const credentialIssuerMetadataWithDraftVersion = await fetchCredentialIssuerMetadata(credentialIssuer, options?.fetch)
+  if (!credentialIssuerMetadataWithDraftVersion) {
     throw new Oid4vcError(`Well known credential issuer metadata for issuer '${credentialIssuer}' not found.`)
   }
+
+  const { credentialIssuerMetadata, originalDraftVersion } = credentialIssuerMetadataWithDraftVersion
 
   // If no authoriation servers are defined, use the credential issuer as the authorization server
   const authorizationServers = credentialIssuerMetadata.authorization_servers ?? [credentialIssuer]
@@ -87,6 +91,7 @@ export async function resolveIssuerMetadata(
   }
 
   return {
+    originalDraftVersion,
     credentialIssuer: credentialIssuerMetadata,
     authorizationServers: authoriationServersMetadata,
   }

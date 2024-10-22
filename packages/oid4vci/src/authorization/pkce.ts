@@ -1,5 +1,4 @@
 import { HashAlgorithm, type HashCallback } from '../callbacks'
-import { decodeUtf8StringToUint8Array, encodeUint8ArrayToBase64Url } from '../common/encoding'
 import { Oid4vcError } from '../error/Oid4vcError'
 
 export enum PkceCodeChallengeMethod {
@@ -105,8 +104,9 @@ async function calculateCodeChallenge(options: {
       throw new Oid4vcError(`No 'hashCallback' provided and code challenge method is '${PkceCodeChallengeMethod.S256}.`)
     }
 
-    return encodeUint8ArrayToBase64Url(
-      await options.hashCallback(decodeUtf8StringToUint8Array(options.codeVerifier), HashAlgorithm.Sha256)
+    // TODO: react native buffer does not support base64url. need to fix
+    return Buffer.from(await options.hashCallback(Buffer.from(options.codeVerifier), HashAlgorithm.Sha256)).toString(
+      'base64url'
     )
   }
 }

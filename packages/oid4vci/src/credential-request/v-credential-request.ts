@@ -1,14 +1,23 @@
 import * as v from 'valibot'
 
 import type { InferOutputUnion } from '../common/validation/v-common'
-import { vMsoMdocCredentialRequestFormat } from '../formats/credential/mso-mdoc/v-mso-mdoc'
-import { vSdJwtVcCredentialRequestFormat } from '../formats/credential/sd-jwt-vc/v-sd-jwt-vc'
 import {
+  vJwtVcJsonCredentialRequestFormat,
   vJwtVcJsonLdCredentialRequestFormat,
   vLdpVcCredentialRequestFormat,
-} from '../formats/credential/w3c-vc/v-w3c-vc-json-ld'
-import { vJwtVcJsonCredentialRequestFormat } from '../formats/credential/w3c-vc/v-w3c-vc-jwt'
+  vMsoMdocCredentialRequestFormat,
+  vSdJwtVcCredentialRequestFormat,
+} from '../formats/credential'
 import { vCredentialRequestCommon } from './v-credential-request-common'
+import { vLdpVcCredentialRequestDraft11To14, vLdpVcFormatIdentifier } from '../formats/credential/w3c-vc/v-w3c-ldp-vc'
+import {
+  vJwtVcJsonLdCredentialRequestDraft11To14,
+  vJwtVcJsonLdFormatIdentifier,
+} from '../formats/credential/w3c-vc/v-w3c-jwt-vc-json-ld'
+import {
+  vJwtVcJsonCredentialRequestDraft11To14,
+  vJwtVcJsonFormatIdentifier,
+} from '../formats/credential/w3c-vc/v-w3c-jwt-vc-json'
 
 const allCredentialRequestFormats = [
   vSdJwtVcCredentialRequestFormat,
@@ -30,7 +39,7 @@ const vAuthorizationDetailsCredentialRequest = v.looseObject({
   format: v.optional(v.undefined()),
 })
 
-export const vCredentialRequest = v.pipe(
+const vCredentialRequestDraft14 = v.pipe(
   vCredentialRequestCommon,
   v.union([
     ...allCredentialRequestFormats,
@@ -48,5 +57,40 @@ export const vCredentialRequest = v.pipe(
   ])
 )
 
-// TODO: fix this type infer
-export type CredentialRequest = v.InferOutput<typeof vCredentialRequest>
+const vCredentialRequestDraft11To14 = v.pipe(
+  vCredentialRequestCommon,
+  v.union([
+    vLdpVcCredentialRequestDraft11To14,
+    vJwtVcJsonLdCredentialRequestDraft11To14,
+    vJwtVcJsonCredentialRequestDraft11To14,
+    // To handle unrecognized formats and not error immediately we allow the common format as well
+    // but they can't use any of the foramt identifiers that have a specific transformation. This way if a format is
+    // has a transformation it NEEDS to use the format specific transformation, and otherwise we fall back to the common validation
+    v.looseObject({
+      format: v.pipe(
+        v.string(),
+        v.check(
+          (input) =>
+            !(
+              [
+                vLdpVcFormatIdentifier.literal,
+                vJwtVcJsonFormatIdentifier.literal,
+                vJwtVcJsonLdFormatIdentifier.literal,
+              ] as string[]
+            ).includes(input)
+        )
+      ),
+    }),
+  ]),
+  v.union(allCredentialRequestFormats)
+)
+
+export const vCredentialRequest = v.union([vCredentialRequestDraft14, vCredentialRequestDraft11To14])
+
+export type CredentialRequestWithFormats = InferOutputUnion<typeof allCredentialRequestFormats>
+export type CredentialRequest = v.InferOutput<typeof vCredentialRequestDraft14>
+
+// We use a bit more complex type infer here, as format can be string so it removes all the type hinting
+export type StrictCredentialRequest<Format> = Format extends CredentialRequestWithFormats['format']
+  ? CredentialRequestWithFormats
+  : CredentialRequest

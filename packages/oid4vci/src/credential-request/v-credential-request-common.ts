@@ -1,7 +1,6 @@
 import * as v from 'valibot'
 import { vJwk } from '../common/validation/v-common'
 import { vCredentialRequestProofJwt, vJwtProofTypeIdentifier } from '../formats/proof-type/jwt/v-jwt-proof-type'
-import { vCredentialRequestProofCommon } from './v-proof-type-common'
 
 const allCredentialRequestProofs = [vCredentialRequestProofJwt] as const
 const allCredentialRequestProofsTypes = allCredentialRequestProofs.map(
@@ -15,10 +14,9 @@ export const vCredentialRequestProof = v.variant('proof_type', [
   // but they can't use any of the proof_type identifiers already registered. This way if a proof_type is
   // recognized it NEEDS to use the proof_type specific validation, and otherwise we fall back to the common validation
   v.looseObject({
-    ...vCredentialRequestProofCommon.entries,
     proof_type: v.pipe(
       v.string(),
-      v.custom<string>((input) => typeof input === 'string' && !allCredentialRequestProofsTypes.includes(input))
+      v.check((input) => !allCredentialRequestProofsTypes.includes(input))
     ),
   }),
 ])

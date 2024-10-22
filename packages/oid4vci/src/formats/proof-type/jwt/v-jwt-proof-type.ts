@@ -1,13 +1,11 @@
 import * as v from 'valibot'
 import { vCompactJwt, vJwk } from '../../../common/validation/v-common'
-import { vCredentialRequestProofCommon } from '../../../credential-request/v-proof-type-common'
 import { vCredentialIssuerIdentifier } from '../../../metadata/credential-issuer/v-credential-issuer-metadata'
 
 export const vJwtProofTypeIdentifier = v.literal('jwt')
 export type JwtProofTypeIdentifier = v.InferOutput<typeof vJwtProofTypeIdentifier>
 
 export const vCredentialRequestProofJwt = v.looseObject({
-  ...vCredentialRequestProofCommon.entries,
   proof_type: vJwtProofTypeIdentifier,
   jwt: vCompactJwt,
 })
