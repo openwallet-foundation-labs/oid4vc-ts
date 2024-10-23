@@ -8,7 +8,7 @@ import {
   vSdJwtVcCredentialIssuerMetadata,
 } from '../formats/credential'
 import type { IssuerMetadataResult } from '../metadata/fetch-issuer-metadata'
-import type { CredentialRequestFormats } from './v-credential-request'
+import type { CredentialRequestWithFormats } from './v-credential-request'
 
 export interface GetCredentialRequestFormatPayloadForCredentialConfigurationIdOptions {
   /**
@@ -24,7 +24,7 @@ export interface GetCredentialRequestFormatPayloadForCredentialConfigurationIdOp
 
 export function getCredentialRequestFormatPayloadForCredentialConfigurationId(
   options: GetCredentialRequestFormatPayloadForCredentialConfigurationIdOptions
-): CredentialRequestFormats {
+): CredentialRequestWithFormats {
   const credentialConfiguration =
     options.issuerMetadata.credentialIssuer.credential_configurations_supported[options.credentialConfigurationId]
 

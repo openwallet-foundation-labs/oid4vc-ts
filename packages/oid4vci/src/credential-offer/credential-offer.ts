@@ -1,8 +1,9 @@
 import * as v from 'valibot'
 import { Oid4vcError } from '../error/Oid4vcError'
 import { Oid4vcValidationError } from '../error/Oid4vcValidationError'
+import type { Fetch } from '../globals'
 import { getQueryParams } from '../utils/url'
-import { type Fetch, createValibotFetcher } from '../utils/valibot-fetcher'
+import { createValibotFetcher } from '../utils/valibot-fetcher'
 import {
   type CredentialOfferObject,
   preAuthorizedCodeGrantIdentifier,

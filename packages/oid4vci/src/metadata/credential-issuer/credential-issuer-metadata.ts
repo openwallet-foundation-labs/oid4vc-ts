@@ -1,6 +1,6 @@
 import { Oid4vcError } from '../../error/Oid4vcError'
+import type { Fetch } from '../../globals'
 import { joinUriParts } from '../../utils/path'
-import type { Fetch } from '../../utils/valibot-fetcher'
 import type { Oid4vciDraftVersion } from '../../versions/draft-version'
 import { fetchWellKnownMetadata } from '../fetch-metadata'
 import {
