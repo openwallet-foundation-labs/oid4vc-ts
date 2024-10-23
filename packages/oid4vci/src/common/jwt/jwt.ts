@@ -1,9 +1,9 @@
 import type * as v from 'valibot'
 import { Oid4vcError } from '../../error/Oid4vcError'
+import { decodeBase64, encodeToUtf8String } from '../encoding'
 import { parseWithErrorHandling, stringToJsonWithErrorHandling } from '../validation/parse'
 import type { BaseSchema } from '../validation/v-common'
 import { vJwtHeader, vJwtPayload } from './v-jwt'
-import { decodeBase64, encodeToUtf8String } from '../encoding'
 
 export interface DecodeJwtOptions<
   HeaderSchema extends BaseSchema | undefined,

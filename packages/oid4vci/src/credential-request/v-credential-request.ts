@@ -8,16 +8,16 @@ import {
   vMsoMdocCredentialRequestFormat,
   vSdJwtVcCredentialRequestFormat,
 } from '../formats/credential'
-import { vCredentialRequestCommon } from './v-credential-request-common'
-import { vLdpVcCredentialRequestDraft11To14, vLdpVcFormatIdentifier } from '../formats/credential/w3c-vc/v-w3c-ldp-vc'
-import {
-  vJwtVcJsonLdCredentialRequestDraft11To14,
-  vJwtVcJsonLdFormatIdentifier,
-} from '../formats/credential/w3c-vc/v-w3c-jwt-vc-json-ld'
 import {
   vJwtVcJsonCredentialRequestDraft11To14,
   vJwtVcJsonFormatIdentifier,
 } from '../formats/credential/w3c-vc/v-w3c-jwt-vc-json'
+import {
+  vJwtVcJsonLdCredentialRequestDraft11To14,
+  vJwtVcJsonLdFormatIdentifier,
+} from '../formats/credential/w3c-vc/v-w3c-jwt-vc-json-ld'
+import { vLdpVcCredentialRequestDraft11To14, vLdpVcFormatIdentifier } from '../formats/credential/w3c-vc/v-w3c-ldp-vc'
+import { vCredentialRequestCommon } from './v-credential-request-common'
 
 const allCredentialRequestFormats = [
   vSdJwtVcCredentialRequestFormat,

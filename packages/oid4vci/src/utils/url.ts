@@ -1,3 +1,5 @@
+import { URL, URLSearchParams } from '../globals'
+
 export function getQueryParams(url: string) {
   const parsedUrl = new URL(url)
   const searchParams = new URLSearchParams(parsedUrl.search)

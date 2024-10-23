@@ -1,7 +1,7 @@
 import * as v from 'valibot'
+import { Oid4vcJsonParseError } from '../../error/Oid4vcJsonParseError'
 import { Oid4vcValidationError } from '../../error/Oid4vcValidationError'
 import type { BaseSchema } from './v-common'
-import { Oid4vcJsonParseError } from '../../error/Oid4vcJsonParseError'
 
 export function stringToJsonWithErrorHandling(string: string, errorMessage?: string) {
   try {

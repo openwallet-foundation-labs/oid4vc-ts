@@ -1,6 +1,6 @@
 import * as v from 'valibot'
-import { vHttpsUrl, vInteger, vJwk } from '../../common/validation/v-common'
 import { vJwtHeader, vJwtPayload } from '../../common/jwt/v-jwt'
+import { vHttpsUrl, vInteger, vJwk } from '../../common/validation/v-common'
 
 export const vDpopJwtPayload = v.looseObject({
   ...vJwtPayload.entries,

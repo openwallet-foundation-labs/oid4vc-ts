@@ -1,5 +1,7 @@
 import * as v from 'valibot'
+import type { CallbackContext } from '../../callbacks'
 import { ContentType } from '../../common/content-type'
+import { parseWithErrorHandling } from '../../common/validation/parse'
 import {
   authorizationCodeGrantIdentifier,
   preAuthorizedCodeGrantIdentifier,
@@ -7,8 +9,18 @@ import {
 import { Oid4vcInvalidFetchResponseError } from '../../error/Oid4vcInvalidFetchResponseError'
 import { Oid4vcOauthErrorResponseError } from '../../error/Oid4vcOauthErrorResponseError'
 import { Oid4vcValidationError } from '../../error/Oid4vcValidationError'
+import { getAuthorizationServerMetadataFromList } from '../../metadata/authorization-server/authorization-server-metadata'
 import type { IssuerMetadataResult } from '../../metadata/fetch-issuer-metadata'
 import { objectToQueryParams } from '../../utils/url'
+import { createValibotFetcher } from '../../utils/valibot-fetcher'
+import { Oid4vciDraftVersion } from '../../versions/draft-version'
+import {
+  type RequestDpopOptions,
+  type ResponseDpopReturn,
+  createDpopJwt,
+  extractDpopNonceFromHeaders,
+} from '../dpop/dpop'
+import { shouldRetryTokenRequestWithDPoPNonce } from '../dpop/dpop-retry'
 import {
   type AccessTokenRequest,
   type AccessTokenResponse,
@@ -17,18 +29,6 @@ import {
   vAccessTokenRequestDraft14To11,
   vAccessTokenResponse,
 } from './v-access-token'
-import { parseWithErrorHandling } from '../../common/validation/parse'
-import { Oid4vciDraftVersion } from '../../versions/draft-version'
-import {
-  createDpopJwt,
-  type ResponseDpopReturn,
-  type RequestDpopOptions,
-  extractDpopNonceFromHeaders,
-} from '../dpop/dpop'
-import { shouldRetryTokenRequestWithDPoPNonce } from '../dpop/dpop-retry'
-import type { CallbackContext } from '../../callbacks'
-import { getAuthorizationServerMetadataFromList } from '../../metadata/authorization-server/authorization-server-metadata'
-import { createValibotFetcher } from '../../utils/valibot-fetcher'
 
 export interface RetrieveAccessTokenReturn {
   accessTokenResponse: AccessTokenResponse

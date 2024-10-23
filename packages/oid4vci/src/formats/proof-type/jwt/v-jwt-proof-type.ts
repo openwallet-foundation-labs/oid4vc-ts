@@ -1,7 +1,7 @@
 import * as v from 'valibot'
+import { vCompactJwt, vJwtHeader, vJwtPayload } from '../../../common/jwt/v-jwt'
 import { vInteger } from '../../../common/validation/v-common'
 import { vCredentialIssuerIdentifier } from '../../../metadata/credential-issuer/v-credential-issuer-metadata'
-import { vCompactJwt, vJwtHeader, vJwtPayload } from '../../../common/jwt/v-jwt'
 
 export const vJwtProofTypeIdentifier = v.literal('jwt')
 export type JwtProofTypeIdentifier = v.InferOutput<typeof vJwtProofTypeIdentifier>

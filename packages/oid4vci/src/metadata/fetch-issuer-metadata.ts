@@ -1,6 +1,6 @@
 import { parseWithErrorHandling } from '../common/validation/parse'
 import { Oid4vcError } from '../error/Oid4vcError'
-import type { Fetch } from '../utils/valibot-fetcher'
+import type { Fetch } from '../globals'
 import type { Oid4vciDraftVersion } from '../versions/draft-version'
 import { fetchAuthorizationServerMetadata } from './authorization-server/authorization-server-metadata'
 import {

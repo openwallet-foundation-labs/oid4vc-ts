@@ -1,13 +1,14 @@
 import { type CallbackContext, HashAlgorithm } from '../../callbacks'
 import { dateToSeconds } from '../../common/date'
 import { decodeUtf8String, encodeToBase64Url } from '../../common/encoding'
-import { parseWithErrorHandling } from '../../common/validation/parse'
-import type { JwtSignerJwk } from '../../common/jwt/v-jwt'
-import { Oid4vcError } from '../../error/Oid4vcError'
-import { type DpopJwtHeader, type DpopJwtPayload, vDpopJwtHeader, vDpopJwtPayload } from './v-dpop'
-import { decodeJwt } from '../../common/jwt/jwt'
 import { calculateJwkThumbprint } from '../../common/jwk/jwk-thumbprint'
-import type { FetchHeaders } from '../../utils/valibot-fetcher'
+import { decodeJwt } from '../../common/jwt/jwt'
+import type { JwtSignerJwk } from '../../common/jwt/v-jwt'
+import { parseWithErrorHandling } from '../../common/validation/parse'
+import { Oid4vcError } from '../../error/Oid4vcError'
+import type { FetchHeaders } from '../../globals'
+import { URL } from '../../globals'
+import { type DpopJwtHeader, type DpopJwtPayload, vDpopJwtHeader, vDpopJwtPayload } from './v-dpop'
 
 export interface RequestDpopOptions {
   /**

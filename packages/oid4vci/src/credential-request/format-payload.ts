@@ -1,11 +1,11 @@
 import * as v from 'valibot'
 import { Oid4vcError } from '../error/Oid4vcError'
 import {
-  vMsoMdocCredentialIssuerMetadata,
-  vSdJwtVcCredentialIssuerMetadata,
-  vLdpVcCredentialIssuerMetadata,
   vJwtVcJsonCredentialIssuerMetadata,
   vJwtVcJsonLdCredentialIssuerMetadata,
+  vLdpVcCredentialIssuerMetadata,
+  vMsoMdocCredentialIssuerMetadata,
+  vSdJwtVcCredentialIssuerMetadata,
 } from '../formats/credential'
 import type { IssuerMetadataResult } from '../metadata/fetch-issuer-metadata'
 import type { CredentialRequestFormats } from './v-credential-request'

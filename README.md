@@ -46,24 +46,7 @@ All packages are placed in the [`packages/`](./packages) directory.
 
 ## Environments
 
-This library tries to be platform agnostic where possible, and has some custom implementations for specific envrionments. Node.JS, Browser and React Native are officially supported, but contributsion for other environments are welcome.
-
-### Browser
-
-Browser environment is supported out of the box.
-
-### Node.JS
-
-Node.JS environment is supported out of the box.
-
-### React Native
-
-Official support for React Native environments is only available for the Hermes JavaScript runtime, not when using JavaScriptCore. Some features have only been added starting from React Native 0.75. If you're using an older version of React Native, you might need to provide certain polyfills.
-
-- `atob` an `btoa` are used for base64 encoding and decoding. These methods have only been added in Hermes from React Native 0.74 (and properly since 0.74.1 due to a bug).
-  - In older versions of React Native you can add support using the [`base-64`](https://www.npmjs.com/package/base-64) library, and apply the polyfill as described in [this StackOverflow answer](https://stackoverflow.com/a/51525605). Make sure to also import this polyfill in the root of your project.
-- `TextEncoding` is used to transform between string and Uint8Array instances. Support for this has only been added to Hermes from React Native 0.75.
-  - In older versions of React Native you can add the [`fast-text-encoding`](https://www.npmjs.com/package/fast-text-encoding) polyfill and import this in the root of your project.
+This library is platform agnostic and support Node.JS, React Native and browsers out of the box. However because of this it is required to provide some callbacks for simple things like hashing, generate random bytes, etc.
 
 ## Contributing
 

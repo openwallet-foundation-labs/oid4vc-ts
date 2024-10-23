@@ -1,5 +1,5 @@
 import { Oid4vcError } from '../../error/Oid4vcError'
-import type { FetchHeaders } from '../../utils/valibot-fetcher'
+import type { FetchHeaders } from '../../globals'
 import type { AccessTokenErrorResponse } from '../access-token/v-access-token'
 import { extractDpopNonceFromHeaders } from './dpop'
 

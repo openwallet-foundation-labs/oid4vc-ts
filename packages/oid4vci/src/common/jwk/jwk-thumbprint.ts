@@ -1,8 +1,8 @@
 import * as v from 'valibot'
 import type { HashAlgorithm, HashCallback } from '../../callbacks'
-import type { Jwk } from '../validation/v-common'
-import { parseWithErrorHandling } from '../validation/parse'
 import { decodeUtf8String, encodeToBase64Url } from '../encoding'
+import { parseWithErrorHandling } from '../validation/parse'
+import type { Jwk } from '../validation/v-common'
 
 const vJwkThumbprintComponents = v.variant('kty', [
   v.pipe(

@@ -1,10 +1,10 @@
 import * as v from 'valibot'
 import { vOauth2ErrorResponse } from '../../common/v-oauth2-error'
+import { vHttpsUrl } from '../../common/validation/v-common'
 import {
   vAuthorizationCodeGrantIdentifier,
   vPreAuthorizedCodeGrantIdentifier,
 } from '../../credential-offer/v-credential-offer'
-import { vHttpsUrl } from '../../common/validation/v-common'
 
 export const vAccessTokenRequest = v.looseObject({
   // Pre authorized code flow

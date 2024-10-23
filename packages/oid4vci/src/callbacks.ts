@@ -1,5 +1,5 @@
 import type { JwtHeader, JwtPayload, JwtSigner } from './common/jwt/v-jwt'
-import type { Fetch } from './utils/valibot-fetcher'
+import type { Fetch } from './globals'
 
 /**
  * Supported hashing algorithms

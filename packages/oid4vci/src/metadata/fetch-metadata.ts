@@ -1,7 +1,8 @@
 import type * as v from 'valibot'
 import type { BaseSchema } from '../common/validation/v-common'
 import { Oid4vcValidationError } from '../error/Oid4vcValidationError'
-import { type Fetch, createValibotFetcher } from '../utils/valibot-fetcher'
+import type { Fetch } from '../globals'
+import { createValibotFetcher } from '../utils/valibot-fetcher'
 
 /**
  * Fetch well known metadata and validate the response.

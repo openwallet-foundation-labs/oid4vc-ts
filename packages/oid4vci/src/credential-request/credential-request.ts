@@ -1,4 +1,7 @@
 import * as v from 'valibot'
+import { type RequestDpopOptions, createDpopJwt, extractDpopNonceFromHeaders } from '../authorization/dpop/dpop'
+import { shouldRetryResourceRequestWithDPoPNonce } from '../authorization/dpop/dpop-retry'
+import type { CallbackContext } from '../callbacks'
 import { ContentType } from '../common/content-type'
 import { parseWithErrorHandling } from '../common/validation/parse'
 import { Oid4vcError } from '../error/Oid4vcError'
@@ -10,9 +13,6 @@ import { createValibotFetcher } from '../utils/valibot-fetcher'
 import { type CredentialRequest, type CredentialRequestFormats, vCredentialRequest } from './v-credential-request'
 import type { CredentialRequestProof, CredentialRequestProofs } from './v-credential-request-common'
 import { vCredentialErrorResponse, vCredentialResponse } from './v-credential-response'
-import { createDpopJwt, extractDpopNonceFromHeaders, type RequestDpopOptions } from '../authorization/dpop/dpop'
-import { shouldRetryResourceRequestWithDPoPNonce } from '../authorization/dpop/dpop-retry'
-import type { CallbackContext } from '../callbacks'
 
 interface RetrieveCredentialsBaseOptions {
   /**

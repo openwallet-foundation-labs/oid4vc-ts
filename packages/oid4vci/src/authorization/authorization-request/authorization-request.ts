@@ -1,13 +1,15 @@
 import * as v from 'valibot'
+import type { CallbackContext } from '../../callbacks'
 import { ContentType } from '../../common/content-type'
 import { Oid4vcError } from '../../error/Oid4vcError'
 import { Oid4vcInvalidFetchResponseError } from '../../error/Oid4vcInvalidFetchResponseError'
 import { Oid4vcOauthErrorResponseError } from '../../error/Oid4vcOauthErrorResponseError'
 import { Oid4vcValidationError } from '../../error/Oid4vcValidationError'
+import type { Fetch } from '../../globals'
 import { getAuthorizationServerMetadataFromList } from '../../metadata/authorization-server/authorization-server-metadata'
 import type { IssuerMetadataResult } from '../../metadata/fetch-issuer-metadata'
 import { objectToQueryParams } from '../../utils/url'
-import { type Fetch, createValibotFetcher } from '../../utils/valibot-fetcher'
+import { createValibotFetcher } from '../../utils/valibot-fetcher'
 import { vAccessTokenErrorResponse } from '../access-token/v-access-token'
 import { createPkce } from '../pkce'
 import {
@@ -15,7 +17,6 @@ import {
   type PushedAuthorizationRequest,
   vPushedAuthorizationResponse,
 } from './v-authorization-request'
-import type { CallbackContext } from '../../callbacks'
 
 export interface CreateAuthorizationRequestUrlOptions {
   /**

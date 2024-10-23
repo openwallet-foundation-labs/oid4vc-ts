@@ -1,11 +1,11 @@
 import * as v from 'valibot'
 import { describe, expect, test } from 'vitest'
+import { paradymDraft13 } from '../../../__tests__/__fixtures__/paradym'
 import {
   vCredentialConfigurationSupportedWithFormats,
   vCredentialIssuerMetadata,
   vCredentialIssuerMetadataDraft11To14,
 } from '../v-credential-issuer-metadata'
-import { paradymDraft13 } from '../../../__tests__/__fixtures__/paradym'
 
 describe('Credential Issuer Metadata', () => {
   test('should parse credential configurations supported with format', () => {
