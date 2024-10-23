@@ -29,7 +29,6 @@ const allCredentialRequestFormats = [
 const allCredentialRequestFormatIdentifiers = allCredentialRequestFormats.map(
   (format) => format.entries.format.literal
 ) as string[]
-export type CredentialRequestFormats = InferOutputUnion<typeof allCredentialRequestFormats>
 
 // Authorization details no format used
 const vAuthorizationDetailsCredentialRequest = v.looseObject({

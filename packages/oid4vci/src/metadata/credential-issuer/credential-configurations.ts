@@ -1,7 +1,7 @@
 import { Oid4vcError } from '../../error/Oid4vcError'
 import type { IssuerMetadataResult } from '../fetch-issuer-metadata'
 
-interface ExtractScopesForCredentialConfigurationIds {
+export interface ExtractScopesForCredentialConfigurationIdsOptions {
   /**
    * The credential configuration ids to extract the scope from
    */
@@ -21,7 +21,7 @@ interface ExtractScopesForCredentialConfigurationIds {
   issuerMetadata: IssuerMetadataResult
 }
 
-export function extractScopesForCredentialConfigurationIds(options: ExtractScopesForCredentialConfigurationIds) {
+export function extractScopesForCredentialConfigurationIds(options: ExtractScopesForCredentialConfigurationIdsOptions) {
   const scopes = new Set<string>()
 
   for (const credentialConfigurationId of options.credentialConfigurationIds) {

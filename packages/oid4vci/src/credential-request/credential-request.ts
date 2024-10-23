@@ -10,7 +10,7 @@ import { Oid4vcOauthErrorResponseError } from '../error/Oid4vcOauthErrorResponse
 import { Oid4vcValidationError } from '../error/Oid4vcValidationError'
 import type { IssuerMetadataResult } from '../metadata/fetch-issuer-metadata'
 import { createValibotFetcher } from '../utils/valibot-fetcher'
-import { type CredentialRequest, type CredentialRequestFormats, vCredentialRequest } from './v-credential-request'
+import { type CredentialRequest, type CredentialRequestWithFormats, vCredentialRequest } from './v-credential-request'
 import type { CredentialRequestProof, CredentialRequestProofs } from './v-credential-request-common'
 import { vCredentialErrorResponse, vCredentialResponse } from './v-credential-response'
 
@@ -46,7 +46,7 @@ export interface RetrieveCredentialsWithFormatOptions extends RetrieveCredential
    * The format specific payload. Needs to at least include the `format` and other params
    * are determined by the format itself
    */
-  formatPayload: CredentialRequestFormats
+  formatPayload: CredentialRequestWithFormats
 
   proof?: CredentialRequestProof
   proofs?: CredentialRequestProofs
