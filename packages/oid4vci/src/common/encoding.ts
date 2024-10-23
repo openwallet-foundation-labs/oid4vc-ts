@@ -1,0 +1,32 @@
+// biome-ignore lint/style/useNodejsImportProtocol: also imported in other environments
+import { Buffer } from 'buffer'
+
+export function decodeUtf8String(string: string): Uint8Array {
+  return new Uint8Array(Buffer.from(string, 'utf-8'))
+}
+
+export function encodeToUtf8String(data: Uint8Array) {
+  return Buffer.from(data).toString('utf-8')
+}
+
+/**
+ * Also supports base64 url
+ */
+export function decodeBase64(base64: string): Uint8Array {
+  return new Uint8Array(Buffer.from(base64, 'base64'))
+}
+
+export function encodeToBase64(data: Uint8Array | string) {
+  return Buffer.from(data).toString('base64')
+}
+
+export function encodeToBase64Url(data: Uint8Array | string) {
+  return base64ToBase64Url(encodeToBase64(data))
+}
+
+/**
+ * The 'buffer' npm library does not support base64url.
+ */
+function base64ToBase64Url(base64: string) {
+  return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '')
+}

@@ -30,7 +30,11 @@
   "linter": {
     "enabled": true,
     "rules": {
-      "recommended": true
+      "recommended": true,
+      "correctness": {
+        "recommended": true,
+        "noUnusedImports": "error"
+      }
     }
   },
   "vcs": {

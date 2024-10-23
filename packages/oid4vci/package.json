@@ -18,5 +18,12 @@
   },
   "scripts": {
     "build": "tsup src/index.ts --format cjs,esm --dts --clean --sourcemap"
+  },
+  "dependencies": {
+    "buffer": "^6.0.3",
+    "valibot": "^0.42.1"
+  },
+  "devDependencies": {
+    "jose": "^5.9.6"
   }
 }

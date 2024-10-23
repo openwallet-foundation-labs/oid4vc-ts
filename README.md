@@ -44,6 +44,10 @@ All packages are placed in the [`packages/`](./packages) directory.
 | ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
 | [`@animo-id/oid4vci`](./packages/oid4vci) | [![@animo-id/oid4vci version](https://img.shields.io/npm/v/@animo-id/oid4vci)](https://npmjs.com/package/@animo-id/oid4vci) | Implementation of the OpenID for Verifiable Credential Issuance specification |
 
+## Environments
+
+This library is platform agnostic and support Node.JS, React Native and browsers out of the box. However because of this it is required to provide some callbacks for simple things like hashing, generate random bytes, etc.
+
 ## Contributing
 
 Is there something you'd like to fix or add? Great, we love community
