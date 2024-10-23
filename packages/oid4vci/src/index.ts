@@ -57,4 +57,6 @@ export type {
   SdJwtVcFormatIdentifier,
 } from './formats/credential'
 
+export type { IssuerMetadataResult } from './metadata/fetch-issuer-metadata'
+
 export { JwtProofTypeIdentifier } from './formats/proof-type/jwt/v-jwt-proof-type'
