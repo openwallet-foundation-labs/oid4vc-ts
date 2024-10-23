@@ -9,7 +9,7 @@ import {
   type CreateAuthorizationRequestUrlOptions,
   createAuthorizationRequestUrl,
 } from './authorization/authorization-request/authorization-request'
-import type { HashCallback } from './callbacks'
+import type { CallbackContext } from './callbacks'
 import { resolveCredentialOffer } from './credential-offer/credential-offer'
 import { type CredentialOfferObject, preAuthorizedCodeGrantIdentifier } from './credential-offer/v-credential-offer'
 import {
@@ -22,24 +22,39 @@ import {
   type CreateCredentialRequestJwtProofOptions,
   createCredentialRequestJwtProof,
 } from './formats/proof-type/jwt/jwt-proof-type'
+import { getAuthorizationServerMetadataFromList } from './metadata/authorization-server/authorization-server-metadata'
 import { type IssuerMetadataResult, resolveIssuerMetadata } from './metadata/fetch-issuer-metadata'
-import type { Fetch } from './utils/valibot-fetcher'
 
 export interface Oid4vciClientOptions {
   /**
-   * Custom fetch implementation to use
+   * Callbacks required for the oid4vc client
    */
-  fetch?: Fetch
-
-  /**
-   * Hash callback used for calculating the code verifier. Should be provided
-   * to allow usage of the 'S256' code challeng method.
-   */
-  hashCallback?: HashCallback
+  callbacks: Omit<CallbackContext, 'verifyJwt'>
 }
 
 export class Oid4vciClient {
-  public constructor(private options?: Oid4vciClientOptions) {}
+  public constructor(private options: Oid4vciClientOptions) {}
+
+  public async isDpopSupported(options: { authorizationServer: string; issuerMetadata: IssuerMetadataResult }) {
+    const authorizationServerMetadata = getAuthorizationServerMetadataFromList(
+      options.issuerMetadata.authorizationServers,
+      options.authorizationServer
+    )
+
+    if (
+      !authorizationServerMetadata.dpop_signing_alg_values_supported ||
+      authorizationServerMetadata.dpop_signing_alg_values_supported.length === 0
+    ) {
+      return {
+        supported: false,
+      } as const
+    }
+
+    return {
+      supported: true,
+      dpopSigningAlgValuesSupported: authorizationServerMetadata.dpop_signing_alg_values_supported,
+    } as const
+  }
 
   /**
    * Resolve a credential offer into a credential offer object, handling both
@@ -47,13 +62,13 @@ export class Oid4vciClient {
    */
   public async resolveCredentialOffer(credentialOffer: string): Promise<CredentialOfferObject> {
     return resolveCredentialOffer(credentialOffer, {
-      fetch: this.options?.fetch,
+      fetch: this.options.callbacks.fetch,
     })
   }
 
   public async resolveIssuerMetadata(credentialIssuer: string): Promise<IssuerMetadataResult> {
     return resolveIssuerMetadata(credentialIssuer, {
-      fetch: this.options?.fetch,
+      fetch: this.options.callbacks.fetch,
     })
   }
 
@@ -87,15 +102,14 @@ export class Oid4vciClient {
 
     return createAuthorizationRequestUrl({
       authorizationServer: options.authorizationServer,
-      fetch: this.options?.fetch,
       clientId: options.clientId,
       issuerMetadata: options.issuerMetadata,
       additionalRequestPayload: options.additionalRequestPayload,
       issuerState: options.credentialOffer?.grants?.authorization_code?.issuer_state,
       redirectUri: options.redirectUri,
       scope: options.scope,
+      callbacks: this.options.callbacks,
       pkceCodeVerifier: options.pkceCodeVerifier,
-      hashCallback: this.options?.hashCallback,
     })
   }
 
@@ -104,7 +118,11 @@ export class Oid4vciClient {
     issuerMetadata,
     additionalRequestPayload,
     txCode,
-  }: Pick<RetrievePreAuthorizedCodeAccessTokenOptions, 'txCode' | 'issuerMetadata' | 'additionalRequestPayload'> & {
+    dpop,
+  }: Pick<
+    RetrievePreAuthorizedCodeAccessTokenOptions,
+    'txCode' | 'issuerMetadata' | 'additionalRequestPayload' | 'dpop'
+  > & {
     credentialOffer: CredentialOfferObject
   }): Promise<{
     accessTokenResponse: AccessTokenResponse
@@ -124,21 +142,28 @@ export class Oid4vciClient {
 
     const preAuthorizedCode = credentialOffer.grants[preAuthorizedCodeGrantIdentifier]['pre-authorized_code']
 
-    // TODO: it could be that authorization_server is not defined, but there are multiple authorization servers
-    // we should validate that
-    const authorizationServer =
-      credentialOffer.grants[preAuthorizedCodeGrantIdentifier].authorization_server ??
-      issuerMetadata.authorizationServers[0].issuer
+    let authorizationServer = credentialOffer.grants[preAuthorizedCodeGrantIdentifier].authorization_server
+    if (!authorizationServer) {
+      authorizationServer = issuerMetadata.authorizationServers[0].issuer
+      if (issuerMetadata.authorizationServers.length > 1) {
+        throw new Oid4vcError(
+          `Credential issuer '${issuerMetadata.credentialIssuer.credential_issuer}' has multiple authorization servers configured, but the credential offer does not specify the 'authorization_server' to use in the '${preAuthorizedCodeGrantIdentifier}' grant.`
+        )
+      }
+    }
+
+    const result = await retrievePreAuthorizedCodeAccessToken({
+      authorizationServer,
+      issuerMetadata,
+      preAuthorizedCode,
+      txCode,
+      additionalRequestPayload,
+      callbacks: this.options.callbacks,
+      dpop,
+    })
 
     return {
-      accessTokenResponse: await retrievePreAuthorizedCodeAccessToken({
-        authorizationServer,
-        issuerMetadata,
-        preAuthorizedCode,
-        txCode,
-        additionalRequestPayload,
-        fetch: this.options?.fetch,
-      }),
+      ...result,
       authorizationServer,
     }
   }
@@ -149,22 +174,31 @@ export class Oid4vciClient {
     authorizationServer,
     authorizationCode,
     pkceCodeVerifier,
+    redirectUri,
+    dpop,
   }: Pick<
     RetrieveAuthorizationCodeAccessTokenOptions,
-    'issuerMetadata' | 'additionalRequestPayload' | 'authorizationServer' | 'authorizationCode' | 'pkceCodeVerifier'
-  >): Promise<{
-    accessTokenResponse: AccessTokenResponse
-    authorizationServer: string
-  }> {
+    | 'issuerMetadata'
+    | 'additionalRequestPayload'
+    | 'authorizationServer'
+    | 'authorizationCode'
+    | 'pkceCodeVerifier'
+    | 'dpop'
+    | 'redirectUri'
+  >) {
+    const result = await retrieveAuthorizationCodeAccessToken({
+      authorizationServer,
+      issuerMetadata,
+      authorizationCode,
+      pkceCodeVerifier,
+      additionalRequestPayload,
+      callbacks: this.options.callbacks,
+      dpop,
+      redirectUri,
+    })
+
     return {
-      accessTokenResponse: await retrieveAuthorizationCodeAccessToken({
-        authorizationServer,
-        issuerMetadata,
-        authorizationCode,
-        pkceCodeVerifier,
-        additionalRequestPayload,
-        fetch: this.options?.fetch,
-      }),
+      ...result,
       authorizationServer,
     }
   }
@@ -172,8 +206,8 @@ export class Oid4vciClient {
   /**
    * Creates the jwt proof payload and header to be included in a credential request.
    */
-  public createCredentialRequestJwtProof(
-    options: Pick<CreateCredentialRequestJwtProofOptions, 'alg' | 'signer' | 'nonce' | 'issuedAt' | 'clientId'> & {
+  public async createCredentialRequestJwtProof(
+    options: Pick<CreateCredentialRequestJwtProofOptions, 'signer' | 'nonce' | 'issuedAt' | 'clientId'> & {
       issuerMetadata: IssuerMetadataResult
       credentialConfigurationId: string
     }
@@ -193,21 +227,29 @@ export class Oid4vciClient {
         )
       }
 
-      if (!credentialConfiguration.proof_types_supported.jwt.proof_signing_alg_values_supported.includes(options.alg)) {
+      if (
+        !credentialConfiguration.proof_types_supported.jwt.proof_signing_alg_values_supported.includes(
+          options.signer.alg
+        )
+      ) {
         throw new Oid4vcError(
-          `Credential configuration with id '${options.credentialConfigurationId}' does not support the '${options.alg}' alg for 'jwt' proof type.`
+          `Credential configuration with id '${options.credentialConfigurationId}' does not support the '${options.signer.alg}' alg for 'jwt' proof type.`
         )
       }
     }
 
-    return createCredentialRequestJwtProof({
-      alg: options.alg,
+    const jwtInput = createCredentialRequestJwtProof({
       credentialIssuer: options.issuerMetadata.credentialIssuer.credential_issuer,
       signer: options.signer,
       clientId: options.clientId,
       issuedAt: options.issuedAt,
       nonce: options.nonce,
     })
+
+    const jwt = await this.options.callbacks.signJwt(options.signer, jwtInput)
+    return {
+      jwt,
+    }
   }
 
   public async retrieveCredentials({
@@ -217,27 +259,25 @@ export class Oid4vciClient {
     credentialConfigurationId,
     additionalRequestPayload,
     accessToken,
+    dpop,
   }: Pick<
     RetrieveCredentialsWithFormatOptions,
-    'accessToken' | 'additionalRequestPayload' | 'issuerMetadata' | 'proof' | 'proofs'
+    'accessToken' | 'additionalRequestPayload' | 'issuerMetadata' | 'proof' | 'proofs' | 'dpop'
   > & { credentialConfigurationId: string }) {
     const formatPayload = getCredentialRequestFormatPayloadForCredentialConfigurationId({
       credentialConfigurationId,
       issuerMetadata,
     })
 
-    const credentialResponse = await retrieveCredentialsWithFormat({
+    return await retrieveCredentialsWithFormat({
       accessToken,
       formatPayload,
       issuerMetadata,
       additionalRequestPayload,
       proof,
       proofs,
-      fetch: this.options?.fetch,
+      callbacks: this.options.callbacks,
+      dpop,
     })
-
-    return {
-      credentialResponse,
-    }
   }
 }

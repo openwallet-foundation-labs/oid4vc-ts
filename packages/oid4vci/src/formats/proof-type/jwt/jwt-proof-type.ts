@@ -1,24 +1,5 @@
-import type { Jwk } from '../../../common/validation/v-common'
+import type { JwtSigner } from '../../../common/jwt/v-jwt'
 import type { CredentialRequestJwtProofTypeHeader, CredentialRequestJwtProofTypePayload } from './v-jwt-proof-type'
-
-// TODO: move to generic place
-type JwtSigner =
-  | {
-      method: 'did'
-      didUrl: string
-    }
-  | {
-      method: 'jwk'
-      jwk: Jwk
-    }
-  | {
-      method: 'x5c'
-      x5c: string[]
-    }
-  // In case of custom nothing will be added to the header
-  | {
-      method: 'custom'
-    }
 
 export interface CreateCredentialRequestJwtProofOptions {
   /**
@@ -42,8 +23,6 @@ export interface CreateCredentialRequestJwtProofOptions {
    */
   clientId?: string
 
-  alg: string
-
   signer: JwtSigner
 }
 
@@ -56,14 +35,14 @@ export function createCredentialRequestJwtProof(
   options: CreateCredentialRequestJwtProofOptions
 ): CreateCredentialRequestJwtProofResult {
   const header: CredentialRequestJwtProofTypeHeader = {
-    alg: options.alg,
+    alg: options.signer.alg,
     typ: 'openid4vci-proof+jwt',
   }
 
   if (options.signer.method === 'did') {
     header.kid = options.signer.didUrl
   } else if (options.signer.method === 'jwk') {
-    header.jwk = options.signer.jwk
+    header.jwk = options.signer.publicJwk
   } else if (options.signer.method === 'x5c') {
     header.x5c = options.signer.x5c
   }

@@ -1,6 +1,4 @@
 import * as v from 'valibot'
-
-import type { HashCallback } from '../../callbacks'
 import { ContentType } from '../../common/content-type'
 import { Oid4vcError } from '../../error/Oid4vcError'
 import { Oid4vcInvalidFetchResponseError } from '../../error/Oid4vcInvalidFetchResponseError'
@@ -17,18 +15,13 @@ import {
   type PushedAuthorizationRequest,
   vPushedAuthorizationResponse,
 } from './v-authorization-request'
+import type { CallbackContext } from '../../callbacks'
 
 export interface CreateAuthorizationRequestUrlOptions {
   /**
-   * Custom fetch implementation to use
+   * Callback context mostly for crypto related functionality
    */
-  fetch?: Fetch
-
-  /**
-   * Hash callback used for calculating the code verifier. Should be provided
-   * to allow usage of the 'S256' code challeng method.
-   */
-  hashCallback?: HashCallback
+  callbacks: Pick<CallbackContext, 'fetch' | 'hash' | 'generateRandom'>
 
   /**
    * The issuer identifier of the authorization server to use.
@@ -62,17 +55,15 @@ export interface CreateAuthorizationRequestUrlOptions {
   redirectUri?: string
 
   /**
-   * Secure random pkce code verifier
-   *
-   * @todo should we require a callback for generating secure random? Then we can generate it
-   */
-  pkceCodeVerifier: string
-
-  /**
    * Additional payload to include in the authorizatino request. Items will be encoded and sent
    * using x-www-form-urlencoded format. Nested items (JSON) will be stringified and url encoded.
    */
   additionalRequestPayload?: Record<string, unknown>
+
+  /**
+   * Code verifier to use for pkce. If not provided a value will generated when pkce is supported
+   */
+  pkceCodeVerifier?: string
 }
 
 /**
@@ -97,9 +88,9 @@ export async function createAuthorizationRequestUrl(options: CreateAuthorization
   // PKCE
   const pkce = authorizationServerMetadata.code_challenge_methods_supported
     ? await createPkce({
-        codeVerifier: options.pkceCodeVerifier,
         allowedCodeChallengeMethods: authorizationServerMetadata.code_challenge_methods_supported,
-        hashCallback: options.hashCallback,
+        callbacks: options.callbacks,
+        codeVerifier: options.pkceCodeVerifier,
       })
     : undefined
 
@@ -129,7 +120,7 @@ export async function createAuthorizationRequestUrl(options: CreateAuthorization
     const { request_uri } = await pushAuthorizationRequest({
       authorizationRequest,
       pushedAuthorizationRequestEndpoint: authorizationServerMetadata.pushed_authorization_request_endpoint,
-      fetch: options.fetch,
+      fetch: options.callbacks.fetch,
     })
 
     pushedAuthorizationRequest = {
@@ -178,7 +169,13 @@ async function pushAuthorizationRequest(options: PushAuthorizationRequestOptions
   )
 
   if (!response.ok || !result) {
-    const parErrorResponse = v.safeParse(vAccessTokenErrorResponse, await response.clone().json())
+    const parErrorResponse = v.safeParse(
+      vAccessTokenErrorResponse,
+      await response
+        .clone()
+        .json()
+        .catch(() => null)
+    )
     if (parErrorResponse.success) {
       throw new Oid4vcOauthErrorResponseError(
         `Unable to push authorization request to '${options.pushedAuthorizationRequestEndpoint}'. Received response with status ${response.status}`,

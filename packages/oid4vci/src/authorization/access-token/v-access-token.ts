@@ -4,6 +4,7 @@ import {
   vAuthorizationCodeGrantIdentifier,
   vPreAuthorizedCodeGrantIdentifier,
 } from '../../credential-offer/v-credential-offer'
+import { vHttpsUrl } from '../../common/validation/v-common'
 
 export const vAccessTokenRequest = v.looseObject({
   // Pre authorized code flow
@@ -12,6 +13,7 @@ export const vAccessTokenRequest = v.looseObject({
 
   // Authorization code flow
   code: v.optional(v.string()),
+  redirect_uri: v.optional(vHttpsUrl),
 
   code_verifier: v.optional(v.string()),
 

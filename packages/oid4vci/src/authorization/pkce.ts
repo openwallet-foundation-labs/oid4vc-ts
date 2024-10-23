@@ -1,4 +1,5 @@
-import { HashAlgorithm, type HashCallback } from '../callbacks'
+import { type CallbackContext, HashAlgorithm, type HashCallback } from '../callbacks'
+import { decodeUtf8String, encodeToBase64Url } from '../common/encoding'
 import { Oid4vcError } from '../error/Oid4vcError'
 
 export enum PkceCodeChallengeMethod {
@@ -8,20 +9,17 @@ export enum PkceCodeChallengeMethod {
 
 export interface CreatePkceOptions {
   /**
-   * secure random code verifier
-   */
-  codeVerifier: string
-
-  /**
    * Also allows string values so it can be directly passed from the
    * 'code_challenge_methods_supported' metadata parameter
    */
   allowedCodeChallengeMethods?: Array<string | PkceCodeChallengeMethod>
 
   /**
-   * Hashing callback, used to generate the code challenge
+   * Code verifier to use. If not provided a value will be generated.
    */
-  hashCallback?: HashCallback
+  codeVerifier?: string
+
+  callbacks: Pick<CallbackContext, 'hash' | 'generateRandom'>
 }
 
 export async function createPkce(options: CreatePkceOptions) {
@@ -34,22 +32,17 @@ export async function createPkce(options: CreatePkceOptions) {
     throw new Oid4vcError(`Unable to create PKCE code verifier. 'allowedCodeChallengeMethods' is an empty array.`)
   }
 
-  if (!options.hashCallback && !allowedCodeChallengeMethods.includes(PkceCodeChallengeMethod.Plain)) {
-    throw new Oid4vcError(
-      `No 'hashCallback' provided in 'createPkce' method, and code challenge method '${PkceCodeChallengeMethod.Plain} is not supported`
-    )
-  }
+  const codeChallengeMethod = allowedCodeChallengeMethods.includes(PkceCodeChallengeMethod.S256)
+    ? PkceCodeChallengeMethod.S256
+    : PkceCodeChallengeMethod.Plain
 
-  const codeChallengeMethod =
-    options.hashCallback && allowedCodeChallengeMethods.includes(PkceCodeChallengeMethod.S256)
-      ? PkceCodeChallengeMethod.S256
-      : PkceCodeChallengeMethod.Plain
-
+  const codeVerifier = options.codeVerifier ?? encodeToBase64Url(await options.callbacks.generateRandom(64))
   return {
+    codeVerifier,
     codeChallenge: await calculateCodeChallenge({
       codeChallengeMethod,
-      codeVerifier: options.codeVerifier,
-      hashCallback: options.hashCallback,
+      codeVerifier,
+      hashCallback: options.callbacks.hash,
     }),
     codeChallengeMethod,
   }
@@ -64,23 +57,14 @@ export interface VerifyPkceOptions {
   codeChallenge: string
   codeChallengeMethod: PkceCodeChallengeMethod
 
-  /**
-   * Hashing callback, used to generate the code challenge
-   */
-  hashCallback?: HashCallback
+  callbacks: Pick<CallbackContext, 'hash'>
 }
 
 export async function verifyPkce(options: VerifyPkceOptions) {
-  if (!options.hashCallback && options.codeChallengeMethod === PkceCodeChallengeMethod.S256) {
-    throw new Oid4vcError(
-      `No 'hashCallback' provided in 'verifyPkce' method, and code challenge method is '${PkceCodeChallengeMethod.S256}`
-    )
-  }
-
   const calculatedCodeChallenge = await calculateCodeChallenge({
     codeChallengeMethod: options.codeChallengeMethod,
     codeVerifier: options.codeVerifier,
-    hashCallback: options.hashCallback,
+    hashCallback: options.callbacks.hash,
   })
 
   if (options.codeChallenge !== calculatedCodeChallenge) {
@@ -93,20 +77,13 @@ export async function verifyPkce(options: VerifyPkceOptions) {
 async function calculateCodeChallenge(options: {
   codeVerifier: string
   codeChallengeMethod: PkceCodeChallengeMethod
-  hashCallback?: HashCallback
+  hashCallback: HashCallback
 }) {
   if (options.codeChallengeMethod === PkceCodeChallengeMethod.Plain) {
     return options.codeVerifier
   }
 
   if (options.codeChallengeMethod === PkceCodeChallengeMethod.S256) {
-    if (!options.hashCallback) {
-      throw new Oid4vcError(`No 'hashCallback' provided and code challenge method is '${PkceCodeChallengeMethod.S256}.`)
-    }
-
-    // TODO: react native buffer does not support base64url. need to fix
-    return Buffer.from(await options.hashCallback(Buffer.from(options.codeVerifier), HashAlgorithm.Sha256)).toString(
-      'base64url'
-    )
+    return encodeToBase64Url(await options.hashCallback(decodeUtf8String(options.codeVerifier), HashAlgorithm.Sha256))
   }
 }

@@ -1,5 +1,5 @@
 import * as v from 'valibot'
-import { type InferOutputUnion, vCompactJwt, vHttpsUrl } from '../../common/validation/v-common'
+import { type InferOutputUnion, vHttpsUrl } from '../../common/validation/v-common'
 import {
   vJwtVcJsonCredentialIssuerMetadata,
   vJwtVcJsonCredentialIssuerMetadataDraft11To14,
@@ -16,6 +16,7 @@ import {
 import { vAuthorizationServerIdentifier } from '../authorization-server/v-authorization-server-metadata'
 import { vCredentialConfigurationSupportedCommon } from './v-credential-configuration-supported-common'
 import { Oid4vciDraftVersion } from '../../versions/draft-version'
+import { vCompactJwt } from '../../common/jwt/v-jwt'
 
 export const vCredentialIssuerIdentifier = vHttpsUrl
 

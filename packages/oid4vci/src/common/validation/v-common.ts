@@ -9,8 +9,8 @@ export type InferOutputUnion<T extends readonly any[]> = {
 
 export const vHttpsUrl = v.pipe(v.string(), v.url(), v.startsWith('https://'))
 
-// TODO: make more strict
-export const vCompactJwt = v.string()
+export const vInteger = v.pipe(v.number(), v.integer())
+export const vBase64 = v.pipe(v.string(), v.base64())
 
 export const vJwk = v.looseObject({
   kty: v.string(),

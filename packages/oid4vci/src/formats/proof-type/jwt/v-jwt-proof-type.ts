@@ -1,6 +1,7 @@
 import * as v from 'valibot'
-import { vCompactJwt, vJwk } from '../../../common/validation/v-common'
+import { vInteger } from '../../../common/validation/v-common'
 import { vCredentialIssuerIdentifier } from '../../../metadata/credential-issuer/v-credential-issuer-metadata'
+import { vCompactJwt, vJwtHeader, vJwtPayload } from '../../../common/jwt/v-jwt'
 
 export const vJwtProofTypeIdentifier = v.literal('jwt')
 export type JwtProofTypeIdentifier = v.InferOutput<typeof vJwtProofTypeIdentifier>
@@ -10,16 +11,10 @@ export const vCredentialRequestProofJwt = v.looseObject({
   jwt: vCompactJwt,
 })
 
-// TODO: extend from generic jwt header oject
 export const vCredentialRequestJwtProofTypeHeader = v.pipe(
   v.looseObject({
-    alg: v.string(),
+    ...vJwtHeader.entries,
     typ: v.literal('openid4vci-proof+jwt'),
-
-    kid: v.optional(v.string()),
-    jwk: v.optional(vJwk),
-    x5c: v.optional(v.array(v.string())),
-    trust_chain: v.optional(v.array(v.string())),
   }),
   v.check(
     ({ kid, jwk }) => jwk !== undefined && kid !== undefined,
@@ -32,11 +27,10 @@ export const vCredentialRequestJwtProofTypeHeader = v.pipe(
 )
 export type CredentialRequestJwtProofTypeHeader = v.InferOutput<typeof vCredentialRequestJwtProofTypeHeader>
 
-// TODO: extend from generic jwt payload object
 export const vCredentialRequestJwtProofTypePayload = v.looseObject({
-  iss: v.optional(v.string()),
+  ...vJwtPayload.entries,
   aud: vCredentialIssuerIdentifier,
-  iat: v.pipe(v.number(), v.integer()),
-  nonce: v.optional(v.string()),
+  iat: vInteger,
 })
+
 export type CredentialRequestJwtProofTypePayload = v.InferOutput<typeof vCredentialRequestJwtProofTypePayload>

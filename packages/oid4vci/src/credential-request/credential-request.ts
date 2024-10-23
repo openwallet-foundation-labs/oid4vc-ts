@@ -6,17 +6,37 @@ import { Oid4vcInvalidFetchResponseError } from '../error/Oid4vcInvalidFetchResp
 import { Oid4vcOauthErrorResponseError } from '../error/Oid4vcOauthErrorResponseError'
 import { Oid4vcValidationError } from '../error/Oid4vcValidationError'
 import type { IssuerMetadataResult } from '../metadata/fetch-issuer-metadata'
-import { type Fetch, createValibotFetcher } from '../utils/valibot-fetcher'
+import { createValibotFetcher } from '../utils/valibot-fetcher'
 import { type CredentialRequest, type CredentialRequestFormats, vCredentialRequest } from './v-credential-request'
 import type { CredentialRequestProof, CredentialRequestProofs } from './v-credential-request-common'
 import { vCredentialErrorResponse, vCredentialResponse } from './v-credential-response'
+import { createDpopJwt, extractDpopNonceFromHeaders, type RequestDpopOptions } from '../authorization/dpop/dpop'
+import { shouldRetryResourceRequestWithDPoPNonce } from '../authorization/dpop/dpop-retry'
+import type { CallbackContext } from '../callbacks'
 
-export interface RetrieveCredentialsWithFormatOptions {
+interface RetrieveCredentialsBaseOptions {
   /**
    * Metadata of the credential issuer and authorization servers.
    */
   issuerMetadata: IssuerMetadataResult
 
+  /**
+   * Callback used in retrieve credentials endpoints
+   */
+  callbacks: Pick<CallbackContext, 'fetch' | 'generateRandom' | 'hash' | 'signJwt'>
+
+  /**
+   * Access token authorized to retrieve the credential(s)
+   */
+  accessToken: string
+
+  /**
+   * DPoP options
+   */
+  dpop?: RequestDpopOptions
+}
+
+export interface RetrieveCredentialsWithFormatOptions extends RetrieveCredentialsBaseOptions {
   /**
    * Additional payload to include in the credential request.
    */
@@ -30,16 +50,6 @@ export interface RetrieveCredentialsWithFormatOptions {
 
   proof?: CredentialRequestProof
   proofs?: CredentialRequestProofs
-
-  /**
-   * Custom fetch implementation to use
-   */
-  fetch?: Fetch
-
-  /**
-   * Access token authorized to retrieve the credential(s)
-   */
-  accessToken: string
 }
 
 export async function retrieveCredentialsWithFormat(options: RetrieveCredentialsWithFormatOptions) {
@@ -51,41 +61,55 @@ export async function retrieveCredentialsWithFormat(options: RetrieveCredentials
     proofs: options.proofs,
   }
 
-  return retrieveCredentials({
-    fetch: options.fetch,
+  return retrieveCredentialsWithDpopRetry({
+    callbacks: options.callbacks,
     credentialRequest,
     issuerMetadata: options.issuerMetadata,
     accessToken: options.accessToken,
+    dpop: options.dpop,
   })
 }
 
-export interface RetrieveCredentialsOptions {
-  /**
-   * Metadata of the credential issuer and authorization servers.
-   */
-  issuerMetadata: IssuerMetadataResult
-
+export interface RetrieveCredentialsOptions extends RetrieveCredentialsBaseOptions {
   /**
    * The credential request
    */
   credentialRequest: CredentialRequest
+}
 
-  /**
-   * Custom fetch implementation to use
-   */
-  fetch?: Fetch
+async function retrieveCredentialsWithDpopRetry(options: RetrieveCredentialsOptions) {
+  try {
+    return await retrieveCredentials(options)
+  } catch (error) {
+    if (
+      options.dpop &&
+      (error instanceof Oid4vcInvalidFetchResponseError || error instanceof Oid4vcOauthErrorResponseError)
+    ) {
+      const dpopRetry = shouldRetryResourceRequestWithDPoPNonce({
+        responseHeaders: error.response.headers,
+      })
 
-  /**
-   * Access token authorized to retrieve the credential(s)
-   */
-  accessToken: string
+      // Retry with the dpop nonce
+      if (dpopRetry.retry) {
+        return retrieveCredentials({
+          ...options,
+          dpop: {
+            ...options.dpop,
+            nonce: dpopRetry.dpopNonce,
+          },
+        })
+      }
+    }
+
+    throw error
+  }
 }
 
 /**
  * internal method
  */
 async function retrieveCredentials(options: RetrieveCredentialsOptions) {
-  const fetchWithValibot = createValibotFetcher(options.fetch)
+  const fetchWithValibot = createValibotFetcher(options.callbacks.fetch)
   const credentialEndpoint = options.issuerMetadata.credentialIssuer.credential_endpoint
 
   const credentialRequest = parseWithErrorHandling(
@@ -104,17 +128,35 @@ async function retrieveCredentials(options: RetrieveCredentialsOptions) {
     // TODO: add batch_size validation
   }
 
+  const dpopJwt = options.dpop
+    ? await createDpopJwt({
+        httpMethod: 'POST',
+        requestUri: credentialEndpoint,
+        signer: options.dpop.signer,
+        callbacks: options.callbacks,
+        nonce: options.dpop.nonce,
+        accessToken: options.accessToken,
+      })
+    : undefined
+
   const { response, result } = await fetchWithValibot(vCredentialResponse, credentialEndpoint, {
     body: JSON.stringify(credentialRequest),
     method: 'POST',
     headers: {
-      Authorization: `Bearer ${options.accessToken}`,
+      Authorization: `${dpopJwt ? 'DPoP' : 'Bearer'} ${options.accessToken}`,
       'Content-Type': ContentType.Json,
+      ...(dpopJwt ? { DPoP: dpopJwt } : {}),
     },
   })
 
   if (!response.ok || !result) {
-    const credentialErrorResponse = v.safeParse(vCredentialErrorResponse, await response.clone().json())
+    const credentialErrorResponse = v.safeParse(
+      vCredentialErrorResponse,
+      await response
+        .clone()
+        .json()
+        .catch(() => null)
+    )
     if (credentialErrorResponse.success) {
       throw new Oid4vcOauthErrorResponseError(
         `Unable to retrieve credentials from '${credentialEndpoint}'. Received response with status ${response.status}`,
@@ -134,6 +176,13 @@ async function retrieveCredentials(options: RetrieveCredentialsOptions) {
     throw new Oid4vcValidationError('Error validating credential response', result.issues)
   }
 
-  // TODO: probably good to also return the response? At least status / headers
-  return result.output
+  const dpopNonce = extractDpopNonceFromHeaders(response.headers)
+  return {
+    dpop: dpopNonce
+      ? {
+          nonce: dpopNonce,
+        }
+      : undefined,
+    credentialResponse: result.output,
+  }
 }

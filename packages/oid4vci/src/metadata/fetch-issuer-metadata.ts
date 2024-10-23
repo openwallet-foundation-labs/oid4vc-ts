@@ -7,7 +7,7 @@ import {
   type AuthorizationServerMetadata,
   vAuthorizationServerMetadata,
 } from './authorization-server/v-authorization-server-metadata'
-import { fetchCredentialIssuerMetadata } from './credential-issuer/fetch-credential-issuer-metadata'
+import { fetchCredentialIssuerMetadata } from './credential-issuer/credential-issuer-metadata'
 import type { CredentialIssuerMetadata } from './credential-issuer/v-credential-issuer-metadata'
 
 export interface ResolveIssuerMetadataOptions {

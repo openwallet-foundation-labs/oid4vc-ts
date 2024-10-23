@@ -2,6 +2,8 @@ import * as v from 'valibot'
 
 // @ts-ignore
 export type Fetch = typeof fetch
+export type FetchResponse = Awaited<ReturnType<Fetch>>
+export type FetchHeaders = FetchResponse['headers']
 
 // biome-ignore lint/suspicious/noExplicitAny: any type needed for generic
 export type ValibotFetcher = <Schema extends v.BaseSchema<any, any, any>>(
