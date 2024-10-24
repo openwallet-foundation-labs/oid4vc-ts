@@ -5,6 +5,7 @@ import { fetchWellKnownMetadata } from '../fetch-metadata'
 import { type AuthorizationServerMetadata, vAuthorizationServerMetadata } from './v-authorization-server-metadata'
 
 const wellKnownAuthorizationServerSuffix = '.well-known/oauth-authorization-server'
+const wellKnownOpenIdConfigurationServerSuffix = '.well-known/openid-configuration'
 
 /**
  * @inheritdoc {@link fetchWellKnownMetadata}
@@ -13,17 +14,40 @@ export async function fetchAuthorizationServerMetadata(
   issuer: string,
   fetch?: Fetch
 ): Promise<AuthorizationServerMetadata | null> {
-  const wellKnownMetadataUrl = joinUriParts(issuer, [wellKnownAuthorizationServerSuffix])
-  const result = await fetchWellKnownMetadata(wellKnownMetadataUrl, vAuthorizationServerMetadata, fetch)
+  // First try openid configuration
+  const openIdConfigurationWellKnownMetadataUrl = joinUriParts(issuer, [wellKnownOpenIdConfigurationServerSuffix])
+  const openIdConfigurationResult = await fetchWellKnownMetadata(
+    openIdConfigurationWellKnownMetadataUrl,
+    vAuthorizationServerMetadata,
+    fetch
+  )
+
+  if (openIdConfigurationResult) {
+    if (openIdConfigurationResult.issuer !== issuer) {
+      // issuer param MUST match
+      throw new Oid4vcError(
+        `The 'issuer' parameter '${openIdConfigurationResult.issuer}' in the well known openid configuration at '${openIdConfigurationWellKnownMetadataUrl}' does not match the provided issuer '${issuer}'.`
+      )
+    }
+
+    return openIdConfigurationResult
+  }
+
+  const authorizationServerWellKnownMetadataUrl = joinUriParts(issuer, [wellKnownAuthorizationServerSuffix])
+  const authorizationServerResult = await fetchWellKnownMetadata(
+    authorizationServerWellKnownMetadataUrl,
+    vAuthorizationServerMetadata,
+    fetch
+  )
 
   // issuer param MUST match
-  if (result && result.issuer !== issuer) {
+  if (authorizationServerResult && authorizationServerResult.issuer !== issuer) {
     throw new Oid4vcError(
-      `The 'issuer' parameter '${result.issuer}' in the well known authorization server metadata at '${wellKnownMetadataUrl}' does not match the provided issuer '${issuer}'.`
+      `The 'issuer' parameter '${authorizationServerResult.issuer}' in the well known authorization server metadata at '${authorizationServerWellKnownMetadataUrl}' does not match the provided issuer '${issuer}'.`
     )
   }
 
-  return result
+  return authorizationServerResult
 }
 
 export function getAuthorizationServerMetadataFromList(

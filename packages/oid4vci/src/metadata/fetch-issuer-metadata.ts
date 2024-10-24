@@ -83,7 +83,7 @@ export async function resolveIssuerMetadata(
 
     if (!authorizationServerMetadata) {
       throw new Oid4vcError(
-        `Well known authorization server metadata for authorization server '${authorizationServer}' not found.`
+        `Well known openid configuration or authorization server metadata for authorization server '${authorizationServer}' not found.`
       )
     }
 
