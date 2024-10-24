@@ -78,6 +78,9 @@ describe('Oid4vciClient', () => {
       http.get(`${paradymDraft13.credentialOfferObject.credential_issuer}/.well-known/openid-credential-issuer`, () =>
         HttpResponse.json(paradymDraft13.credentialIssuerMetadata)
       ),
+      http.get(`${paradymDraft13.credentialOfferObject.credential_issuer}/.well-known/openid-configuration`, () =>
+        HttpResponse.text(undefined, { status: 404 })
+      ),
       http.get(`${paradymDraft13.credentialOfferObject.credential_issuer}/.well-known/oauth-authorization-server`, () =>
         HttpResponse.text(undefined, { status: 404 })
       ),
@@ -173,6 +176,9 @@ describe('Oid4vciClient', () => {
       ),
       http.get(`${paradymDraft11.credentialOfferObject.credential_issuer}/.well-known/openid-credential-issuer`, () =>
         HttpResponse.json(paradymDraft11.credentialIssuerMetadata)
+      ),
+      http.get(`${paradymDraft11.credentialOfferObject.credential_issuer}/.well-known/openid-configuration`, () =>
+        HttpResponse.text(undefined, { status: 404 })
       ),
       http.get(`${paradymDraft11.credentialOfferObject.credential_issuer}/.well-known/oauth-authorization-server`, () =>
         HttpResponse.text(undefined, { status: 404 })
@@ -324,6 +330,9 @@ describe('Oid4vciClient', () => {
     server.resetHandlers(
       http.get(`${bdrDraft13.credentialOfferObject.credential_issuer}/.well-known/openid-credential-issuer`, () =>
         HttpResponse.json(bdrDraft13.credentialIssuerMetadata)
+      ),
+      http.get(`${bdrDraft13.credentialOfferObject.credential_issuer}/.well-known/openid-configuration`, () =>
+        HttpResponse.text(undefined, { status: 404 })
       ),
       http.get(`${bdrDraft13.credentialOfferObject.credential_issuer}/.well-known/oauth-authorization-server`, () =>
         HttpResponse.json(bdrDraft13.authorizationServerMetadata)
