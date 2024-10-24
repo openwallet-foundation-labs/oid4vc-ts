@@ -4,7 +4,6 @@ import {
   retrieveAuthorizationCodeAccessToken,
   retrievePreAuthorizedCodeAccessToken,
 } from './authorization/access-token/access-token'
-import type { AccessTokenResponse } from './authorization/access-token/v-access-token'
 import {
   type CreateAuthorizationRequestUrlOptions,
   createAuthorizationRequestUrl,
@@ -124,10 +123,7 @@ export class Oid4vciClient {
     'txCode' | 'issuerMetadata' | 'additionalRequestPayload' | 'dpop'
   > & {
     credentialOffer: CredentialOfferObject
-  }): Promise<{
-    accessTokenResponse: AccessTokenResponse
-    authorizationServer: string
-  }> {
+  }) {
     if (!credentialOffer.grants?.[preAuthorizedCodeGrantIdentifier]) {
       throw new Oid4vcError(`The credential offer does not contain the '${preAuthorizedCodeGrantIdentifier}' grant.`)
     }
