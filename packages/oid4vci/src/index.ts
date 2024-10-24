@@ -24,7 +24,11 @@ export {
 } from './metadata/credential-issuer/credential-configurations'
 
 export type { AuthorizationServerMetadata } from './metadata/authorization-server/v-authorization-server-metadata'
-export { getAuthorizationServerMetadataFromList } from './metadata/authorization-server/authorization-server-metadata'
+export {
+  getAuthorizationServerMetadataFromList,
+  determineAuthorizationServerForOffer,
+  type DetermineAuthorizationForOfferOptions,
+} from './metadata/authorization-server/authorization-server-metadata'
 
 export {
   AccessTokenErrorResponse,
@@ -32,9 +36,11 @@ export {
 } from './authorization/access-token/v-access-token'
 
 export {
-  type CredentialOfferObject,
   authorizationCodeGrantIdentifier,
   preAuthorizedCodeGrantIdentifier,
+  type CredentialOfferObject,
+  type PreAuthorizedCodeGrantIdentifier,
+  type AuthorizationCodeGrantIdentifier,
 } from './credential-offer/v-credential-offer'
 
 export type {

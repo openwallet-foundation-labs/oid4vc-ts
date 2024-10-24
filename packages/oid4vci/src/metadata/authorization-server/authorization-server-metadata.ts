@@ -1,6 +1,12 @@
+import type {
+  AuthorizationCodeGrantIdentifier,
+  CredentialOfferObject,
+  PreAuthorizedCodeGrantIdentifier,
+} from '../../credential-offer/v-credential-offer'
 import { Oid4vcError } from '../../error/Oid4vcError'
 import type { Fetch } from '../../globals'
 import { joinUriParts } from '../../utils/path'
+import type { IssuerMetadataResult } from '../fetch-issuer-metadata'
 import { fetchWellKnownMetadata } from '../fetch-metadata'
 import { type AuthorizationServerMetadata, vAuthorizationServerMetadata } from './v-authorization-server-metadata'
 
@@ -70,4 +76,28 @@ export function getAuthorizationServerMetadataFromList(
   }
 
   return authorizationServerMetadata
+}
+
+export interface DetermineAuthorizationForOfferOptions {
+  grantType: PreAuthorizedCodeGrantIdentifier | AuthorizationCodeGrantIdentifier
+  credentialOffer: CredentialOfferObject
+  issuerMetadata: IssuerMetadataResult
+}
+
+export function determineAuthorizationServerForOffer(options: DetermineAuthorizationForOfferOptions) {
+  // Try infer authorization server based on credential offer
+  const authorizationServer = options.credentialOffer.grants?.[options.grantType]?.authorization_server
+  if (authorizationServer) {
+    return getAuthorizationServerMetadataFromList(options.issuerMetadata.authorizationServers, authorizationServer)
+  }
+
+  // Otherwise if there's only one we can use that
+  if (options.issuerMetadata.authorizationServers.length === 1) {
+    return options.issuerMetadata.authorizationServers[0]
+  }
+
+  // We can't safely determine the authorization server
+  throw new Oid4vcError(
+    `Unable to determine authorization server. Multiple authorization servers available and credential offer does not specify which 'authorization_server' to use for the '${options.grantType}' grant type.`
+  )
 }
