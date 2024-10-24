@@ -69,3 +69,5 @@ export type { IssuerMetadataResult } from './metadata/fetch-issuer-metadata'
 export { JwtProofTypeIdentifier } from './formats/proof-type/jwt/v-jwt-proof-type'
 
 export { RequestDpopOptions } from './authorization/dpop/dpop'
+
+export type { JwtSigner, JwtSignerCustom, JwtSignerDid, JwtSignerJwk, JwtSignerX5c } from './common/jwt/v-jwt'
