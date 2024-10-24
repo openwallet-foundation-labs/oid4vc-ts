@@ -8,7 +8,7 @@ import { parseWithErrorHandling } from '../../common/validation/parse'
 import { Oid4vcError } from '../../error/Oid4vcError'
 import type { FetchHeaders } from '../../globals'
 import { URL } from '../../globals'
-import { type DpopJwtHeader, type DpopJwtPayload, vDpopJwtHeader, vDpopJwtPayload } from './v-dpop'
+import { type DpopJwtHeader, type DpopJwtPayload, type RequestMethod, vDpopJwtHeader, vDpopJwtPayload } from './v-dpop'
 
 export interface RequestDpopOptions {
   /**
@@ -40,7 +40,7 @@ export interface CreateDpopJwtOptions {
   /**
    * The http method of the request
    */
-  httpMethod: DpopJwtPayload['htm']
+  httpMethod: RequestMethod
 
   /**
    * Dpop nonce value

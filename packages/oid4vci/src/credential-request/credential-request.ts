@@ -1,6 +1,6 @@
 import * as v from 'valibot'
-import { type RequestDpopOptions, createDpopJwt, extractDpopNonceFromHeaders } from '../authorization/dpop/dpop'
-import { shouldRetryResourceRequestWithDPoPNonce } from '../authorization/dpop/dpop-retry'
+import type { RequestDpopOptions } from '../authorization/dpop/dpop'
+import { resourceRequestWithDpopRetry } from '../authorization/resource-request'
 import type { CallbackContext } from '../callbacks'
 import { ContentType } from '../common/content-type'
 import { parseWithErrorHandling } from '../common/validation/parse'
@@ -61,7 +61,7 @@ export async function retrieveCredentialsWithFormat(options: RetrieveCredentials
     proofs: options.proofs,
   }
 
-  return retrieveCredentialsWithDpopRetry({
+  return retrieveCredentials({
     callbacks: options.callbacks,
     credentialRequest,
     issuerMetadata: options.issuerMetadata,
@@ -75,34 +75,6 @@ export interface RetrieveCredentialsOptions extends RetrieveCredentialsBaseOptio
    * The credential request
    */
   credentialRequest: CredentialRequest
-}
-
-async function retrieveCredentialsWithDpopRetry(options: RetrieveCredentialsOptions) {
-  try {
-    return await retrieveCredentials(options)
-  } catch (error) {
-    if (
-      options.dpop &&
-      (error instanceof Oid4vcInvalidFetchResponseError || error instanceof Oid4vcOauthErrorResponseError)
-    ) {
-      const dpopRetry = shouldRetryResourceRequestWithDPoPNonce({
-        responseHeaders: error.response.headers,
-      })
-
-      // Retry with the dpop nonce
-      if (dpopRetry.retry) {
-        return retrieveCredentials({
-          ...options,
-          dpop: {
-            ...options.dpop,
-            nonce: dpopRetry.dpopNonce,
-          },
-        })
-      }
-    }
-
-    throw error
-  }
 }
 
 /**
@@ -128,61 +100,56 @@ async function retrieveCredentials(options: RetrieveCredentialsOptions) {
     // TODO: add batch_size validation
   }
 
-  const dpopJwt = options.dpop
-    ? await createDpopJwt({
-        httpMethod: 'POST',
-        requestUri: credentialEndpoint,
-        signer: options.dpop.signer,
-        callbacks: options.callbacks,
-        nonce: options.dpop.nonce,
-        accessToken: options.accessToken,
+  const { dpop, result } = await resourceRequestWithDpopRetry({
+    dpop: options.dpop ? { ...options.dpop, httpMethod: 'POST', requestUri: credentialEndpoint } : undefined,
+    accessToken: options.accessToken,
+    callbacks: options.callbacks,
+    resourceRequest: async ({ headers }) => {
+      const { response, result } = await fetchWithValibot(vCredentialResponse, credentialEndpoint, {
+        body: JSON.stringify(credentialRequest),
+        method: 'POST',
+        headers: {
+          ...headers,
+          'Content-Type': ContentType.Json,
+        },
       })
-    : undefined
 
-  const { response, result } = await fetchWithValibot(vCredentialResponse, credentialEndpoint, {
-    body: JSON.stringify(credentialRequest),
-    method: 'POST',
-    headers: {
-      Authorization: `${dpopJwt ? 'DPoP' : 'Bearer'} ${options.accessToken}`,
-      'Content-Type': ContentType.Json,
-      ...(dpopJwt ? { DPoP: dpopJwt } : {}),
+      if (!response.ok || !result) {
+        const credentialErrorResponse = v.safeParse(
+          vCredentialErrorResponse,
+          await response
+            .clone()
+            .json()
+            .catch(() => null)
+        )
+        if (credentialErrorResponse.success) {
+          throw new Oid4vcOauthErrorResponseError(
+            `Unable to retrieve credentials from '${credentialEndpoint}'. Received response with status ${response.status}`,
+            credentialErrorResponse.output,
+            response
+          )
+        }
+
+        throw new Oid4vcInvalidFetchResponseError(
+          `Unable to retrieve credentials from '${credentialEndpoint}'. Received response with status ${response.status}`,
+          await response.clone().text(),
+          response
+        )
+      }
+
+      if (!result.success) {
+        throw new Oid4vcValidationError('Error validating credential response', result.issues)
+      }
+
+      return {
+        response,
+        result: result.output,
+      }
     },
   })
 
-  if (!response.ok || !result) {
-    const credentialErrorResponse = v.safeParse(
-      vCredentialErrorResponse,
-      await response
-        .clone()
-        .json()
-        .catch(() => null)
-    )
-    if (credentialErrorResponse.success) {
-      throw new Oid4vcOauthErrorResponseError(
-        `Unable to retrieve credentials from '${credentialEndpoint}'. Received response with status ${response.status}`,
-        credentialErrorResponse.output,
-        response
-      )
-    }
-
-    throw new Oid4vcInvalidFetchResponseError(
-      `Unable to retrieve credentials from '${credentialEndpoint}'. Received response with status ${response.status}`,
-      await response.clone().text(),
-      response
-    )
-  }
-
-  if (!result.success) {
-    throw new Oid4vcValidationError('Error validating credential response', result.issues)
-  }
-
-  const dpopNonce = extractDpopNonceFromHeaders(response.headers)
   return {
-    dpop: dpopNonce
-      ? {
-          nonce: dpopNonce,
-        }
-      : undefined,
-    credentialResponse: result.output,
+    dpop,
+    credentialResponse: result,
   }
 }

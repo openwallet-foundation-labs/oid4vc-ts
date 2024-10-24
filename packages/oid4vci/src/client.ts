@@ -23,6 +23,7 @@ import {
 } from './formats/proof-type/jwt/jwt-proof-type'
 import { getAuthorizationServerMetadataFromList } from './metadata/authorization-server/authorization-server-metadata'
 import { type IssuerMetadataResult, resolveIssuerMetadata } from './metadata/fetch-issuer-metadata'
+import { type SendNotifcationOptions, sendNotifcation } from './notification/notification'
 
 export interface Oid4vciClientOptions {
   /**
@@ -274,6 +275,26 @@ export class Oid4vciClient {
       proofs,
       callbacks: this.options.callbacks,
       dpop,
+    })
+  }
+
+  public async sendNotification({
+    issuerMetadata,
+    notification,
+    additionalRequestPayload,
+    accessToken,
+    dpop,
+  }: Pick<
+    SendNotifcationOptions,
+    'accessToken' | 'additionalRequestPayload' | 'issuerMetadata' | 'dpop' | 'notification'
+  >) {
+    return await sendNotifcation({
+      accessToken,
+      issuerMetadata,
+      additionalRequestPayload,
+      callbacks: this.options.callbacks,
+      dpop,
+      notification,
     })
   }
 }
