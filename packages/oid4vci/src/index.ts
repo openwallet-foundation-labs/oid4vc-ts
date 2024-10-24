@@ -24,6 +24,7 @@ export {
 } from './metadata/credential-issuer/credential-configurations'
 
 export type { AuthorizationServerMetadata } from './metadata/authorization-server/v-authorization-server-metadata'
+export { getAuthorizationServerMetadataFromList } from './metadata/authorization-server/authorization-server-metadata'
 
 export {
   AccessTokenErrorResponse,
@@ -60,3 +61,5 @@ export type {
 export type { IssuerMetadataResult } from './metadata/fetch-issuer-metadata'
 
 export { JwtProofTypeIdentifier } from './formats/proof-type/jwt/v-jwt-proof-type'
+
+export { RequestDpopOptions } from './authorization/dpop/dpop'

@@ -35,7 +35,7 @@ export interface Oid4vciClientOptions {
 export class Oid4vciClient {
   public constructor(private options: Oid4vciClientOptions) {}
 
-  public async isDpopSupported(options: { authorizationServer: string; issuerMetadata: IssuerMetadataResult }) {
+  public isDpopSupported(options: { authorizationServer: string; issuerMetadata: IssuerMetadataResult }) {
     const authorizationServerMetadata = getAuthorizationServerMetadataFromList(
       options.issuerMetadata.authorizationServers,
       options.authorizationServer

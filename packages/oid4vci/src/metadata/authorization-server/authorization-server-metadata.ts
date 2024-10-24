@@ -41,13 +41,16 @@ export async function fetchAuthorizationServerMetadata(
   )
 
   // issuer param MUST match
-  if (authorizationServerResult && authorizationServerResult.issuer !== issuer) {
-    throw new Oid4vcError(
-      `The 'issuer' parameter '${authorizationServerResult.issuer}' in the well known authorization server metadata at '${authorizationServerWellKnownMetadataUrl}' does not match the provided issuer '${issuer}'.`
-    )
+  if (authorizationServerResult) {
+    if (authorizationServerResult.issuer !== issuer) {
+      throw new Oid4vcError(
+        `The 'issuer' parameter '${authorizationServerResult.issuer}' in the well known authorization server metadata at '${authorizationServerWellKnownMetadataUrl}' does not match the provided issuer '${issuer}'.`
+      )
+    }
+    return authorizationServerResult
   }
 
-  return authorizationServerResult
+  return null
 }
 
 export function getAuthorizationServerMetadataFromList(
@@ -60,7 +63,9 @@ export function getAuthorizationServerMetadataFromList(
 
   if (!authorizationServerMetadata) {
     throw new Oid4vcError(
-      `Authorization server '${issuer}' not found in list of authorization servers. Availalbe authorization servers are ${authorizationServersMetadata.map((as) => `'${as.issuer}'`).join(', ')}`
+      `Authorization server '${issuer}' not found in list of authorization servers. Availalbe authorization servers are ${authorizationServersMetadata
+        .map((as) => `'${as.issuer}'`)
+        .join(', ')}`
     )
   }
 
