@@ -1,10 +1,7 @@
+import { preAuthorizedCodeGrantIdentifier } from '@animo-id/oauth2'
 import * as v from 'valibot'
 import { describe, expect, test } from 'vitest'
-import {
-  preAuthorizedCodeGrantIdentifier,
-  vCredentialOfferObject,
-  vCredentialOfferObjectDraft11To14,
-} from '../v-credential-offer'
+import { vCredentialOfferObject, vCredentialOfferObjectDraft11To14 } from '../v-credential-offer'
 
 describe('Credential Offer', () => {
   test('parse draft 14 credential offer', () => {

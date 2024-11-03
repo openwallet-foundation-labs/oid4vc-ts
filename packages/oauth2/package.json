@@ -1,0 +1,29 @@
+{
+  "name": "@animo-id/oauth2",
+  "version": "0.0.1",
+  "exports": "./src/index.ts",
+  "files": ["dist"],
+  "publishConfig": {
+    "main": "./dist/index.js",
+    "module": "./dist/index.mjs",
+    "types": "./dist/index.d.ts",
+    "exports": {
+      ".": {
+        "import": "./dist/index.mjs",
+        "require": "./dist/index.js",
+        "types": "./dist/index.d.ts"
+      },
+      "./package.json": "./package.json"
+    }
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --dts --clean --sourcemap"
+  },
+  "dependencies": {
+    "@animo-id/oid4vc-utils": "workspace:*",
+    "valibot": "^0.42.1"
+  },
+  "devDependencies": {
+    "jose": "^5.9.6"
+  }
+}

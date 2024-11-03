@@ -1,5 +1,5 @@
+import { Oauth2Error } from '@animo-id/oauth2'
 import * as v from 'valibot'
-import { Oid4vcError } from '../error/Oid4vcError'
 import {
   vJwtVcJsonCredentialIssuerMetadata,
   vJwtVcJsonLdCredentialIssuerMetadata,
@@ -29,7 +29,7 @@ export function getCredentialRequestFormatPayloadForCredentialConfigurationId(
     options.issuerMetadata.credentialIssuer.credential_configurations_supported[options.credentialConfigurationId]
 
   if (!credentialConfiguration) {
-    throw new Oid4vcError(
+    throw new Oauth2Error(
       `Could not find credential configuration with id '${options.credentialConfigurationId}' in metadata of credential issuer '${options.issuerMetadata.credentialIssuer.credential_issuer}'.`
     )
   }
@@ -77,7 +77,7 @@ export function getCredentialRequestFormatPayloadForCredentialConfigurationId(
     }
   }
 
-  throw new Oid4vcError(
+  throw new Oauth2Error(
     `Unknown format '${credentialConfiguration.format}' in credential configuration with id '${options.credentialConfigurationId}' for credential issuer '${options.issuerMetadata.credentialIssuer.credential_issuer}'`
   )
 }

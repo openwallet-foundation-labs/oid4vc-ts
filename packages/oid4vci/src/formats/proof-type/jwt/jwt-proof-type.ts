@@ -1,4 +1,4 @@
-import type { JwtSigner } from '../../../common/jwt/v-jwt'
+import { type JwtSigner, jwtHeaderFromJwtSigner } from '@animo-id/oauth2'
 import type { CredentialRequestJwtProofTypeHeader, CredentialRequestJwtProofTypePayload } from './v-jwt-proof-type'
 
 export interface CreateCredentialRequestJwtProofOptions {
@@ -35,16 +35,8 @@ export function createCredentialRequestJwtProof(
   options: CreateCredentialRequestJwtProofOptions
 ): CreateCredentialRequestJwtProofResult {
   const header: CredentialRequestJwtProofTypeHeader = {
-    alg: options.signer.alg,
+    ...jwtHeaderFromJwtSigner(options.signer),
     typ: 'openid4vci-proof+jwt',
-  }
-
-  if (options.signer.method === 'did') {
-    header.kid = options.signer.didUrl
-  } else if (options.signer.method === 'jwk') {
-    header.jwk = options.signer.publicJwk
-  } else if (options.signer.method === 'x5c') {
-    header.x5c = options.signer.x5c
   }
 
   return {

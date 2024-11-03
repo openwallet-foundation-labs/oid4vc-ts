@@ -1,14 +1,16 @@
 import * as v from 'valibot'
-import type { RequestDpopOptions } from '../authorization/dpop/dpop'
-import { resourceRequestWithDpopRetry } from '../authorization/resource-request'
-import type { CallbackContext } from '../callbacks'
-import { ContentType } from '../common/content-type'
-import { parseWithErrorHandling } from '../common/validation/parse'
-import { Oid4vcError } from '../error/Oid4vcError'
-import { Oid4vcInvalidFetchResponseError } from '../error/Oid4vcInvalidFetchResponseError'
-import { Oid4vcOauthErrorResponseError } from '../error/Oid4vcOauthErrorResponseError'
+
+import {
+  type CallbackContext,
+  ContentType,
+  Oauth2ClientErrorResponseError,
+  Oauth2Error,
+  Oauth2InvalidFetchResponseError,
+  type RequestDpopOptions,
+  resourceRequestWithDpopRetry,
+} from '@animo-id/oauth2'
+import { defaultFetcher, parseWithErrorHandling } from '@animo-id/oid4vc-utils'
 import type { IssuerMetadataResult } from '../metadata/fetch-issuer-metadata'
-import { defaultFetcher } from '../utils/valibot-fetcher'
 import {
   type NotificationEvent,
   type NotificationRequest,
@@ -65,7 +67,7 @@ export async function sendNotifcation(options: SendNotifcationOptions) {
   const notificationEndpoint = options.issuerMetadata.credentialIssuer.notification_endpoint
 
   if (!notificationEndpoint) {
-    throw new Oid4vcError(
+    throw new Oauth2Error(
       `Credential issuer '${options.issuerMetadata.credentialIssuer.credential_issuer}' does not have a notification endpiont configured.`
     )
   }
@@ -84,8 +86,10 @@ export async function sendNotifcation(options: SendNotifcationOptions) {
     dpop: options.dpop
       ? {
           ...options.dpop,
-          httpMethod: 'POST',
-          requestUri: notificationEndpoint,
+          request: {
+            method: 'POST',
+            url: notificationEndpoint,
+          },
         }
       : undefined,
     accessToken: options.accessToken,
@@ -109,14 +113,14 @@ export async function sendNotifcation(options: SendNotifcationOptions) {
             .catch(() => null)
         )
         if (notificationErrorResponse.success) {
-          throw new Oid4vcOauthErrorResponseError(
+          throw new Oauth2ClientErrorResponseError(
             `Unable to send notification to '${notificationEndpoint}'. Received response with status ${response.status}`,
             notificationErrorResponse.output,
             response
           )
         }
 
-        throw new Oid4vcInvalidFetchResponseError(
+        throw new Oauth2InvalidFetchResponseError(
           `Unable to send notification to '${notificationEndpoint}'. Received response with status ${response.status}`,
           await response.clone().text(),
           response

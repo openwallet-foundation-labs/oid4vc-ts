@@ -1,0 +1,26 @@
+{
+  "name": "@animo-id/oid4vc-utils",
+  "version": "0.0.1",
+  "exports": "./src/index.ts",
+  "files": ["dist"],
+  "publishConfig": {
+    "main": "./dist/index.js",
+    "module": "./dist/index.mjs",
+    "types": "./dist/index.d.ts",
+    "exports": {
+      ".": {
+        "import": "./dist/index.mjs",
+        "require": "./dist/index.js",
+        "types": "./dist/index.d.ts"
+      },
+      "./package.json": "./package.json"
+    }
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --dts --clean --sourcemap"
+  },
+  "dependencies": {
+    "buffer": "^6.0.3",
+    "valibot": "^0.42.1"
+  }
+}

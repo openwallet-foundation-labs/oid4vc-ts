@@ -1,15 +1,16 @@
 import * as v from 'valibot'
-import type { RequestDpopOptions } from '../authorization/dpop/dpop'
-import { resourceRequestWithDpopRetry } from '../authorization/resource-request'
-import type { CallbackContext } from '../callbacks'
-import { ContentType } from '../common/content-type'
-import { parseWithErrorHandling } from '../common/validation/parse'
-import { Oid4vcError } from '../error/Oid4vcError'
-import { Oid4vcInvalidFetchResponseError } from '../error/Oid4vcInvalidFetchResponseError'
-import { Oid4vcOauthErrorResponseError } from '../error/Oid4vcOauthErrorResponseError'
-import { Oid4vcValidationError } from '../error/Oid4vcValidationError'
+
+import {
+  type CallbackContext,
+  ContentType,
+  Oauth2ClientErrorResponseError,
+  Oauth2Error,
+  Oauth2InvalidFetchResponseError,
+  type RequestDpopOptions,
+  resourceRequestWithDpopRetry,
+} from '@animo-id/oauth2'
+import { ValidationError, createValibotFetcher, parseWithErrorHandling } from '@animo-id/oid4vc-utils'
 import type { IssuerMetadataResult } from '../metadata/fetch-issuer-metadata'
-import { createValibotFetcher } from '../utils/valibot-fetcher'
 import { type CredentialRequest, type CredentialRequestWithFormats, vCredentialRequest } from './v-credential-request'
 import type { CredentialRequestProof, CredentialRequestProofs } from './v-credential-request-common'
 import { vCredentialErrorResponse, vCredentialResponse } from './v-credential-response'
@@ -92,7 +93,7 @@ async function retrieveCredentials(options: RetrieveCredentialsOptions) {
 
   if (credentialRequest.proofs) {
     if (!options.issuerMetadata.credentialIssuer.batch_credential_issuance) {
-      throw new Oid4vcError(
+      throw new Oauth2Error(
         `Credential issuer '${options.issuerMetadata.credentialIssuer}' does not support batch credential issuance using the 'proofs' request property. Only 'proof' is supported.`
       )
     }
@@ -101,7 +102,7 @@ async function retrieveCredentials(options: RetrieveCredentialsOptions) {
   }
 
   const { dpop, result } = await resourceRequestWithDpopRetry({
-    dpop: options.dpop ? { ...options.dpop, httpMethod: 'POST', requestUri: credentialEndpoint } : undefined,
+    dpop: options.dpop ? { ...options.dpop, request: { method: 'POST', url: credentialEndpoint } } : undefined,
     accessToken: options.accessToken,
     callbacks: options.callbacks,
     resourceRequest: async ({ headers }) => {
@@ -123,14 +124,14 @@ async function retrieveCredentials(options: RetrieveCredentialsOptions) {
             .catch(() => null)
         )
         if (credentialErrorResponse.success) {
-          throw new Oid4vcOauthErrorResponseError(
+          throw new Oauth2ClientErrorResponseError(
             `Unable to retrieve credentials from '${credentialEndpoint}'. Received response with status ${response.status}`,
             credentialErrorResponse.output,
             response
           )
         }
 
-        throw new Oid4vcInvalidFetchResponseError(
+        throw new Oauth2InvalidFetchResponseError(
           `Unable to retrieve credentials from '${credentialEndpoint}'. Received response with status ${response.status}`,
           await response.clone().text(),
           response
@@ -138,7 +139,7 @@ async function retrieveCredentials(options: RetrieveCredentialsOptions) {
       }
 
       if (!result.success) {
-        throw new Oid4vcValidationError('Error validating credential response', result.issues)
+        throw new ValidationError('Error validating credential response', result.issues)
       }
 
       return {

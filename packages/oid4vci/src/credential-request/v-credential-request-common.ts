@@ -1,5 +1,5 @@
+import { vJwk } from '@animo-id/oauth2'
 import * as v from 'valibot'
-import { vJwk } from '../common/validation/v-common'
 import { vCredentialRequestProofJwt, vJwtProofTypeIdentifier } from '../formats/proof-type/jwt/v-jwt-proof-type'
 
 const allCredentialRequestProofs = [vCredentialRequestProofJwt] as const

@@ -1,5 +1,5 @@
 import * as v from 'valibot'
-import { vOauth2ErrorResponse } from '../common/v-oauth2-error'
+import { vOauth2ErrorResponse } from '../../../oauth2/src/common/v-oauth2-error'
 
 const vCredentialEncoding = v.union([v.string(), v.record(v.string(), v.any())])
 
@@ -34,6 +34,7 @@ export enum CredentialErrorResponse {
 
 export const vCredentialErrorResponse = v.looseObject({
   ...vOauth2ErrorResponse.entries,
+  error: v.union([v.enum(CredentialErrorResponse), ...vOauth2ErrorResponse.entries.error.options]),
 
   c_nonce: v.optional(v.string()),
   c_nonce_expires_in: v.optional(v.pipe(v.number(), v.integer())),

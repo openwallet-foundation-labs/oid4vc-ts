@@ -1,6 +1,6 @@
+import { vCompactJwt } from '@animo-id/oauth2'
+import { type InferOutputUnion, vHttpsUrl } from '@animo-id/oid4vc-utils'
 import * as v from 'valibot'
-import { vCompactJwt } from '../../common/jwt/v-jwt'
-import { type InferOutputUnion, vHttpsUrl } from '../../common/validation/v-common'
 import {
   vJwtVcJsonCredentialIssuerMetadata,
   vJwtVcJsonCredentialIssuerMetadataDraft11To14,
@@ -14,11 +14,8 @@ import {
   vMsoMdocCredentialIssuerMetadata,
   vSdJwtVcCredentialIssuerMetadata,
 } from '../../formats/credential'
-import { Oid4vciDraftVersion } from '../../versions/draft-version'
-import { vAuthorizationServerIdentifier } from '../authorization-server/v-authorization-server-metadata'
+import { Oid4vciDraftVersion } from '../../version'
 import { vCredentialConfigurationSupportedCommon } from './v-credential-configuration-supported-common'
-
-export const vCredentialIssuerIdentifier = vHttpsUrl
 
 const allCredentialIssuerMetadataFormats = [
   vSdJwtVcCredentialIssuerMetadata,
@@ -56,8 +53,8 @@ export type StrictCredentialConfigurationSupported<T extends { format: string }>
 
 export type CredentialIssuerMetadata = v.InferOutput<typeof vCredentialIssuerMetadataDraft14>
 const vCredentialIssuerMetadataDraft14 = v.looseObject({
-  credential_issuer: vCredentialIssuerIdentifier,
-  authorization_servers: v.optional(v.array(vAuthorizationServerIdentifier)),
+  credential_issuer: vHttpsUrl,
+  authorization_servers: v.optional(v.array(vHttpsUrl)),
   credential_endpoint: vHttpsUrl,
   deferred_credential_endpoint: v.optional(vHttpsUrl),
   notification_endpoint: v.optional(vHttpsUrl),

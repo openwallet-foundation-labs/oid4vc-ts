@@ -1,4 +1,4 @@
-import { Oid4vcError } from '../../error/Oid4vcError'
+import { Oauth2Error } from '@animo-id/oauth2'
 import type { IssuerMetadataResult } from '../fetch-issuer-metadata'
 
 export interface ExtractScopesForCredentialConfigurationIdsOptions {
@@ -29,7 +29,7 @@ export function extractScopesForCredentialConfigurationIds(options: ExtractScope
       options.issuerMetadata.credentialIssuer.credential_configurations_supported[credentialConfigurationId]
 
     if (!credentialConfiguration) {
-      throw new Oid4vcError(
+      throw new Oauth2Error(
         `Credential configuration with id '${credentialConfigurationId}' not found in metadata from credential issuer '${options.issuerMetadata.credentialIssuer.credential_issuer}'`
       )
     }
@@ -37,7 +37,7 @@ export function extractScopesForCredentialConfigurationIds(options: ExtractScope
     const scope = credentialConfiguration.scope
     if (scope) scopes.add(scope)
     else if (!scope && options.throwOnConfigurationWithoutScope) {
-      throw new Oid4vcError(
+      throw new Oauth2Error(
         `Credential configuration with id '${credentialConfigurationId}' does not have a 'scope' configured, and 'throwOnConfigurationWithoutScope' was enabled.`
       )
     }

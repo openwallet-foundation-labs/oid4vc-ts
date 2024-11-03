@@ -1,12 +1,12 @@
-import { parseWithErrorHandling } from '../common/validation/parse'
-import { Oid4vcError } from '../error/Oid4vcError'
-import type { Fetch } from '../globals'
-import type { Oid4vciDraftVersion } from '../versions/draft-version'
-import { fetchAuthorizationServerMetadata } from './authorization-server/authorization-server-metadata'
 import {
   type AuthorizationServerMetadata,
+  Oauth2Error,
+  fetchAuthorizationServerMetadata,
   vAuthorizationServerMetadata,
-} from './authorization-server/v-authorization-server-metadata'
+} from '@animo-id/oauth2'
+import type { Fetch } from '@animo-id/oid4vc-utils'
+import { parseWithErrorHandling } from '@animo-id/oid4vc-utils'
+import type { Oid4vciDraftVersion } from '../version'
 import { fetchCredentialIssuerMetadata } from './credential-issuer/credential-issuer-metadata'
 import type { CredentialIssuerMetadata } from './credential-issuer/v-credential-issuer-metadata'
 
@@ -48,7 +48,7 @@ export async function resolveIssuerMetadata(
 
   const credentialIssuerMetadataWithDraftVersion = await fetchCredentialIssuerMetadata(credentialIssuer, options?.fetch)
   if (!credentialIssuerMetadataWithDraftVersion) {
-    throw new Oid4vcError(`Well known credential issuer metadata for issuer '${credentialIssuer}' not found.`)
+    throw new Oauth2Error(`Well known credential issuer metadata for issuer '${credentialIssuer}' not found.`)
   }
 
   const { credentialIssuerMetadata, originalDraftVersion } = credentialIssuerMetadataWithDraftVersion
@@ -82,7 +82,7 @@ export async function resolveIssuerMetadata(
     }
 
     if (!authorizationServerMetadata) {
-      throw new Oid4vcError(
+      throw new Oauth2Error(
         `Well known openid configuration or authorization server metadata for authorization server '${authorizationServer}' not found.`
       )
     }

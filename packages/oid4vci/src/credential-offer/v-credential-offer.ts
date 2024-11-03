@@ -1,20 +1,16 @@
+import {
+  type AuthorizationCodeGrantIdentifier,
+  type PreAuthorizedCodeGrantIdentifier,
+  preAuthorizedCodeGrantIdentifier,
+} from '@animo-id/oauth2'
+import { vHttpsUrl } from '@animo-id/oid4vc-utils'
 import * as v from 'valibot'
-import { vAuthorizationServerIdentifier } from '../metadata/authorization-server/v-authorization-server-metadata'
-import { vCredentialIssuerIdentifier } from '../metadata/credential-issuer/v-credential-issuer-metadata'
-
-export const vPreAuthorizedCodeGrantIdentifier = v.literal('urn:ietf:params:oauth:grant-type:pre-authorized_code')
-export const preAuthorizedCodeGrantIdentifier = vPreAuthorizedCodeGrantIdentifier.literal
-export type PreAuthorizedCodeGrantIdentifier = v.InferOutput<typeof vPreAuthorizedCodeGrantIdentifier>
-
-export const vAuthorizationCodeGrantIdentifier = v.literal('authorization_code')
-export const authorizationCodeGrantIdentifier = vAuthorizationCodeGrantIdentifier.literal
-export type AuthorizationCodeGrantIdentifier = v.InferOutput<typeof vAuthorizationCodeGrantIdentifier>
 
 export const vCredentialOfferGrants = v.looseObject({
   authorization_code: v.optional(
     v.looseObject({
       issuer_state: v.optional(v.string()),
-      authorization_server: v.optional(vAuthorizationServerIdentifier),
+      authorization_server: v.optional(vHttpsUrl),
     })
   ),
 
@@ -28,13 +24,16 @@ export const vCredentialOfferGrants = v.looseObject({
           description: v.optional(v.pipe(v.string(), v.maxLength(300))),
         })
       ),
-      authorization_server: v.optional(vAuthorizationServerIdentifier),
+      authorization_server: v.optional(vHttpsUrl),
     })
   ),
 })
+export type CredentialOfferGrants = v.InferInput<typeof vCredentialOfferGrants>
+export type CredentialOfferPreAuthorizedCodeGrant = CredentialOfferGrants[PreAuthorizedCodeGrantIdentifier]
+export type CredenialOfferAuthorizationCodeGrant = CredentialOfferGrants[AuthorizationCodeGrantIdentifier]
 
 const vCredentialOfferObjectDraft14 = v.looseObject({
-  credential_issuer: vCredentialIssuerIdentifier,
+  credential_issuer: vHttpsUrl,
   credential_configuration_ids: v.array(v.string()),
   grants: v.optional(vCredentialOfferGrants),
 })
@@ -42,7 +41,7 @@ export type CredentialOfferObject = v.InferInput<typeof vCredentialOfferObjectDr
 
 export const vCredentialOfferObjectDraft11To14 = v.pipe(
   v.looseObject({
-    credential_issuer: vCredentialIssuerIdentifier,
+    credential_issuer: vHttpsUrl,
     // We don't support the inline offer objects from draft 11
     credentials: v.array(v.string(), 'Only string credential identifiers are supported for draft 11 credential offers'),
     grants: v.optional(
