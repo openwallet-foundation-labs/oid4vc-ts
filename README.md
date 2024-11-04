@@ -23,22 +23,20 @@
 </p>
 
 <p align="center">
-  <a href="#packages">Packages</a> 
+  <a href="#oauth-20---animo-idoauth2">OAuth 2.0</a> 
   &nbsp;|&nbsp;
-  <a href="#getting-started">Getting started</a> 
+  <a href="#openid-for-verifiable-credential-issuance---animo-idoid4vc">OpenID for Verifiable Credential Issuance</a> 
   &nbsp;|&nbsp;
-  <a href="#usage">Usage</a> 
+  <a href="#supported-environments">Supported Environments</a>
   &nbsp;|&nbsp;
-  <a href="#contributing">Contributing</a> 
+  <a href="#contributing">Contributing</a>
   &nbsp;|&nbsp;
-  <a href="#contributing">License</a> 
+  <a href="#license">License</a>
 </p>
 
 ---
 
-## Libraries
-
-### OAuth 2.0 - [`@animo-id/oauth2`](./packages/oauth2)
+## OAuth 2.0 - [`@animo-id/oauth2`](./packages/oauth2)
 
 [![@animo-id/oauth2 version](https://img.shields.io/npm/v/@animo-id/oauth2)](https://npmjs.com/package/@animo-id/oauth2)
 
@@ -55,11 +53,11 @@ An implementation of the [OAuth 2.0 Authorization Framework](https://datatracker
 import {
   ResourceServer,
   AuthorizationServer,
-  Oauht2Client,
+  Oauth2Client,
 } from "@animo-id/oauth2";
 ```
 
-### OpenID for Verifiable Credential Issuance - [`@animo-id/oid4vc`](./packages/oid4vci)
+## OpenID for Verifiable Credential Issuance - [`@animo-id/oid4vc`](./packages/oid4vci)
 
 [![@animo-id/oid4vci version](https://img.shields.io/npm/v/@animo-id/oid4vci)](https://npmjs.com/package/@animo-id/oid4vci)
 
@@ -78,7 +76,7 @@ import {
 } from "@animo-id/oid4vci";
 ```
 
-## Environments
+## Supported Environments
 
 This library is platform agnostic and support Node.JS, React Native and browsers out of the box, as long as it provides an implementation of `URL` and `URLSearchParams`. However because of this it is required to provide some callbacks for simple things like hashing, generate random bytes, etc. If no global `fetch` is available in your environment, this also need to be provided in the callbacks.
 
