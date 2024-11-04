@@ -15,7 +15,7 @@ export enum Oauth2ErrorCodes {
   InvalidDpopProof = 'invalid_dpop_proof',
   UseDpopNonce = 'use_dpop_nonce',
 
-  // FaPI
+  // FiPA
   RedirectToWeb = 'redirect_to_web',
   InvalidSession = 'invalid_session',
   InsufficientAuthorization = 'insufficient_authorization',

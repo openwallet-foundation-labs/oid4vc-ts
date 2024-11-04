@@ -36,17 +36,51 @@
 
 ---
 
-## Packages
+## Libraries
 
-All packages are placed in the [`packages/`](./packages) directory.
+### OAuth 2.0 - [`@animo-id/oauth2`](./packages/oauth2)
 
-| Package                                   | Version                                                                                                                     | Description                                                                   |
-| ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| [`@animo-id/oid4vci`](./packages/oid4vci) | [![@animo-id/oid4vci version](https://img.shields.io/npm/v/@animo-id/oid4vci)](https://npmjs.com/package/@animo-id/oid4vci) | Implementation of the OpenID for Verifiable Credential Issuance specification |
+[![@animo-id/oauth2 version](https://img.shields.io/npm/v/@animo-id/oauth2)](https://npmjs.com/package/@animo-id/oauth2)
+
+An implementation of the [OAuth 2.0 Authorization Framework](https://datatracker.ietf.org/doc/html/rfc6749), including extension specifications.
+
+- [RFC 9126 - OAuth 2.0 Pushed Authorization Requests](https://datatracker.ietf.org/doc/html/rfc9126)
+- [OAuth 2.0 for First-Party Applications](https://www.ietf.org/archive/id/draft-parecki-oauth-first-party-apps-00.html)
+- [RFC 7636 - Proof Key for Code Exchange by OAuth Public Clients](https://datatracker.ietf.org/doc/html/rfc7636)
+- [RFC 9449 - OAuth 2.0 Demonstrating Proof of Possession (DPoP)](https://datatracker.ietf.org/doc/html/rfc9449)
+- [RFC 7662 - OAuth 2.0 Token Introspection](https://datatracker.ietf.org/doc/html/rfc7662)
+- [RFC 9068 JSON Web Token (JWT) Profile for OAuth 2.0 Access Tokens](https://datatracker.ietf.org/doc/html/rfc9068)
+
+```ts
+import {
+  ResourceServer,
+  AuthorizationServer,
+  Oauht2Client,
+} from "@animo-id/oauth2";
+```
+
+### OpenID for Verifiable Credential Issuance - [`@animo-id/oid4vc`](./packages/oid4vci)
+
+[![@animo-id/oid4vci version](https://img.shields.io/npm/v/@animo-id/oid4vci)](https://npmjs.com/package/@animo-id/oid4vci)
+
+An implementation of the [OpenID for Verifiable Credential Issuance](https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html) specification.
+
+- Authorization Code Flow and Pre-Authorized Code Flow
+- Credential format profiles `vc+sd-jwt`, `mso_mdoc`, `jwt_vc_json`, `jwt_vc_json-ld`, and `ldp_vc` (only object validation, no credential implementation)
+- Proof type `jwt`
+- Draft 14, with backwards compatibility for draft 13 (ID1), and draft 11
+- Support presentation during issuance using Authorization Challenge and OpenID4VP.
+
+```ts
+import {
+  Oid4vciIssuer
+  Oid4vciClient,
+} from "@animo-id/oid4vci";
+```
 
 ## Environments
 
-This library is platform agnostic and support Node.JS, React Native and browsers out of the box. However because of this it is required to provide some callbacks for simple things like hashing, generate random bytes, etc.
+This library is platform agnostic and support Node.JS, React Native and browsers out of the box, as long as it provides an implementation of `URL` and `URLSearchParams`. However because of this it is required to provide some callbacks for simple things like hashing, generate random bytes, etc. If no global `fetch` is available in your environment, this also need to be provided in the callbacks.
 
 ## Contributing
 
