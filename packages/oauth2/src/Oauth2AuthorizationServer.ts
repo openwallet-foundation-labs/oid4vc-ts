@@ -1,3 +1,4 @@
+import { parseWithErrorHandling } from '@animo-id/oid4vc-utils'
 import { type CreateAccessTokenOptions, createAccessTokenJwt } from './access-token/create-access-token'
 import {
   type CreateAccessTokenResponseOptions,
@@ -11,6 +12,10 @@ import {
   verifyPreAuthorizedCodeAccessTokenRequest,
 } from './access-token/verify-access-token-request'
 import type { CallbackContext } from './callbacks'
+import {
+  type AuthorizationServerMetadata,
+  vAuthorizationServerMetadata,
+} from './metadata/authorization-server/v-authorization-server-metadata'
 
 export interface Oauth2AuthorizationServerOptions {
   /**
@@ -21,6 +26,14 @@ export interface Oauth2AuthorizationServerOptions {
 
 export class Oauth2AuthorizationServer {
   public constructor(private options: Oauth2AuthorizationServerOptions) {}
+
+  public createAuthorizationServerMetadata(authorizationServerMetadata: AuthorizationServerMetadata) {
+    return parseWithErrorHandling(
+      vAuthorizationServerMetadata,
+      authorizationServerMetadata,
+      'Error validating authorization server metadata'
+    )
+  }
 
   /**
    * Parse access token request and extract the grant specific properties.
@@ -52,13 +65,13 @@ export class Oauth2AuthorizationServer {
   }
 
   /**
-   * Create an access token.
+   * Create an access token response.
    *
    * The `sub` claim can be used to identify the resource owner is subsequent requests.
    * For pre-auth flow this can be the pre-authorized_code but there are no requirements
    * on the value.
    */
-  public async createAccessToken(
+  public async createAccessTokenResponse(
     options: Pick<
       CreateAccessTokenOptions,
       | 'expiresInSeconds'

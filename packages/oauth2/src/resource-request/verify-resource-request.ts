@@ -1,4 +1,5 @@
 import { JsonParseError, ValidationError } from '@animo-id/oid4vc-utils'
+import type { Jwk } from '../../dist'
 import { introspectToken } from '../access-token/introspect-token'
 import type { AccessTokenProfileJwtPayload } from '../access-token/v-access-token-jwt'
 import type { TokenIntrospectionResponse } from '../access-token/v-token-introspection'
@@ -10,7 +11,6 @@ import { extractDpopJwtFromHeaders, verifyDpopJwt } from '../dpop/dpop'
 import { Oauth2Error } from '../error/Oauth2Error'
 import { Oauth2ResourceUnauthorizedError } from '../error/Oauth2ResourceUnauthorizedError'
 import type { AuthorizationServerMetadata } from '../metadata/authorization-server/v-authorization-server-metadata'
-import type { Jwk } from '../../dist'
 
 export interface VerifyResourceRequestOptions {
   /**

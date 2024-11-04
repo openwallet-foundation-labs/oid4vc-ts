@@ -1,8 +1,12 @@
 import { Oauth2Error, fetchWellKnownMetadata } from '@animo-id/oauth2'
 import { type Fetch, joinUriParts } from '@animo-id/oid4vc-utils'
+import type { CredentialFormatIdentifier } from '../../formats/credential'
 import type { Oid4vciDraftVersion } from '../../version'
 import {
+  type CredentialConfigurationSupported,
+  type CredentialConfigurationSupportedFormatSpecific,
   type CredentialIssuerMetadata,
+  allCredentialIssuerMetadataFormatIdentifiers,
   vCredentialIssuerMetadataWithDraftVersion,
 } from './v-credential-issuer-metadata'
 
@@ -26,4 +30,22 @@ export async function fetchCredentialIssuerMetadata(
   }
 
   return result
+}
+
+/**
+ * Extract credential configuration supported entries where the `format` is known to this
+ * library. Should be ran only after verifying the credential issuer metadata structure, so
+ * we can be certain that if the `format` matches the other format specific requriements are also met.
+ *
+ * Validation is done when resolving issuer metadata, or when calling `createIssuerMetadata`.
+ */
+export function extractKnownCredentialConfigurationSupportedFormats(
+  credentialConfigurationsSupported: Record<string, CredentialConfigurationSupported>
+): Record<string, CredentialConfigurationSupportedFormatSpecific> {
+  return Object.fromEntries(
+    Object.entries(credentialConfigurationsSupported).filter(
+      (entry): entry is [string, CredentialConfigurationSupportedFormatSpecific] =>
+        allCredentialIssuerMetadataFormatIdentifiers.includes(entry[1].format as CredentialFormatIdentifier)
+    )
+  )
 }

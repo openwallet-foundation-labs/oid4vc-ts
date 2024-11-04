@@ -12,6 +12,8 @@ import {
 } from '@animo-id/oauth2'
 import {
   type Fetch,
+  URL,
+  URLSearchParams,
   ValidationError,
   createValibotFetcher,
   encodeToBase64Url,

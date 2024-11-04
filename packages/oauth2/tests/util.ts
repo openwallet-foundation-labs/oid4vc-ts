@@ -6,6 +6,10 @@ import { clientAuthenticationNone } from '../src/client-authentication'
 import { calculateJwkThumbprint } from '../src/common/jwk/jwk-thumbprint'
 import type { Jwk } from '../src/common/jwk/v-jwk'
 
+export function parseXwwwFormUrlEncoded(text: string) {
+  return Object.fromEntries(Array.from(new URLSearchParams(text).entries()))
+}
+
 export const callbacks = {
   hash: (data, alg) => crypto.createHash(alg.replace('-', '').toLowerCase()).update(data).digest(),
   generateRandom: (bytes) => crypto.randomBytes(bytes),
@@ -32,20 +36,7 @@ export const callbacks = {
   },
 } as const satisfies Partial<CallbackContext>
 
-export const getSignJwtCallback = async (privateJwks: Jwk[]): Promise<SignJwtCallback> => {
-  const privateJwkEntries = Object.fromEntries(
-    await Promise.all(
-      privateJwks.map(async (jwk) => [
-        await calculateJwkThumbprint({
-          hashAlgorithm: HashAlgorithm.Sha256,
-          hashCallback: callbacks.hash,
-          jwk,
-        }),
-        jwk,
-      ])
-    )
-  )
-
+export const getSignJwtCallback = (privateJwks: Jwk[]): SignJwtCallback => {
   return async (signer, { header, payload }) => {
     let jwk: Jwk
     if (signer.method === 'did') {
@@ -56,15 +47,28 @@ export const getSignJwtCallback = async (privateJwks: Jwk[]): Promise<SignJwtCal
       throw new Error('Signer method not supported')
     }
 
-    const privateJwk =
-      privateJwkEntries[
-        await calculateJwkThumbprint({ jwk, hashAlgorithm: HashAlgorithm.Sha256, hashCallback: callbacks.hash })
-      ]
+    const jwkThumprint = await calculateJwkThumbprint({
+      jwk,
+      hashAlgorithm: HashAlgorithm.Sha256,
+      hashCallback: callbacks.hash,
+    })
+    const privateJwk = await Promise.all(
+      privateJwks.map(async (jwk) =>
+        (await calculateJwkThumbprint({
+          hashAlgorithm: HashAlgorithm.Sha256,
+          hashCallback: callbacks.hash,
+          jwk,
+        })) === jwkThumprint
+          ? jwk
+          : undefined
+      )
+    ).then((jwks) => jwks.find((jwk) => jwk !== undefined))
+
     if (!privateJwk) {
       throw new Error(`No private key available for public jwk \n${JSON.stringify(jwk, null, 2)}`)
     }
 
-    const josePrivateKey = await jose.importJWK(privateJwk, signer.alg)
+    const josePrivateKey = await jose.importJWK(privateJwk as jose.JWK, signer.alg)
     const jwt = await new jose.SignJWT(payload).setProtectedHeader(header).sign(josePrivateKey)
 
     return jwt

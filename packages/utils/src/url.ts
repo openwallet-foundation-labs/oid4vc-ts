@@ -12,7 +12,7 @@ export function getQueryParams(url: string) {
   return params
 }
 
-export function objectToQueryParams(object: Record<string, unknown>): typeof URLSearchParams {
+export function objectToQueryParams(object: Record<string, unknown>): InstanceType<typeof URLSearchParams> {
   const params = new URLSearchParams()
 
   for (const [key, value] of Object.entries(object)) {

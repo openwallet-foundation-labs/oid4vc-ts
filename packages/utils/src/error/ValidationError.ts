@@ -1,4 +1,5 @@
-import * as v from 'valibot'
+import type * as v from 'valibot'
+import { valibotRecursiveFlattenIssues } from '../parse'
 
 export class ValidationError<
   // biome-ignore lint/suspicious/noExplicitAny: <explanation>
@@ -10,7 +11,7 @@ export class ValidationError<
   ) {
     const errorDetails =
       valibotIssues.length > 0
-        ? JSON.stringify(v.flatten(valibotIssues as [v.InferIssue<Schema>]), null, 2)
+        ? JSON.stringify(valibotRecursiveFlattenIssues(valibotIssues), null, 2)
         : 'No details provided'
     super(`${message}\n${errorDetails}`)
   }

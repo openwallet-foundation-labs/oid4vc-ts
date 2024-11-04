@@ -21,7 +21,9 @@ export interface ExtractScopesForCredentialConfigurationIdsOptions {
   issuerMetadata: IssuerMetadataResult
 }
 
-export function extractScopesForCredentialConfigurationIds(options: ExtractScopesForCredentialConfigurationIdsOptions) {
+export function extractScopesForCredentialConfigurationIds(
+  options: ExtractScopesForCredentialConfigurationIdsOptions
+): string[] | undefined {
   const scopes = new Set<string>()
 
   for (const credentialConfigurationId of options.credentialConfigurationIds) {
@@ -43,5 +45,5 @@ export function extractScopesForCredentialConfigurationIds(options: ExtractScope
     }
   }
 
-  return Array.from(scopes)
+  return scopes.size > 0 ? Array.from(scopes) : undefined
 }

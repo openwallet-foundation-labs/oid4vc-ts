@@ -47,7 +47,7 @@ export interface VerifyPreAuthorizedCodeAccessTokenRequestOptions {
   accessTokenRequest: AccessTokenRequest
   request: RequestLike
 
-  expectPreAuthorizedCode: string
+  expectedPreAuthorizedCode: string
   expectedTxCode?: string
 
   dpop?: VerifyAccessTokenRequestDpop
@@ -62,7 +62,7 @@ export interface VerifyPreAuthorizedCodeAccessTokenRequestOptions {
 export async function verifyPreAuthorizedCodeAccessTokenRequest(
   options: VerifyPreAuthorizedCodeAccessTokenRequestOptions
 ): Promise<VerifyAccessTokenRequestReturn> {
-  if (options.grant.preAuthorizedCode !== options.expectPreAuthorizedCode) {
+  if (options.grant.preAuthorizedCode !== options.expectedPreAuthorizedCode) {
     throw new Oauth2ServerErrorResponseError({
       error: Oauth2ErrorCodes.InvalidGrant,
       error_description: `Invalid 'pre-authorized_code' provided`,

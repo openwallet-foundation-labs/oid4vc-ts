@@ -31,6 +31,14 @@
     "enabled": true,
     "rules": {
       "recommended": true,
+      "style": {
+        "noRestrictedGlobals": {
+          "level": "error",
+          "options": {
+            "deniedGlobals": ["URL", "URLSearchParams", "fetch"]
+          }
+        }
+      },
       "correctness": {
         "recommended": true,
         "noUnusedImports": "error"
@@ -41,5 +49,20 @@
     "useIgnoreFile": true,
     "clientKind": "git",
     "enabled": true
-  }
+  },
+  "overrides": [
+    {
+      "include": ["*.test.ts", "**/tests/*"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedGlobals": {
+              "level": "info",
+              "options": {}
+            }
+          }
+        }
+      }
+    }
+  ]
 }

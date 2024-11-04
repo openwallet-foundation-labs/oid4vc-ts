@@ -60,7 +60,7 @@ describe('Oid4vciClient', () => {
       callbacks: {
         ...callbacks,
         fetch,
-        signJwt: await getSignJwtCallback([paradymDraft13.holderPrivateKeyJwk]),
+        signJwt: getSignJwtCallback([paradymDraft13.holderPrivateKeyJwk]),
       },
     })
 
@@ -137,7 +137,7 @@ describe('Oid4vciClient', () => {
       ),
       http.post(paradymDraft11.credentialIssuerMetadata.token_endpoint, async ({ request }) => {
         expect(await request.text()).toEqual(
-          'pre-authorized_code=1130293840889780123292078&grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Apre-authorized_code&user_pin=some-tx-code'
+          'pre-authorized_code=1130293840889780123292078&grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Apre-authorized_code&tx_code=some-tx-code&user_pin=some-tx-code'
         )
         return HttpResponse.json(paradymDraft11.accessTokenResponse)
       }),
@@ -158,7 +158,7 @@ describe('Oid4vciClient', () => {
       callbacks: {
         ...callbacks,
         fetch,
-        signJwt: await getSignJwtCallback([paradymDraft11.holderPrivateKeyJwk]),
+        signJwt: getSignJwtCallback([paradymDraft11.holderPrivateKeyJwk]),
       },
     })
 
@@ -370,7 +370,7 @@ describe('Oid4vciClient', () => {
       callbacks: {
         ...callbacks,
         fetch,
-        signJwt: await getSignJwtCallback([bdrDraft13.holderPrivateKeyJwk, bdrDraft13.dpopPrivateKeyJwk]),
+        signJwt: getSignJwtCallback([bdrDraft13.holderPrivateKeyJwk, bdrDraft13.dpopPrivateKeyJwk]),
       },
     })
 
@@ -395,7 +395,7 @@ describe('Oid4vciClient', () => {
       scope: extractScopesForCredentialConfigurationIds({
         credentialConfigurationIds: credentialOffer.credential_configuration_ids,
         issuerMetadata,
-      }).join(' '),
+      })?.join(' '),
     })
 
     expect(authorizationServer).toEqual(bdrDraft13.authorizationServerMetadata.issuer)

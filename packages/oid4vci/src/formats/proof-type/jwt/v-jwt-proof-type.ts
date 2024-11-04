@@ -4,9 +4,10 @@ import { vCompactJwt, vJwtHeader, vJwtPayload } from '@animo-id/oauth2'
 import { vHttpsUrl, vInteger } from '@animo-id/oid4vc-utils'
 
 export const vJwtProofTypeIdentifier = v.literal('jwt')
+export const jwtProofTypeIdentifier = vJwtProofTypeIdentifier.literal
 export type JwtProofTypeIdentifier = v.InferOutput<typeof vJwtProofTypeIdentifier>
 
-export const vCredentialRequestProofJwt = v.looseObject({
+export const vCredentialRequestProofJwt = v.object({
   proof_type: vJwtProofTypeIdentifier,
   jwt: vCompactJwt,
 })
@@ -17,13 +18,10 @@ export const vCredentialRequestJwtProofTypeHeader = v.pipe(
     typ: v.literal('openid4vci-proof+jwt'),
   }),
   v.check(
-    ({ kid, jwk }) => jwk !== undefined && kid !== undefined,
+    ({ kid, jwk }) => jwk === undefined || kid === undefined,
     `Both 'jwk' and 'kid' are defined. Only one is allowed`
   ),
-  v.check(
-    ({ trust_chain, kid }) => trust_chain !== undefined && kid === undefined,
-    `When 'trust_chain' is provided, 'kid' is required`
-  )
+  v.check(({ trust_chain, kid }) => !trust_chain || !kid, `When 'trust_chain' is provided, 'kid' is required`)
 )
 export type CredentialRequestJwtProofTypeHeader = v.InferOutput<typeof vCredentialRequestJwtProofTypeHeader>
 

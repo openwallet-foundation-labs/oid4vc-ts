@@ -11,7 +11,13 @@ import {
 } from '@animo-id/oauth2'
 import { ValidationError, createValibotFetcher, parseWithErrorHandling } from '@animo-id/oid4vc-utils'
 import type { IssuerMetadataResult } from '../metadata/fetch-issuer-metadata'
-import { type CredentialRequest, type CredentialRequestWithFormats, vCredentialRequest } from './v-credential-request'
+import { Oid4vciDraftVersion } from '../version'
+import {
+  type CredentialRequest,
+  type CredentialRequestWithFormats,
+  vCredentialRequest,
+  vCredentialRequestDraft14To11,
+} from './v-credential-request'
 import type { CredentialRequestProof, CredentialRequestProofs } from './v-credential-request-common'
 import { vCredentialErrorResponse, vCredentialResponse } from './v-credential-response'
 
@@ -85,20 +91,34 @@ async function retrieveCredentials(options: RetrieveCredentialsOptions) {
   const fetchWithValibot = createValibotFetcher(options.callbacks.fetch)
   const credentialEndpoint = options.issuerMetadata.credentialIssuer.credential_endpoint
 
-  const credentialRequest = parseWithErrorHandling(
+  let credentialRequest = parseWithErrorHandling(
     vCredentialRequest,
     options.credentialRequest,
     'Error validating credential request'
   )
 
   if (credentialRequest.proofs) {
-    if (!options.issuerMetadata.credentialIssuer.batch_credential_issuance) {
+    const { batch_credential_issuance } = options.issuerMetadata.credentialIssuer
+    if (!batch_credential_issuance) {
       throw new Oauth2Error(
         `Credential issuer '${options.issuerMetadata.credentialIssuer}' does not support batch credential issuance using the 'proofs' request property. Only 'proof' is supported.`
       )
     }
 
-    // TODO: add batch_size validation
+    const proofs = Object.values(credentialRequest.proofs)[0]
+    if (proofs.length > batch_credential_issuance.batch_size) {
+      throw new Oauth2Error(
+        `Credential issuer '${options.issuerMetadata.credentialIssuer}' supports batch issuance, but the max batch size is '${batch_credential_issuance.batch_size}'. A total of '${proofs.length}' proofs were provided.`
+      )
+    }
+  }
+
+  if (options.issuerMetadata.originalDraftVersion === Oid4vciDraftVersion.Draft11) {
+    credentialRequest = parseWithErrorHandling(
+      vCredentialRequestDraft14To11,
+      credentialRequest,
+      `Error transforming credential request from ${Oid4vciDraftVersion.Draft14} to ${Oid4vciDraftVersion.Draft11}`
+    )
   }
 
   const { dpop, result } = await resourceRequestWithDpopRetry({

@@ -1,6 +1,7 @@
 import * as v from 'valibot'
 import { JsonParseError } from './error/JsonParseError'
 import { ValidationError } from './error/ValidationError'
+import { mergeDeep } from './object'
 
 // biome-ignore lint/suspicious/noExplicitAny: <explanation>
 export type BaseSchema = v.BaseSchema<any, any, any>
@@ -32,4 +33,16 @@ export function parseWithErrorHandling<Schema extends BaseSchema>(
   }
 
   return parseResult.output
+}
+
+export function valibotRecursiveFlattenIssues(issues: v.BaseIssue<unknown>[]): Record<string, unknown> {
+  let flattened: unknown = v.flatten(issues as [v.BaseIssue<unknown>])
+
+  for (const issue of issues) {
+    if (issue.issues) {
+      flattened = mergeDeep(flattened, valibotRecursiveFlattenIssues(issue.issues))
+    }
+  }
+
+  return flattened as Record<string, unknown>
 }

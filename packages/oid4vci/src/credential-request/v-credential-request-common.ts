@@ -1,37 +1,54 @@
 import { vJwk } from '@animo-id/oauth2'
+import type { InferOutputUnion, Simplify } from '@animo-id/oid4vc-utils'
 import * as v from 'valibot'
+import type { ProofTypeIdentifier } from '../formats/proof-type'
 import { vCredentialRequestProofJwt, vJwtProofTypeIdentifier } from '../formats/proof-type/jwt/v-jwt-proof-type'
 
-const allCredentialRequestProofs = [vCredentialRequestProofJwt] as const
-const allCredentialRequestProofsTypes = allCredentialRequestProofs.map(
-  (format) => format.entries.proof_type.literal
-) as string[]
+const vCredentialRequestProofCommon = v.looseObject({
+  proof_type: v.string(),
+})
 
-export const vCredentialRequestProof = v.variant('proof_type', [
-  ...allCredentialRequestProofs,
+export const allCredentialRequestProofs = [vCredentialRequestProofJwt] as const
+const allCredentialRequestProofsTypes = allCredentialRequestProofs.map((format) => format.entries.proof_type.literal)
 
-  // To handle unrecognized proof_type values and not error immediately we allow the common format as well
-  // but they can't use any of the proof_type identifiers already registered. This way if a proof_type is
-  // recognized it NEEDS to use the proof_type specific validation, and otherwise we fall back to the common validation
-  v.looseObject({
-    proof_type: v.pipe(
-      v.string(),
-      v.check((input) => !allCredentialRequestProofsTypes.includes(input))
-    ),
-  }),
+export const vCredentialRequestProof = v.intersect([
+  vCredentialRequestProofCommon,
+  v.variant('proof_type', [
+    ...allCredentialRequestProofs,
+
+    // To handle unrecognized proof_type values and not error immediately we allow the common format as well
+    // but they can't use any of the proof_type identifiers already registered. This way if a proof_type is
+    // recognized it NEEDS to use the proof_type specific validation, and otherwise we fall back to the common validation
+    v.looseObject({
+      proof_type: v.pipe(
+        v.string(),
+        v.check((input) => !allCredentialRequestProofsTypes.includes(input as ProofTypeIdentifier))
+      ),
+    }),
+  ]),
 ])
 
-const vCredentialRequestProofs = v.looseObject({
+const vCredentialRequestProofsCommon = v.record(v.string(), v.array(v.unknown()))
+export const vCredentialRequestProofs = v.object({
   [vJwtProofTypeIdentifier.literal]: v.optional(v.array(vCredentialRequestProofJwt.entries.jwt)),
 })
 
+type CredentialRequestProofCommon = v.InferOutput<typeof vCredentialRequestProofCommon>
+export type CredentialRequestProofFormatSpecific = InferOutputUnion<typeof allCredentialRequestProofs>
+export type CredentialRequestProofWithFormats = Simplify<
+  CredentialRequestProofCommon & CredentialRequestProofFormatSpecific
+>
 export type CredentialRequestProof = v.InferOutput<typeof vCredentialRequestProof>
+
+export type CredentialRequestProofsCommon = v.InferOutput<typeof vCredentialRequestProofsCommon>
+export type CredentialRequestProofsFormatSpecific = v.InferOutput<typeof vCredentialRequestProofs>
+export type CredentialRequestProofsWithFormat = CredentialRequestProofsCommon & CredentialRequestProofsFormatSpecific
 export type CredentialRequestProofs = v.InferOutput<typeof vCredentialRequestProofs>
 
 export const vCredentialRequestCommon = v.pipe(
   v.looseObject({
     proof: v.optional(vCredentialRequestProof),
-    proofs: v.optional(vCredentialRequestProofs),
+    proofs: v.optional(v.intersect([vCredentialRequestProofsCommon, vCredentialRequestProofs])),
 
     credential_response_encryption: v.optional(
       v.looseObject({

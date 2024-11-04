@@ -7,6 +7,7 @@ export const URL = global.URL
 export const URLSearchParams = global.URLSearchParams
 
 // @ts-ignore
-export type Fetch = typeof fetch
+// biome-ignore lint/style/noRestrictedGlobals: <explanation>
+export type Fetch = fetch
 export type FetchResponse = Awaited<ReturnType<Fetch>>
 export type FetchHeaders = FetchResponse['headers']

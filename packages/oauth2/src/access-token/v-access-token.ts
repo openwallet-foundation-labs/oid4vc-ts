@@ -4,33 +4,45 @@ import { vHttpsUrl } from '@animo-id/oid4vc-utils'
 import { vOauth2ErrorResponse } from '../common/v-oauth2-error'
 import { vAuthorizationCodeGrantIdentifier, vPreAuthorizedCodeGrantIdentifier } from '../v-grant-type'
 
-export const vAccessTokenRequest = v.looseObject({
-  // Pre authorized code flow
-  'pre-authorized_code': v.optional(v.string()),
-  tx_code: v.optional(v.string()),
+export const vAccessTokenRequest = v.intersect([
+  v.looseObject({
+    // Pre authorized code flow
+    'pre-authorized_code': v.optional(v.string()),
 
-  // Authorization code flow
-  code: v.optional(v.string()),
-  redirect_uri: v.optional(vHttpsUrl),
+    // Authorization code flow
+    code: v.optional(v.string()),
+    redirect_uri: v.optional(vHttpsUrl),
 
-  code_verifier: v.optional(v.string()),
+    code_verifier: v.optional(v.string()),
 
-  grant_type: v.union([
-    vPreAuthorizedCodeGrantIdentifier,
-    vAuthorizationCodeGrantIdentifier,
-    // string makes the previous ones unessary, but it does help with error messages
-    v.string(),
-  ]),
-})
+    grant_type: v.union([
+      vPreAuthorizedCodeGrantIdentifier,
+      vAuthorizationCodeGrantIdentifier,
+      // string makes the previous ones unessary, but it does help with error messages
+      v.string(),
+    ]),
+  }),
+  v.pipe(
+    v.looseObject({
+      tx_code: v.optional(v.string()),
+      // user_pin is from OID4VCI draft 11
+      user_pin: v.optional(v.string()),
+    }),
+    // Check that user_pin and tx_code are the same if both are provided
+    // and transform user_pin to tx_code if only user_pin is provided
+    v.check(
+      ({ tx_code, user_pin }) => !tx_code || !user_pin || user_pin === tx_code,
+      `If both 'tx_code' and 'user_pin' are present they must match`
+    ),
+    v.transform(({ tx_code, user_pin, ...rest }) => {
+      return {
+        ...rest,
+        ...((tx_code ?? user_pin) ? { tx_code: tx_code ?? user_pin } : {}),
+      }
+    })
+  ),
+])
 export type AccessTokenRequest = v.InferOutput<typeof vAccessTokenRequest>
-
-export const vAccessTokenRequestDraft14To11 = v.pipe(
-  vAccessTokenRequest,
-  v.transform(({ tx_code, ...rest }) => ({
-    ...rest,
-    ...(tx_code ? { user_pin: tx_code } : {}),
-  }))
-)
 
 export const vAccessTokenResponse = v.looseObject({
   access_token: v.string(),

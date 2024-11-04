@@ -27,7 +27,7 @@ describe('Verify Pre Auhthorized Code Access Token Request', () => {
           preAuthorizedCode: 'hello2',
         },
         callbacks,
-        expectPreAuthorizedCode: 'hello',
+        expectedPreAuthorizedCode: 'hello',
         request,
       })
     ).rejects.toThrow(`Invalid 'pre-authorized_code' provided`)
@@ -47,7 +47,7 @@ describe('Verify Pre Auhthorized Code Access Token Request', () => {
           txCode: 'not-expected',
         },
         callbacks,
-        expectPreAuthorizedCode: 'hello2',
+        expectedPreAuthorizedCode: 'hello2',
         request,
       })
     ).rejects.toThrow(`Request contains 'tx_code' that was not expected`)
@@ -65,7 +65,7 @@ describe('Verify Pre Auhthorized Code Access Token Request', () => {
           preAuthorizedCode: 'hello2',
         },
         callbacks,
-        expectPreAuthorizedCode: 'hello2',
+        expectedPreAuthorizedCode: 'hello2',
         expectedTxCode: 'expected',
         request,
       })
@@ -86,7 +86,7 @@ describe('Verify Pre Auhthorized Code Access Token Request', () => {
           txCode: 'provided-tx-code',
         },
         callbacks,
-        expectPreAuthorizedCode: 'hello2',
+        expectedPreAuthorizedCode: 'hello2',
         expectedTxCode: 'expected',
         request,
       })
@@ -106,7 +106,7 @@ describe('Verify Pre Auhthorized Code Access Token Request', () => {
           preAuthorizedCode: 'hello2',
         },
         callbacks,
-        expectPreAuthorizedCode: 'hello2',
+        expectedPreAuthorizedCode: 'hello2',
         request,
         preAuthorizedCodeExpiresAt: new Date(now.getTime() - 100),
         now,
@@ -126,7 +126,7 @@ describe('Verify Pre Auhthorized Code Access Token Request', () => {
           preAuthorizedCode: 'hello2',
         },
         callbacks,
-        expectPreAuthorizedCode: 'hello2',
+        expectedPreAuthorizedCode: 'hello2',
         request,
         pkce: {
           codeChallenge: 'someting',
@@ -148,7 +148,7 @@ describe('Verify Pre Auhthorized Code Access Token Request', () => {
           preAuthorizedCode: 'hello2',
         },
         callbacks,
-        expectPreAuthorizedCode: 'hello2',
+        expectedPreAuthorizedCode: 'hello2',
         request,
         pkce: {
           codeChallenge: 'someting',
@@ -170,7 +170,7 @@ describe('Verify Pre Auhthorized Code Access Token Request', () => {
           preAuthorizedCode: 'hello2',
         },
         callbacks,
-        expectPreAuthorizedCode: 'hello2',
+        expectedPreAuthorizedCode: 'hello2',
         request,
         pkce: {
           codeVerifier: 'something',
@@ -195,7 +195,7 @@ describe('Verify Pre Auhthorized Code Access Token Request', () => {
           preAuthorizedCode: 'hello2',
         },
         callbacks,
-        expectPreAuthorizedCode: 'hello2',
+        expectedPreAuthorizedCode: 'hello2',
         request,
         dpop: {
           required: true,
@@ -216,7 +216,7 @@ describe('Verify Pre Auhthorized Code Access Token Request', () => {
           preAuthorizedCode: 'hello2',
         },
         callbacks,
-        expectPreAuthorizedCode: 'hello2',
+        expectedPreAuthorizedCode: 'hello2',
         request: {
           ...request,
           headers: new Headers({
@@ -244,7 +244,7 @@ describe('Verify Pre Auhthorized Code Access Token Request', () => {
     const dpopJwt = await createDpopJwt({
       callbacks: {
         ...callbacks,
-        signJwt: await getSignJwtCallback([dpopPrivateJwk]),
+        signJwt: getSignJwtCallback([dpopPrivateJwk]),
       },
       request,
       signer: {
@@ -268,7 +268,7 @@ describe('Verify Pre Auhthorized Code Access Token Request', () => {
         txCode: 'some-tx-code',
       },
       callbacks,
-      expectPreAuthorizedCode: 'hello2',
+      expectedPreAuthorizedCode: 'hello2',
       expectedTxCode: 'some-tx-code',
       // 1 minute
       preAuthorizedCodeExpiresAt: new Date(now.getTime() + 60000),
@@ -465,7 +465,7 @@ describe('Verify Authorization Code Access Token Request', () => {
     const dpopJwt = await createDpopJwt({
       callbacks: {
         ...callbacks,
-        signJwt: await getSignJwtCallback([dpopPrivateJwk]),
+        signJwt: getSignJwtCallback([dpopPrivateJwk]),
       },
       request,
       signer: {

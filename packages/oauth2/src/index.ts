@@ -8,7 +8,17 @@ export { calculateJwkThumbprint, type CalculateJwkThumbprintOptions } from './co
 export { type Jwk, type JwkSet, vJwk } from './common/jwk/v-jwk'
 export { ContentType } from './common/content-type'
 
-export { DecodeJwtOptions, DecodeJwtResult, decodeJwt, jwtHeaderFromJwtSigner } from './common/jwt/decode-jwt'
+export {
+  verifyJwt,
+  type VerifyJwtOptions,
+} from './common/jwt/verify-jwt'
+export {
+  DecodeJwtOptions,
+  DecodeJwtResult,
+  decodeJwt,
+  jwtHeaderFromJwtSigner,
+  jwtSignerFromJwt,
+} from './common/jwt/decode-jwt'
 export {
   JwtSigner,
   JwtSignerCustom,

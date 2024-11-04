@@ -5,7 +5,7 @@ import { vW3cVcCredentialSubject, vW3cVcJsonLdCredentialDefinition } from './v-w
 export const vJwtVcJsonLdFormatIdentifier = v.literal('jwt_vc_json-ld')
 export type JwtVcJsonLdFormatIdentifier = v.InferOutput<typeof vJwtVcJsonLdFormatIdentifier>
 
-export const vJwtVcJsonLdCredentialIssuerMetadata = v.looseObject({
+export const vJwtVcJsonLdCredentialIssuerMetadata = v.object({
   format: vJwtVcJsonLdFormatIdentifier,
   credential_definition: vW3cVcJsonLdCredentialDefinition,
   order: v.optional(v.array(v.string())),
@@ -32,31 +32,53 @@ export const vJwtVcJsonLdCredentialIssuerMetadataDraft11To14 = v.pipe(
       // Prevent weird typing issue with optional vs undefined
       ...(credentialSubject ? { credentialSubject } : {}),
     },
-  })),
-  vJwtVcJsonLdCredentialIssuerMetadata
+  }))
 )
 
-export const vJwtVcJsonLdCredentialRequestFormat = v.looseObject({
+export const vJwtVcJsonLdCredentialIssuerMetadataDraft14To11 = v.pipe(
+  v.looseObject({ ...vJwtVcJsonLdCredentialIssuerMetadata.entries }),
+  v.transform(({ credential_definition: { type, ...credentialDefinition }, ...rest }) => ({
+    ...rest,
+    ...credentialDefinition,
+    types: type,
+  })),
+  vJwtVcJsonLdCredentialIssuerMetadataDraft11
+)
+
+export const vJwtVcJsonLdCredentialRequestFormat = v.object({
   format: vJwtVcJsonLdFormatIdentifier,
   credential_definition: vW3cVcJsonLdCredentialDefinition,
 })
 
-export const vJwtVcJsonLdCredentialRequestDraft11To14 = v.pipe(
-  v.looseObject({
-    format: vJwtVcJsonLdFormatIdentifier,
-    credential_definition: v.looseObject({
-      '@context': v.array(v.string()),
-      // credential_definition was using types instead of type in v11
-      types: v.array(v.string()),
-      credentialSubject: v.optional(vW3cVcCredentialSubject),
-    }),
+export const vJwtVcJsonLdCredentialRequestDraft11 = v.looseObject({
+  format: vJwtVcJsonLdFormatIdentifier,
+  credential_definition: v.looseObject({
+    '@context': v.array(v.string()),
+    // credential_definition was using types instead of type in v11
+    types: v.array(v.string()),
+    credentialSubject: v.optional(vW3cVcCredentialSubject),
   }),
+})
+
+export const vJwtVcJsonLdCredentialRequestDraft11To14 = v.pipe(
+  vJwtVcJsonLdCredentialRequestDraft11,
   v.transform(({ credential_definition: { types, ...restCredentialDefinition }, ...rest }) => ({
     ...rest,
     credential_definition: {
       ...restCredentialDefinition,
       type: types,
     },
+  }))
+)
+
+export const vJwtVcJsonLdCredentialRequestDraft14To11 = v.pipe(
+  v.looseObject({ ...vJwtVcJsonLdCredentialRequestFormat.entries }),
+  v.transform(({ credential_definition: { type, ...restCredentialDefinition }, ...rest }) => ({
+    ...rest,
+    credential_definition: {
+      ...restCredentialDefinition,
+      types: type,
+    },
   })),
-  vJwtVcJsonLdCredentialRequestFormat
+  vJwtVcJsonLdCredentialRequestDraft11
 )

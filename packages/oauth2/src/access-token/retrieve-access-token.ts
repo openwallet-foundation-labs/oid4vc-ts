@@ -3,12 +3,7 @@ import * as v from 'valibot'
 import { ValidationError } from '../../../utils/src/error/ValidationError'
 import type { CallbackContext } from '../callbacks'
 import { ContentType } from '../common/content-type'
-import {
-  type RequestDpopOptions,
-  type ResponseDpopReturn,
-  createDpopJwt,
-  extractDpopNonceFromHeaders,
-} from '../dpop/dpop'
+import { type RequestDpopOptions, createDpopJwt, extractDpopNonceFromHeaders } from '../dpop/dpop'
 import { shouldRetryTokenRequestWithDPoPNonce } from '../dpop/dpop-retry'
 import { Oauth2ClientErrorResponseError } from '../error/Oauth2ClientErrorResponseError'
 import { Oauth2InvalidFetchResponseError } from '../error/Oauth2InvalidFetchResponseError'
@@ -24,7 +19,7 @@ import {
 
 export interface RetrieveAccessTokenReturn {
   accessTokenResponse: AccessTokenResponse
-  dpop?: ResponseDpopReturn
+  dpop?: RequestDpopOptions
 }
 
 interface RetrieveAccessTokenBaseOptions {
@@ -154,16 +149,13 @@ async function retrieveAccessToken(options: RetrieveAccessTokenOptions): Promise
     options.request,
     'Error validating access token request'
   )
-  // if (options.issuerMetadata.originalDraftVersion === Oid4vciDraftVersion.Draft11) {
-  //   accessTokenRequest = parseWithErrorHandling(
-  //     vAccessTokenRequestDraft14To11,
-  //     accessTokenRequest,
-  //     'Error transforming draft 14 access token request into draft 11 request'
-  //   )
-  // }
+
+  // For backwards compat with draft 11 (we send both)
+  if (accessTokenRequest.tx_code) {
+    accessTokenRequest.user_pin = accessTokenRequest.tx_code
+  }
 
   const requestQueryParams = objectToQueryParams(accessTokenRequest)
-
   const { response, result } = await fetchWithValibot(
     vAccessTokenResponse,
     options.authorizationServerMetadata.token_endpoint,
@@ -204,11 +196,12 @@ async function retrieveAccessToken(options: RetrieveAccessTokenOptions): Promise
     throw new ValidationError('Error validating access token response', result.issues)
   }
 
-  const dpopNonce = extractDpopNonceFromHeaders(response.headers)
+  const dpopNonce = extractDpopNonceFromHeaders(response.headers) ?? undefined
   return {
-    dpop: dpopNonce
+    dpop: options.dpop
       ? {
           nonce: dpopNonce,
+          signer: options.dpop.signer,
         }
       : undefined,
     accessTokenResponse: result.output,

@@ -30,7 +30,7 @@ describe('Oauth2AuthorizationServer', () => {
   test('parse, verify and grant pre authorized code access token request', async () => {
     const callbacks = {
       ...partialCallbacks,
-      signJwt: await getSignJwtCallback([dpopSignerJwk, accessTokenSignerJwk]),
+      signJwt: getSignJwtCallback([dpopSignerJwk, accessTokenSignerJwk]),
     }
 
     const createdDpopJwt = await createDpopJwt({
@@ -92,7 +92,7 @@ describe('Oauth2AuthorizationServer', () => {
         jwt: dpopJwt,
       },
 
-      expectPreAuthorizedCode: grant.preAuthorizedCode,
+      expectedPreAuthorizedCode: grant.preAuthorizedCode,
       expectedTxCode: grant.txCode,
 
       now: new Date('2024-01-01'),
@@ -101,7 +101,7 @@ describe('Oauth2AuthorizationServer', () => {
 
     expect(dpopJwk).toEqual(dpopSignerJwkPublic)
 
-    const accessTokenResponse = await authorizationServer.createAccessToken({
+    const accessTokenResponse = await authorizationServer.createAccessTokenResponse({
       audience: 'https://credential-issuer.com',
       authorizationServer: 'https://authorization-server.com',
       expiresInSeconds: 300,
@@ -158,7 +158,7 @@ describe('Oauth2AuthorizationServer', () => {
   test('parse, verify and grant authorization code access token request', async () => {
     const callbacks = {
       ...partialCallbacks,
-      signJwt: await getSignJwtCallback([dpopSignerJwk, accessTokenSignerJwk]),
+      signJwt: getSignJwtCallback([dpopSignerJwk, accessTokenSignerJwk]),
     }
 
     const pkce = await createPkce({
@@ -237,7 +237,7 @@ describe('Oauth2AuthorizationServer', () => {
 
     expect(dpopJwk).toEqual(dpopSignerJwkPublic)
 
-    const accessTokenResponse = await authorizationServer.createAccessToken({
+    const accessTokenResponse = await authorizationServer.createAccessTokenResponse({
       audience: 'https://credential-issuer.com',
       authorizationServer: 'https://authorization-server.com',
       expiresInSeconds: 300,

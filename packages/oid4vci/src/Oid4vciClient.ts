@@ -15,18 +15,17 @@ import {
   resolveCredentialOffer,
 } from './credential-offer/credential-offer'
 import type { CredentialOfferObject } from './credential-offer/v-credential-offer'
+import { getCredentialRequestFormatPayloadForCredentialConfigurationId } from './credential-request/format-payload'
 import {
   type RetrieveCredentialsWithFormatOptions,
   retrieveCredentialsWithFormat,
-} from './credential-request/credential-request'
-import { getCredentialRequestFormatPayloadForCredentialConfigurationId } from './credential-request/format-payload'
+} from './credential-request/retrieve-credentials'
 import {
   type CreateCredentialRequestJwtProofOptions,
   createCredentialRequestJwtProof,
 } from './formats/proof-type/jwt/jwt-proof-type'
 import { type IssuerMetadataResult, resolveIssuerMetadata } from './metadata/fetch-issuer-metadata'
 import { type SendNotifcationOptions, sendNotifcation } from './notification/notification'
-import { Oid4vciDraftVersion } from './version'
 
 export interface Oid4vciClientOptions {
   /**
@@ -141,13 +140,8 @@ export class Oid4vciClient {
     const result = await this.oauth2Client.retrievePreAuthorizedCodeAccessToken({
       authorizationServerMetadata,
       preAuthorizedCode,
-      // Only set it when in Draft 14 mode
-      txCode: issuerMetadata.originalDraftVersion === Oid4vciDraftVersion.Draft14 ? txCode : undefined,
-      additionalRequestPayload: {
-        ...additionalRequestPayload,
-        // Backwards compat
-        user_pin: issuerMetadata.originalDraftVersion === Oid4vciDraftVersion.Draft11 ? txCode : undefined,
-      },
+      txCode,
+      additionalRequestPayload,
       dpop,
     })
 
@@ -237,15 +231,15 @@ export class Oid4vciClient {
       }
     }
 
-    const jwtInput = createCredentialRequestJwtProof({
+    const jwt = await createCredentialRequestJwtProof({
       credentialIssuer: options.issuerMetadata.credentialIssuer.credential_issuer,
       signer: options.signer,
       clientId: options.clientId,
       issuedAt: options.issuedAt,
       nonce: options.nonce,
+      callbacks: this.options.callbacks,
     })
 
-    const jwt = await this.options.callbacks.signJwt(options.signer, jwtInput)
     return {
       jwt,
     }

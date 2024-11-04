@@ -1,8 +1,8 @@
-import { setupServer } from 'msw/node'
 import { http, HttpResponse } from 'msw'
+import { setupServer } from 'msw/node'
 import { afterAll, afterEach, beforeAll, describe, expect, test } from 'vitest'
-import { Oauth2ResourceServer } from '../Oauth2ResourceServer'
 import { callbacks, getSignJwtCallback } from '../../tests/util'
+import { Oauth2ResourceServer } from '../Oauth2ResourceServer'
 import { createAccessTokenJwt } from '../access-token/create-access-token'
 import type { Jwk, JwkSet } from '../common/jwk/v-jwk'
 import { createDpopJwt } from '../dpop/dpop'
@@ -68,7 +68,7 @@ describe('Oauth2ResourceServer', () => {
       authorizationServer: authorizationServerMetadata.issuer,
       callbacks: {
         ...callbacks,
-        signJwt: await getSignJwtCallback([dpopSignerJwk, accessTokenSignerJwk]),
+        signJwt: getSignJwtCallback([dpopSignerJwk, accessTokenSignerJwk]),
       },
       expiresInSeconds: 300,
       signer: {
@@ -85,7 +85,7 @@ describe('Oauth2ResourceServer', () => {
     const dpopJwt = await createDpopJwt({
       callbacks: {
         ...callbacks,
-        signJwt: await getSignJwtCallback([dpopSignerJwk, accessTokenSignerJwk]),
+        signJwt: getSignJwtCallback([dpopSignerJwk, accessTokenSignerJwk]),
       },
       request: {
         method: 'POST',

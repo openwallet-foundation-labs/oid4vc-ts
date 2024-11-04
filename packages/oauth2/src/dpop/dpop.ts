@@ -6,15 +6,15 @@ import { Oauth2Error } from '../error/Oauth2Error'
 
 import {
   type FetchHeaders,
+  URL,
   dateToSeconds,
   decodeUtf8String,
   encodeToBase64Url,
   parseWithErrorHandling,
-  URL,
 } from '@animo-id/oid4vc-utils'
+import { verifyJwt } from '../common/jwt/verify-jwt'
 import type { RequestLike } from '../common/v-common'
 import { type DpopJwtHeader, type DpopJwtPayload, vDpopJwtHeader, vDpopJwtPayload } from './v-dpop'
-import { verifyJwt } from '../common/jwt/verify-jwt'
 
 export interface RequestDpopOptions {
   /**

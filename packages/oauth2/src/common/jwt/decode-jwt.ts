@@ -97,6 +97,52 @@ export function jwtHeaderFromJwtSigner(signer: JwtSigner) {
   }
 }
 
+export function jwtSignerFromJwt({ header, payload }: Pick<DecodeJwtResult, 'header' | 'payload'>): JwtSigner {
+  if (header.x5c) {
+    return {
+      alg: header.alg,
+      method: 'x5c',
+      x5c: header.x5c,
+    }
+  }
+  if (header.kid) {
+    if (header.kid.startsWith('did:')) {
+      if (payload.iss && header.kid.startsWith(payload.iss)) {
+      }
+
+      if (!header.kid.includes('#')) {
+      }
+
+      return {
+        method: 'did',
+        didUrl: header.kid,
+        alg: header.alg,
+      }
+    }
+
+    if (header.kid.startsWith('#') && payload.iss?.startsWith('did:')) {
+      return {
+        method: 'did',
+        didUrl: `${payload.iss}${header.kid}`,
+        alg: header.alg,
+      }
+    }
+  }
+
+  if (header.jwk) {
+    return {
+      alg: header.alg,
+      method: 'jwk',
+      publicJwk: header.jwk,
+    }
+  }
+
+  return {
+    method: 'custom',
+    alg: header.alg,
+  }
+}
+
 // Helper type to check if a schema is provided
 type IsSchemaProvided<T> = T extends undefined ? false : true
 

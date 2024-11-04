@@ -1,15 +1,19 @@
 import { vCompactJwt } from '@animo-id/oauth2'
-import { type InferOutputUnion, vHttpsUrl } from '@animo-id/oid4vc-utils'
+import { type InferOutputUnion, type Simplify, vHttpsUrl } from '@animo-id/oid4vc-utils'
 import * as v from 'valibot'
 import {
+  type CredentialFormatIdentifier,
   vJwtVcJsonCredentialIssuerMetadata,
   vJwtVcJsonCredentialIssuerMetadataDraft11To14,
+  vJwtVcJsonCredentialIssuerMetadataDraft14To11,
   vJwtVcJsonFormatIdentifier,
   vJwtVcJsonLdCredentialIssuerMetadata,
   vJwtVcJsonLdCredentialIssuerMetadataDraft11To14,
+  vJwtVcJsonLdCredentialIssuerMetadataDraft14To11,
   vJwtVcJsonLdFormatIdentifier,
   vLdpVcCredentialIssuerMetadata,
   vLdpVcCredentialIssuerMetadataDraft11To14,
+  vLdpVcCredentialIssuerMetadataDraft14To11,
   vLdpVcFormatIdentifier,
   vMsoMdocCredentialIssuerMetadata,
   vSdJwtVcCredentialIssuerMetadata,
@@ -24,11 +28,11 @@ const allCredentialIssuerMetadataFormats = [
   vLdpVcCredentialIssuerMetadata,
   vJwtVcJsonCredentialIssuerMetadata,
 ] as const
-const allCredentialIssuerMetadataFormatIdentifiers = allCredentialIssuerMetadataFormats.map(
+export const allCredentialIssuerMetadataFormatIdentifiers = allCredentialIssuerMetadataFormats.map(
   (format) => format.entries.format.literal
-) as string[]
+)
 
-export const vCredentialConfigurationSupportedWithFormats = v.pipe(
+export const vCredentialConfigurationSupportedWithFormats = v.intersect([
   v.variant('format', [
     ...allCredentialIssuerMetadataFormats,
 
@@ -38,18 +42,25 @@ export const vCredentialConfigurationSupportedWithFormats = v.pipe(
     v.looseObject({
       format: v.pipe(
         v.string(),
-        v.check((input) => !allCredentialIssuerMetadataFormatIdentifiers.includes(input))
+        v.check((input) => !allCredentialIssuerMetadataFormatIdentifiers.includes(input as CredentialFormatIdentifier))
       ),
     }),
   ]),
-  vCredentialConfigurationSupportedCommon
-)
-export type CredentialConfigurationSupportedWithFormat = InferOutputUnion<typeof allCredentialIssuerMetadataFormats>
+  vCredentialConfigurationSupportedCommon,
+])
+type CredentialConfigurationSupportedCommon = v.InferOutput<typeof vCredentialConfigurationSupportedCommon>
+export type CredentialConfigurationSupportedFormatSpecific = InferOutputUnion<typeof allCredentialIssuerMetadataFormats>
+export type CredentialConfigurationSupportedWithFormats = CredentialConfigurationSupportedFormatSpecific &
+  CredentialConfigurationSupportedCommon
+
 export type CredentialConfigurationSupported = v.InferOutput<typeof vCredentialConfigurationSupportedWithFormats>
-export type StrictCredentialConfigurationSupported<T extends { format: string }> =
-  T['format'] extends CredentialConfigurationSupportedWithFormat['format']
-    ? CredentialConfigurationSupportedWithFormat & T
-    : CredentialConfigurationSupported
+
+/**
+ * Typing is a bit off on this one
+ */
+export type CredentialIssuerMetadataDraft11 = Simplify<
+  CredentialIssuerMetadata & v.InferOutput<typeof vCredentialIssuerMetadataWithDraft11>
+>
 
 export type CredentialIssuerMetadata = v.InferOutput<typeof vCredentialIssuerMetadataDraft14>
 const vCredentialIssuerMetadataDraft14 = v.looseObject({
@@ -171,6 +182,60 @@ const vCredentialConfigurationSupportedDraft11To14 = v.pipe(
   vCredentialConfigurationSupportedWithFormats
 )
 
+// Transforms credential configuration supported to credentials_supported format
+// Ignores unknown formats
+const vCredentialConfigurationSupportedDraft14To11 = v.pipe(
+  v.intersect([v.looseObject({ id: v.string() }), vCredentialConfigurationSupportedWithFormats]),
+  v.transform(({ id, credential_signing_alg_values_supported, display, proof_types_supported, scope, ...rest }) => ({
+    ...rest,
+    ...(credential_signing_alg_values_supported
+      ? { cryptographic_suites_supported: credential_signing_alg_values_supported }
+      : {}),
+    ...(display
+      ? {
+          display: display.map(({ logo, background_image, ...displayRest }) => {
+            const { uri: logoUri, ...logoRest } = logo ?? {}
+            const { uri: backgroundImageUri, ...backgroundImageRest } = background_image ?? {}
+            return {
+              ...displayRest,
+              // draft 11 uses url, draft 13/14 uses uri
+              ...(logoUri ? { logo: { url: logoUri, ...logoRest } } : {}),
+              // draft 11 uses url, draft 13/14 uses uri
+              ...(backgroundImageUri ? { logo: { url: backgroundImageUri, ...backgroundImageRest } } : {}),
+            }
+          }),
+        }
+      : {}),
+    id,
+  })),
+  v.intersect([
+    v.looseObject({ id: v.string() }),
+    v.variant('format', [
+      vLdpVcCredentialIssuerMetadataDraft14To11,
+      vJwtVcJsonCredentialIssuerMetadataDraft14To11,
+      vJwtVcJsonLdCredentialIssuerMetadataDraft14To11,
+      // To handle unrecognized formats and not error immediately we allow the common format as well
+      // but they can't use any of the foramt identifiers that have a specific transformation. This way if a format is
+      // has a transformation it NEEDS to use the format specific transformation, and otherwise we fall back to the common validation
+      v.looseObject({
+        format: v.pipe(
+          v.string(),
+          v.check(
+            (input) =>
+              !(
+                [
+                  vLdpVcFormatIdentifier.literal,
+                  vJwtVcJsonFormatIdentifier.literal,
+                  vJwtVcJsonLdFormatIdentifier.literal,
+                ] as string[]
+              ).includes(input)
+          )
+        ),
+      }),
+    ]),
+  ])
+)
+
 export const vCredentialIssuerMetadataDraft11To14 = v.pipe(
   v.looseObject({
     authorization_server: v.optional(v.string()),
@@ -197,6 +262,25 @@ export const vCredentialIssuerMetadataDraft11To14 = v.pipe(
     credential_configurations_supported: v.record(v.string(), vCredentialConfigurationSupportedDraft11To14),
   }),
   vCredentialIssuerMetadataDraft14
+)
+
+export const vCredentialIssuerMetadataWithDraft11 = v.pipe(
+  vCredentialIssuerMetadataDraft14,
+
+  v.transform((issuerMetadata) => ({
+    ...issuerMetadata,
+    ...(issuerMetadata.authorization_servers ? { authorization_server: issuerMetadata.authorization_servers[0] } : {}),
+    credentials_supported: Object.entries(issuerMetadata.credential_configurations_supported).map(([id, value]) => ({
+      ...value,
+      id,
+    })),
+  })),
+  v.intersect([
+    vCredentialIssuerMetadataDraft14,
+    v.looseObject({
+      credentials_supported: v.array(vCredentialConfigurationSupportedDraft14To11),
+    }),
+  ])
 )
 
 export const vCredentialIssuerMetadata = v.union([

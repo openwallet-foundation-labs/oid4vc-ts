@@ -12,6 +12,7 @@ export type ValibotFetcher = <Schema extends v.BaseSchema<any, any, any>>(
  * fetcher is provided.
  */
 // @ts-ignore
+// biome-ignore lint/style/noRestrictedGlobals: <explanation>
 export const defaultFetcher = fetch
 
 /**

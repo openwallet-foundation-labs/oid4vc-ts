@@ -34,7 +34,7 @@ export interface ResolveIssuerMetadataOptions {
 }
 
 export interface IssuerMetadataResult {
-  originalDraftVersion: Oid4vciDraftVersion
+  originalDraftVersion?: Oid4vciDraftVersion
   credentialIssuer: CredentialIssuerMetadata
   authorizationServers: AuthorizationServerMetadata[]
 }
