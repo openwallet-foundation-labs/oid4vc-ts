@@ -2,7 +2,9 @@ import {
   type CallbackContext,
   type CreateAuthorizationRequestUrlOptions,
   Oauth2Client,
+  Oauth2ClientAuthorizationChallengeError,
   Oauth2Error,
+  Oauth2ErrorCodes,
   type RetrieveAuthorizationCodeAccessTokenOptions,
   type RetrievePreAuthorizedCodeAccessTokenOptions,
   authorizationCodeGrantIdentifier,
@@ -10,6 +12,7 @@ import {
   preAuthorizedCodeGrantIdentifier,
 } from '@animo-id/oauth2'
 
+import type { createPkce } from '../../oauth2/src/pkce'
 import {
   determineAuthorizationServerForCredentialOffer,
   resolveCredentialOffer,
@@ -26,6 +29,11 @@ import {
 } from './formats/proof-type/jwt/jwt-proof-type'
 import { type IssuerMetadataResult, resolveIssuerMetadata } from './metadata/fetch-issuer-metadata'
 import { type SendNotifcationOptions, sendNotifcation } from './notification/notification'
+
+export enum AuthorizationFlow {
+  Oauth2Redirect = 'Oauth2Redirect',
+  PresentationDuringIssuance = 'PresentationDuringIssuance',
+}
 
 export interface Oid4vciClientOptions {
   /**
@@ -60,6 +68,140 @@ export class Oid4vciClient {
   }
 
   /**
+   * Retrieve an authorization code using an `presentation_during_issuance_session`.
+   *
+   * This can only be called if an authorization challenge was performed, and an authorization
+   * response including presentations was exchanged for a `presentation_during_issuance_session`
+   */
+  public async retrieveAuthorizationCodeUsingPresentation(options: {
+    /**
+     * Auth session as returned by `{@link Oid4vciClient.initiateAuthorization}
+     */
+    authSession: string
+
+    /**
+     * Presentation during issuance session, obtained from the RP after submitting
+     * openid4vp authorization response
+     */
+    presentationDuringIssuanceSession: string
+
+    credentialOffer: CredentialOfferObject
+    issuerMetadata: IssuerMetadataResult
+  }) {
+    if (!options.credentialOffer.grants?.[authorizationCodeGrantIdentifier]) {
+      throw new Oauth2Error(`Provided credential offer does not include the 'authorization_code' grant.`)
+    }
+
+    const authorizationCodeGrant = options.credentialOffer.grants[authorizationCodeGrantIdentifier]
+    const authorizationServer = determineAuthorizationServerForCredentialOffer({
+      issuerMetadata: options.issuerMetadata,
+      grantAuthorizationServer: authorizationCodeGrant.authorization_server,
+    })
+
+    const authorizationServerMetadata = getAuthorizationServerMetadataFromList(
+      options.issuerMetadata.authorizationServers,
+      authorizationServer
+    )
+
+    const oauth2Client = new Oauth2Client({ callbacks: this.options.callbacks })
+    // TODO: think what to do about pkce
+    const authorizationChallengeResponse = await oauth2Client.sendAuthorizationChallengeRequest({
+      authorizationServerMetadata,
+      authSession: options.authSession,
+      presentationDuringIssuanceSession: options.presentationDuringIssuanceSession,
+    })
+
+    return authorizationChallengeResponse
+  }
+
+  /**
+   * Initiates authorization for credential issuance. It handles the following cases:
+   * - Authorization Challenge
+   * - Pushed Authorization Request
+   * - Regular Authorization url
+   *
+   * In case the authorization challenge request returns an error with `insufficient_authorization`
+   * with a `presentation` field it means the authorization server expects presentation of credentials
+   * before issuance of crednetials. If this is the case, the value in `presentation` should be treated
+   * as an openid4vp authorization request and submitted to the verifier. Once the presentation response
+   * has been submitted, the RP will respnosd with a `presentation_during_issuance_session` parameter.
+   * Together with the `auth_session` parameter returned in this call you can retrieve an `authorization_code`
+   * using
+   */
+  public async initiateAuthorization(
+    options: Omit<CreateAuthorizationRequestUrlOptions, 'callbacks' | 'authorizationServerMetadata'> & {
+      credentialOffer: CredentialOfferObject
+      issuerMetadata: IssuerMetadataResult
+    }
+  ): Promise<
+    // TODO: cleanup these types
+    | {
+        authorizationFlow: AuthorizationFlow.PresentationDuringIssuance
+        oid4vpRequestUrl: string
+        authSession: string
+        authorizationServer: string
+      }
+    | {
+        authorizationFlow: AuthorizationFlow.Oauth2Redirect
+        authorizationRequestUrl: string
+        authorizationServer: string
+        pkce?: Awaited<ReturnType<typeof createPkce>>
+      }
+  > {
+    if (!options.credentialOffer.grants?.[authorizationCodeGrantIdentifier]) {
+      throw new Oauth2Error(`Provided credential offer does not include the 'authorization_code' grant.`)
+    }
+
+    const authorizationCodeGrant = options.credentialOffer.grants[authorizationCodeGrantIdentifier]
+    const authorizationServer = determineAuthorizationServerForCredentialOffer({
+      issuerMetadata: options.issuerMetadata,
+      grantAuthorizationServer: authorizationCodeGrant.authorization_server,
+    })
+
+    const authorizationServerMetadata = getAuthorizationServerMetadataFromList(
+      options.issuerMetadata.authorizationServers,
+      authorizationServer
+    )
+
+    const oauth2Client = new Oauth2Client({ callbacks: this.options.callbacks })
+
+    try {
+      const result = await oauth2Client.initiateAuthorization({
+        clientId: options.clientId,
+        pkceCodeVerifier: options.pkceCodeVerifier,
+        redirectUri: options.redirectUri,
+        scope: options.scope,
+        authorizationServerMetadata,
+      })
+
+      return {
+        ...result,
+        authorizationFlow: AuthorizationFlow.Oauth2Redirect,
+        authorizationServer: authorizationServerMetadata.issuer,
+      }
+    } catch (error) {
+      // Authorization server asks us to complete oid4vp reqeust before issuance
+      if (
+        error instanceof Oauth2ClientAuthorizationChallengeError &&
+        error.errorResponse.error === Oauth2ErrorCodes.InsufficientAuthorization &&
+        error.errorResponse.presentation &&
+        // TODO: we should probably throw an specifc error if presentation is defined but not auth_session?
+        error.errorResponse.auth_session
+      ) {
+        return {
+          authorizationFlow: AuthorizationFlow.PresentationDuringIssuance,
+          // TODO: name? presenationRequestUrl, oid4vpRequestUrl, ??
+          oid4vpRequestUrl: error.errorResponse.presentation,
+          authSession: error.errorResponse.auth_session,
+          authorizationServer: authorizationServerMetadata.issuer,
+        }
+      }
+
+      throw error
+    }
+  }
+
+  /**
    * Convenience method around {@link Oauth2Client.createAuthorizationRequestUrl}
    * but specifically focused on a credential offer
    */
@@ -84,7 +226,7 @@ export class Oid4vciClient {
       authorizationServer
     )
 
-    return this.oauth2Client.createAuthorizationRequestUrl({
+    const { authorizationRequestUrl, pkce } = await this.oauth2Client.createAuthorizationRequestUrl({
       authorizationServerMetadata,
       clientId: options.clientId,
       additionalRequestPayload: {
@@ -95,6 +237,12 @@ export class Oid4vciClient {
       scope: options.scope,
       pkceCodeVerifier: options.pkceCodeVerifier,
     })
+
+    return {
+      authorizationRequestUrl,
+      pkce,
+      authorizationServer: authorizationServerMetadata.issuer,
+    }
   }
 
   /**

@@ -99,7 +99,7 @@ export function parseAccessTokenRequest(options: ParseAccessTokenRequestOptions)
   } else {
     // Unsupported grant type
     throw new Oauth2ServerErrorResponseError({
-      error: Oauth2ErrorCodes.InvalidGrant,
+      error: Oauth2ErrorCodes.UnsupportedGrantType,
       error_description: `The grant type '${accessTokenRequest.grant_type}' is not supported`,
     })
   }

@@ -43,6 +43,7 @@ export {
 } from './error/Oauth2ResourceUnauthorizedError'
 export { Oauth2InvalidFetchResponseError } from './error/Oauth2InvalidFetchResponseError'
 export { Oauth2ClientErrorResponseError } from './error/Oauth2ClientErrorResponseError'
+export { Oauth2ClientAuthorizationChallengeError } from './error/Oauth2ClientAuthorizationChallengeError'
 export { Oauth2ServerErrorResponseError } from './error/Oauth2ServerErrorResponseError'
 
 export {
@@ -57,13 +58,17 @@ export {
 export { fetchJwks } from './metadata/fetch-jwks-uri'
 export { fetchWellKnownMetadata } from './metadata/fetch-well-known-metadata'
 
+export { SupportedAuthenticationScheme } from './access-token/verify-access-token'
 export type {
   RetrieveAuthorizationCodeAccessTokenOptions,
   RetrievePreAuthorizedCodeAccessTokenOptions,
 } from './access-token/retrieve-access-token'
 export type { CreateAuthorizationRequestUrlOptions } from './authorization-request/create-authorization-request'
 export { resourceRequestWithDpopRetry, type ResourceRequestOptions } from './resource-request/make-resource-request'
-export { type VerifyResourceRequestOptions, verifyResourceRequest } from './resource-request/verify-resource-request'
+export {
+  type VerifyResourceRequestOptions,
+  verifyResourceRequest,
+} from './resource-request/verify-resource-request'
 
 export type {
   CallbackContext,

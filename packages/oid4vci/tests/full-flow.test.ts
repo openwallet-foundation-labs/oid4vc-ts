@@ -5,6 +5,8 @@ import {
   Oauth2AuthorizationServer,
   Oauth2Client,
   Oauth2ResourceServer,
+  PkceCodeChallengeMethod,
+  SupportedAuthenticationScheme,
   authorizationCodeGrantIdentifier,
   calculateJwkThumbprint,
   preAuthorizedCodeGrantIdentifier,
@@ -13,8 +15,6 @@ import { type HttpMethod, decodeUtf8String, encodeToBase64Url } from '@animo-id/
 import { http, HttpResponse } from 'msw'
 import { setupServer } from 'msw/node'
 import { afterAll, afterEach, beforeAll, describe, expect, test } from 'vitest'
-import { PkceCodeChallengeMethod } from '../../oauth2/dist'
-import { SupportedAuthenticationScheme } from '../../oauth2/src/access-token/verify-access-token'
 import { getSignJwtCallback, parseXwwwFormUrlEncoded, callbacks as partialCallbacks } from '../../oauth2/tests/util'
 import {
   type CredentialConfigurationSupportedWithFormats,

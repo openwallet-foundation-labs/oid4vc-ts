@@ -1,12 +1,15 @@
 import { decodeJwt, preAuthorizedCodeGrantIdentifier } from '@animo-id/oauth2'
+import { parseWithErrorHandling } from '@animo-id/oid4vc-utils'
 import { http, HttpResponse } from 'msw'
 import { setupServer } from 'msw/node'
 import { afterAll, afterEach, beforeAll, describe, expect, test } from 'vitest'
-import { callbacks, getSignJwtCallback } from '../../../oauth2/tests/util'
-import { Oid4vciClient } from '../Oid4vciClient'
+import { vAuthorizationChallengeRequest } from '../../../oauth2/src/authorization-challenge/v-authorization-challenge'
+import { callbacks, getSignJwtCallback, parseXwwwFormUrlEncoded } from '../../../oauth2/tests/util'
+import { AuthorizationFlow, Oid4vciClient } from '../Oid4vciClient'
 import { extractScopesForCredentialConfigurationIds } from '../metadata/credential-issuer/credential-configurations'
 import { bdrDraft13 } from './__fixtures__/bdr'
 import { paradymDraft11, paradymDraft13 } from './__fixtures__/paradym'
+import { presentationDuringIssuance } from './__fixtures__/presentationDuringIssuance'
 
 const server = setupServer()
 
@@ -472,5 +475,172 @@ describe('Oid4vciClient', () => {
       },
     })
     expect(credentialResponse).toStrictEqual(bdrDraft13.credentialResponse)
+  })
+
+  test('receive a credential using presentation during issuance', async () => {
+    server.resetHandlers(
+      http.get(
+        `${presentationDuringIssuance.credentialOfferObject.credential_issuer}/.well-known/openid-credential-issuer`,
+        () => HttpResponse.json(presentationDuringIssuance.credentialIssuerMetadata)
+      ),
+      http.get(
+        `${presentationDuringIssuance.credentialOfferObject.credential_issuer}/.well-known/openid-configuration`,
+        () => HttpResponse.text(undefined, { status: 404 })
+      ),
+      http.get(
+        `${presentationDuringIssuance.credentialOfferObject.credential_issuer}/.well-known/oauth-authorization-server`,
+        () => HttpResponse.json(presentationDuringIssuance.authorizationServerMetadata)
+      ),
+      http.post(
+        presentationDuringIssuance.authorizationServerMetadata.authorization_challenge_endpoint,
+        async ({ request }) => {
+          const authorizationChallengeRequest = parseWithErrorHandling(
+            vAuthorizationChallengeRequest,
+            parseXwwwFormUrlEncoded(await request.text())
+          )
+
+          if (
+            authorizationChallengeRequest.auth_session &&
+            authorizationChallengeRequest.presentation_during_issuance_session
+          ) {
+            expect(authorizationChallengeRequest).toEqual({
+              auth_session: 'auth-session-identifier',
+              code_challenge: expect.any(String),
+              code_challenge_method: 'S256',
+              presentation_during_issuance_session: 'some-session',
+            })
+            return HttpResponse.json(presentationDuringIssuance.authorizationChallengeResponse)
+          }
+
+          expect(authorizationChallengeRequest).toEqual({
+            client_id: '76c7c89b-8799-4bd1-a693-d49948a91b00',
+            scope: 'pid',
+            code_challenge: expect.any(String),
+            code_challenge_method: 'S256',
+          })
+          return HttpResponse.json(presentationDuringIssuance.authorizationChallengeErrorResponse, { status: 400 })
+        }
+      ),
+      http.post(presentationDuringIssuance.authorizationServerMetadata.token_endpoint, async ({ request }) => {
+        expect(await request.text()).toEqual(
+          `code=${presentationDuringIssuance.authorizationChallengeResponse.authorization_code}&redirect_uri=https%3A%2F%2Fexample.com%2Fredirect&grant_type=authorization_code`
+        )
+        return HttpResponse.json(presentationDuringIssuance.accessTokenResponse)
+      }),
+      http.post(presentationDuringIssuance.credentialIssuerMetadata.credential_endpoint, async ({ request }) => {
+        expect(request.headers.get('Authorization')).toEqual('Bearer yvFUHf7pZBfgHd6pkI1ktc')
+        expect(await request.json()).toEqual({
+          format: 'vc+sd-jwt',
+          vct: 'https://example.bmi.bund.de/credential/pid/1.0',
+          proof: {
+            proof_type: 'jwt',
+            jwt: expect.any(String),
+          },
+        })
+        return HttpResponse.json(presentationDuringIssuance.credentialResponse)
+      })
+    )
+
+    const client = new Oid4vciClient({
+      callbacks: {
+        ...callbacks,
+        fetch,
+        signJwt: getSignJwtCallback([presentationDuringIssuance.holderPrivateKeyJwk]),
+      },
+    })
+
+    const credentialOffer = await client.resolveCredentialOffer(presentationDuringIssuance.credentialOffer)
+    expect(credentialOffer).toStrictEqual(presentationDuringIssuance.credentialOfferObject)
+
+    const issuerMetadata = await client.resolveIssuerMetadata(credentialOffer.credential_issuer)
+    expect(issuerMetadata.credentialIssuer).toStrictEqual(presentationDuringIssuance.credentialIssuerMetadata)
+    expect(issuerMetadata.authorizationServers[0]).toStrictEqual(presentationDuringIssuance.authorizationServerMetadata)
+
+    // Use a static value for the tests
+    const pkceCodeVerifier = 'l-yZMbym56l7IlENP17y-XgKzT6a37ut5n9yXMrh9BpTOt9g77CwCsWheRW0oMA2tL471UZhIr705MdHxRSQvQ'
+    const clientId = '76c7c89b-8799-4bd1-a693-d49948a91b00'
+    const redirectUri = 'https://example.com/redirect'
+
+    const authorization = await client.initiateAuthorization({
+      clientId,
+      issuerMetadata,
+      redirectUri,
+      credentialOffer,
+      pkceCodeVerifier,
+      scope: extractScopesForCredentialConfigurationIds({
+        credentialConfigurationIds: credentialOffer.credential_configuration_ids,
+        issuerMetadata,
+      })?.join(' '),
+    })
+
+    if (authorization.authorizationFlow !== AuthorizationFlow.PresentationDuringIssuance) {
+      throw new Error('Expected presentation during issuance')
+    }
+    expect(authorization.oid4vpRequestUrl).toEqual(
+      presentationDuringIssuance.authorizationChallengeErrorResponse.presentation
+    )
+    expect(authorization.authSession).toEqual(
+      presentationDuringIssuance.authorizationChallengeErrorResponse.auth_session
+    )
+    expect(authorization.authorizationServer).toEqual(presentationDuringIssuance.authorizationServerMetadata.issuer)
+
+    const { authorizationChallengeResponse } = await client.retrieveAuthorizationCodeUsingPresentation({
+      issuerMetadata,
+      authSession: authorization.authSession,
+      credentialOffer,
+      // out of scope for now, handled by RP
+      presentationDuringIssuanceSession: 'some-session',
+    })
+    expect(authorizationChallengeResponse).toStrictEqual(presentationDuringIssuance.authorizationChallengeResponse)
+
+    const { accessTokenResponse } = await client.retrieveAuthorizationCodeAccessTokenFromOffer({
+      issuerMetadata,
+      authorizationCode: authorizationChallengeResponse.authorization_code,
+      credentialOffer,
+      // TOOD: pkce with presentation_during_issuance? I don't think so
+      // pkceCodeVerifier: pkce?.codeVerifier,
+      redirectUri,
+    })
+    expect(accessTokenResponse).toStrictEqual(presentationDuringIssuance.accessTokenResponse)
+
+    const { d, ...publicKeyJwk } = presentationDuringIssuance.holderPrivateKeyJwk
+    const { jwt: proofJwt } = await client.createCredentialRequestJwtProof({
+      issuerMetadata,
+      signer: {
+        method: 'jwk',
+        publicJwk: publicKeyJwk,
+        alg: 'ES256',
+      },
+      clientId,
+      issuedAt: new Date('2024-10-10'),
+      credentialConfigurationId: credentialOffer.credential_configuration_ids[0],
+      nonce: accessTokenResponse.c_nonce,
+    })
+
+    expect(decodeJwt({ jwt: proofJwt })).toStrictEqual({
+      header: {
+        alg: 'ES256',
+        jwk: publicKeyJwk,
+        typ: 'openid4vci-proof+jwt',
+      },
+      payload: {
+        aud: presentationDuringIssuance.authorizationServerMetadata.issuer,
+        iat: 1728518400,
+        iss: clientId,
+        nonce: 'sjNMiqyfmBeD1qioCVyqvS',
+      },
+      signature: expect.any(String),
+    })
+
+    const { credentialResponse } = await client.retrieveCredentials({
+      accessToken: accessTokenResponse.access_token,
+      credentialConfigurationId: credentialOffer.credential_configuration_ids[0],
+      issuerMetadata,
+      proof: {
+        proof_type: 'jwt',
+        jwt: proofJwt,
+      },
+    })
+    expect(credentialResponse).toStrictEqual(presentationDuringIssuance.credentialResponse)
   })
 })

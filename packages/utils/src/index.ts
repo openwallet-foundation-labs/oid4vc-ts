@@ -1,4 +1,4 @@
-export { type Fetch, type FetchHeaders, type FetchResponse, URL, URLSearchParams } from './globals'
+export { type Fetch, Headers, type FetchHeaders, type FetchResponse, URL, URLSearchParams } from './globals'
 
 export { JsonParseError } from './error/JsonParseError'
 export { ValidationError } from './error/ValidationError'

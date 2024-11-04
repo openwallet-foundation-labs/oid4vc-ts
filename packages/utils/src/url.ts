@@ -5,9 +5,9 @@ export function getQueryParams(url: string) {
   const searchParams = new URLSearchParams(parsedUrl.search)
   const params: Record<string, string> = {}
 
-  for (const [key, value] of searchParams) {
+  searchParams.forEach((value, key) => {
     params[key] = value
-  }
+  })
 
   return params
 }

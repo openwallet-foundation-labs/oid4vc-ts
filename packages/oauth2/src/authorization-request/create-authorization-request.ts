@@ -43,7 +43,7 @@ export interface CreateAuthorizationRequestUrlOptions {
   redirectUri?: string
 
   /**
-   * Additional payload to include in the authorizatino request. Items will be encoded and sent
+   * Additional payload to include in the authorization request. Items will be encoded and sent
    * using x-www-form-urlencoded format. Nested items (JSON) will be stringified and url encoded.
    */
   additionalRequestPayload?: Record<string, unknown>
@@ -117,7 +117,6 @@ export async function createAuthorizationRequestUrl(options: CreateAuthorization
   return {
     authorizationRequestUrl,
     pkce,
-    authorizationServer: authorizationServerMetadata.issuer,
   }
 }
 

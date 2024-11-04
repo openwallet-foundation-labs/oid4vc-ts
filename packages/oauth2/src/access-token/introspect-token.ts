@@ -4,6 +4,7 @@ import { Oauth2Error } from '../error/Oauth2Error'
 import { Oauth2InvalidFetchResponseError } from '../error/Oauth2InvalidFetchResponseError'
 import type { AuthorizationServerMetadata } from '../metadata/authorization-server/v-authorization-server-metadata'
 
+import { Headers } from '@animo-id/oid4vc-utils'
 import type { CallbackContext } from '../callbacks'
 import {
   type TokenIntrospectionRequest,

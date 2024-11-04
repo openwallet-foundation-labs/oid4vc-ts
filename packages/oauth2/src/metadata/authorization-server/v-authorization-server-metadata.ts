@@ -27,6 +27,9 @@ export const vAuthorizationServerMetadata = v.pipe(
     ),
     introspection_endpoint_auth_signing_alg_values_supported: v.optional(v.array(vAlgValueNotNone)),
 
+    // FiPA (no RFC yet)
+    authorization_challenge_endpoint: v.optional(vHttpsUrl),
+
     // From OID4VCI specification
     'pre-authorized_grant_anonymous_access_supported': v.optional(v.boolean()),
   }),
