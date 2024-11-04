@@ -2,7 +2,7 @@
   "name": "oid4vc-ts",
   "private": true,
   "description": "Environment agnostic TypeScript implementation of OpenID4VC specifications",
-  "packageManager": "pnpm@9.1.0",
+  "packageManager": "pnpm@9.4.0+sha1.9217c800d4ab947a7aee520242a7b70d64fc7638",
   "repository": {
     "url": "https://github.com/openwallet-foundation/credo-ts",
     "type": "git"

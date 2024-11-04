@@ -10,7 +10,7 @@ export type Fetch = typeof fetch
 // biome-ignore lint/style/noRestrictedGlobals: <explanation>
 export type FetchResponse = Response
 // biome-ignore lint/style/noRestrictedGlobals: <explanation>
-const _Headers = Headers
+const _Headers = Headers as typeof globalThis.Headers
 export type FetchHeaders = globalThis.Headers
 
 export { _URLSearchParams as URLSearchParams, _URL as URL, _Headers as Headers }
