@@ -1,6 +1,6 @@
 import * as v from 'valibot'
 
-import type { InferOutputUnion } from '@animo-id/oid4vc-utils'
+import type { InferOutputUnion } from '@animo-id/oauth2-utils'
 import {
   type CredentialFormatIdentifier,
   vJwtVcJsonCredentialRequestFormat,

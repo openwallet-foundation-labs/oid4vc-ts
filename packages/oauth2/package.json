@@ -20,7 +20,7 @@
     "build": "tsup src/index.ts --format cjs,esm --dts --clean --sourcemap"
   },
   "dependencies": {
-    "@animo-id/oid4vc-utils": "workspace:*",
+    "@animo-id/oauth2-utils": "workspace:*",
     "valibot": "^0.42.1"
   },
   "devDependencies": {

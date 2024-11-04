@@ -1,4 +1,4 @@
-import type { FetchHeaders, HttpMethod } from '@animo-id/oid4vc-utils'
+import type { FetchHeaders, HttpMethod } from '@animo-id/oauth2-utils'
 import * as v from 'valibot'
 
 export const vAlgValueNotNone = v.pipe(

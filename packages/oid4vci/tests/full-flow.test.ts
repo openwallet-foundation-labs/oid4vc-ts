@@ -11,7 +11,7 @@ import {
   calculateJwkThumbprint,
   preAuthorizedCodeGrantIdentifier,
 } from '@animo-id/oauth2'
-import { type HttpMethod, decodeUtf8String, encodeToBase64Url } from '@animo-id/oid4vc-utils'
+import { type HttpMethod, decodeUtf8String, encodeToBase64Url } from '@animo-id/oauth2-utils'
 import { http, HttpResponse } from 'msw'
 import { setupServer } from 'msw/node'
 import { afterAll, afterEach, beforeAll, describe, expect, test } from 'vitest'

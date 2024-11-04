@@ -1,4 +1,4 @@
-import { createValibotFetcher, objectToQueryParams, parseWithErrorHandling } from '@animo-id/oid4vc-utils'
+import { createValibotFetcher, objectToQueryParams, parseWithErrorHandling } from '@animo-id/oauth2-utils'
 import * as v from 'valibot'
 import { ValidationError } from '../../../utils/src/error/ValidationError'
 import type { CallbackContext } from '../callbacks'

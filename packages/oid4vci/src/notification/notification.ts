@@ -9,7 +9,7 @@ import {
   type RequestDpopOptions,
   resourceRequestWithDpopRetry,
 } from '@animo-id/oauth2'
-import { defaultFetcher, parseWithErrorHandling } from '@animo-id/oid4vc-utils'
+import { defaultFetcher, parseWithErrorHandling } from '@animo-id/oauth2-utils'
 import type { IssuerMetadataResult } from '../metadata/fetch-issuer-metadata'
 import {
   type NotificationEvent,

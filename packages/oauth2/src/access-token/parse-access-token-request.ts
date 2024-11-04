@@ -1,4 +1,4 @@
-import { valibotRecursiveFlattenIssues } from '@animo-id/oid4vc-utils'
+import { valibotRecursiveFlattenIssues } from '@animo-id/oauth2-utils'
 import * as v from 'valibot'
 import type { RequestLike } from '../common/v-common'
 import { Oauth2ErrorCodes } from '../common/v-oauth2-error'

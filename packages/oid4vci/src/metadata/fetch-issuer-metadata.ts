@@ -4,8 +4,8 @@ import {
   fetchAuthorizationServerMetadata,
   vAuthorizationServerMetadata,
 } from '@animo-id/oauth2'
-import type { Fetch } from '@animo-id/oid4vc-utils'
-import { parseWithErrorHandling } from '@animo-id/oid4vc-utils'
+import type { Fetch } from '@animo-id/oauth2-utils'
+import { parseWithErrorHandling } from '@animo-id/oauth2-utils'
 import type { Oid4vciDraftVersion } from '../version'
 import { fetchCredentialIssuerMetadata } from './credential-issuer/credential-issuer-metadata'
 import type { CredentialIssuerMetadata } from './credential-issuer/v-credential-issuer-metadata'

@@ -1,4 +1,4 @@
-import { parseWithErrorHandling } from '@animo-id/oid4vc-utils'
+import { parseWithErrorHandling } from '@animo-id/oauth2-utils'
 import { type CredentialResponse, vCredentialResponse } from './v-credential-response'
 
 export interface CreateCredentialResponseOptions {

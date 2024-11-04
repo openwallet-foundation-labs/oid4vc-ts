@@ -1,5 +1,5 @@
 import type { CallbackContext } from '@animo-id/oauth2'
-import { parseWithErrorHandling } from '@animo-id/oid4vc-utils'
+import { parseWithErrorHandling } from '@animo-id/oauth2-utils'
 import { type CreateCredentialOfferOptions, createCredentialOffer } from './credential-offer/credential-offer'
 import {
   type CreateCredentialResponseOptions,

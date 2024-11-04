@@ -1,4 +1,4 @@
-import { parseWithErrorHandling } from '@animo-id/oid4vc-utils'
+import { parseWithErrorHandling } from '@animo-id/oauth2-utils'
 import * as v from 'valibot'
 import type { CredentialFormatIdentifier } from '../formats/credential'
 import { jwtProofTypeIdentifier } from '../formats/proof-type/jwt/v-jwt-proof-type'

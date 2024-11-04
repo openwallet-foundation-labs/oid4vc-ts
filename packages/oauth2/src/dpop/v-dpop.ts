@@ -1,7 +1,7 @@
 import * as v from 'valibot'
 import { vJwtHeader, vJwtPayload } from '../common/jwt/v-jwt'
 
-import { vHttpMethod, vHttpsUrl, vInteger } from '@animo-id/oid4vc-utils'
+import { vHttpMethod, vHttpsUrl, vInteger } from '@animo-id/oauth2-utils'
 import { vJwk } from '../common/jwk/v-jwk'
 
 export const vDpopJwtPayload = v.looseObject({

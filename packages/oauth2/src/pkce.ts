@@ -1,4 +1,4 @@
-import { decodeUtf8String, encodeToBase64Url } from '@animo-id/oid4vc-utils'
+import { decodeUtf8String, encodeToBase64Url } from '@animo-id/oauth2-utils'
 import { type CallbackContext, HashAlgorithm, type HashCallback } from './callbacks'
 import { Oauth2Error } from './error/Oauth2Error'
 

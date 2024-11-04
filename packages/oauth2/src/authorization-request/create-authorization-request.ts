@@ -1,4 +1,4 @@
-import { type Fetch, createValibotFetcher, objectToQueryParams } from '@animo-id/oid4vc-utils'
+import { type Fetch, createValibotFetcher, objectToQueryParams } from '@animo-id/oauth2-utils'
 import * as v from 'valibot'
 import { ValidationError } from '../../../utils/src/error/ValidationError'
 import { vAccessTokenErrorResponse } from '../access-token/v-access-token'

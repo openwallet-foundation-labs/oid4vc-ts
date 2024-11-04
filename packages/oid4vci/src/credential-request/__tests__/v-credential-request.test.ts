@@ -1,4 +1,4 @@
-import { valibotRecursiveFlattenIssues } from '@animo-id/oid4vc-utils'
+import { valibotRecursiveFlattenIssues } from '@animo-id/oauth2-utils'
 import * as v from 'valibot'
 import { describe, expect, test } from 'vitest'
 import { vCredentialRequest, vCredentialRequestDraft11To14 } from '../v-credential-request'

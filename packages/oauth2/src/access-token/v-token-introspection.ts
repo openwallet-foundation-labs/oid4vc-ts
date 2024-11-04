@@ -1,4 +1,4 @@
-import { vInteger } from '@animo-id/oid4vc-utils'
+import { vInteger } from '@animo-id/oauth2-utils'
 import * as v from 'valibot'
 import { vJwtConfirmationPayload } from '../common/jwt/v-jwt'
 

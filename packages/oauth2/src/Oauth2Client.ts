@@ -1,4 +1,4 @@
-import { objectToQueryParams } from '@animo-id/oid4vc-utils'
+import { objectToQueryParams } from '@animo-id/oauth2-utils'
 import {
   type RetrieveAuthorizationCodeAccessTokenOptions,
   type RetrievePreAuthorizedCodeAccessTokenOptions,

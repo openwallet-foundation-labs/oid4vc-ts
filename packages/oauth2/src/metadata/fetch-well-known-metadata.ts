@@ -1,4 +1,4 @@
-import { type BaseSchema, type Fetch, createValibotFetcher } from '@animo-id/oid4vc-utils'
+import { type BaseSchema, type Fetch, createValibotFetcher } from '@animo-id/oauth2-utils'
 import type * as v from 'valibot'
 import { ValidationError } from '../../../utils/src/error/ValidationError'
 import { Oauth2InvalidFetchResponseError } from '../error/Oauth2InvalidFetchResponseError'

@@ -1,5 +1,5 @@
 import { vJwk } from '@animo-id/oauth2'
-import type { InferOutputUnion, Simplify } from '@animo-id/oid4vc-utils'
+import type { InferOutputUnion, Simplify } from '@animo-id/oauth2-utils'
 import * as v from 'valibot'
 import type { ProofTypeIdentifier } from '../formats/proof-type'
 import { vCredentialRequestProofJwt, vJwtProofTypeIdentifier } from '../formats/proof-type/jwt/v-jwt-proof-type'

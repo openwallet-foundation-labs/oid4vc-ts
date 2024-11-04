@@ -1,4 +1,4 @@
-import type { FetchHeaders } from '@animo-id/oid4vc-utils'
+import type { FetchHeaders } from '@animo-id/oauth2-utils'
 import type { AccessTokenErrorResponse } from '../access-token/v-access-token'
 import { Oauth2Error } from '../error/Oauth2Error'
 import { extractDpopNonceFromHeaders } from './dpop'

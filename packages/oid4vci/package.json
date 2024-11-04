@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "@animo-id/oauth2": "workspace:*",
-    "@animo-id/oid4vc-utils": "workspace:*",
+    "@animo-id/oauth2-utils": "workspace:*",
     "valibot": "^0.42.1"
   },
   "devDependencies": {

@@ -3,7 +3,7 @@ import {
   createValibotFetcher,
   objectToQueryParams,
   parseWithErrorHandling,
-} from '@animo-id/oid4vc-utils'
+} from '@animo-id/oauth2-utils'
 import * as v from 'valibot'
 import type { CallbackContext } from '../callbacks'
 import { ContentType } from '../common/content-type'

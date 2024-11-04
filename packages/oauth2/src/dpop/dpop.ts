@@ -11,7 +11,7 @@ import {
   decodeUtf8String,
   encodeToBase64Url,
   parseWithErrorHandling,
-} from '@animo-id/oid4vc-utils'
+} from '@animo-id/oauth2-utils'
 import { verifyJwt } from '../common/jwt/verify-jwt'
 import type { RequestLike } from '../common/v-common'
 import { type DpopJwtHeader, type DpopJwtPayload, vDpopJwtHeader, vDpopJwtPayload } from './v-dpop'

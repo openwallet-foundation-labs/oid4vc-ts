@@ -1,5 +1,5 @@
 import crypto from 'node:crypto'
-import { decodeBase64, encodeToUtf8String } from '@animo-id/oid4vc-utils'
+import { decodeBase64, encodeToUtf8String } from '@animo-id/oauth2-utils'
 import * as jose from 'jose'
 import { type CallbackContext, HashAlgorithm, type SignJwtCallback } from '../src/callbacks'
 import { clientAuthenticationNone } from '../src/client-authentication'

@@ -1,4 +1,4 @@
-import { type Fetch, createValibotFetcher } from '@animo-id/oid4vc-utils'
+import { type Fetch, createValibotFetcher } from '@animo-id/oauth2-utils'
 import { ValidationError } from '../../../utils/src/error/ValidationError'
 import { type JwkSet, vJwkSet } from '../common/jwk/v-jwk'
 import { Oauth2Error } from '../error/Oauth2Error'

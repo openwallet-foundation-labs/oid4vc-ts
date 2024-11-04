@@ -7,7 +7,7 @@ import {
   encodeToUtf8String,
   parseWithErrorHandling,
   stringToJsonWithErrorHandling,
-} from '@animo-id/oid4vc-utils'
+} from '@animo-id/oauth2-utils'
 import { type JwtSigner, vJwtHeader, vJwtPayload } from './v-jwt'
 
 export interface DecodeJwtOptions<

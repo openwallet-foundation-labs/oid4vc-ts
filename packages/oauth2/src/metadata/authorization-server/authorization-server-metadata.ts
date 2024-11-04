@@ -1,4 +1,4 @@
-import { type Fetch, joinUriParts } from '@animo-id/oid4vc-utils'
+import { type Fetch, joinUriParts } from '@animo-id/oauth2-utils'
 import { Oauth2Error } from '../../error/Oauth2Error'
 import { fetchWellKnownMetadata } from '../fetch-well-known-metadata'
 import { type AuthorizationServerMetadata, vAuthorizationServerMetadata } from './v-authorization-server-metadata'

@@ -20,7 +20,7 @@ import {
   getQueryParams,
   objectToQueryParams,
   parseWithErrorHandling,
-} from '@animo-id/oid4vc-utils'
+} from '@animo-id/oauth2-utils'
 import type { IssuerMetadataResult } from '../metadata/fetch-issuer-metadata'
 import { Oid4vciDraftVersion } from '../version'
 import {

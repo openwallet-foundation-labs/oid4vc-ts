@@ -1,4 +1,4 @@
-import type { FetchResponse } from '@animo-id/oid4vc-utils'
+import type { FetchResponse } from '@animo-id/oauth2-utils'
 import type { CallbackContext } from '../callbacks'
 import {
   type CreateDpopJwtOptions,

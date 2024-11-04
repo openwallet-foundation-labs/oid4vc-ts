@@ -9,7 +9,7 @@ import {
   type RequestDpopOptions,
   resourceRequestWithDpopRetry,
 } from '@animo-id/oauth2'
-import { ValidationError, createValibotFetcher, parseWithErrorHandling } from '@animo-id/oid4vc-utils'
+import { ValidationError, createValibotFetcher, parseWithErrorHandling } from '@animo-id/oauth2-utils'
 import type { IssuerMetadataResult } from '../metadata/fetch-issuer-metadata'
 import { Oid4vciDraftVersion } from '../version'
 import {

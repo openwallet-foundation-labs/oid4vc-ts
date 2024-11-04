@@ -1,4 +1,4 @@
-import type { FetchResponse } from '@animo-id/oid4vc-utils'
+import type { FetchResponse } from '@animo-id/oauth2-utils'
 import { Oauth2Error } from './Oauth2Error'
 
 export class Oauth2InvalidFetchResponseError extends Oauth2Error {

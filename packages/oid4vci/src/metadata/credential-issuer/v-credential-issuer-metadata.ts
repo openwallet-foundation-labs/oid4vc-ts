@@ -1,5 +1,5 @@
 import { vCompactJwt } from '@animo-id/oauth2'
-import { type InferOutputUnion, type Simplify, vHttpsUrl } from '@animo-id/oid4vc-utils'
+import { type InferOutputUnion, type Simplify, vHttpsUrl } from '@animo-id/oauth2-utils'
 import * as v from 'valibot'
 import {
   type CredentialFormatIdentifier,

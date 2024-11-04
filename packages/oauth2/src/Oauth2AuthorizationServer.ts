@@ -1,4 +1,4 @@
-import { parseWithErrorHandling } from '@animo-id/oid4vc-utils'
+import { parseWithErrorHandling } from '@animo-id/oauth2-utils'
 import { type CreateAccessTokenOptions, createAccessTokenJwt } from './access-token/create-access-token'
 import {
   type CreateAccessTokenResponseOptions,

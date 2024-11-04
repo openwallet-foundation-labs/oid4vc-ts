@@ -1,4 +1,4 @@
-import { vInteger } from '@animo-id/oid4vc-utils'
+import { vInteger } from '@animo-id/oauth2-utils'
 import * as v from 'valibot'
 import { type Jwk, vJwk } from '../jwk/v-jwk'
 import { vAlgValueNotNone } from '../v-common'

@@ -1,4 +1,4 @@
-import { vInteger } from '@animo-id/oid4vc-utils'
+import { vInteger } from '@animo-id/oauth2-utils'
 import * as v from 'valibot'
 import { vOauth2ErrorResponse } from '../common/v-oauth2-error'
 
