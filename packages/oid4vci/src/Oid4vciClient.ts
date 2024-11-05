@@ -29,6 +29,8 @@ import {
 } from './formats/proof-type/jwt/jwt-proof-type'
 import { type IssuerMetadataResult, resolveIssuerMetadata } from './metadata/fetch-issuer-metadata'
 import { type SendNotifcationOptions, sendNotifcation } from './notification/notification'
+import { extractKnownCredentialConfigurationSupportedFormats } from './metadata/credential-issuer/credential-issuer-metadata'
+import type { CredentialIssuerMetadata } from './metadata/credential-issuer/v-credential-issuer-metadata'
 
 export enum AuthorizationFlow {
   Oauth2Redirect = 'Oauth2Redirect',
@@ -49,6 +51,12 @@ export class Oid4vciClient {
     this.oauth2Client = new Oauth2Client({
       callbacks: this.options.callbacks,
     })
+  }
+
+  public getKnownCredentialConfigurationsSupported(credentialIssuerMetadata: CredentialIssuerMetadata) {
+    return extractKnownCredentialConfigurationSupportedFormats(
+      credentialIssuerMetadata.credential_configurations_supported
+    )
   }
 
   /**
