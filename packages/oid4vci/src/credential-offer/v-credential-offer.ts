@@ -6,6 +6,13 @@ import {
 import { vHttpsUrl } from '@animo-id/oauth2-utils'
 import * as v from 'valibot'
 
+const vTxCode = v.looseObject({
+  input_mode: v.optional(v.union([v.literal('numeric'), v.literal('text')]), 'numeric'),
+  length: v.optional(v.pipe(v.number(), v.integer())),
+  description: v.optional(v.pipe(v.string(), v.maxLength(300))),
+})
+export type CredentialOfferPreAuthorizedCodeGrantTxCode = v.InferInput<typeof vTxCode>
+
 export const vCredentialOfferGrants = v.looseObject({
   authorization_code: v.optional(
     v.looseObject({
@@ -17,13 +24,7 @@ export const vCredentialOfferGrants = v.looseObject({
   [preAuthorizedCodeGrantIdentifier]: v.optional(
     v.looseObject({
       'pre-authorized_code': v.string(),
-      tx_code: v.optional(
-        v.looseObject({
-          input_mode: v.optional(v.union([v.literal('numeric'), v.literal('text')]), 'numeric'),
-          length: v.optional(v.pipe(v.number(), v.integer())),
-          description: v.optional(v.pipe(v.string(), v.maxLength(300))),
-        })
-      ),
+      tx_code: v.optional(vTxCode),
       authorization_server: v.optional(vHttpsUrl),
     })
   ),

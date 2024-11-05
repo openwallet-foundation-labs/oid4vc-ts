@@ -3,8 +3,9 @@ import { type Fetch, joinUriParts } from '@animo-id/oauth2-utils'
 import type { CredentialFormatIdentifier } from '../../formats/credential'
 import type { Oid4vciDraftVersion } from '../../version'
 import {
-  type CredentialConfigurationSupported,
   type CredentialConfigurationSupportedFormatSpecific,
+  type CredentialConfigurationsSupported,
+  type CredentialConfigurationsSupportedWithFormats,
   type CredentialIssuerMetadata,
   allCredentialIssuerMetadataFormatIdentifiers,
   vCredentialIssuerMetadataWithDraftVersion,
@@ -40,8 +41,8 @@ export async function fetchCredentialIssuerMetadata(
  * Validation is done when resolving issuer metadata, or when calling `createIssuerMetadata`.
  */
 export function extractKnownCredentialConfigurationSupportedFormats(
-  credentialConfigurationsSupported: Record<string, CredentialConfigurationSupported>
-): Record<string, CredentialConfigurationSupportedFormatSpecific> {
+  credentialConfigurationsSupported: CredentialConfigurationsSupported
+): CredentialConfigurationsSupportedWithFormats {
   return Object.fromEntries(
     Object.entries(credentialConfigurationsSupported).filter(
       (entry): entry is [string, CredentialConfigurationSupportedFormatSpecific] =>

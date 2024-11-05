@@ -1,10 +1,19 @@
-export type { CredentialOfferObject } from './credential-offer/v-credential-offer'
+export type {
+  CredentialOfferObject,
+  CredentialOfferPreAuthorizedCodeGrantTxCode,
+} from './credential-offer/v-credential-offer'
 
+export type { ParseCredentialRequestReturn } from './credential-request/parse-credential-request'
 export type {
   CredentialRequestWithFormats,
   CredentialRequest,
+  CredentialRequestFormatSpecific,
 } from './credential-request/v-credential-request'
 export type { CredentialErrorResponse, CredentialResponse } from './credential-request/v-credential-response'
+export {
+  type GetCredentialConfigurationsMatchingRequestFormatOptions,
+  getCredentialConfigurationsMatchingRequestFormat,
+} from './credential-request/credential-request-configurations'
 
 export { Oid4vciError, Oid4vciErrorOptions } from './error/Oid4vcError'
 
@@ -27,8 +36,11 @@ export type { IssuerMetadataResult } from './metadata/fetch-issuer-metadata'
 
 export type {
   CredentialConfigurationSupported,
+  CredentialConfigurationsSupported,
   CredentialConfigurationSupportedWithFormats,
+  CredentialConfigurationsSupportedWithFormats,
   CredentialIssuerMetadata,
+  CredentialIssuerMetadataDisplayEntry,
 } from './metadata/credential-issuer/v-credential-issuer-metadata'
 
 export {

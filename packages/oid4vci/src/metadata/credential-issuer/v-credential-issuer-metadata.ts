@@ -52,8 +52,10 @@ type CredentialConfigurationSupportedCommon = v.InferOutput<typeof vCredentialCo
 export type CredentialConfigurationSupportedFormatSpecific = InferOutputUnion<typeof allCredentialIssuerMetadataFormats>
 export type CredentialConfigurationSupportedWithFormats = CredentialConfigurationSupportedFormatSpecific &
   CredentialConfigurationSupportedCommon
+export type CredentialConfigurationsSupportedWithFormats = Record<string, CredentialConfigurationSupportedWithFormats>
 
 export type CredentialConfigurationSupported = v.InferOutput<typeof vCredentialConfigurationSupportedWithFormats>
+export type CredentialConfigurationsSupported = Record<string, CredentialConfigurationSupported>
 
 /**
  * Typing is a bit off on this one
@@ -61,6 +63,19 @@ export type CredentialConfigurationSupported = v.InferOutput<typeof vCredentialC
 export type CredentialIssuerMetadataDraft11 = Simplify<
   CredentialIssuerMetadata & v.InferOutput<typeof vCredentialIssuerMetadataWithDraft11>
 >
+
+const vCredentialIssuerMetadataDisplayEntry = v.looseObject({
+  name: v.optional(v.string()),
+  locale: v.optional(v.string()),
+  logo: v.optional(
+    v.looseObject({
+      // FIXME: make required again, but need to support draft 11 first
+      uri: v.optional(v.string()),
+      alt_text: v.optional(v.string()),
+    })
+  ),
+})
+export type CredentialIssuerMetadataDisplayEntry = v.InferOutput<typeof vCredentialIssuerMetadataDisplayEntry>
 
 export type CredentialIssuerMetadata = v.InferOutput<typeof vCredentialIssuerMetadataDraft14>
 const vCredentialIssuerMetadataDraft14 = v.looseObject({
@@ -82,21 +97,7 @@ const vCredentialIssuerMetadataDraft14 = v.looseObject({
     })
   ),
   signed_metadata: v.optional(vCompactJwt),
-  display: v.optional(
-    v.array(
-      v.looseObject({
-        name: v.optional(v.string()),
-        locale: v.optional(v.string()),
-        logo: v.optional(
-          v.looseObject({
-            // FIXME: make required again, but need to support draft 11 first
-            uri: v.optional(v.string()),
-            alt_text: v.optional(v.string()),
-          })
-        ),
-      })
-    )
-  ),
+  display: v.optional(v.array(vCredentialIssuerMetadataDisplayEntry)),
   credential_configurations_supported: v.record(v.string(), vCredentialConfigurationSupportedWithFormats),
 })
 

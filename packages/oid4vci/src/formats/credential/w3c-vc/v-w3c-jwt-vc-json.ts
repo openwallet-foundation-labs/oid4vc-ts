@@ -4,7 +4,7 @@ import { vW3cVcCredentialSubject } from './v-w3c-vc-common'
 export const vJwtVcJsonFormatIdentifier = v.literal('jwt_vc_json')
 export type JwtVcJsonFormatIdentifier = v.InferOutput<typeof vJwtVcJsonFormatIdentifier>
 
-const vJwtVcJsonCredentialDefinition = v.object({
+const vJwtVcJsonCredentialDefinition = v.looseObject({
   type: v.array(v.string()),
   credentialSubject: v.optional(vW3cVcCredentialSubject),
 })
