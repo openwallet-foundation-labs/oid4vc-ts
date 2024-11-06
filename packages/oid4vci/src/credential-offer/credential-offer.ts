@@ -197,6 +197,12 @@ export async function createCredentialOffer(options: CreateCredentialOfferOption
       'pre-authorized_code':
         preAuthorizedCodeGrant['pre-authorized_code'] ?? encodeToBase64Url(await options.callbacks.generateRandom(32)),
     }
+
+    // Draft 11 support
+    const txCode = grants[preAuthorizedCodeGrantIdentifier].tx_code
+    if (txCode && options.issuerMetadata.credentialIssuer.originalDraftVersion === Oid4vciDraftVersion.Draft11) {
+      grants[preAuthorizedCodeGrantIdentifier].user_pin_required = txCode !== undefined
+    }
   }
 
   const idsNotInMetadata = options.credentialConfigurationIds.filter(
@@ -216,6 +222,7 @@ export async function createCredentialOffer(options: CreateCredentialOfferOption
     ...options.additionalPayload,
   } satisfies CredentialOfferObject)
 
+  // Draft 11 support
   if (options.issuerMetadata.credentialIssuer.originalDraftVersion === Oid4vciDraftVersion.Draft11) {
     credentialOfferObject.credentials = credentialOfferObject.credential_configuration_ids
   }

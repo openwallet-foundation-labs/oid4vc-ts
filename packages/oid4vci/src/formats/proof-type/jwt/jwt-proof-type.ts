@@ -7,6 +7,7 @@ import {
 } from './v-jwt-proof-type'
 
 import { type CallbackContext, jwtSignerFromJwt, verifyJwt } from '@animo-id/oauth2'
+import { Oid4vciError } from '../../../error/Oid4vcError'
 
 export interface CreateCredentialRequestJwtProofOptions {
   /**
@@ -61,9 +62,13 @@ export interface VerifyCredentialRequestJwtProofOptions {
 
   /**
    * Expected nonce. Should be a c_nonce previously shared with the wallet
-   * @todo: cNonceExpiresAt?
    */
   expectedNonce: string
+
+  /**
+   * Date at which the nonce will expire
+   */
+  nonceExpiresAt?: Date
 
   /**
    * The credential issuer identifier, will be matched against the `aud` claim.
@@ -92,6 +97,11 @@ export async function verifyCredentialRequestJwtProof(options: VerifyCredentialR
     headerSchema: vCredentialRequestJwtProofTypeHeader,
     payloadSchema: vCredentialRequestJwtProofTypePayload,
   })
+
+  const now = options.now?.getTime() ?? Date.now()
+  if (options.nonceExpiresAt && now > options.nonceExpiresAt.getTime()) {
+    throw new Oid4vciError('Nonce used for credential request proof expired')
+  }
 
   const signer = jwtSignerFromJwt({ header, payload })
   await verifyJwt({

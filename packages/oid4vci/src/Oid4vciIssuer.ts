@@ -76,7 +76,10 @@ export class Oid4vciIssuer {
   }
 
   public async verifyCredentialRequestJwtProof(
-    options: Pick<VerifyCredentialRequestJwtProofOptions, 'clientId' | 'jwt' | 'now' | 'expectedNonce'> & {
+    options: Pick<
+      VerifyCredentialRequestJwtProofOptions,
+      'clientId' | 'jwt' | 'now' | 'expectedNonce' | 'nonceExpiresAt'
+    > & {
       issuerMetadata: IssuerMetadataResult
     }
   ) {

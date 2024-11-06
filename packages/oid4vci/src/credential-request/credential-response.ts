@@ -1,7 +1,10 @@
 import { parseWithErrorHandling } from '@animo-id/oauth2-utils'
+import type { ParseCredentialRequestReturn } from './parse-credential-request'
 import { type CredentialResponse, vCredentialResponse } from './v-credential-response'
 
 export interface CreateCredentialResponseOptions {
+  credentialRequest: ParseCredentialRequestReturn
+
   credential?: CredentialResponse['credential']
   credentials?: CredentialResponse['credentials']
 
@@ -23,6 +26,10 @@ export function createCredentialResponse(options: CreateCredentialResponseOption
     credential: options.credential,
     credentials: options.credentials,
     notification_id: options.notificationId,
+
+    // NOTE `format` is removed in draft 13. For now if a format was requested
+    // we just always return it in the response as well.
+    format: options.credentialRequest.format?.format,
     ...options.additionalPayload,
   } satisfies CredentialResponse)
 

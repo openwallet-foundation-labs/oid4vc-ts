@@ -181,12 +181,14 @@ describe('Oid4vciIssuer', () => {
       cNonce: 'some-new-nonce',
       cNonceExpiresInSeconds: 500,
       credential: 'the-credential',
+      credentialRequest: parsedCredentialRequest,
     })
 
     expect(credentialResponse).toEqual({
       c_nonce: 'some-new-nonce',
       c_nonce_expires_in: 500,
       credential: 'the-credential',
+      format: 'vc+sd-jwt',
     })
   })
 })

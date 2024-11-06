@@ -324,6 +324,7 @@ describe('Full E2E test', () => {
           cNonce: 'd9457e7c-4cf7-461c-a8d0-94221ba865e7',
           cNonceExpiresInSeconds: 500,
           notificationId: '3b926f09-d603-4e8b-a75d-eaa8965f0fe3',
+          credentialRequest: parsedCredentialRequest,
         })
 
         return HttpResponse.json(credentialResponse)
@@ -405,6 +406,7 @@ describe('Full E2E test', () => {
       c_nonce_expires_in: 500,
       credential: 'some-credential',
       notification_id: '3b926f09-d603-4e8b-a75d-eaa8965f0fe3',
+      format: 'vc+sd-jwt',
     })
   })
 
@@ -637,6 +639,7 @@ describe('Full E2E test', () => {
           cNonce: 'd9457e7c-4cf7-461c-a8d0-94221ba865e7',
           cNonceExpiresInSeconds: 500,
           notificationId: '3b926f09-d603-4e8b-a75d-eaa8965f0fe3',
+          credentialRequest: parsedCredentialRequest,
         })
 
         return HttpResponse.json(credentialResponse)
@@ -744,6 +747,7 @@ describe('Full E2E test', () => {
       c_nonce_expires_in: 500,
       credential: 'some-credential',
       notification_id: '3b926f09-d603-4e8b-a75d-eaa8965f0fe3',
+      format: 'vc+sd-jwt',
     })
   })
 })
