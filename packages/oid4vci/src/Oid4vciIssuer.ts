@@ -27,6 +27,7 @@ import {
   vCredentialIssuerMetadataWithDraft11,
 } from './metadata/credential-issuer/v-credential-issuer-metadata'
 import type { IssuerMetadataResult } from './metadata/fetch-issuer-metadata'
+import { type CreateNonceResponseOptions, createNonceResponse } from './nonce/nonce-request'
 
 export interface Oid4vciIssuerOptions {
   /**
@@ -150,5 +151,12 @@ export class Oid4vciIssuer {
    */
   public createCredentialResponse(options: CreateCredentialResponseOptions) {
     return createCredentialResponse(options)
+  }
+
+  /**
+   * @throws ValidationError - when validation of the nonce response fails
+   */
+  public createNonceResponse(options: CreateNonceResponseOptions) {
+    return createNonceResponse(options)
   }
 }

@@ -28,6 +28,7 @@ export enum Oauth2ErrorCodes {
   UnsupportedCredentialType = 'unsupported_credential_type',
   UnsupportedCredentialFormat = 'unsupported_credential_format',
   InvalidProof = 'invalid_proof',
+  InvalidNonce = 'invalid_nonce',
   InvalidEncryptionParameters = 'invalid_encryption_parameters',
 }
 

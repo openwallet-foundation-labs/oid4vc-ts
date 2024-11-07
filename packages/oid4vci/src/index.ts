@@ -26,6 +26,8 @@ export { Oid4vciError, Oid4vciErrorOptions } from './error/Oid4vciError'
 export { Oid4vciRetrieveCredentialsError } from './error/Oid4vciRetrieveCredentialsError'
 export { Oid4vciSendNotificationError } from './error/Oid4vciSendNotificationError'
 
+export type { NonceResponse } from './nonce/v-nonce'
+
 export type { SendNotificationResponseNotOk, SendNotificationResponseOk } from './notification/notification'
 export type { NotificationErrorResponse, NotificationEvent } from './notification/v-notification'
 export type {

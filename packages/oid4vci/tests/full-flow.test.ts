@@ -474,6 +474,7 @@ describe('Full E2E test', () => {
           redirect_uri: 'https://redirect-uri.com',
           code_verifier: expect.any(String),
           grant_type: 'authorization_code',
+          issuer_state: 'something',
         })
 
         const parsedAccessTokenRequest = authorizationServer.parseAccessTokenRequest({
@@ -486,6 +487,7 @@ describe('Full E2E test', () => {
         })
         expect(parsedAccessTokenRequest).toEqual({
           accessTokenRequest: {
+            issuer_state: 'something',
             code: 'some-authorization-code',
             redirect_uri: 'https://redirect-uri.com',
             code_verifier: expect.any(String),

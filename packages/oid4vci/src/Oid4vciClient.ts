@@ -33,6 +33,7 @@ import {
 import { extractKnownCredentialConfigurationSupportedFormats } from './metadata/credential-issuer/credential-issuer-metadata'
 import type { CredentialIssuerMetadata } from './metadata/credential-issuer/v-credential-issuer-metadata'
 import { type IssuerMetadataResult, resolveIssuerMetadata } from './metadata/fetch-issuer-metadata'
+import { type RequestNonceOptions, requestNonce } from './nonce/nonce-request'
 import { type SendNotifcationOptions, sendNotifcation } from './notification/notification'
 
 export enum AuthorizationFlow {
@@ -335,6 +336,7 @@ export class Oid4vciClient {
       issuerMetadata,
     })
 
+    const issuerState = credentialOffer.grants[authorizationCodeGrantIdentifier].issuer_state
     const authorizationServerMetadata = getAuthorizationServerMetadataFromList(
       issuerMetadata.authorizationServers,
       authorizationServer
@@ -344,7 +346,10 @@ export class Oid4vciClient {
       authorizationServerMetadata,
       authorizationCode,
       pkceCodeVerifier,
-      additionalRequestPayload,
+      additionalRequestPayload: {
+        ...additionalRequestPayload,
+        issuer_state: issuerState,
+      },
       dpop,
       redirectUri,
     })
@@ -353,6 +358,17 @@ export class Oid4vciClient {
       ...result,
       authorizationServer,
     }
+  }
+
+  /**
+   * Request a nonce to be used in credential request proofs from the `nonce_endpoint`
+   *
+   * @throws Oid4vciError - if no `nonce_endpoint` is configured in the issuer metadata
+   * @thrwos InvalidFetchResponseError - if the nonce endpoint did not return a succesfull response
+   * @throws ValidationError - if validating the nonce response failed
+   */
+  public async requestNonce(options: Pick<RequestNonceOptions, 'issuerMetadata'>) {
+    return requestNonce(options)
   }
 
   /**

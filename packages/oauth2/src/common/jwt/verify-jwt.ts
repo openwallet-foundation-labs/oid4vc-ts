@@ -96,26 +96,26 @@ export async function verifyJwt(options: VerifyJwtOptions) {
   const timeBasedValidation = options.skipTimeBasedValidation !== undefined ? !options.skipTimeBasedValidation : true
 
   if (timeBasedValidation && options.payload.nbf && nowInSeconds < options.payload.nbf - skewInSeconds) {
-    throw new Oauth2JwtVerificationError(`${errorMessage} jwt 'nbf' is in the future`)
+    throw new Oauth2JwtVerificationError(`${errorMessage}. jwt 'nbf' is in the future`)
   }
 
   if (timeBasedValidation && options.payload.exp && nowInSeconds > options.payload.exp + skewInSeconds) {
-    throw new Oauth2JwtVerificationError(`${errorMessage} jwt 'exp' is in the past`)
+    throw new Oauth2JwtVerificationError(`${errorMessage}. jwt 'exp' is in the past`)
   }
 
   if (options.expectedAudience && options.expectedAudience !== options.payload.aud) {
-    throw new Oauth2JwtVerificationError(`${errorMessage} jwt 'aud' does not match expected value.`)
+    throw new Oauth2JwtVerificationError(`${errorMessage}. jwt 'aud' does not match expected value.`)
   }
 
   if (options.expectedIssuer && options.expectedIssuer !== options.payload.iss) {
-    throw new Oauth2JwtVerificationError(`${errorMessage} jwt 'iss' does not match expected value.`)
+    throw new Oauth2JwtVerificationError(`${errorMessage}. jwt 'iss' does not match expected value.`)
   }
 
   if (options.expectedNonce && options.expectedNonce !== options.payload.nonce) {
-    throw new Oauth2JwtVerificationError(`${errorMessage} jwt 'nonce' does not match expected value.`)
+    throw new Oauth2JwtVerificationError(`${errorMessage}. jwt 'nonce' does not match expected value.`)
   }
 
   if (options.expectedSubject && options.expectedSubject !== options.payload.sub) {
-    throw new Oauth2JwtVerificationError(`${errorMessage} jwt 'sub' does not match expected value.`)
+    throw new Oauth2JwtVerificationError(`${errorMessage}. jwt 'sub' does not match expected value.`)
   }
 }

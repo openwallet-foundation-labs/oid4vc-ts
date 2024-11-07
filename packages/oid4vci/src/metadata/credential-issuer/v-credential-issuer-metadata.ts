@@ -84,6 +84,9 @@ const vCredentialIssuerMetadataDraft14 = v.looseObject({
   credential_endpoint: vHttpsUrl,
   deferred_credential_endpoint: v.optional(vHttpsUrl),
   notification_endpoint: v.optional(vHttpsUrl),
+
+  // Added after draft 14, but needed for proper
+  nonce_endpoint: v.optional(vHttpsUrl),
   credential_response_encryption: v.optional(
     v.looseObject({
       alg_values_supported: v.array(v.string()),
