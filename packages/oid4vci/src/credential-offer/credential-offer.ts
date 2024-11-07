@@ -55,7 +55,7 @@ export async function resolveCredentialOffer(
     const { response, result } = await fetchWithValibot(vCredentialOfferObject, parsedQueryParams.credential_offer_uri)
     if (!response.ok || !result) {
       throw new Oauth2InvalidFetchResponseError(
-        `Fetching well known metadata from '${parsedQueryParams.credential_offer_uri}' did resulted in an unsuccesfull response with status '${response.status}'`,
+        `Fetching credential offer from '${parsedQueryParams.credential_offer_uri}' resulted in an unsuccesfull response with status '${response.status}'`,
         await response.clone().text(),
         response
       )

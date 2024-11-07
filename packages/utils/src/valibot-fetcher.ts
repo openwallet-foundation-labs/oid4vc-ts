@@ -1,5 +1,5 @@
 import * as v from 'valibot'
-import { ContentType } from './content-type'
+import { ContentType, isResponseContentType } from './content-type'
 import type { Fetch } from './globals'
 
 // biome-ignore lint/suspicious/noExplicitAny: any type needed for generic
@@ -46,7 +46,7 @@ export function createValibotFetcher(
     return {
       response,
       result:
-        response.ok && response.headers.get('Content-Type') === ContentType.Json
+        response.ok && isResponseContentType(ContentType.Json, response)
           ? v.safeParse(schema, await response.json())
           : undefined,
     }

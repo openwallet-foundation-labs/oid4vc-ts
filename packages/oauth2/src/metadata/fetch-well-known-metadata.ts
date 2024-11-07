@@ -28,7 +28,7 @@ export async function fetchWellKnownMetadata<Schema extends BaseSchema>(
 
   if (!response.ok) {
     throw new Oauth2InvalidFetchResponseError(
-      `Fetching well known metadata from '${wellKnownMetadataUrl}' did resulted in an unsuccessfull response with status '${response.status}'.`,
+      `Fetching well known metadata from '${wellKnownMetadataUrl}' resulted in an unsuccessfull response with status '${response.status}'.`,
       await response.clone().text(),
       response
     )

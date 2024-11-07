@@ -8,7 +8,7 @@ import {
   type ResourceRequestResponseOk,
   resourceRequest,
 } from '@animo-id/oauth2'
-import { ContentType, parseWithErrorHandling } from '@animo-id/oauth2-utils'
+import { ContentType, isResponseContentType, parseWithErrorHandling } from '@animo-id/oauth2-utils'
 import type { IssuerMetadataResult } from '../metadata/fetch-issuer-metadata'
 import {
   type NotificationEvent,
@@ -106,10 +106,9 @@ export async function sendNotifcation(
   })
 
   if (!resourceResponse.ok) {
-    const notificationErrorResponseResult =
-      resourceResponse.response.headers.get('Content-Type') === ContentType.Json
-        ? v.safeParse(vNotificationErrorResponse, await resourceResponse.response.clone().json())
-        : undefined
+    const notificationErrorResponseResult = isResponseContentType(ContentType.Json, resourceResponse.response)
+      ? v.safeParse(vNotificationErrorResponse, await resourceResponse.response.clone().json())
+      : undefined
 
     return {
       ...resourceResponse,
