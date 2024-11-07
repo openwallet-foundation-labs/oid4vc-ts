@@ -19,5 +19,9 @@ export { type ValibotFetcher, createValibotFetcher, defaultFetcher } from './val
 export { type HttpMethod, vHttpMethod, vHttpsUrl, vInteger } from './validation'
 export { mergeDeep } from './object'
 export { arrayEqualsIgnoreOrder } from './array'
-export { parseWwwAuthenticateHeader, type WwwAuthenticateHeaderChallenge } from './www-authenticate'
+export {
+  parseWwwAuthenticateHeader,
+  type WwwAuthenticateHeaderChallenge,
+  encodeWwwAuthenticateHeader,
+} from './www-authenticate'
 export { ContentType } from './content-type'

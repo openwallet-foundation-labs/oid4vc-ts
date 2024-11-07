@@ -1,4 +1,4 @@
-import { parseWwwAuthenticateHeader } from '@animo-id/oauth2-utils'
+import { encodeWwwAuthenticateHeader, parseWwwAuthenticateHeader } from '@animo-id/oauth2-utils'
 import type { SupportedAuthenticationScheme } from '../access-token/verify-access-token'
 import type { Oauth2ErrorCodes } from '../common/v-oauth2-error'
 import { Oauth2Error } from './Oauth2Error'
@@ -54,6 +54,20 @@ export class Oauth2ResourceUnauthorizedError extends Oauth2Error {
             ...additionalPayload,
           }) satisfies WwwAuthenticateHeaderChallenge
       )
+    )
+  }
+
+  public toHeaderValue() {
+    return encodeWwwAuthenticateHeader(
+      this.wwwAuthenticateHeaders.map((header) => ({
+        scheme: header.scheme,
+        payload: {
+          error: header.error ?? null,
+          error_description: header.error_description ?? null,
+          scope: header.scope ?? null,
+          ...header.additionalPayload,
+        },
+      }))
     )
   }
 }
