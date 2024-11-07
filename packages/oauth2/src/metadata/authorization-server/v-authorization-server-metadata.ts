@@ -5,7 +5,10 @@ import { vAlgValueNotNone } from '../../common/v-common'
 export const vAuthorizationServerMetadata = v.pipe(
   v.looseObject({
     issuer: vHttpsUrl,
+
     token_endpoint: vHttpsUrl,
+    token_endpoint_auth_methods_supported: v.optional(v.array(v.string())),
+
     authorization_endpoint: v.optional(vHttpsUrl),
 
     jwks_uri: v.optional(vHttpsUrl),
