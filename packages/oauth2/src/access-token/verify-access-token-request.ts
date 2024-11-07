@@ -104,7 +104,9 @@ export async function verifyPreAuthorizedCodeAccessTokenRequest(
           error: Oauth2ErrorCodes.InvalidGrant,
           error_description: `Expired 'pre-authorized_code' provided`,
         },
-        `The provided 'pre-authorized_code' in the request expired at '${options.preAuthorizedCodeExpiresAt.getTime()}', now is '${now.getTime()}'`
+        {
+          internalMessage: `The provided 'pre-authorized_code' in the request expired at '${options.preAuthorizedCodeExpiresAt.getTime()}', now is '${now.getTime()}'`,
+        }
       )
     }
   }
@@ -155,7 +157,9 @@ export async function verifyAuthorizationCodeAccessTokenRequest(
           error: Oauth2ErrorCodes.InvalidGrant,
           error_description: `Expired 'code' provided`,
         },
-        `The provided 'code' in the request expired at '${options.codeExpiresAt.getTime()}', now is '${now.getTime()}'`
+        {
+          internalMessage: `The provided 'code' in the request expired at '${options.codeExpiresAt.getTime()}', now is '${now.getTime()}'`,
+        }
       )
     }
   }

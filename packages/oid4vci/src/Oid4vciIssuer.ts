@@ -112,8 +112,9 @@ export class Oid4vciIssuer {
               ? error.message
               : 'Invalid proof',
         },
-        'Error verifying credential request proof jwt',
+
         {
+          internalMessage: 'Error verifying credential request proof jwt',
           cause: error,
         }
       )
@@ -136,8 +137,8 @@ export class Oid4vciIssuer {
             // TODO: error should have a internalErrorMessage and a publicErrorMessage
             error instanceof ValidationError ? error.message : 'Invalid request',
         },
-        'Error verifying credential request proof jwt',
         {
+          internalMessage: 'Error verifying credential request proof jwt',
           cause: error,
         }
       )
