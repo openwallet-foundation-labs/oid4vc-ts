@@ -11,7 +11,7 @@ import {
   calculateJwkThumbprint,
   preAuthorizedCodeGrantIdentifier,
 } from '@animo-id/oauth2'
-import { type HttpMethod, decodeUtf8String, encodeToBase64Url } from '@animo-id/oauth2-utils'
+import { ContentType, type HttpMethod, decodeUtf8String, encodeToBase64Url } from '@animo-id/oauth2-utils'
 import { http, HttpResponse } from 'msw'
 import { setupServer } from 'msw/node'
 import { afterAll, afterEach, beforeAll, describe, expect, test } from 'vitest'
@@ -159,7 +159,9 @@ describe('Full E2E test', () => {
         HttpResponse.json(authorizationServerMetadata)
       ),
       http.get(`${authorizationServerMetadata.jwks_uri}`, () =>
-        HttpResponse.json({ keys: [accessTokenJwkPublic] } satisfies JwkSet)
+        HttpResponse.json({ keys: [accessTokenJwkPublic] } satisfies JwkSet, {
+          headers: { 'Content-Type': ContentType.JwkSet },
+        })
       ),
       http.post(authorizationServerMetadata.token_endpoint, async ({ request }) => {
         const accessTokenRequest = parseXwwwFormUrlEncoded(await request.text())
@@ -444,7 +446,9 @@ describe('Full E2E test', () => {
         HttpResponse.json(authorizationServerMetadata)
       ),
       http.get(`${authorizationServerMetadata.jwks_uri}`, () =>
-        HttpResponse.json({ keys: [accessTokenJwkPublic] } satisfies JwkSet)
+        HttpResponse.json({ keys: [accessTokenJwkPublic] } satisfies JwkSet, {
+          headers: { 'Content-Type': ContentType.JwkSet },
+        })
       ),
       http.post(`${authorizationServerMetadata.pushed_authorization_request_endpoint}`, async ({ request }) => {
         const parRequest = parseXwwwFormUrlEncoded(await request.text())

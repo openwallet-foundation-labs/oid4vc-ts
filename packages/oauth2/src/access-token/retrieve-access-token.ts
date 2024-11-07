@@ -1,11 +1,11 @@
 import { ContentType, createValibotFetcher, objectToQueryParams, parseWithErrorHandling } from '@animo-id/oauth2-utils'
+import { InvalidFetchResponseError } from '@animo-id/oauth2-utils'
 import * as v from 'valibot'
 import { ValidationError } from '../../../utils/src/error/ValidationError'
 import type { CallbackContext } from '../callbacks'
 import { type RequestDpopOptions, createDpopJwt, extractDpopNonceFromHeaders } from '../dpop/dpop'
 import { shouldRetryTokenRequestWithDPoPNonce } from '../dpop/dpop-retry'
 import { Oauth2ClientErrorResponseError } from '../error/Oauth2ClientErrorResponseError'
-import { Oauth2InvalidFetchResponseError } from '../error/Oauth2InvalidFetchResponseError'
 import type { AuthorizationServerMetadata } from '../metadata/authorization-server/v-authorization-server-metadata'
 import { authorizationCodeGrantIdentifier, preAuthorizedCodeGrantIdentifier } from '../v-grant-type'
 import {
@@ -157,6 +157,7 @@ async function retrieveAccessToken(options: RetrieveAccessTokenOptions): Promise
   const requestQueryParams = objectToQueryParams(accessTokenRequest)
   const { response, result } = await fetchWithValibot(
     vAccessTokenResponse,
+    ContentType.Json,
     options.authorizationServerMetadata.token_endpoint,
     {
       body: requestQueryParams,
@@ -184,7 +185,7 @@ async function retrieveAccessToken(options: RetrieveAccessTokenOptions): Promise
       )
     }
 
-    throw new Oauth2InvalidFetchResponseError(
+    throw new InvalidFetchResponseError(
       `Unable to retrieve access token from '${options.authorizationServerMetadata.token_endpoint}'. Received response with status ${response.status}`,
       await response.clone().text(),
       response

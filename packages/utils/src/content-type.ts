@@ -3,6 +3,7 @@ import type { FetchResponse } from './globals'
 export enum ContentType {
   XWwwFormUrlencoded = 'application/x-www-form-urlencoded',
   Json = 'application/json',
+  JwkSet = 'application/jwk-set+json',
 }
 
 export function isContentType(contentType: ContentType, value: string) {

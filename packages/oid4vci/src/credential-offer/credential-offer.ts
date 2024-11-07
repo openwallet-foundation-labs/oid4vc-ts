@@ -3,14 +3,15 @@ import * as v from 'valibot'
 import {
   type AuthorizationCodeGrantIdentifier,
   type CallbackContext,
+  InvalidFetchResponseError,
   Oauth2Error,
-  Oauth2InvalidFetchResponseError,
   type PreAuthorizedCodeGrantIdentifier,
   authorizationCodeGrantIdentifier,
   getAuthorizationServerMetadataFromList,
   preAuthorizedCodeGrantIdentifier,
 } from '@animo-id/oauth2'
 import {
+  ContentType,
   type Fetch,
   URL,
   URLSearchParams,
@@ -52,9 +53,13 @@ export async function resolveCredentialOffer(
   if (parsedQueryParams.credential_offer_uri) {
     const fetchWithValibot = createValibotFetcher(options?.fetch)
 
-    const { response, result } = await fetchWithValibot(vCredentialOfferObject, parsedQueryParams.credential_offer_uri)
+    const { response, result } = await fetchWithValibot(
+      vCredentialOfferObject,
+      ContentType.Json,
+      parsedQueryParams.credential_offer_uri
+    )
     if (!response.ok || !result) {
-      throw new Oauth2InvalidFetchResponseError(
+      throw new InvalidFetchResponseError(
         `Fetching credential offer from '${parsedQueryParams.credential_offer_uri}' resulted in an unsuccesfull response with status '${response.status}'`,
         await response.clone().text(),
         response

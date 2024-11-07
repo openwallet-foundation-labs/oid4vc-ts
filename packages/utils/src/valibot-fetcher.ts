@@ -1,10 +1,12 @@
 import * as v from 'valibot'
-import { ContentType, isResponseContentType } from './content-type'
+import { type ContentType, isResponseContentType } from './content-type'
+import { InvalidFetchResponseError } from './error/InvalidFetchResponseError'
 import type { Fetch } from './globals'
 
 // biome-ignore lint/suspicious/noExplicitAny: any type needed for generic
 export type ValibotFetcher = <Schema extends v.BaseSchema<any, any, any>>(
   schema: Schema,
+  expectedContentType: ContentType,
   ...args: Parameters<Fetch>
 ) => Promise<{ response: Awaited<ReturnType<Fetch>>; result?: v.SafeParseResult<Schema> }>
 
@@ -40,15 +42,20 @@ export function createValibotFetcher(
    */
   fetcher = defaultFetcher
 ): ValibotFetcher {
-  return async (schema, ...args) => {
+  return async (schema, expectedContentType, ...args) => {
     const response = await fetcher(...args)
+
+    if (response.ok && !isResponseContentType(expectedContentType, response)) {
+      throw new InvalidFetchResponseError(
+        `Expected response to match content type '${expectedContentType}', but received '${response.headers.get('Content-Type')}'`,
+        await response.clone().text(),
+        response
+      )
+    }
 
     return {
       response,
-      result:
-        response.ok && isResponseContentType(ContentType.Json, response)
-          ? v.safeParse(schema, await response.json())
-          : undefined,
+      result: response.ok ? v.safeParse(schema, await response.json()) : undefined,
     }
   }
 }

@@ -1,3 +1,4 @@
+import { ContentType } from '@animo-id/oauth2-utils'
 import { http, HttpResponse } from 'msw'
 import { setupServer } from 'msw/node'
 import { afterAll, afterEach, beforeAll, describe, expect, test } from 'vitest'
@@ -52,7 +53,9 @@ describe('Oauth2ResourceServer', () => {
   test('verifies resource request', async () => {
     server.resetHandlers(
       http.get(authorizationServerMetadata.jwks_uri, () =>
-        HttpResponse.json({ keys: [accessTokenSignerJwkPublic] } satisfies JwkSet)
+        HttpResponse.json({ keys: [accessTokenSignerJwkPublic] } satisfies JwkSet, {
+          headers: { 'Content-Type': ContentType.JwkSet },
+        })
       )
     )
 

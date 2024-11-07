@@ -1,7 +1,6 @@
-import type { FetchResponse } from '@animo-id/oauth2-utils'
-import { Oauth2Error } from './Oauth2Error'
+import type { FetchResponse } from '../globals'
 
-export class InvalidFetchResponseError extends Oauth2Error {
+export class InvalidFetchResponseError extends Error {
   public readonly response: FetchResponse
 
   public constructor(

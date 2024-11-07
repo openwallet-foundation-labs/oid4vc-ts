@@ -5,11 +5,11 @@ import {
   objectToQueryParams,
   parseWithErrorHandling,
 } from '@animo-id/oauth2-utils'
+import { InvalidFetchResponseError } from '@animo-id/oauth2-utils'
 import * as v from 'valibot'
 import type { CallbackContext } from '../callbacks'
 import { Oauth2ClientAuthorizationChallengeError } from '../error/Oauth2ClientAuthorizationChallengeError'
 import { Oauth2Error } from '../error/Oauth2Error'
-import { Oauth2InvalidFetchResponseError } from '../error/Oauth2InvalidFetchResponseError'
 import type { AuthorizationServerMetadata } from '../metadata/authorization-server/v-authorization-server-metadata'
 import { createPkce } from '../pkce'
 import {
@@ -67,7 +67,7 @@ export interface SendAuthorizationChallengeRequestOptions {
  * Send an authorization challenge request.
  *
  * @throws {Oauth2ClientAuthorizationChallengeError} if the request failed and a {@link AuthorizationChallengeErrorResponse} is returned
- * @throws {Oauth2InvalidFetchResponseError} if the request failed but no error response could be parsed
+ * @throws {InvalidFetchResponseError} if the request failed but no error response could be parsed
  * @throws {ValidationError} if a successful response was received but an error occured during verification of the {@link AuthorizationChallengeResponse}
  */
 export async function sendAuthorizationChallengeRequest(options: SendAuthorizationChallengeRequestOptions) {
@@ -101,6 +101,7 @@ export async function sendAuthorizationChallengeRequest(options: SendAuthorizati
 
   const { response, result } = await fetchWithValibot(
     vAuthorizationChallengeResponse,
+    ContentType.Json,
     authorizationServerMetadata.authorization_challenge_endpoint,
     {
       method: 'POST',
@@ -127,7 +128,7 @@ export async function sendAuthorizationChallengeRequest(options: SendAuthorizati
       )
     }
 
-    throw new Oauth2InvalidFetchResponseError(
+    throw new InvalidFetchResponseError(
       `Error requesting authorization code from authorization challenge endpoint '${authorizationServerMetadata.authorization_challenge_endpoint}'. Received response with status ${response.status}`,
       await response.clone().text(),
       response

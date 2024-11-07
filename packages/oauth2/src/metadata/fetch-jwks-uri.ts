@@ -1,8 +1,8 @@
-import { type Fetch, createValibotFetcher } from '@animo-id/oauth2-utils'
+import { ContentType, type Fetch, createValibotFetcher } from '@animo-id/oauth2-utils'
+import { InvalidFetchResponseError } from '@animo-id/oauth2-utils'
 import { ValidationError } from '../../../utils/src/error/ValidationError'
 import { type JwkSet, vJwkSet } from '../common/jwk/v-jwk'
 import { Oauth2Error } from '../error/Oauth2Error'
-import { Oauth2InvalidFetchResponseError } from '../error/Oauth2InvalidFetchResponseError'
 import type { AuthorizationServerMetadata } from './authorization-server/v-authorization-server-metadata'
 
 /**
@@ -13,7 +13,7 @@ import type { AuthorizationServerMetadata } from './authorization-server/v-autho
  * Throws error otherwise
  *
  * @throws {ValidationError} if successfull response but validation of response failed
- * @throws {Oauth2InvalidFetchResponseError} if unsuccesful response
+ * @throws {InvalidFetchResponseError} if unsuccesful response
  * @throws {Oauth2Error} if authorization server does not have a jwks_uri
  */
 export async function fetchJwks(authorizationServer: AuthorizationServerMetadata, fetch?: Fetch): Promise<JwkSet> {
@@ -26,10 +26,9 @@ export async function fetchJwks(authorizationServer: AuthorizationServerMetadata
     )
   }
 
-  const { result, response } = await fetcher(vJwkSet, jwksUrl)
-
+  const { result, response } = await fetcher(vJwkSet, ContentType.JwkSet, jwksUrl)
   if (!response.ok) {
-    throw new Oauth2InvalidFetchResponseError(
+    throw new InvalidFetchResponseError(
       `Fetching JWKs from jwks_uri '${jwksUrl}' resulted in an unsuccessfull response with status code '${response.status}'.`,
       await response.clone().text(),
       response

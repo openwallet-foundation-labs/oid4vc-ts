@@ -1,6 +1,6 @@
 import { ContentType, createValibotFetcher, objectToQueryParams, parseWithErrorHandling } from '@animo-id/oauth2-utils'
+import { InvalidFetchResponseError } from '@animo-id/oauth2-utils'
 import { Oauth2Error } from '../error/Oauth2Error'
-import { Oauth2InvalidFetchResponseError } from '../error/Oauth2InvalidFetchResponseError'
 import type { AuthorizationServerMetadata } from '../metadata/authorization-server/v-authorization-server-metadata'
 
 import { Headers } from '@animo-id/oauth2-utils'
@@ -65,15 +65,20 @@ export async function introspectToken(options: IntrospectTokenOptions) {
     headers,
   })
 
-  const { result, response } = await fetchWithValibot(vTokenIntrospectionResponse, introspectionEndpoint, {
-    body: objectToQueryParams(introspectionRequest),
-    method: 'POST',
-    headers,
-  })
+  const { result, response } = await fetchWithValibot(
+    vTokenIntrospectionResponse,
+    ContentType.Json,
+    introspectionEndpoint,
+    {
+      body: objectToQueryParams(introspectionRequest),
+      method: 'POST',
+      headers,
+    }
+  )
 
   // TODO: better error handling (error response?)
   if (!response.ok || !result?.success) {
-    throw new Oauth2InvalidFetchResponseError(
+    throw new InvalidFetchResponseError(
       `Unable to introspect token from '${introspectionEndpoint}'. Received response with status ${response.status}`,
       await response.clone().text(),
       response

@@ -43,7 +43,7 @@ export {
   Oauth2ResourceUnauthorizedError,
   type WwwAuthenticateHeaderChallenge,
 } from './error/Oauth2ResourceUnauthorizedError'
-export { Oauth2InvalidFetchResponseError } from './error/Oauth2InvalidFetchResponseError'
+export { InvalidFetchResponseError } from '@animo-id/oauth2-utils'
 export { Oauth2ClientErrorResponseError } from './error/Oauth2ClientErrorResponseError'
 export { Oauth2ClientAuthorizationChallengeError } from './error/Oauth2ClientAuthorizationChallengeError'
 export { Oauth2ServerErrorResponseError } from './error/Oauth2ServerErrorResponseError'

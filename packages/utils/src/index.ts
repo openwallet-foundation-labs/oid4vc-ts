@@ -10,6 +10,7 @@ export {
 
 export { JsonParseError } from './error/JsonParseError'
 export { ValidationError } from './error/ValidationError'
+export { InvalidFetchResponseError } from './error/InvalidFetchResponseError'
 
 export { addSecondsToDate, dateToSeconds } from './date'
 export { decodeBase64, decodeUtf8String, encodeToBase64, encodeToBase64Url, encodeToUtf8String } from './encoding'

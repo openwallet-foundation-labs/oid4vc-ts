@@ -1,11 +1,11 @@
 import { ContentType, type Fetch, createValibotFetcher, objectToQueryParams } from '@animo-id/oauth2-utils'
+import { InvalidFetchResponseError } from '@animo-id/oauth2-utils'
 import * as v from 'valibot'
 import { ValidationError } from '../../../utils/src/error/ValidationError'
 import { vAccessTokenErrorResponse } from '../access-token/v-access-token'
 import type { CallbackContext } from '../callbacks'
 import { Oauth2ClientErrorResponseError } from '../error/Oauth2ClientErrorResponseError'
 import { Oauth2Error } from '../error/Oauth2Error'
-import { Oauth2InvalidFetchResponseError } from '../error/Oauth2InvalidFetchResponseError'
 import type { AuthorizationServerMetadata } from '../metadata/authorization-server/v-authorization-server-metadata'
 import { createPkce } from '../pkce'
 import {
@@ -140,6 +140,7 @@ async function pushAuthorizationRequest(options: PushAuthorizationRequestOptions
 
   const { response, result } = await fetchWithValibot(
     vPushedAuthorizationResponse,
+    ContentType.Json,
     options.pushedAuthorizationRequestEndpoint,
     {
       method: 'POST',
@@ -166,7 +167,7 @@ async function pushAuthorizationRequest(options: PushAuthorizationRequestOptions
       )
     }
 
-    throw new Oauth2InvalidFetchResponseError(
+    throw new InvalidFetchResponseError(
       `Unable to push authorization request to '${options.pushedAuthorizationRequestEndpoint}'. Received response with status ${response.status}`,
       await response.clone().text(),
       response

@@ -6,6 +6,8 @@ export class Oid4vciRetrieveCredentialsError extends Oid4vciError {
     message: string,
     public response: RetrieveCredentialsResponseNotOk
   ) {
-    super(message)
+    super(
+      `${message}\n${JSON.stringify(response.credentialResponseResult ?? response.credentialErrorResponseResult, null, 2)}`
+    )
   }
 }
