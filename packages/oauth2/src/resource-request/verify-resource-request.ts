@@ -184,11 +184,14 @@ export async function verifyResourceRequest(options: VerifyResourceRequestOption
       dpopJwk = decodedDpopJwt.header.jwk
     } catch (error) {
       const errorMessage = error instanceof Oauth2Error ? error.message : 'Error verifying DPoP jwt'
-      throw new Oauth2ResourceUnauthorizedError(errorMessage, {
-        scheme,
-        error: Oauth2ErrorCodes.InvalidDpopProof,
-        error_description: errorMessage,
-      })
+      throw new Oauth2ResourceUnauthorizedError(
+        `Error occured during verification of jwt profile access token: ${error instanceof Error ? error.message : error}`,
+        {
+          scheme,
+          error: Oauth2ErrorCodes.InvalidDpopProof,
+          error_description: errorMessage,
+        }
+      )
     }
   }
 
