@@ -22,6 +22,7 @@ export enum Oauth2ErrorCodes {
 
   // Oid4vci
   InvalidCredentialRequest = 'invalid_credential_request',
+  CredentialRequestDenied = 'credential_request_denied',
   UnsupportedCredentialType = 'unsupported_credential_type',
   UnsupportedCredentialFormat = 'unsupported_credential_format',
   InvalidProof = 'invalid_proof',
