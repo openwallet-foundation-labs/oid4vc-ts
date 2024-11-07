@@ -456,7 +456,8 @@ export class Oid4vciClient {
     if (!credentialResponse.ok) {
       throw new Oid4vciRetrieveCredentialsError(
         `Error retrieving credentials from '${issuerMetadata.credentialIssuer.credential_issuer}'`,
-        credentialResponse
+        credentialResponse,
+        await credentialResponse.response.clone().text()
       )
     }
 

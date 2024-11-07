@@ -6,7 +6,7 @@ import {
   type ResourceRequestResponseOk,
   resourceRequest,
 } from '@animo-id/oauth2'
-import { ContentType, parseWithErrorHandling } from '@animo-id/oauth2-utils'
+import { ContentType, isResponseContentType, parseWithErrorHandling } from '@animo-id/oauth2-utils'
 import { type SafeParseResult, safeParse } from 'valibot'
 import type { IssuerMetadataResult } from '../metadata/fetch-issuer-metadata'
 import { Oid4vciDraftVersion } from '../version'
@@ -156,10 +156,9 @@ async function retrieveCredentials(
   })
 
   if (!resourceResponse.ok) {
-    const credentialErrorResponseResult =
-      resourceResponse.response.headers.get('Content-Type') === ContentType.Json
-        ? safeParse(vCredentialErrorResponse, await resourceResponse.response.clone().json())
-        : undefined
+    const credentialErrorResponseResult = isResponseContentType(ContentType.Json, resourceResponse.response)
+      ? safeParse(vCredentialErrorResponse, await resourceResponse.response.clone().json())
+      : undefined
 
     return {
       ...resourceResponse,
@@ -168,8 +167,10 @@ async function retrieveCredentials(
   }
 
   // Try to parse the credential response
-  const credentialResponseResult = safeParse(vCredentialResponse, await resourceResponse.response.clone().json())
-  if (!credentialResponseResult.success) {
+  const credentialResponseResult = isResponseContentType(ContentType.Json, resourceResponse.response)
+    ? safeParse(vCredentialResponse, await resourceResponse.response.clone().json())
+    : undefined
+  if (!credentialResponseResult?.success) {
     return {
       ...resourceResponse,
       ok: false,
