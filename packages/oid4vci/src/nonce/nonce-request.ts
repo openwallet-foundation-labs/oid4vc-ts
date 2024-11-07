@@ -36,7 +36,9 @@ export async function requestNonce(options: RequestNonceOptions): Promise<NonceR
     )
   }
 
-  const { response, result } = await fetchWithValibot(vNonceResponse, ContentType.Json, nonceEndpoint)
+  const { response, result } = await fetchWithValibot(vNonceResponse, ContentType.Json, nonceEndpoint, {
+    method: 'POST',
+  })
   if (!response.ok || !result) {
     throw new InvalidFetchResponseError(
       `Requeting nonce from '${nonceEndpoint}' resulted in an unsuccesfull response with status '${response.status}'`,
