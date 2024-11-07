@@ -93,7 +93,7 @@ export async function verifyResourceRequest(options: VerifyResourceRequestOption
     throw new Oauth2ResourceUnauthorizedError(
       `Error occured during verification of jwt profile access token: ${error.message}`,
       {
-        scheme: SupportedAuthenticationScheme.Bearer,
+        scheme,
         error: Oauth2ErrorCodes.InvalidToken,
         error_description: errorMessage,
       }
