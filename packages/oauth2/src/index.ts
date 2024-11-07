@@ -39,6 +39,7 @@ export type {
 
 export { Oauth2Error, Oauth2ErrorOptions } from './error/Oauth2Error'
 export { Oauth2JwtVerificationError } from './error/Oauth2JwtVerificationError'
+export { Oauth2JwtParseError } from './error/Oauth2JwtParseError'
 export {
   Oauth2ResourceUnauthorizedError,
   type WwwAuthenticateHeaderChallenge,

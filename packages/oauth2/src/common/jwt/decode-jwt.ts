@@ -1,5 +1,4 @@
 import type * as v from 'valibot'
-import { Oauth2Error } from '../../error/Oauth2Error'
 
 import {
   type BaseSchema,
@@ -8,6 +7,7 @@ import {
   parseWithErrorHandling,
   stringToJsonWithErrorHandling,
 } from '@animo-id/oauth2-utils'
+import { Oauth2JwtParseError } from '../../error/Oauth2JwtParseError'
 import { type JwtSigner, vJwtHeader, vJwtPayload } from './v-jwt'
 
 export interface DecodeJwtOptions<
@@ -47,17 +47,23 @@ export function decodeJwt<
 >(options: DecodeJwtOptions<HeaderSchema, PayloadSchema>): DecodeJwtResult<HeaderSchema, PayloadSchema> {
   const jwtParts = options.jwt.split('.')
   if (jwtParts.length !== 3) {
-    throw new Oauth2Error('Jwt is not a valid jwt, unable to decode')
+    throw new Oauth2JwtParseError('Jwt is not a valid jwt, unable to decode')
   }
 
-  const headerJson = stringToJsonWithErrorHandling(
-    encodeToUtf8String(decodeBase64(jwtParts[0])),
-    'Unable to parse jwt header to JSON'
-  )
-  const payloadJson = stringToJsonWithErrorHandling(
-    encodeToUtf8String(decodeBase64(jwtParts[1])),
-    'Unable to parse jwt payload to JSON'
-  )
+  let headerJson: Record<string, unknown>
+  let payloadJson: Record<string, unknown>
+  try {
+    headerJson = stringToJsonWithErrorHandling(
+      encodeToUtf8String(decodeBase64(jwtParts[0])),
+      'Unable to parse jwt header to JSON'
+    )
+    payloadJson = stringToJsonWithErrorHandling(
+      encodeToUtf8String(decodeBase64(jwtParts[1])),
+      'Unable to parse jwt payload to JSON'
+    )
+  } catch (error) {
+    throw new Oauth2JwtParseError('Error parsing JWT')
+  }
 
   const header = parseWithErrorHandling(options.headerSchema ?? vJwtHeader, headerJson)
   const payload = parseWithErrorHandling(options.payloadSchema ?? vJwtPayload, payloadJson)

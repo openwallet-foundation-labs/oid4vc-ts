@@ -1,4 +1,4 @@
-import { JsonParseError, ValidationError } from '@animo-id/oauth2-utils'
+import { ValidationError } from '@animo-id/oauth2-utils'
 import { introspectToken } from '../access-token/introspect-token'
 import type { AccessTokenProfileJwtPayload } from '../access-token/v-access-token-jwt'
 import type { TokenIntrospectionResponse } from '../access-token/v-token-introspection'
@@ -9,6 +9,7 @@ import type { RequestLike } from '../common/v-common'
 import { Oauth2ErrorCodes } from '../common/v-oauth2-error'
 import { extractDpopJwtFromHeaders, verifyDpopJwt } from '../dpop/dpop'
 import { Oauth2Error } from '../error/Oauth2Error'
+import { Oauth2JwtParseError } from '../error/Oauth2JwtParseError'
 import { Oauth2ResourceUnauthorizedError } from '../error/Oauth2ResourceUnauthorizedError'
 import type { AuthorizationServerMetadata } from '../metadata/authorization-server/v-authorization-server-metadata'
 
@@ -87,7 +88,7 @@ export async function verifyResourceRequest(options: VerifyResourceRequestOption
     now: options.now,
   }).catch((error) => {
     // It's ok if we couldn't parse it as a JWT -- it means it's probably an opaque token
-    if (error instanceof JsonParseError || error instanceof ValidationError) return null
+    if (error instanceof Oauth2JwtParseError || error instanceof ValidationError) return null
 
     const errorMessage = error instanceof Oauth2Error ? error.message : 'Invalid access token'
     throw new Oauth2ResourceUnauthorizedError(

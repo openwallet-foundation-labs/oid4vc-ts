@@ -42,8 +42,9 @@ export interface VerifyJwtProfileAccessTokenOptions {
 /**
  * Verify an access token as a JWT Profile access token.
  *
- * @throws {@link JsonParseError} if the JWT header or payload cannot be parsed as JSON
  * @throws {@link ValidationError} if the JWT header or payload does not align with JWT Profile rules
+ * @throws {@link Oauth2JwtParseError} if the jwt is not a valid jwt format, or the jwt header/payload cannot be parsed as JSON
+ * @throws {@link Oauth2JwtVerificationError} if the JWT verification fails (signature or nbf/exp)
  * @throws {@link Oauth2JwtVerificationError} if the JWT verification fails (signature or nbf/exp)
  */
 export async function verifyJwtProfileAccessToken(options: VerifyJwtProfileAccessTokenOptions) {
