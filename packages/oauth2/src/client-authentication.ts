@@ -75,9 +75,7 @@ export interface ClientAuthenticationDynamicOptions {
  * Dynamicaly get the client authentication method based on endpoint type and authorization server.
  * Only `client_secret_post` and `client_secret_basic` supported.
  */
-export async function clientAuthenticationDynamic(
-  options: ClientAuthenticationDynamicOptions
-): Promise<ClientAuthenticationCallback> {
+export function clientAuthenticationDynamic(options: ClientAuthenticationDynamicOptions): ClientAuthenticationCallback {
   return (callbackOptions) => {
     const { url, authorizationServerMetata } = callbackOptions
     const endpointType: ClientAuthenticationEndpointType =
