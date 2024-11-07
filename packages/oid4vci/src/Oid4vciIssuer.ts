@@ -131,7 +131,7 @@ export class Oid4vciIssuer {
     } catch (error) {
       throw new Oauth2ServerErrorResponseError(
         {
-          error: Oauth2ErrorCodes.InvalidRequest,
+          error: Oauth2ErrorCodes.InvalidCredentialRequest,
           error_description:
             // TODO: error should have a internalErrorMessage and a publicErrorMessage
             error instanceof ValidationError ? error.message : 'Invalid request',
