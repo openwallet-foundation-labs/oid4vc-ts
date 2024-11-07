@@ -1,4 +1,4 @@
-import { type FetchResponse, type HttpMethod, defaultFetcher } from '@animo-id/oauth2-utils'
+import { type FetchRequestInit, type FetchResponse, type HttpMethod, defaultFetcher } from '@animo-id/oauth2-utils'
 import type { CallbackContext } from '../callbacks'
 import { type RequestDpopOptions, createDpopJwt, extractDpopNonceFromHeaders } from '../dpop/dpop'
 import { shouldRetryResourceRequestWithDPoPNonce } from '../dpop/dpop-retry'
@@ -32,7 +32,7 @@ export interface ResourceRequestOptions {
   accessToken: string
 
   url: string
-  requestOptions: RequestInit
+  requestOptions: FetchRequestInit
 }
 
 interface ResourceRequestResponseBase {
