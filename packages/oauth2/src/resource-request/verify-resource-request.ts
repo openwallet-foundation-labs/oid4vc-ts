@@ -90,11 +90,14 @@ export async function verifyResourceRequest(options: VerifyResourceRequestOption
     if (error instanceof JsonParseError || error instanceof ValidationError) return null
 
     const errorMessage = error instanceof Oauth2Error ? error.message : 'Invalid access token'
-    throw new Oauth2ResourceUnauthorizedError('Error occured during verification of jwt profile access token', {
-      scheme: SupportedAuthenticationScheme.Bearer,
-      error: Oauth2ErrorCodes.InvalidToken,
-      error_description: errorMessage,
-    })
+    throw new Oauth2ResourceUnauthorizedError(
+      `Error occured during verification of jwt profile access token: ${error.message}`,
+      {
+        scheme: SupportedAuthenticationScheme.Bearer,
+        error: Oauth2ErrorCodes.InvalidToken,
+        error_description: errorMessage,
+      }
+    )
   })
 
   let tokenPayload: AccessTokenProfileJwtPayload | TokenIntrospectionResponse | undefined = verificationResult?.payload
