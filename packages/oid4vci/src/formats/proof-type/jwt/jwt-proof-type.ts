@@ -63,7 +63,7 @@ export interface VerifyCredentialRequestJwtProofOptions {
   /**
    * Expected nonce. Should be a c_nonce previously shared with the wallet
    */
-  expectedNonce: string
+  expectedNonce?: string
 
   /**
    * Date at which the nonce will expire
