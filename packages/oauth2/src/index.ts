@@ -87,8 +87,10 @@ export type {
 export { HashAlgorithm } from './callbacks'
 
 export {
-  GetClientAuthenticationOptions,
+  ClientAuthenticationCallbackOptions,
   ClientAuthenticationCallback,
+  type ClientAuthenticationDynamicOptions,
+  clientAuthenticationDynamic,
   clientAuthenticationNone,
   type ClientAuthenticationClientSecretBasicOptions,
   clientAuthenticationClientSecretBasic,
