@@ -5,6 +5,10 @@ export type {
 
 export type { ParseCredentialRequestReturn } from './credential-request/parse-credential-request'
 export type {
+  RetrieveCredentialsResponseNotOk,
+  RetrieveCredentialsResponseOk,
+} from './credential-request/retrieve-credentials'
+export type {
   CredentialRequestWithFormats,
   CredentialRequest,
   CredentialRequestFormatSpecific,
@@ -15,8 +19,10 @@ export {
   getCredentialConfigurationsMatchingRequestFormat,
 } from './credential-request/credential-request-configurations'
 
-export { Oid4vciError, Oid4vciErrorOptions } from './error/Oid4vcError'
+export { Oid4vciError, Oid4vciErrorOptions } from './error/Oid4vciError'
 
+export type { SendNotificationResponseNotOk, SendNotificationResponseOk } from './notification/notification'
+export type { NotificationErrorResponse, NotificationEvent } from './notification/v-notification'
 export type {
   CredentialRequestJwtProofTypeHeader,
   CredentialRequestJwtProofTypePayload,

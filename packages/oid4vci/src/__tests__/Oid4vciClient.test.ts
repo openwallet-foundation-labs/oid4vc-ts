@@ -112,7 +112,7 @@ describe('Oid4vciClient', () => {
       signature: expect.any(String),
     })
 
-    const { credentialResponse } = await client.retrieveCredentials({
+    const credentialResponse = await client.retrieveCredentials({
       accessToken: accessTokenResponse.access_token,
       credentialConfigurationId: credentialOffer.credential_configuration_ids[0],
       issuerMetadata,
@@ -121,7 +121,7 @@ describe('Oid4vciClient', () => {
         jwt: proofJwt,
       },
     })
-    expect(credentialResponse).toStrictEqual(paradymDraft13.credentialResponse)
+    expect(credentialResponse.credentialResponse).toStrictEqual(paradymDraft13.credentialResponse)
   })
 
   test('receive a credential from Paradym using draft 11', async () => {
@@ -267,7 +267,7 @@ describe('Oid4vciClient', () => {
       signature: expect.any(String),
     })
 
-    const { credentialResponse } = await client.retrieveCredentials({
+    const credentialResponse = await client.retrieveCredentials({
       accessToken: accessTokenResponse.access_token,
       credentialConfigurationId: credentialOffer.credential_configuration_ids[0],
       issuerMetadata,
@@ -276,8 +276,7 @@ describe('Oid4vciClient', () => {
         jwt: proofJwt,
       },
     })
-
-    expect(credentialResponse).toStrictEqual(paradymDraft11.credentialResponse)
+    expect(credentialResponse.credentialResponse).toStrictEqual(paradymDraft11.credentialResponse)
   })
 
   test('receive a credential from bdr using draft 13', async () => {
@@ -461,7 +460,7 @@ describe('Oid4vciClient', () => {
       signature: expect.any(String),
     })
 
-    const { credentialResponse } = await client.retrieveCredentials({
+    const credentialResponse = await client.retrieveCredentials({
       accessToken: accessTokenResponse.access_token,
       credentialConfigurationId: credentialOffer.credential_configuration_ids[0],
       issuerMetadata,
@@ -474,7 +473,7 @@ describe('Oid4vciClient', () => {
         jwt: proofJwt,
       },
     })
-    expect(credentialResponse).toStrictEqual(bdrDraft13.credentialResponse)
+    expect(credentialResponse.credentialResponse).toStrictEqual(bdrDraft13.credentialResponse)
   })
 
   test('receive a credential using presentation during issuance', async () => {
@@ -632,7 +631,7 @@ describe('Oid4vciClient', () => {
       signature: expect.any(String),
     })
 
-    const { credentialResponse } = await client.retrieveCredentials({
+    const credentialResponse = await client.retrieveCredentials({
       accessToken: accessTokenResponse.access_token,
       credentialConfigurationId: credentialOffer.credential_configuration_ids[0],
       issuerMetadata,
@@ -641,6 +640,6 @@ describe('Oid4vciClient', () => {
         jwt: proofJwt,
       },
     })
-    expect(credentialResponse).toStrictEqual(presentationDuringIssuance.credentialResponse)
+    expect(credentialResponse.credentialResponse).toStrictEqual(presentationDuringIssuance.credentialResponse)
   })
 })

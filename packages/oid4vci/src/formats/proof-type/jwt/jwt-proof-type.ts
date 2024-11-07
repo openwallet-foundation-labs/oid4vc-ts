@@ -7,7 +7,7 @@ import {
 } from './v-jwt-proof-type'
 
 import { type CallbackContext, jwtSignerFromJwt, verifyJwt } from '@animo-id/oauth2'
-import { Oid4vciError } from '../../../error/Oid4vcError'
+import { Oid4vciError } from '../../../error/Oid4vciError'
 
 export interface CreateCredentialRequestJwtProofOptions {
   /**

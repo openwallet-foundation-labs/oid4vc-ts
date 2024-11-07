@@ -390,7 +390,7 @@ describe('Full E2E test', () => {
       nonce: accessTokenResponse.c_nonce,
     })
 
-    const { credentialResponse /* dpop */ } = await client.retrieveCredentials({
+    const credentialResponse = await client.retrieveCredentials({
       issuerMetadata,
       accessToken: accessTokenResponse.access_token,
       credentialConfigurationId: resolvedCredentialOffer.credential_configuration_ids[0],
@@ -400,8 +400,7 @@ describe('Full E2E test', () => {
         jwt,
       },
     })
-
-    expect(credentialResponse).toEqual({
+    expect(credentialResponse.credentialResponse).toEqual({
       c_nonce: 'd9457e7c-4cf7-461c-a8d0-94221ba865e7',
       c_nonce_expires_in: 500,
       credential: 'some-credential',
@@ -731,7 +730,7 @@ describe('Full E2E test', () => {
       nonce: accessTokenResponse.c_nonce,
     })
 
-    const { credentialResponse /* dpop */ } = await client.retrieveCredentials({
+    const credentialResponse = await client.retrieveCredentials({
       issuerMetadata,
       accessToken: accessTokenResponse.access_token,
       credentialConfigurationId: resolvedCredentialOffer.credential_configuration_ids[0],
@@ -741,8 +740,7 @@ describe('Full E2E test', () => {
         jwt,
       },
     })
-
-    expect(credentialResponse).toEqual({
+    expect(credentialResponse.credentialResponse).toEqual({
       c_nonce: 'd9457e7c-4cf7-461c-a8d0-94221ba865e7',
       c_nonce_expires_in: 500,
       credential: 'some-credential',

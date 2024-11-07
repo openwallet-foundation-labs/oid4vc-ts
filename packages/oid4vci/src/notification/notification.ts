@@ -2,14 +2,13 @@ import * as v from 'valibot'
 
 import {
   type CallbackContext,
-  ContentType,
-  Oauth2ClientErrorResponseError,
   Oauth2Error,
-  Oauth2InvalidFetchResponseError,
   type RequestDpopOptions,
-  resourceRequestWithDpopRetry,
+  type ResourceRequestResponseNotOk,
+  type ResourceRequestResponseOk,
+  resourceRequest,
 } from '@animo-id/oauth2'
-import { defaultFetcher, parseWithErrorHandling } from '@animo-id/oauth2-utils'
+import { ContentType, parseWithErrorHandling } from '@animo-id/oauth2-utils'
 import type { IssuerMetadataResult } from '../metadata/fetch-issuer-metadata'
 import {
   type NotificationEvent,
@@ -62,8 +61,18 @@ export interface SendNotifcationOptions {
   additionalRequestPayload?: Record<string, unknown>
 }
 
-export async function sendNotifcation(options: SendNotifcationOptions) {
-  const fetcher = options.callbacks.fetch ?? defaultFetcher
+export type SendNotificationResponseOk = ResourceRequestResponseOk
+export interface SendNotificationResponseNotOk extends ResourceRequestResponseNotOk {
+  /**
+   * If this is defined it means the response was JSON and we tried to parse it as
+   * a notification error response. It may be successfull or it may not be.
+   */
+  notificationErrorResponseResult?: v.SafeParseResult<typeof vNotificationErrorResponse>
+}
+
+export async function sendNotifcation(
+  options: SendNotifcationOptions
+): Promise<SendNotificationResponseNotOk | SendNotificationResponseOk> {
   const notificationEndpoint = options.issuerMetadata.credentialIssuer.notification_endpoint
 
   if (!notificationEndpoint) {
@@ -82,57 +91,31 @@ export async function sendNotifcation(options: SendNotifcationOptions) {
     'Error validating notification request'
   )
 
-  const { dpop } = await resourceRequestWithDpopRetry({
-    dpop: options.dpop
-      ? {
-          ...options.dpop,
-          request: {
-            method: 'POST',
-            url: notificationEndpoint,
-          },
-        }
-      : undefined,
+  const resourceResponse = await resourceRequest({
+    dpop: options.dpop,
     accessToken: options.accessToken,
     callbacks: options.callbacks,
-    resourceRequest: async ({ headers }) => {
-      const response = await fetcher(notificationEndpoint, {
-        body: JSON.stringify(notificationRequest),
-        method: 'POST',
-        headers: {
-          ...headers,
-          'Content-Type': ContentType.Json,
-        },
-      })
-
-      if (!response.ok) {
-        const notificationErrorResponse = v.safeParse(
-          vNotificationErrorResponse,
-          await response
-            .clone()
-            .json()
-            .catch(() => null)
-        )
-        if (notificationErrorResponse.success) {
-          throw new Oauth2ClientErrorResponseError(
-            `Unable to send notification to '${notificationEndpoint}'. Received response with status ${response.status}`,
-            notificationErrorResponse.output,
-            response
-          )
-        }
-
-        throw new Oauth2InvalidFetchResponseError(
-          `Unable to send notification to '${notificationEndpoint}'. Received response with status ${response.status}`,
-          await response.clone().text(),
-          response
-        )
-      }
-
-      return {
-        result: undefined,
-        response,
-      }
+    url: notificationEndpoint,
+    requestOptions: {
+      method: 'POST',
+      headers: {
+        'Content-Type': ContentType.Json,
+      },
+      body: JSON.stringify(notificationRequest),
     },
   })
 
-  return { dpop }
+  if (!resourceResponse.ok) {
+    const notificationErrorResponseResult =
+      resourceResponse.response.headers.get('Content-Type') === ContentType.Json
+        ? v.safeParse(vNotificationErrorResponse, await resourceResponse.response.clone().json())
+        : undefined
+
+    return {
+      ...resourceResponse,
+      notificationErrorResponseResult,
+    }
+  }
+
+  return resourceResponse
 }

@@ -1,4 +1,5 @@
 import {
+  ContentType,
   ValidationError,
   createValibotFetcher,
   objectToQueryParams,
@@ -6,7 +7,6 @@ import {
 } from '@animo-id/oauth2-utils'
 import * as v from 'valibot'
 import type { CallbackContext } from '../callbacks'
-import { ContentType } from '../common/content-type'
 import { Oauth2ClientAuthorizationChallengeError } from '../error/Oauth2ClientAuthorizationChallengeError'
 import { Oauth2Error } from '../error/Oauth2Error'
 import { Oauth2InvalidFetchResponseError } from '../error/Oauth2InvalidFetchResponseError'

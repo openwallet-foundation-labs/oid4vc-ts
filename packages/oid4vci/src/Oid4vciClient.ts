@@ -23,6 +23,9 @@ import {
   type RetrieveCredentialsWithFormatOptions,
   retrieveCredentialsWithFormat,
 } from './credential-request/retrieve-credentials'
+import { Oid4vciError } from './error/Oid4vciError'
+import { Oid4vciRetrieveCredentialsError } from './error/Oid4vciRetrieveCredentialsError'
+import { Oid4vciSendNotificationError } from './error/Oid4vciSendNotificationError'
 import {
   type CreateCredentialRequestJwtProofOptions,
   createCredentialRequestJwtProof,
@@ -364,14 +367,14 @@ export class Oid4vciClient {
     const credentialConfiguration =
       options.issuerMetadata.credentialIssuer.credential_configurations_supported[options.credentialConfigurationId]
     if (!credentialConfiguration) {
-      throw new Oauth2Error(
+      throw new Oid4vciError(
         `Credential configuration with '${options.credentialConfigurationId}' not found in 'credential_configurations_supported' from credential issuer '${options.issuerMetadata.credentialIssuer.credential_issuer}'`
       )
     }
 
     if (credentialConfiguration.proof_types_supported) {
       if (!credentialConfiguration.proof_types_supported.jwt) {
-        throw new Oauth2Error(
+        throw new Oid4vciError(
           `Credential configuration with id '${options.credentialConfigurationId}' does not support the 'jwt' proof type.`
         )
       }
@@ -381,7 +384,7 @@ export class Oid4vciClient {
           options.signer.alg
         )
       ) {
-        throw new Oauth2Error(
+        throw new Oid4vciError(
           `Credential configuration with id '${options.credentialConfigurationId}' does not support the '${options.signer.alg}' alg for 'jwt' proof type.`
         )
       }
@@ -401,6 +404,11 @@ export class Oid4vciClient {
     }
   }
 
+  /**
+   * @throws Oid4vciRetrieveCredentialsError - if an unsuccesfull response or the respnose couldn't be parsed as credential response
+   * @throws ValidationError - if validation of the credential request failed
+   * @throws Oid4vciError - if the `credentialConfigurationId` couldn't be found, or if the the format specific request couldn't be constructed
+   */
   public async retrieveCredentials({
     issuerMetadata,
     proof,
@@ -418,7 +426,7 @@ export class Oid4vciClient {
       issuerMetadata,
     })
 
-    return await retrieveCredentialsWithFormat({
+    const credentialResponse = await retrieveCredentialsWithFormat({
       accessToken,
       formatPayload,
       issuerMetadata,
@@ -428,8 +436,21 @@ export class Oid4vciClient {
       callbacks: this.options.callbacks,
       dpop,
     })
+
+    if (!credentialResponse.ok) {
+      throw new Oid4vciRetrieveCredentialsError(
+        `Error retrieving credentials from '${issuerMetadata.credentialIssuer.credential_issuer}'`,
+        credentialResponse
+      )
+    }
+
+    return credentialResponse
   }
 
+  /**
+   * @throws Oid4vciSendNotificationError - if an unsuccesfull response
+   * @throws ValidationError - if validation of the notification request failed
+   */
   public async sendNotification({
     issuerMetadata,
     notification,
@@ -440,7 +461,7 @@ export class Oid4vciClient {
     SendNotifcationOptions,
     'accessToken' | 'additionalRequestPayload' | 'issuerMetadata' | 'dpop' | 'notification'
   >) {
-    return await sendNotifcation({
+    const notificationResponse = await sendNotifcation({
       accessToken,
       issuerMetadata,
       additionalRequestPayload,
@@ -448,5 +469,14 @@ export class Oid4vciClient {
       dpop,
       notification,
     })
+
+    if (!notificationResponse.ok) {
+      throw new Oid4vciSendNotificationError(
+        `Error sending notification to '${issuerMetadata.credentialIssuer.credential_issuer}'`,
+        notificationResponse
+      )
+    }
+
+    return notificationResponse
   }
 }

@@ -1,20 +1,25 @@
-import type { FetchResponse } from '@animo-id/oauth2-utils'
+import { type FetchResponse, type HttpMethod, defaultFetcher } from '@animo-id/oauth2-utils'
 import type { CallbackContext } from '../callbacks'
-import {
-  type CreateDpopJwtOptions,
-  type RequestDpopOptions,
-  createDpopJwt,
-  extractDpopNonceFromHeaders,
-} from '../dpop/dpop'
+import { type RequestDpopOptions, createDpopJwt, extractDpopNonceFromHeaders } from '../dpop/dpop'
 import { shouldRetryResourceRequestWithDPoPNonce } from '../dpop/dpop-retry'
-import { Oauth2ClientErrorResponseError } from '../error/Oauth2ClientErrorResponseError'
-import { Oauth2InvalidFetchResponseError } from '../error/Oauth2InvalidFetchResponseError'
+import {
+  Oauth2ResourceUnauthorizedError,
+  type WwwAuthenticateHeaderChallenge,
+} from '../error/Oauth2ResourceUnauthorizedError'
 
-export interface ResourceRequestOptions<T> {
+export interface ResourceRequestOptions {
   /**
    * DPoP options
    */
-  dpop?: RequestDpopOptions & Pick<CreateDpopJwtOptions, 'request'>
+  dpop?: RequestDpopOptions & {
+    /**
+     * Whether to retry the request if the server responds with an error indicating
+     * the request should be retried with a server provided dpop nonce
+     *
+     * @default true
+     */
+    retryWithNonce?: boolean
+  }
 
   /**
    * Callbacks
@@ -26,82 +31,110 @@ export interface ResourceRequestOptions<T> {
    */
   accessToken: string
 
-  /**
-   * The original resource request implementation.
-   */
-  resourceRequest: (options: {
-    headers: Record<string, string>
-  }) => Promise<{ response: FetchResponse; result: T }>
+  url: string
+  requestOptions: RequestInit
 }
 
-export async function resourceRequestWithDpopRetry<T>(options: ResourceRequestOptions<T>) {
-  try {
-    const dpopJwt = options.dpop
-      ? await createDpopJwt({
-          request: options.dpop.request,
-          signer: options.dpop.signer,
-          callbacks: options.callbacks,
-          nonce: options.dpop.nonce,
-          accessToken: options.accessToken,
-        })
-      : undefined
+interface ResourceRequestResponseBase {
+  ok: boolean
+  response: FetchResponse
 
-    const { response, result } = await options.resourceRequest({
-      headers: {
-        Authorization: `${dpopJwt ? 'DPoP' : 'Bearer'} ${options.accessToken}`,
-        ...(dpopJwt ? { DPoP: dpopJwt } : {}),
-      },
-    })
+  /**
+   * If the response included a dpop nonce to be used in subsequent requests
+   */
+  dpop?: {
+    nonce: string
+  }
+}
 
-    const dpopNonce = extractDpopNonceFromHeaders(response.headers)
+export interface ResourceRequestResponseOk extends ResourceRequestResponseBase {
+  ok: true
+}
+
+export interface ResourceRequestResponseNotOk extends ResourceRequestResponseBase {
+  ok: false
+
+  /**
+   * If a WWW-Authenticate was included in the headers of the response
+   * they will be parsed and added here.
+   */
+  wwwAuthenticate?: WwwAuthenticateHeaderChallenge[]
+}
+
+export async function resourceRequest(
+  options: ResourceRequestOptions
+): Promise<ResourceRequestResponseOk | ResourceRequestResponseNotOk> {
+  const dpopJwt = options.dpop
+    ? await createDpopJwt({
+        request: {
+          url: options.url,
+          // in fetch the default is GET if not provided
+          method: (options.requestOptions.method as HttpMethod) ?? 'GET',
+        },
+        signer: options.dpop.signer,
+        callbacks: options.callbacks,
+        nonce: options.dpop.nonce,
+        accessToken: options.accessToken,
+      })
+    : undefined
+
+  const fetch = options.callbacks.fetch ?? defaultFetcher
+  const response = await fetch(options.url, {
+    ...options.requestOptions,
+    headers: {
+      ...options.requestOptions.headers,
+      Authorization: `${dpopJwt ? 'DPoP' : 'Bearer'} ${options.accessToken}`,
+      ...(dpopJwt ? { DPoP: dpopJwt } : {}),
+    },
+  })
+
+  const dpopNonce = extractDpopNonceFromHeaders(response.headers)
+  if (response.ok) {
     return {
+      ok: true,
+      response,
       dpop: dpopNonce
         ? {
             nonce: dpopNonce,
           }
         : undefined,
-      result,
     }
-  } catch (error) {
-    if (
-      options.dpop &&
-      (error instanceof Oauth2InvalidFetchResponseError || error instanceof Oauth2ClientErrorResponseError)
-    ) {
-      const dpopRetry = shouldRetryResourceRequestWithDPoPNonce({
-        responseHeaders: error.response.headers,
+  }
+
+  const wwwAuthenticateHeader = response.headers.get('WWW-Authenticate')
+  const resourceUnauthorizedError = wwwAuthenticateHeader
+    ? Oauth2ResourceUnauthorizedError.fromHeaderValue(wwwAuthenticateHeader)
+    : undefined
+
+  const shouldRetryWithNonce = options.dpop?.retryWithNonce ?? true
+  const dpopRetry = resourceUnauthorizedError
+    ? shouldRetryResourceRequestWithDPoPNonce({
+        responseHeaders: response.headers,
+        resourceUnauthorizedError: resourceUnauthorizedError,
       })
+    : undefined
 
-      // Retry with the dpop nonce
-      if (dpopRetry.retry) {
-        const dpopJwt = options.dpop
-          ? await createDpopJwt({
-              request: options.dpop.request,
-              signer: options.dpop.signer,
-              callbacks: options.callbacks,
-              nonce: dpopRetry.dpopNonce,
-              accessToken: options.accessToken,
-            })
-          : undefined
+  // only retry if retryWithNonce is set
+  if (shouldRetryWithNonce && dpopRetry?.retry && options.dpop) {
+    return await resourceRequest({
+      ...options,
+      dpop: {
+        ...options.dpop,
+        nonce: dpopRetry.dpopNonce,
+        // We'll never try multiple times (to prevent endless recursion)
+        retryWithNonce: false,
+      },
+    })
+  }
 
-        const { response, result } = await options.resourceRequest({
-          headers: {
-            Authorization: `${dpopJwt ? 'DPoP' : 'Bearer'} ${options.accessToken}`,
-            ...(dpopJwt ? { DPoP: dpopJwt } : {}),
-          },
-        })
-
-        const dpopNonce = extractDpopNonceFromHeaders(response.headers)
-        return {
-          dpop: dpopNonce
-            ? {
-                nonce: dpopNonce,
-              }
-            : undefined,
-          result,
+  return {
+    ok: false,
+    response,
+    dpop: dpopNonce
+      ? {
+          nonce: dpopNonce,
         }
-      }
-    }
-
-    throw error
+      : undefined,
+    wwwAuthenticate: resourceUnauthorizedError?.wwwAuthenticateHeaders,
   }
 }

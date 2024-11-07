@@ -1,15 +1,13 @@
-import * as v from 'valibot'
-
 import {
   type CallbackContext,
-  ContentType,
-  Oauth2ClientErrorResponseError,
   Oauth2Error,
-  Oauth2InvalidFetchResponseError,
   type RequestDpopOptions,
-  resourceRequestWithDpopRetry,
+  type ResourceRequestResponseNotOk,
+  type ResourceRequestResponseOk,
+  resourceRequest,
 } from '@animo-id/oauth2'
-import { ValidationError, createValibotFetcher, parseWithErrorHandling } from '@animo-id/oauth2-utils'
+import { ContentType, parseWithErrorHandling } from '@animo-id/oauth2-utils'
+import { type SafeParseResult, safeParse } from 'valibot'
 import type { IssuerMetadataResult } from '../metadata/fetch-issuer-metadata'
 import { Oid4vciDraftVersion } from '../version'
 import {
@@ -19,7 +17,7 @@ import {
   vCredentialRequestDraft14To11,
 } from './v-credential-request'
 import type { CredentialRequestProof, CredentialRequestProofs } from './v-credential-request-common'
-import { vCredentialErrorResponse, vCredentialResponse } from './v-credential-response'
+import { type CredentialResponse, vCredentialErrorResponse, vCredentialResponse } from './v-credential-response'
 
 interface RetrieveCredentialsBaseOptions {
   /**
@@ -84,11 +82,33 @@ export interface RetrieveCredentialsOptions extends RetrieveCredentialsBaseOptio
   credentialRequest: CredentialRequest
 }
 
+export interface RetrieveCredentialsResponseOk extends ResourceRequestResponseOk {
+  /**
+   * The successfull validated (in structure, not the actual contents are validated) credential response payload
+   */
+  credentialResponse: CredentialResponse
+}
+
+export interface RetrieveCredentialsResponseNotOk extends ResourceRequestResponseNotOk {
+  /**
+   * If this is defined it means the response itself was succesfull but the validation of the
+   * credential response data structure failed
+   */
+  credentialResponseResult?: SafeParseResult<typeof vCredentialResponse>
+
+  /**
+   * If this is defined it means the response was JSON and we tried to parse it as
+   * a credential error response. It may be successfull or it may not be.
+   */
+  credentialErrorResponseResult?: SafeParseResult<typeof vCredentialErrorResponse>
+}
+
 /**
  * internal method
  */
-async function retrieveCredentials(options: RetrieveCredentialsOptions) {
-  const fetchWithValibot = createValibotFetcher(options.callbacks.fetch)
+async function retrieveCredentials(
+  options: RetrieveCredentialsOptions
+): Promise<RetrieveCredentialsResponseNotOk | RetrieveCredentialsResponseOk> {
   const credentialEndpoint = options.issuerMetadata.credentialIssuer.credential_endpoint
 
   let credentialRequest = parseWithErrorHandling(
@@ -121,56 +141,44 @@ async function retrieveCredentials(options: RetrieveCredentialsOptions) {
     )
   }
 
-  const { dpop, result } = await resourceRequestWithDpopRetry({
-    dpop: options.dpop ? { ...options.dpop, request: { method: 'POST', url: credentialEndpoint } } : undefined,
+  const resourceResponse = await resourceRequest({
+    dpop: options.dpop,
     accessToken: options.accessToken,
     callbacks: options.callbacks,
-    resourceRequest: async ({ headers }) => {
-      const { response, result } = await fetchWithValibot(vCredentialResponse, credentialEndpoint, {
-        body: JSON.stringify(credentialRequest),
-        method: 'POST',
-        headers: {
-          ...headers,
-          'Content-Type': ContentType.Json,
-        },
-      })
-
-      if (!response.ok || !result) {
-        const credentialErrorResponse = v.safeParse(
-          vCredentialErrorResponse,
-          await response
-            .clone()
-            .json()
-            .catch(() => null)
-        )
-        if (credentialErrorResponse.success) {
-          throw new Oauth2ClientErrorResponseError(
-            `Unable to retrieve credentials from '${credentialEndpoint}'. Received response with status ${response.status}`,
-            credentialErrorResponse.output,
-            response
-          )
-        }
-
-        throw new Oauth2InvalidFetchResponseError(
-          `Unable to retrieve credentials from '${credentialEndpoint}'. Received response with status ${response.status}`,
-          await response.clone().text(),
-          response
-        )
-      }
-
-      if (!result.success) {
-        throw new ValidationError('Error validating credential response', result.issues)
-      }
-
-      return {
-        response,
-        result: result.output,
-      }
+    url: credentialEndpoint,
+    requestOptions: {
+      method: 'POST',
+      headers: {
+        'Content-Type': ContentType.Json,
+      },
+      body: JSON.stringify(credentialRequest),
     },
   })
 
+  if (!resourceResponse.ok) {
+    const credentialErrorResponseResult =
+      resourceResponse.response.headers.get('Content-Type') === ContentType.Json
+        ? safeParse(vCredentialErrorResponse, await resourceResponse.response.clone().json())
+        : undefined
+
+    return {
+      ...resourceResponse,
+      credentialErrorResponseResult,
+    }
+  }
+
+  // Try to parse the credential response
+  const credentialResponseResult = safeParse(vCredentialResponse, await resourceResponse.response.clone().json())
+  if (!credentialResponseResult.success) {
+    return {
+      ...resourceResponse,
+      ok: false,
+      credentialResponseResult,
+    }
+  }
+
   return {
-    dpop,
-    credentialResponse: result,
+    ...resourceResponse,
+    credentialResponse: credentialResponseResult.output,
   }
 }

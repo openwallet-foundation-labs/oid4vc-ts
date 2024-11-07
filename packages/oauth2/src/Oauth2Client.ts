@@ -19,6 +19,7 @@ import { Oauth2ClientAuthorizationChallengeError } from './error/Oauth2ClientAut
 import { fetchAuthorizationServerMetadata } from './metadata/authorization-server/authorization-server-metadata'
 import type { AuthorizationServerMetadata } from './metadata/authorization-server/v-authorization-server-metadata'
 import { createPkce } from './pkce'
+import { type ResourceRequestOptions, resourceRequest } from './resource-request/make-resource-request'
 
 export interface Oauth2ClientOptions {
   /**
@@ -176,5 +177,9 @@ export class Oauth2Client {
     })
 
     return result
+  }
+
+  public async resourceRequest(options: ResourceRequestOptions) {
+    return resourceRequest(options)
   }
 }

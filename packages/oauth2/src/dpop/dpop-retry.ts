@@ -1,6 +1,9 @@
 import type { FetchHeaders } from '@animo-id/oauth2-utils'
 import type { AccessTokenErrorResponse } from '../access-token/v-access-token'
+import { SupportedAuthenticationScheme } from '../access-token/verify-access-token'
+import { Oauth2ErrorCodes } from '../common/v-oauth2-error'
 import { Oauth2Error } from '../error/Oauth2Error'
+import type { Oauth2ResourceUnauthorizedError } from '../error/Oauth2ResourceUnauthorizedError'
 import { extractDpopNonceFromHeaders } from './dpop'
 
 export interface ShouldRetryTokenRequestWithDpopNonceOptions {
@@ -41,6 +44,8 @@ export function shouldRetryTokenRequestWithDPoPNonce(options: ShouldRetryTokenRe
 }
 
 export interface ShouldRetryResourceRequestWithDpopNonceOptions {
+  resourceUnauthorizedError: Oauth2ResourceUnauthorizedError
+
   /**
    * The headers returned in the resource request response. If the
    * headeres contain a 'WWW-Authenticate' header containing error value
@@ -52,8 +57,12 @@ export interface ShouldRetryResourceRequestWithDpopNonceOptions {
 }
 
 export function shouldRetryResourceRequestWithDPoPNonce(options: ShouldRetryResourceRequestWithDpopNonceOptions) {
-  const wwwAuthenticateHeader = options.responseHeaders.get('WWW-Authenticate')
-  if (typeof wwwAuthenticateHeader !== 'string' || !wwwAuthenticateHeader.includes('use_dpop_nonce')) {
+  const useDpopNonceChallenge = options.resourceUnauthorizedError.wwwAuthenticateHeaders.find(
+    (challenge) =>
+      challenge.scheme === SupportedAuthenticationScheme.DPoP && challenge.error === Oauth2ErrorCodes.UseDpopNonce
+  )
+
+  if (!useDpopNonceChallenge) {
     return { retry: false } as const
   }
 

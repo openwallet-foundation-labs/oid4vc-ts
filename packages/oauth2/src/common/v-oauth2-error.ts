@@ -19,6 +19,12 @@ export enum Oauth2ErrorCodes {
   RedirectToWeb = 'redirect_to_web',
   InvalidSession = 'invalid_session',
   InsufficientAuthorization = 'insufficient_authorization',
+
+  // Oid4vci
+  InvalidCredentialRequest = 'invalid_credential_request',
+  UnsupportedCredentialType = 'unsupported_credential_type',
+  InvalidProof = 'invalid_proof',
+  InvalidEncryptionParameters = 'invalid_encryption_parameters',
 }
 
 export const vOauth2ErrorResponse = v.looseObject({

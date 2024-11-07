@@ -6,7 +6,6 @@ export type {
 export { Oauth2ErrorCodes, type Oauth2ErrorResponse, vOauth2ErrorResponse } from './common/v-oauth2-error'
 export { calculateJwkThumbprint, type CalculateJwkThumbprintOptions } from './common/jwk/jwk-thumbprint'
 export { type Jwk, type JwkSet, vJwk } from './common/jwk/v-jwk'
-export { ContentType } from './common/content-type'
 
 export {
   verifyJwt,
@@ -64,7 +63,12 @@ export type {
   RetrievePreAuthorizedCodeAccessTokenOptions,
 } from './access-token/retrieve-access-token'
 export type { CreateAuthorizationRequestUrlOptions } from './authorization-request/create-authorization-request'
-export { resourceRequestWithDpopRetry, type ResourceRequestOptions } from './resource-request/make-resource-request'
+export {
+  resourceRequest,
+  type ResourceRequestOptions,
+  type ResourceRequestResponseNotOk,
+  type ResourceRequestResponseOk,
+} from './resource-request/make-resource-request'
 export {
   type VerifyResourceRequestOptions,
   verifyResourceRequest,

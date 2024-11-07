@@ -55,7 +55,11 @@ export interface ParseCredentialRequestReturn {
 }
 
 export function parseCredentialRequest(options: ParseCredentialRequestOptions): ParseCredentialRequestReturn {
-  const credentialRequest = parseWithErrorHandling(vCredentialRequest, options.credentialRequest)
+  const credentialRequest = parseWithErrorHandling(
+    vCredentialRequest,
+    options.credentialRequest,
+    'Error validating credential request'
+  )
   let proofs: CredentialRequestProofsFormatSpecific | undefined = undefined
 
   // Try to parse the known proofs from the `proofs` object
@@ -84,7 +88,11 @@ export function parseCredentialRequest(options: ParseCredentialRequestOptions): 
   ) {
     return {
       // Removes all claims that are not specific to this format
-      format: parseWithErrorHandling(v.union(allCredentialRequestFormats), credentialRequest),
+      format: parseWithErrorHandling(
+        v.union(allCredentialRequestFormats),
+        credentialRequest,
+        'Unable to validate format specific properties from credential request'
+      ),
       credentialRequest,
       proofs,
     }

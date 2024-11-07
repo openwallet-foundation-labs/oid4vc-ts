@@ -1,8 +1,10 @@
+import { parseWwwAuthenticateHeader } from '@animo-id/oauth2-utils'
 import type { SupportedAuthenticationScheme } from '../access-token/verify-access-token'
 import type { Oauth2ErrorCodes } from '../common/v-oauth2-error'
+import { Oauth2Error } from './Oauth2Error'
 
 export interface WwwAuthenticateHeaderChallenge {
-  scheme: SupportedAuthenticationScheme
+  scheme: SupportedAuthenticationScheme | (string & {})
 
   /**
    * Space delimited scope value that lists scopes required
@@ -23,11 +25,35 @@ export interface WwwAuthenticateHeaderChallenge {
   additionalPayload?: Record<string, string>
 }
 
-export class Oauth2ResourceUnauthorizedError extends Error {
+export class Oauth2ResourceUnauthorizedError extends Oauth2Error {
+  public readonly wwwAuthenticateHeaders: WwwAuthenticateHeaderChallenge[]
+
   public constructor(
-    internalMessage: string,
-    public readonly wwwAuthenticateHeaders: WwwAuthenticateHeaderChallenge | Array<WwwAuthenticateHeaderChallenge>
+    internalMessage: string | undefined,
+    wwwAuthenticateHeaders: WwwAuthenticateHeaderChallenge | Array<WwwAuthenticateHeaderChallenge>
   ) {
     super(`${internalMessage}\n${JSON.stringify(wwwAuthenticateHeaders, null, 2)}`)
+    this.wwwAuthenticateHeaders = Array.isArray(wwwAuthenticateHeaders)
+      ? wwwAuthenticateHeaders
+      : [wwwAuthenticateHeaders]
+  }
+
+  static fromHeaderValue(value: string) {
+    const headers = parseWwwAuthenticateHeader(value)
+    return new Oauth2ResourceUnauthorizedError(
+      undefined,
+      headers.map(
+        ({ scheme, payload: { error, error_description, scope, ...additionalPayload } }) =>
+          ({
+            scheme,
+            error: Array.isArray(error) ? error.join(',') : (error ?? undefined),
+            error_description: Array.isArray(error_description)
+              ? error_description.join(',')
+              : (error_description ?? undefined),
+            scope: Array.isArray(scope) ? scope.join(',') : (scope ?? undefined),
+            ...additionalPayload,
+          }) satisfies WwwAuthenticateHeaderChallenge
+      )
+    )
   }
 }
