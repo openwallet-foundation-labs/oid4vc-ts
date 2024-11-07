@@ -23,19 +23,10 @@ export const vCredentialResponse = v.pipe(
 )
 export type CredentialResponse = v.InferOutput<typeof vCredentialResponse>
 
-export enum CredentialErrorResponse {
-  InvalidCredentialRequest = 'invalid_credential_request',
-  UnsupportedCredentialType = 'unsupported_credential_type',
-  UnsupportedCredentialFormat = 'unsupported_credential_format',
-  InvalidProof = 'invalid_proof',
-  InvalidEncryptionParameters = 'invalid_encryption_parameters',
-  CredentialRequestDenied = 'credential_request_denied',
-}
-
 export const vCredentialErrorResponse = v.looseObject({
   ...vOauth2ErrorResponse.entries,
-  error: v.union([v.enum(CredentialErrorResponse), ...vOauth2ErrorResponse.entries.error.options]),
 
   c_nonce: v.optional(v.string()),
   c_nonce_expires_in: v.optional(v.pipe(v.number(), v.integer())),
 })
+export type CredentialErrorResponse = v.InferOutput<typeof vCredentialErrorResponse>
