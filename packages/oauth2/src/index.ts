@@ -3,6 +3,9 @@ export type {
   AccessTokenResponse,
 } from './access-token/v-access-token'
 
+// Re-export some types from utils (we don't want people depending on that lib)
+export type { HttpMethod } from '@animo-id/oauth2-utils'
+
 export { Oauth2ErrorCodes, type Oauth2ErrorResponse, vOauth2ErrorResponse } from './common/v-oauth2-error'
 export { calculateJwkThumbprint, type CalculateJwkThumbprintOptions } from './common/jwk/jwk-thumbprint'
 export { type Jwk, type JwkSet, vJwk } from './common/jwk/v-jwk'
