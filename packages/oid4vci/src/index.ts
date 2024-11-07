@@ -3,6 +3,9 @@ export type {
   CredentialOfferPreAuthorizedCodeGrantTxCode,
 } from './credential-offer/v-credential-offer'
 
+// Re-export some types from utils (we don't want people depending on that lib)
+export { getGlobalConfig, setGlobalConfig, type Oid4vcTsConfig } from '@animo-id/oauth2-utils'
+
 export type { ParseCredentialRequestReturn } from './credential-request/parse-credential-request'
 export type {
   RetrieveCredentialsResponseNotOk,

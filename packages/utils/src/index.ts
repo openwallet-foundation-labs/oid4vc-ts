@@ -33,3 +33,4 @@ export {
   encodeWwwAuthenticateHeader,
 } from './www-authenticate'
 export { ContentType } from './content-type'
+export { setGlobalConfig, type Oid4vcTsConfig, getGlobalConfig } from './config'
