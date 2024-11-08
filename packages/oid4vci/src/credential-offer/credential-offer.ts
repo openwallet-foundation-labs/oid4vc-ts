@@ -205,7 +205,7 @@ export async function createCredentialOffer(options: CreateCredentialOfferOption
 
     // Draft 11 support
     const txCode = grants[preAuthorizedCodeGrantIdentifier].tx_code
-    if (txCode && options.issuerMetadata.credentialIssuer.originalDraftVersion === Oid4vciDraftVersion.Draft11) {
+    if (txCode && options.issuerMetadata.originalDraftVersion === Oid4vciDraftVersion.Draft11) {
       grants[preAuthorizedCodeGrantIdentifier].user_pin_required = txCode !== undefined
     }
   }
@@ -228,7 +228,7 @@ export async function createCredentialOffer(options: CreateCredentialOfferOption
   } satisfies CredentialOfferObject)
 
   // Draft 11 support
-  if (options.issuerMetadata.credentialIssuer.originalDraftVersion === Oid4vciDraftVersion.Draft11) {
+  if (options.issuerMetadata.originalDraftVersion === Oid4vciDraftVersion.Draft11) {
     credentialOfferObject.credentials = credentialOfferObject.credential_configuration_ids
   }
 
