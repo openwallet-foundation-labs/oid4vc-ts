@@ -23,7 +23,6 @@ export interface CreateAuthorizationRequestUrlOptions {
   /**
    * Metadata of the authorization server for which to create the authorization request url
    */
-
   authorizationServerMetadata: AuthorizationServerMetadata
 
   /**
@@ -35,6 +34,12 @@ export interface CreateAuthorizationRequestUrlOptions {
    * Scope to request for the authorization request
    */
   scope?: string
+
+  /**
+   * The resource to which access is being requested. This can help the authorization
+   * server in determining the resource server to handle the authorization request for
+   */
+  resource?: string
 
   /**
    * Redirect uri to include in the authorization request
@@ -83,6 +88,7 @@ export async function createAuthorizationRequestUrl(options: CreateAuthorization
     response_type: 'code',
     client_id: options.clientId,
     redirect_uri: options.redirectUri,
+    resource: options.resource,
     scope: options.scope,
     code_challenge: pkce?.codeChallenge,
     code_challenge_method: pkce?.codeChallengeMethod,

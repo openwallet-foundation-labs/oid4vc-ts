@@ -183,6 +183,11 @@ export class Oid4vciClient {
         pkceCodeVerifier: options.pkceCodeVerifier,
         redirectUri: options.redirectUri,
         scope: options.scope,
+        additionalRequestPayload: {
+          ...options.additionalRequestPayload,
+          issuer_state: options.credentialOffer?.grants?.authorization_code?.issuer_state,
+        },
+        resource: options.issuerMetadata.credentialIssuer.credential_issuer,
         authorizationServerMetadata,
       })
 
@@ -245,6 +250,7 @@ export class Oid4vciClient {
         ...options.additionalRequestPayload,
         issuer_state: options.credentialOffer?.grants?.authorization_code?.issuer_state,
       },
+      resource: options.issuerMetadata.credentialIssuer.credential_issuer,
       redirectUri: options.redirectUri,
       scope: options.scope,
       pkceCodeVerifier: options.pkceCodeVerifier,
@@ -336,7 +342,6 @@ export class Oid4vciClient {
       issuerMetadata,
     })
 
-    const issuerState = credentialOffer.grants[authorizationCodeGrantIdentifier].issuer_state
     const authorizationServerMetadata = getAuthorizationServerMetadataFromList(
       issuerMetadata.authorizationServers,
       authorizationServer
@@ -346,10 +351,7 @@ export class Oid4vciClient {
       authorizationServerMetadata,
       authorizationCode,
       pkceCodeVerifier,
-      additionalRequestPayload: {
-        ...additionalRequestPayload,
-        issuer_state: issuerState,
-      },
+      additionalRequestPayload,
       dpop,
       redirectUri,
     })

@@ -81,6 +81,7 @@ export class Oauth2Client {
           clientId: options.clientId,
           pkceCodeVerifier: pkce?.codeVerifier,
           scope: options.scope,
+          resource: options.resource,
         })
       } catch (error) {
         // In this case we resume with the normal auth flow
@@ -114,6 +115,7 @@ export class Oauth2Client {
       redirectUri: options.redirectUri,
       scope: options.scope,
       pkceCodeVerifier: pkce?.codeVerifier,
+      resource: options.resource,
     })
   }
 
@@ -130,6 +132,7 @@ export class Oauth2Client {
       clientId: options.clientId,
       additionalRequestPayload: options.additionalRequestPayload,
       redirectUri: options.redirectUri,
+      resource: options.resource,
       scope: options.scope,
       callbacks: this.options.callbacks,
       pkceCodeVerifier: options.pkceCodeVerifier,

@@ -46,6 +46,12 @@ export interface SendAuthorizationChallengeRequestOptions {
   scope?: string
 
   /**
+   * The resource to which access is being requested. This can help the authorization
+   * server in determining the resource server to handle the authorization request for
+   */
+  resource?: string
+
+  /**
    * Presentation during issuance sessios if credentials were presented
    * as part of an issuance session
    */
@@ -94,6 +100,7 @@ export async function sendAuthorizationChallengeRequest(options: SendAuthorizati
     auth_session: options.authSession,
     client_id: options.clientId,
     scope: options.scope,
+    resource: options.resource,
     code_challenge: pkce?.codeChallenge,
     code_challenge_method: pkce?.codeChallengeMethod,
     presentation_during_issuance_session: options.presentationDuringIssuanceSession,

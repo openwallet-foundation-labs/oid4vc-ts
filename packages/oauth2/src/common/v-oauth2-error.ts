@@ -3,6 +3,9 @@ import * as v from 'valibot'
 export enum Oauth2ErrorCodes {
   ServerError = 'server_error',
 
+  // Resource Indicators
+  InvalidTarget = 'invalid_target',
+
   // Oauth2
   InvalidRequest = 'invalid_request',
   InvalidToken = 'invalid_token',

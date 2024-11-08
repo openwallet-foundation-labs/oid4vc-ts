@@ -454,6 +454,7 @@ describe('Full E2E test', () => {
         const parRequest = parseXwwwFormUrlEncoded(await request.text())
         expect(parRequest).toEqual({
           issuer_state: 'something',
+          resource: credentialIssuerMetadata.credential_issuer,
           response_type: 'code',
           client_id: 'some-client-id',
           redirect_uri: 'https://redirect.com',
@@ -474,7 +475,6 @@ describe('Full E2E test', () => {
           redirect_uri: 'https://redirect-uri.com',
           code_verifier: expect.any(String),
           grant_type: 'authorization_code',
-          issuer_state: 'something',
         })
 
         const parsedAccessTokenRequest = authorizationServer.parseAccessTokenRequest({
@@ -487,7 +487,6 @@ describe('Full E2E test', () => {
         })
         expect(parsedAccessTokenRequest).toEqual({
           accessTokenRequest: {
-            issuer_state: 'something',
             code: 'some-authorization-code',
             redirect_uri: 'https://redirect-uri.com',
             code_verifier: expect.any(String),

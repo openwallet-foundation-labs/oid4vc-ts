@@ -291,9 +291,16 @@ describe('Oid4vciClient', () => {
         HttpResponse.json(bdrDraft13.authorizationServerMetadata)
       ),
       http.post(bdrDraft13.authorizationServerMetadata.pushed_authorization_request_endpoint, async ({ request }) => {
-        expect(await request.text()).toEqual(
-          'response_type=code&client_id=76c7c89b-8799-4bd1-a693-d49948a91b00&redirect_uri=https%3A%2F%2Fexample.com%2Fredirect&scope=pid&code_challenge=MuPA1CQYF9t3udwnb4A_SWig3BArengnQXS2yo8AFew&code_challenge_method=S256'
-        )
+        const parsed = parseXwwwFormUrlEncoded(await request.text())
+        expect(parsed).toEqual({
+          response_type: 'code',
+          resource: issuerMetadata.credentialIssuer.credential_issuer,
+          client_id: '76c7c89b-8799-4bd1-a693-d49948a91b00',
+          scope: 'pid',
+          redirect_uri: 'https://example.com/redirect',
+          code_challenge: 'MuPA1CQYF9t3udwnb4A_SWig3BArengnQXS2yo8AFew',
+          code_challenge_method: 'S256',
+        })
         return HttpResponse.json(bdrDraft13.pushedAuthorizationResponse)
       }),
       http.post(bdrDraft13.authorizationServerMetadata.token_endpoint, async ({ request }) => {
@@ -516,6 +523,7 @@ describe('Oid4vciClient', () => {
             scope: 'pid',
             code_challenge: expect.any(String),
             code_challenge_method: 'S256',
+            resource: credentialOffer.credential_issuer,
           })
           return HttpResponse.json(presentationDuringIssuance.authorizationChallengeErrorResponse, { status: 400 })
         }

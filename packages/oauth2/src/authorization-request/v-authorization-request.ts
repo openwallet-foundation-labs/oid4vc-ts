@@ -1,3 +1,4 @@
+import { vHttpsUrl } from '@animo-id/oauth2-utils'
 import * as v from 'valibot'
 
 export const vAuthorizationRequest = v.looseObject({
@@ -6,6 +7,7 @@ export const vAuthorizationRequest = v.looseObject({
 
   issuer_state: v.optional(v.string()),
   redirect_uri: v.optional(v.string()),
+  resource: v.optional(vHttpsUrl),
   scope: v.optional(v.string()),
 
   code_challenge: v.optional(v.string()),

@@ -1,4 +1,4 @@
-import { vInteger } from '@animo-id/oauth2-utils'
+import { vHttpsUrl, vInteger } from '@animo-id/oauth2-utils'
 import * as v from 'valibot'
 import { vOauth2ErrorResponse } from '../common/v-oauth2-error'
 
@@ -6,6 +6,7 @@ export const vAuthorizationChallengeRequest = v.looseObject({
   client_id: v.optional(v.string()),
   scope: v.optional(v.string()),
   auth_session: v.optional(v.string()),
+  resource: v.optional(vHttpsUrl),
 
   // PKCE
   code_challenge: v.optional(v.string()),
