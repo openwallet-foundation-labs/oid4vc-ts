@@ -13,6 +13,7 @@ export const vAccessTokenRequest = v.intersect([
     code: v.optional(v.string()),
     redirect_uri: v.optional(vHttpsUrl),
 
+    resource: v.optional(vHttpsUrl),
     code_verifier: v.optional(v.string()),
 
     grant_type: v.union([

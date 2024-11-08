@@ -41,7 +41,7 @@ export async function requestNonce(options: RequestNonceOptions): Promise<NonceR
   })
   if (!response.ok || !result) {
     throw new InvalidFetchResponseError(
-      `Requeting nonce from '${nonceEndpoint}' resulted in an unsuccesfull response with status '${response.status}'`,
+      `Requesting nonce from '${nonceEndpoint}' resulted in an unsuccesfull response with status '${response.status}'`,
       await response.clone().text(),
       response
     )

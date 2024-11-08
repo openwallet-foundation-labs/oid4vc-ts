@@ -33,6 +33,12 @@ interface RetrieveAccessTokenBaseOptions {
   callbacks: Pick<CallbackContext, 'fetch' | 'generateRandom' | 'hash' | 'signJwt'>
 
   /**
+   * The resource to which access is being requested. This can help the authorization
+   * server in determining the resource server to handle the authorization request for
+   */
+  resource?: string
+
+  /**
    * Dpop parameters for including a dpop in the access token request. The request will automatically
    * be retried if the server responds with a 'use_dpop_nonce' header.
    *
@@ -60,6 +66,7 @@ export async function retrievePreAuthorizedCodeAccessToken(
     grant_type: preAuthorizedCodeGrantIdentifier,
     'pre-authorized_code': options.preAuthorizedCode,
     tx_code: options.txCode,
+    resource: options.resource,
     ...options.additionalRequestPayload,
   } satisfies AccessTokenRequest
 
@@ -105,6 +112,7 @@ export async function retrieveAuthorizationCodeAccessToken(
     code: options.authorizationCode,
     code_verifier: options.pkceCodeVerifier,
     redirect_uri: options.redirectUri,
+    resource: options.resource,
     ...options.additionalRequestPayload,
   } satisfies AccessTokenRequest
 
