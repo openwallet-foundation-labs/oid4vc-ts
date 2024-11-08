@@ -164,11 +164,11 @@ export interface ClientAuthenticationClientSecretBasicOptions {
  * Client authentication using `client_secret_basic` option
  */
 export function clientAuthenticationClientSecretBasic(
-  options: ClientAuthenticationClientSecretPostOptions
+  options: ClientAuthenticationClientSecretBasicOptions
 ): ClientAuthenticationCallback {
   return ({ headers }) => {
     const authorization = encodeToBase64Url(decodeUtf8String(`${options.clientId}:${options.clientSecret}`))
-    headers.set('Authorization', authorization)
+    headers.set('Authorization', `Basic ${authorization}`)
   }
 }
 
