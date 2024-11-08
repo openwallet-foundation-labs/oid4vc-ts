@@ -174,7 +174,9 @@ export function determineAuthorizationServerForCredentialOffer(options: Determin
   return authorizationServer
 }
 
-export async function createCredentialOffer(options: CreateCredentialOfferOptions) {
+export async function createCredentialOffer(
+  options: CreateCredentialOfferOptions
+): Promise<{ credentialOffer: string; credentialOfferObject: CredentialOfferObject }> {
   const {
     [preAuthorizedCodeGrantIdentifier]: preAuthorizedCodeGrant,
     [authorizationCodeGrantIdentifier]: authorizationCodeGrant,

@@ -1,6 +1,9 @@
 export type {
   CredentialOfferObject,
   CredentialOfferPreAuthorizedCodeGrantTxCode,
+  CredentialOfferGrants,
+  CredenialOfferAuthorizationCodeGrant,
+  CredentialOfferPreAuthorizedCodeGrant,
 } from './credential-offer/v-credential-offer'
 
 // Re-export some types from utils (we don't want people depending on that lib)
