@@ -168,6 +168,7 @@ describe('Full E2E test', () => {
         expect(accessTokenRequest).toEqual({
           'pre-authorized_code': expect.any(String),
           grant_type: 'urn:ietf:params:oauth:grant-type:pre-authorized_code',
+          resource: createdCredentialOffer.credentialOfferObject.credential_issuer,
         })
 
         const parsedAccessTokenRequest = authorizationServer.parseAccessTokenRequest({
@@ -182,6 +183,7 @@ describe('Full E2E test', () => {
           accessTokenRequest: {
             'pre-authorized_code': preAuthorizedCode,
             grant_type: 'urn:ietf:params:oauth:grant-type:pre-authorized_code',
+            resource: createdCredentialOffer.credentialOfferObject.credential_issuer,
           },
           grant: {
             grantType: 'urn:ietf:params:oauth:grant-type:pre-authorized_code',
@@ -475,6 +477,7 @@ describe('Full E2E test', () => {
           redirect_uri: 'https://redirect-uri.com',
           code_verifier: expect.any(String),
           grant_type: 'authorization_code',
+          resource: credentialIssuerMetadata.credential_issuer,
         })
 
         const parsedAccessTokenRequest = authorizationServer.parseAccessTokenRequest({
@@ -491,6 +494,7 @@ describe('Full E2E test', () => {
             redirect_uri: 'https://redirect-uri.com',
             code_verifier: expect.any(String),
             grant_type: 'authorization_code',
+            resource: createdCredentialOffer.credentialOfferObject.credential_issuer,
           },
           grant: {
             grantType: 'authorization_code',

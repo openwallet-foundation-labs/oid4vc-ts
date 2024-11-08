@@ -275,7 +275,7 @@ export class Oid4vciClient {
     dpop,
   }: Omit<
     RetrievePreAuthorizedCodeAccessTokenOptions,
-    'callbacks' | 'authorizationServerMetadata' | 'preAuthorizedCode'
+    'callbacks' | 'authorizationServerMetadata' | 'preAuthorizedCode' | 'resource'
   > & {
     credentialOffer: CredentialOfferObject
     issuerMetadata: IssuerMetadataResult
@@ -307,6 +307,7 @@ export class Oid4vciClient {
       authorizationServerMetadata,
       preAuthorizedCode,
       txCode,
+      resource: issuerMetadata.credentialIssuer.credential_issuer,
       additionalRequestPayload,
       dpop,
     })
@@ -354,6 +355,7 @@ export class Oid4vciClient {
       additionalRequestPayload,
       dpop,
       redirectUri,
+      resource: issuerMetadata.credentialIssuer.credential_issuer,
     })
 
     return {

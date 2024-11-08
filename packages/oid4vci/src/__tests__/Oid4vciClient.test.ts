@@ -41,9 +41,12 @@ describe('Oid4vciClient', () => {
         HttpResponse.text(undefined, { status: 404 })
       ),
       http.post(paradymDraft13.credentialIssuerMetadata.token_endpoint, async ({ request }) => {
-        expect(await request.text()).toEqual(
-          'pre-authorized_code=1130293840889780123292078&grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Apre-authorized_code'
-        )
+        expect(parseXwwwFormUrlEncoded(await request.text())).toEqual({
+          'pre-authorized_code': '1130293840889780123292078',
+          grant_type: preAuthorizedCodeGrantIdentifier,
+          resource: credentialOffer.credential_issuer,
+        })
+
         return HttpResponse.json(paradymDraft13.accessTokenResponse)
       }),
       http.post(paradymDraft13.credentialIssuerMetadata.credential_endpoint, async ({ request }) => {
@@ -139,9 +142,13 @@ describe('Oid4vciClient', () => {
         HttpResponse.text(undefined, { status: 404 })
       ),
       http.post(paradymDraft11.credentialIssuerMetadata.token_endpoint, async ({ request }) => {
-        expect(await request.text()).toEqual(
-          'pre-authorized_code=1130293840889780123292078&grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Apre-authorized_code&tx_code=some-tx-code&user_pin=some-tx-code'
-        )
+        expect(parseXwwwFormUrlEncoded(await request.text())).toEqual({
+          'pre-authorized_code': '1130293840889780123292078',
+          grant_type: preAuthorizedCodeGrantIdentifier,
+          tx_code: 'some-tx-code',
+          user_pin: 'some-tx-code',
+          resource: credentialOffer.credential_issuer,
+        })
         return HttpResponse.json(paradymDraft11.accessTokenResponse)
       }),
       http.post(paradymDraft11.credentialIssuerMetadata.credential_endpoint, async ({ request }) => {
@@ -327,9 +334,14 @@ describe('Oid4vciClient', () => {
           },
           signature: expect.any(String),
         })
-        expect(await request.text()).toEqual(
-          'code=SHSw3KROXXsyvlCSPWBi4b&redirect_uri=https%3A%2F%2Fexample.com%2Fredirect&code_verifier=l-yZMbym56l7IlENP17y-XgKzT6a37ut5n9yXMrh9BpTOt9g77CwCsWheRW0oMA2tL471UZhIr705MdHxRSQvQ&grant_type=authorization_code'
-        )
+        expect(parseXwwwFormUrlEncoded(await request.text())).toEqual({
+          code: 'SHSw3KROXXsyvlCSPWBi4b',
+          redirect_uri: 'https://example.com/redirect',
+          code_verifier: 'l-yZMbym56l7IlENP17y-XgKzT6a37ut5n9yXMrh9BpTOt9g77CwCsWheRW0oMA2tL471UZhIr705MdHxRSQvQ',
+          grant_type: 'authorization_code',
+          resource: credentialOffer.credential_issuer,
+        })
+
         return HttpResponse.json(bdrDraft13.accessTokenResponse, {
           headers: {
             'DPoP-Nonce': 'nonce-should-be-used',
@@ -529,9 +541,12 @@ describe('Oid4vciClient', () => {
         }
       ),
       http.post(presentationDuringIssuance.authorizationServerMetadata.token_endpoint, async ({ request }) => {
-        expect(await request.text()).toEqual(
-          `code=${presentationDuringIssuance.authorizationChallengeResponse.authorization_code}&redirect_uri=https%3A%2F%2Fexample.com%2Fredirect&grant_type=authorization_code`
-        )
+        expect(parseXwwwFormUrlEncoded(await request.text())).toEqual({
+          code: presentationDuringIssuance.authorizationChallengeResponse.authorization_code,
+          redirect_uri: 'https://example.com/redirect',
+          grant_type: 'authorization_code',
+          resource: credentialOffer.credential_issuer,
+        })
         return HttpResponse.json(presentationDuringIssuance.accessTokenResponse)
       }),
       http.post(presentationDuringIssuance.credentialIssuerMetadata.credential_endpoint, async ({ request }) => {

@@ -145,11 +145,13 @@ export class Oauth2Client {
     additionalRequestPayload,
     txCode,
     dpop,
+    resource,
   }: Omit<RetrievePreAuthorizedCodeAccessTokenOptions, 'callbacks'>) {
     const result = await retrievePreAuthorizedCodeAccessToken({
       authorizationServerMetadata,
       preAuthorizedCode,
       txCode,
+      resource,
       additionalRequestPayload: {
         ...additionalRequestPayload,
         tx_code: txCode,
@@ -167,6 +169,7 @@ export class Oauth2Client {
     authorizationCode,
     pkceCodeVerifier,
     redirectUri,
+    resource,
     dpop,
   }: Omit<RetrieveAuthorizationCodeAccessTokenOptions, 'callbacks'>) {
     const result = await retrieveAuthorizationCodeAccessToken({
@@ -174,6 +177,7 @@ export class Oauth2Client {
       authorizationCode,
       pkceCodeVerifier,
       additionalRequestPayload,
+      resource,
       callbacks: this.options.callbacks,
       dpop,
       redirectUri,
