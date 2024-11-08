@@ -36,7 +36,6 @@ describe('Credential Offer', () => {
           },
           [preAuthorizedCodeGrantIdentifier]: {
             tx_code: {
-              input_mode: 'numeric',
               length: 8,
             },
             authoriztation_server: 'https://authorization.com',

@@ -90,6 +90,7 @@ describe('Oid4vciIssuer', () => {
       grants: {
         [preAuthorizedCodeGrantIdentifier]: {
           'pre-authorized_code': 'qbRsnksAVad5J33Tw231MQDf5nvyiR-xsnvWXfo35NI',
+          tx_code: {},
         },
         authorization_code: {},
       },
@@ -98,14 +99,17 @@ describe('Oid4vciIssuer', () => {
 
     expect(credentialOffer).toStrictEqual({
       credentialOffer:
-        'openid-credential-offer://?credential_offer=%7B%22credential_issuer%22%3A%22https%3A%2F%2Fcredential-issuer.com%22%2C%22credential_configuration_ids%22%3A%5B%22pidSdJwt%22%5D%2C%22grants%22%3A%7B%22authorization_code%22%3A%7B%7D%2C%22urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Apre-authorized_code%22%3A%7B%22pre-authorized_code%22%3A%22qbRsnksAVad5J33Tw231MQDf5nvyiR-xsnvWXfo35NI%22%7D%7D%7D',
+        'openid-credential-offer://?credential_offer=%7B%22credential_issuer%22%3A%22https%3A%2F%2Fcredential-issuer.com%22%2C%22credential_configuration_ids%22%3A%5B%22pidSdJwt%22%5D%2C%22grants%22%3A%7B%22authorization_code%22%3A%7B%7D%2C%22urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Apre-authorized_code%22%3A%7B%22pre-authorized_code%22%3A%22qbRsnksAVad5J33Tw231MQDf5nvyiR-xsnvWXfo35NI%22%2C%22tx_code%22%3A%7B%7D%2C%22user_pin_required%22%3Atrue%7D%7D%2C%22credentials%22%3A%5B%22pidSdJwt%22%5D%7D',
       credentialOfferObject: {
         credential_configuration_ids: ['pidSdJwt'],
+        credentials: ['pidSdJwt'],
         credential_issuer: 'https://credential-issuer.com',
         grants: {
           authorization_code: {},
           'urn:ietf:params:oauth:grant-type:pre-authorized_code': {
             'pre-authorized_code': 'qbRsnksAVad5J33Tw231MQDf5nvyiR-xsnvWXfo35NI',
+            user_pin_required: true,
+            tx_code: {},
           },
         },
       },
