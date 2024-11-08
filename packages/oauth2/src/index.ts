@@ -62,6 +62,7 @@ export { fetchJwks } from './metadata/fetch-jwks-uri'
 export { fetchWellKnownMetadata } from './metadata/fetch-well-known-metadata'
 
 export { SupportedAuthenticationScheme } from './access-token/verify-access-token'
+export type { VerifyAccessTokenRequestReturn } from './access-token/verify-access-token-request'
 export type {
   RetrieveAuthorizationCodeAccessTokenOptions,
   RetrievePreAuthorizedCodeAccessTokenOptions,
