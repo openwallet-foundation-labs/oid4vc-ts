@@ -523,8 +523,6 @@ describe('Oid4vciClient', () => {
           ) {
             expect(authorizationChallengeRequest).toEqual({
               auth_session: 'auth-session-identifier',
-              code_challenge: expect.any(String),
-              code_challenge_method: 'S256',
               presentation_during_issuance_session: 'some-session',
             })
             return HttpResponse.json(presentationDuringIssuance.authorizationChallengeResponse)

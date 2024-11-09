@@ -22,7 +22,13 @@ export interface CreatePkceOptions {
   callbacks: Pick<CallbackContext, 'hash' | 'generateRandom'>
 }
 
-export async function createPkce(options: CreatePkceOptions) {
+export interface CreatePkceReturn {
+  codeVerifier: string
+  codeChallenge: string
+  codeChallengeMethod: PkceCodeChallengeMethod
+}
+
+export async function createPkce(options: CreatePkceOptions): Promise<CreatePkceReturn> {
   const allowedCodeChallengeMethods = options.allowedCodeChallengeMethods ?? [
     PkceCodeChallengeMethod.S256,
     PkceCodeChallengeMethod.Plain,

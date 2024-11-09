@@ -22,7 +22,7 @@ export {
   valibotRecursiveFlattenIssues,
 } from './parse'
 export { joinUriParts } from './path'
-export type { Optional, Simplify } from './type'
+export type { Optional, Simplify, StringWithAutoCompletion } from './type'
 export { getQueryParams, objectToQueryParams } from './url'
 export { type ValibotFetcher, createValibotFetcher, defaultFetcher } from './valibot-fetcher'
 export { type HttpMethod, vHttpMethod, vHttpsUrl, vInteger } from './validation'

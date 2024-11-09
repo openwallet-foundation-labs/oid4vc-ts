@@ -12,7 +12,7 @@ import {
   preAuthorizedCodeGrantIdentifier,
 } from '@animo-id/oauth2'
 
-import type { createPkce } from '../../oauth2/src/pkce'
+import type { CreatePkceReturn } from '../../oauth2/src/pkce'
 import {
   determineAuthorizationServerForCredentialOffer,
   resolveCredentialOffer,
@@ -80,10 +80,11 @@ export class Oid4vciClient {
   }
 
   /**
-   * Retrieve an authorization code using an `presentation_during_issuance_session`.
+   * Retrieve an authorization code for a presentation during issuance session
    *
-   * This can only be called if an authorization challenge was performed, and an authorization
-   * response including presentations was exchanged for a `presentation_during_issuance_session`
+   * This can only be called if an authorization challenge was performed before and returned a
+   * `presentation` paramater along with an `auth_session`. If the presentation response included
+   * an `presentation_during_issuance_session` parameter it MUST be included in this request as well.
    */
   public async retrieveAuthorizationCodeUsingPresentation(options: {
     /**
@@ -95,7 +96,7 @@ export class Oid4vciClient {
      * Presentation during issuance session, obtained from the RP after submitting
      * openid4vp authorization response
      */
-    presentationDuringIssuanceSession: string
+    presentationDuringIssuanceSession?: string
 
     credentialOffer: CredentialOfferObject
     issuerMetadata: IssuerMetadataResult
@@ -116,14 +117,13 @@ export class Oid4vciClient {
     )
 
     const oauth2Client = new Oauth2Client({ callbacks: this.options.callbacks })
-    // TODO: think what to do about pkce
-    const authorizationChallengeResponse = await oauth2Client.sendAuthorizationChallengeRequest({
+    const { authorizationChallengeResponse } = await oauth2Client.sendAuthorizationChallengeRequest({
       authorizationServerMetadata,
       authSession: options.authSession,
       presentationDuringIssuanceSession: options.presentationDuringIssuanceSession,
     })
 
-    return authorizationChallengeResponse
+    return { authorizationChallengeResponse }
   }
 
   /**
@@ -157,7 +157,7 @@ export class Oid4vciClient {
         authorizationFlow: AuthorizationFlow.Oauth2Redirect
         authorizationRequestUrl: string
         authorizationServer: string
-        pkce?: Awaited<ReturnType<typeof createPkce>>
+        pkce?: CreatePkceReturn
       }
   > {
     if (!options.credentialOffer.grants?.[authorizationCodeGrantIdentifier]) {
@@ -201,13 +201,15 @@ export class Oid4vciClient {
       if (
         error instanceof Oauth2ClientAuthorizationChallengeError &&
         error.errorResponse.error === Oauth2ErrorCodes.InsufficientAuthorization &&
-        error.errorResponse.presentation &&
-        // TODO: we should probably throw an specifc error if presentation is defined but not auth_session?
-        error.errorResponse.auth_session
+        error.errorResponse.presentation
       ) {
+        if (!error.errorResponse.auth_session) {
+          throw new Oid4vciError(
+            `Expected 'auth_session' to be defined with authorization challenge response error '${error.errorResponse.error}' and 'presentation' parameter`
+          )
+        }
         return {
           authorizationFlow: AuthorizationFlow.PresentationDuringIssuance,
-          // TODO: name? presenationRequestUrl, oid4vpRequestUrl, ??
           oid4vpRequestUrl: error.errorResponse.presentation,
           authSession: error.errorResponse.auth_session,
           authorizationServer: authorizationServerMetadata.issuer,

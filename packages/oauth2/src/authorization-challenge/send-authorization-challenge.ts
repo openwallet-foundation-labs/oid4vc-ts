@@ -87,13 +87,15 @@ export async function sendAuthorizationChallengeRequest(options: SendAuthorizati
   }
 
   // PKCE
-  const pkce = authorizationServerMetadata.code_challenge_methods_supported
-    ? await createPkce({
-        allowedCodeChallengeMethods: authorizationServerMetadata.code_challenge_methods_supported,
-        callbacks: options.callbacks,
-        codeVerifier: options.pkceCodeVerifier,
-      })
-    : undefined
+  // If auth session is included it's likely not needed to use PKCE
+  const pkce =
+    authorizationServerMetadata.code_challenge_methods_supported && !options.authSession
+      ? await createPkce({
+          allowedCodeChallengeMethods: authorizationServerMetadata.code_challenge_methods_supported,
+          callbacks: options.callbacks,
+          codeVerifier: options.pkceCodeVerifier,
+        })
+      : undefined
 
   const authorizationChallengeRequest = parseWithErrorHandling(vAuthorizationChallengeRequest, {
     ...options.additionalRequestPayload,

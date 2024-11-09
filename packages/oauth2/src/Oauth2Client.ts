@@ -8,7 +8,7 @@ import {
 import {
   type SendAuthorizationChallengeRequestOptions,
   sendAuthorizationChallengeRequest,
-} from './authorization-challenge/authorization-challenge'
+} from './authorization-challenge/send-authorization-challenge'
 import {
   type CreateAuthorizationRequestUrlOptions,
   createAuthorizationRequestUrl,

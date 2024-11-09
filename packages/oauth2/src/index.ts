@@ -104,7 +104,7 @@ export { type Oauth2AuthorizationServerOptions, Oauth2AuthorizationServer } from
 export { type Oauth2ResourceServerOptions, Oauth2ResourceServer } from './Oauth2ResourceServer'
 export { type Oauth2ClientOptions, Oauth2Client } from './Oauth2Client'
 
-export { PkceCodeChallengeMethod } from './pkce'
+export { PkceCodeChallengeMethod, CreatePkceReturn } from './pkce'
 export {
   type AuthorizationCodeGrantIdentifier,
   vAuthorizationCodeGrantIdentifier,

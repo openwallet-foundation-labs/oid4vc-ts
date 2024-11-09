@@ -11,7 +11,18 @@ import {
   verifyAuthorizationCodeAccessTokenRequest,
   verifyPreAuthorizedCodeAccessTokenRequest,
 } from './access-token/verify-access-token-request'
+import {
+  type CreateAuthorizationChallengeErrorResponseOptions,
+  type CreateAuthorizationChallengeResponseOptions,
+  createAuthorizationChallengeErrorResponse,
+  createAuthorizationChallengeResponse,
+} from './authorization-challenge/create-authorization-challenge-response'
+import {
+  type ParseAuthorizationChallengeRequestOptions,
+  parseAuthorizationChallengeRequest,
+} from './authorization-challenge/parse-authorization-challenge-request'
 import type { CallbackContext } from './callbacks'
+import { Oauth2ErrorCodes } from './common/v-oauth2-error'
 import {
   type AuthorizationServerMetadata,
   vAuthorizationServerMetadata,
@@ -112,5 +123,40 @@ export class Oauth2AuthorizationServer {
       cNonceExpiresIn: options.cNonceExpiresIn,
       additionalPayload: options.additionalAccessTokenResponsePayload,
     })
+  }
+
+  /**
+   * Parse an authorization challenge request
+   */
+  public parseAuthorizationChallengeRequest(options: ParseAuthorizationChallengeRequestOptions) {
+    return parseAuthorizationChallengeRequest(options)
+  }
+
+  public createAuthorizationChallengeResponse(options: CreateAuthorizationChallengeResponseOptions) {
+    return createAuthorizationChallengeResponse(options)
+  }
+
+  /**
+   * Create an authorization challenge error response indicating presentation of credenitals
+   * using OpenID4VP is required before authorization can be granted.
+   *
+   * The `presentation` parameter should be an OpenID4VP authorization request url.
+   * The `authSession` should be used to track the session
+   */
+  public createAuthorizationChallengePresentationErrorResponse(
+    options: Pick<CreateAuthorizationChallengeErrorResponseOptions, 'errorDescription' | 'additionalPayload'> &
+      Required<Pick<CreateAuthorizationChallengeErrorResponseOptions, 'authSession' | 'presentation'>>
+  ) {
+    return createAuthorizationChallengeErrorResponse({
+      error: Oauth2ErrorCodes.InsufficientAuthorization,
+      errorDescription: options.errorDescription,
+      additionalPayload: options.additionalPayload,
+      authSession: options.authSession,
+      presentation: options.presentation,
+    })
+  }
+
+  public createAuthorizationChallengeErrorResponse(options: CreateAuthorizationChallengeErrorResponseOptions) {
+    return createAuthorizationChallengeErrorResponse(options)
   }
 }
