@@ -91,6 +91,13 @@ export async function resolveCredentialOffer(
   return credentialOfferParseResult.output
 }
 
+export interface CreateCredentialOfferGrantsOptions {
+  [preAuthorizedCodeGrantIdentifier]?: Partial<CredentialOfferPreAuthorizedCodeGrant>
+  [authorizationCodeGrantIdentifier]?: CredenialOfferAuthorizationCodeGrant
+
+  [key: string]: unknown
+}
+
 export interface CreateCredentialOfferOptions {
   issuerMetadata: IssuerMetadataResult
 
@@ -102,12 +109,7 @@ export interface CreateCredentialOfferOptions {
   /**
    * Grants to include in the credential offer
    */
-  grants: {
-    [preAuthorizedCodeGrantIdentifier]?: Partial<CredentialOfferPreAuthorizedCodeGrant>
-    [authorizationCodeGrantIdentifier]?: CredenialOfferAuthorizationCodeGrant
-
-    [key: string]: unknown
-  }
+  grants: CreateCredentialOfferGrantsOptions
 
   /**
    * Additional payload to include in the body of the credential offer. Will be applied
