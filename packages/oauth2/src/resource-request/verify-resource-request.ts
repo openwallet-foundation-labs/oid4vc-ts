@@ -199,5 +199,7 @@ export async function verifyResourceRequest(options: VerifyResourceRequestOption
   return {
     tokenPayload,
     dpopJwk,
+    scheme,
+    accessToken,
   }
 }

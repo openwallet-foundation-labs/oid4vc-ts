@@ -49,6 +49,11 @@ export { Oauth2ClientErrorResponseError } from './error/Oauth2ClientErrorRespons
 export { Oauth2ClientAuthorizationChallengeError } from './error/Oauth2ClientAuthorizationChallengeError'
 export { Oauth2ServerErrorResponseError } from './error/Oauth2ServerErrorResponseError'
 
+export type {
+  AuthorizationChallengeRequest,
+  AuthorizationChallengeErrorResponse,
+  AuthorizationChallengeResponse,
+} from './authorization-challenge/v-authorization-challenge'
 export {
   AuthorizationServerMetadata,
   // Ideally we don't export this, but it's needed in oid4vci
