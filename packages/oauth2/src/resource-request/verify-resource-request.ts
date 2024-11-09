@@ -201,5 +201,6 @@ export async function verifyResourceRequest(options: VerifyResourceRequestOption
     dpopJwk,
     scheme,
     accessToken,
+    authorizationServer: authorizationServer.issuer,
   }
 }
