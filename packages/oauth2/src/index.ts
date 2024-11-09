@@ -9,6 +9,7 @@ export { type HttpMethod, getGlobalConfig, setGlobalConfig, type Oid4vcTsConfig 
 export { Oauth2ErrorCodes, type Oauth2ErrorResponse, vOauth2ErrorResponse } from './common/v-oauth2-error'
 export { calculateJwkThumbprint, type CalculateJwkThumbprintOptions } from './common/jwk/jwk-thumbprint'
 export { type Jwk, type JwkSet, vJwk } from './common/jwk/v-jwk'
+export type { AccessTokenProfileJwtPayload } from './access-token/v-access-token-jwt'
 
 export {
   verifyJwt,
@@ -65,6 +66,8 @@ export {
 } from './metadata/authorization-server/authorization-server-metadata'
 export { fetchJwks } from './metadata/fetch-jwks-uri'
 export { fetchWellKnownMetadata } from './metadata/fetch-well-known-metadata'
+
+export type { TokenIntrospectionResponse } from './access-token/v-token-introspection'
 
 export { SupportedAuthenticationScheme } from './access-token/verify-access-token'
 export type { VerifyAccessTokenRequestReturn } from './access-token/verify-access-token-request'
