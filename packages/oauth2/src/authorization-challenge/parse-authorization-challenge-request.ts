@@ -10,7 +10,7 @@ export interface ParseAuthorizationChallengeRequestOptions {
  *
  * @throws {ValidationError} if a successful response was received but an error occured during verification of the {@link AuthorizationChallengeResponse}
  */
-export async function parseAuthorizationChallengeRequest(options: ParseAuthorizationChallengeRequestOptions) {
+export function parseAuthorizationChallengeRequest(options: ParseAuthorizationChallengeRequestOptions) {
   const authorizationChallengeRequest = parseWithErrorHandling(
     vAuthorizationChallengeRequest,
     options.authorizationChallengeRequest

@@ -1,6 +1,8 @@
 import { vHttpsUrl } from '@animo-id/oauth2-utils'
 import * as v from 'valibot'
 
+// TODO: should create different request validations for different
+// response types. Currently we basically only support `code`
 export const vAuthorizationRequest = v.looseObject({
   response_type: v.string(),
   client_id: v.string(),

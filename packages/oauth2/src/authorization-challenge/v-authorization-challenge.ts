@@ -1,16 +1,16 @@
-import { vHttpsUrl, vInteger } from '@animo-id/oauth2-utils'
+import { vInteger } from '@animo-id/oauth2-utils'
 import * as v from 'valibot'
+import { vAuthorizationRequest } from '../authorization-request/v-authorization-request'
 import { vOauth2ErrorResponse } from '../common/v-oauth2-error'
 
 export const vAuthorizationChallengeRequest = v.looseObject({
-  client_id: v.optional(v.string()),
-  scope: v.optional(v.string()),
-  auth_session: v.optional(v.string()),
-  resource: v.optional(vHttpsUrl),
+  // authorization challenge request can include same parameters as an authorization request
+  // except for response_type (always `code`), and `client_id` is optional (becase
+  // it's possible to do client authentication using different methods)
+  ...v.omit(vAuthorizationRequest, ['response_type', 'client_id']).entries,
+  client_id: v.optional(vAuthorizationRequest.entries.client_id),
 
-  // PKCE
-  code_challenge: v.optional(v.string()),
-  code_challenge_method: v.optional(v.string()),
+  auth_session: v.optional(v.string()),
 
   // DRAFT presentation during issuance
   presentation_during_issuance_session: v.optional(v.string()),
