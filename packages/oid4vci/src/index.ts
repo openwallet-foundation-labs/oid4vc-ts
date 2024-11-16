@@ -62,6 +62,7 @@ export type {
 export {
   extractScopesForCredentialConfigurationIds,
   type ExtractScopesForCredentialConfigurationIdsOptions,
+  credentialsSupportedToCredentialConfigurationsSupported,
 } from './metadata/credential-issuer/credential-configurations'
 
 export { Oid4vciClient, type Oid4vciClientOptions, AuthorizationFlow } from './Oid4vciClient'

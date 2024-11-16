@@ -197,7 +197,7 @@ export class Oid4vciClient {
         authorizationServer: authorizationServerMetadata.issuer,
       }
     } catch (error) {
-      // Authorization server asks us to complete oid4vp reqeust before issuance
+      // Authorization server asks us to complete oid4vp request before issuance
       if (
         error instanceof Oauth2ClientAuthorizationChallengeError &&
         error.errorResponse.error === Oauth2ErrorCodes.InsufficientAuthorization &&

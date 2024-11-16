@@ -1,5 +1,12 @@
 import { Oauth2Error } from '@animo-id/oauth2'
+import { ValidationError } from '@animo-id/oauth2-utils'
+import * as v from 'valibot'
+import { Oid4vciError } from '../../error/Oid4vciError'
 import type { IssuerMetadataResult } from '../fetch-issuer-metadata'
+import {
+  type CredentialConfigurationsSupported,
+  vCredentialConfigurationSupportedDraft11To14,
+} from './v-credential-issuer-metadata'
 
 export interface ExtractScopesForCredentialConfigurationIdsOptions {
   /**
@@ -46,4 +53,37 @@ export function extractScopesForCredentialConfigurationIds(
   }
 
   return scopes.size > 0 ? Array.from(scopes) : undefined
+}
+
+/**
+ * Transforms draft 11 credentials supported syntax to credential configurations supported
+ *
+ * @throws if a credentials supported entry without id is passed
+ * @throws if a credentials supported entry with invalid structure or format specific properties is passed
+ */
+export function credentialsSupportedToCredentialConfigurationsSupported(
+  credentialsSupported: Array<v.InferInput<typeof vCredentialConfigurationSupportedDraft11To14>>
+) {
+  const credentialConfigurationsSupported: CredentialConfigurationsSupported = {}
+
+  for (let index = 0; index < credentialsSupported.length; index++) {
+    const credentialSupported = credentialsSupported[index]
+    if (!credentialSupported.id) {
+      throw new Oid4vciError(
+        `Credential supported at index '${index}' does not have an 'id' property. Credential configuration requires the 'id' property as key`
+      )
+    }
+
+    const parseResult = v.safeParse(vCredentialConfigurationSupportedDraft11To14, credentialSupported)
+    if (!parseResult.success) {
+      throw new ValidationError(
+        `Error transforming credential supported with id '${credentialSupported.id}' to credential configuration supported format`,
+        parseResult.issues
+      )
+    }
+
+    credentialConfigurationsSupported[credentialSupported.id] = parseResult.output
+  }
+
+  return credentialConfigurationsSupported
 }

@@ -106,7 +106,7 @@ const vCredentialIssuerMetadataDraft14 = v.looseObject({
 
 // Transforms credential supported to credential configuration supported format
 // Ignores unknown formats
-const vCredentialConfigurationSupportedDraft11To14 = v.pipe(
+export const vCredentialConfigurationSupportedDraft11To14 = v.pipe(
   v.looseObject({
     id: v.optional(v.string()),
     format: v.string(),

@@ -16,7 +16,7 @@ export interface CreateAccessTokenOptions {
   dpopJwk?: Jwk
 
   /**
-   * scope of the access token. If the authorization reqeust included scopes
+   * scope of the access token. If the authorization request included scopes
    * they should be added to the access token as well
    */
   scope?: string
