@@ -168,7 +168,7 @@ async function retrieveAccessToken(options: RetrieveAccessTokenOptions): Promise
     ContentType.Json,
     options.authorizationServerMetadata.token_endpoint,
     {
-      body: requestQueryParams,
+      body: requestQueryParams.toString(),
       method: 'POST',
       headers: {
         'Content-Type': ContentType.XWwwFormUrlencoded,

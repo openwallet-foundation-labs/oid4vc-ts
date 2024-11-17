@@ -70,7 +70,7 @@ export async function introspectToken(options: IntrospectTokenOptions) {
     ContentType.Json,
     introspectionEndpoint,
     {
-      body: objectToQueryParams(introspectionRequest),
+      body: objectToQueryParams(introspectionRequest).toString(),
       method: 'POST',
       headers,
     }

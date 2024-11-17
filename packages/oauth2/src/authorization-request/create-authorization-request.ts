@@ -118,7 +118,7 @@ export async function createAuthorizationRequestUrl(options: CreateAuthorization
     }
   }
 
-  const authorizationRequestUrl = `${authorizationServerMetadata.authorization_endpoint}?${objectToQueryParams(pushedAuthorizationRequest ?? authorizationRequest)}`
+  const authorizationRequestUrl = `${authorizationServerMetadata.authorization_endpoint}?${objectToQueryParams(pushedAuthorizationRequest ?? authorizationRequest).toString()}`
   return {
     authorizationRequestUrl,
     pkce,
@@ -150,7 +150,7 @@ async function pushAuthorizationRequest(options: PushAuthorizationRequestOptions
     options.pushedAuthorizationRequestEndpoint,
     {
       method: 'POST',
-      body: objectToQueryParams(options.authorizationRequest),
+      body: objectToQueryParams(options.authorizationRequest).toString(),
       headers: {
         'Content-Type': ContentType.XWwwFormUrlencoded,
       },

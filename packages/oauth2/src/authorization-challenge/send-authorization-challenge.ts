@@ -114,7 +114,7 @@ export async function sendAuthorizationChallengeRequest(options: SendAuthorizati
     authorizationServerMetadata.authorization_challenge_endpoint,
     {
       method: 'POST',
-      body: objectToQueryParams(authorizationChallengeRequest),
+      body: objectToQueryParams(authorizationChallengeRequest).toString(),
       headers: {
         'Content-Type': ContentType.XWwwFormUrlencoded,
       },

@@ -98,7 +98,7 @@ export class Oauth2Client {
               request_uri: error.errorResponse.request_uri,
               client_id: options.clientId,
             }
-          )}`
+          ).toString()}`
 
           return {
             authorizationRequestUrl,
