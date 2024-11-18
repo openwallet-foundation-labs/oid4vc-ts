@@ -11,7 +11,7 @@ export const vAccessTokenRequest = v.intersect([
 
     // Authorization code flow
     code: v.optional(v.string()),
-    redirect_uri: v.optional(vHttpsUrl),
+    redirect_uri: v.optional(v.pipe(v.string(), v.url())),
 
     resource: v.optional(vHttpsUrl),
     code_verifier: v.optional(v.string()),

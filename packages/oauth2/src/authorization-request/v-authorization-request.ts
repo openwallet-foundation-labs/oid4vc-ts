@@ -8,7 +8,7 @@ export const vAuthorizationRequest = v.looseObject({
   client_id: v.string(),
 
   issuer_state: v.optional(v.string()),
-  redirect_uri: v.optional(v.string()),
+  redirect_uri: v.optional(v.pipe(v.string(), v.url())),
   resource: v.optional(vHttpsUrl),
   scope: v.optional(v.string()),
 
