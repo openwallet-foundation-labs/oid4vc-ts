@@ -1,5 +1,11 @@
 # @animo-id/oauth2-utils
 
+## 0.1.2
+
+### Patch Changes
+
+- 1de27e5: chore: correct formatting for publishing
+
 ## 0.1.1
 
 ### Patch Changes

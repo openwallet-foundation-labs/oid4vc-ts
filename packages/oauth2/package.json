@@ -1,6 +1,6 @@
 {
   "name": "@animo-id/oauth2",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "exports": "./src/index.ts",
   "files": ["dist"],
   "license": "Apache-2.0",
