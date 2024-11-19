@@ -2,9 +2,8 @@
   "name": "@animo-id/oauth2-utils",
   "version": "0.1.0",
   "exports": "./src/index.ts",
-  "files": [
-    "dist"
-  ],
+  "readme": "../../README.md",
+  "files": ["dist", "../../README.md"],
   "license": "Apache-2.0",
   "publishConfig": {
     "main": "./dist/index.js",
