@@ -31,6 +31,7 @@ jobs:
         with:
           title: "chore(release): new version"
           publish: pnpm release
+          version: pnpm changeset version && pnpm style:fix
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
@@ -86,6 +87,7 @@ jobs:
           EOF
 
           pnpm changeset version --snapshot alpha
+          pnpm style:fix
           pnpm build
           pnpm changeset publish --tag alpha
 
