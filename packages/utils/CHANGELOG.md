@@ -1,5 +1,11 @@
 # @animo-id/oauth2-utils
 
+## 0.1.3
+
+### Patch Changes
+
+- d4b9279: chore: create github release
+
 ## 0.1.2
 
 ### Patch Changes
