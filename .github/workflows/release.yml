@@ -30,6 +30,7 @@ jobs:
         uses: changesets/action@v1
         with:
           title: "chore(release): new version"
+          commit: "chore(release): new version"
           publish: pnpm release
           version: pnpm changeset-version
         env:
@@ -41,7 +42,7 @@ jobs:
         run: echo "CURRENT_PACKAGE_VERSION=$(node -p "require('./packages/oid4vci/package.json').version")" >> $GITHUB_ENV
 
       - name: Create Github Release
-        if: steps.changesets.outputs.published == 'true'
+        if: "startsWith(github.event.head_commit.message, 'chore(release): new version')"
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ env.CURRENT_PACKAGE_VERSION }}
