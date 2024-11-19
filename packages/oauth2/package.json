@@ -2,8 +2,7 @@
   "name": "@animo-id/oauth2",
   "version": "0.1.0",
   "exports": "./src/index.ts",
-  "readme": "../../README.md",
-  "files": ["dist", "../../README.md"],
+  "files": ["dist"],
   "license": "Apache-2.0",
   "publishConfig": {
     "main": "./dist/index.js",
