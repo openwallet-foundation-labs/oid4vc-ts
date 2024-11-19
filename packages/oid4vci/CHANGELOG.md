@@ -1,5 +1,14 @@
 # @animo-id/oid4vci
 
+## 0.1.3
+
+### Patch Changes
+
+- d4b9279: chore: create github release
+- Updated dependencies [d4b9279]
+  - @animo-id/oauth2@0.1.3
+  - @animo-id/oauth2-utils@0.1.3
+
 ## 0.1.2
 
 ### Patch Changes
