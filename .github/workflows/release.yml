@@ -37,7 +37,7 @@ jobs:
 
       - name: Get current package version
         id: get_version
-        run: echo "CURRENT_PACKAGE_VERSION=$(node -p "require('./packages/core/package.json').version")" >> $GITHUB_ENV
+        run: echo "CURRENT_PACKAGE_VERSION=$(node -p "require('./packages/oid4vci/package.json').version")" >> $GITHUB_ENV
 
       - name: Create Github Release
         if: steps.changesets.outputs.published == 'true'
