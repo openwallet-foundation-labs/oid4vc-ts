@@ -33,10 +33,7 @@ export {
   vCompactJwt,
 } from './common/jwt/v-jwt'
 
-export type {
-  RequestDpopOptions,
-  ResponseDpopReturn,
-} from './dpop/dpop'
+export type { RequestDpopOptions } from './dpop/dpop'
 
 export { Oauth2Error, Oauth2ErrorOptions } from './error/Oauth2Error'
 export { Oauth2JwtVerificationError } from './error/Oauth2JwtVerificationError'

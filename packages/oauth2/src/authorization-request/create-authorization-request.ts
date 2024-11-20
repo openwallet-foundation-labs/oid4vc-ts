@@ -2,8 +2,15 @@ import { ContentType, type Fetch, createValibotFetcher, objectToQueryParams } fr
 import { InvalidFetchResponseError } from '@animo-id/oauth2-utils'
 import * as v from 'valibot'
 import { ValidationError } from '../../../utils/src/error/ValidationError'
-import { vAccessTokenErrorResponse } from '../access-token/v-access-token'
-import type { CallbackContext } from '../callbacks'
+import { type CallbackContext, HashAlgorithm } from '../callbacks'
+import {
+  type RequestClientAttestationOptions,
+  createClientAttestationForRequest,
+} from '../client-attestation/client-attestation-pop'
+import { calculateJwkThumbprint } from '../common/jwk/jwk-thumbprint'
+import { vOauth2ErrorResponse } from '../common/v-oauth2-error'
+import { type RequestDpopOptions, createDpopHeadersForRequest, extractDpopNonceFromHeaders } from '../dpop/dpop'
+import { authorizationServerRequestWithDpopRetry } from '../dpop/dpop-retry'
 import { Oauth2ClientErrorResponseError } from '../error/Oauth2ClientErrorResponseError'
 import { Oauth2Error } from '../error/Oauth2Error'
 import type { AuthorizationServerMetadata } from '../metadata/authorization-server/v-authorization-server-metadata'
@@ -18,7 +25,7 @@ export interface CreateAuthorizationRequestUrlOptions {
   /**
    * Callback context mostly for crypto related functionality
    */
-  callbacks: Pick<CallbackContext, 'fetch' | 'hash' | 'generateRandom'>
+  callbacks: Pick<CallbackContext, 'fetch' | 'hash' | 'generateRandom' | 'signJwt'>
 
   /**
    * Metadata of the authorization server for which to create the authorization request url
@@ -56,6 +63,20 @@ export interface CreateAuthorizationRequestUrlOptions {
    * Code verifier to use for pkce. If not provided a value will generated when pkce is supported
    */
   pkceCodeVerifier?: string
+
+  /**
+   * If client attestation needs to be included in the request.
+   *
+   * Will ONLY be used if PAR is used.
+   */
+  clientAttestation?: RequestClientAttestationOptions
+
+  /**
+   * DPoP options
+   *
+   * If PAR is not used only the `dpop_jkt` property will be included in the request
+   */
+  dpop?: RequestDpopOptions
 }
 
 /**
@@ -68,6 +89,7 @@ export interface CreateAuthorizationRequestUrlOptions {
 export async function createAuthorizationRequestUrl(options: CreateAuthorizationRequestUrlOptions) {
   const authorizationServerMetadata = options.authorizationServerMetadata
 
+  const pushedAuthorizationRequestEndpoint = authorizationServerMetadata.pushed_authorization_request_endpoint
   if (!authorizationServerMetadata.authorization_endpoint) {
     throw new Oauth2Error(
       `Unable to create authorization request url. Authorization server '${authorizationServerMetadata.issuer}' has no 'authorization_endpoint'`
@@ -94,27 +116,73 @@ export async function createAuthorizationRequestUrl(options: CreateAuthorization
     code_challenge_method: pkce?.codeChallengeMethod,
   }
   let pushedAuthorizationRequest: PushedAuthorizationRequest | undefined = undefined
+  let dpop: RequestDpopOptions | undefined = options.dpop
 
-  if (
-    authorizationServerMetadata.require_pushed_authorization_requests ||
-    authorizationServerMetadata.pushed_authorization_request_endpoint
-  ) {
+  if (authorizationServerMetadata.require_pushed_authorization_requests || pushedAuthorizationRequestEndpoint) {
     // Use PAR if supported or required
-    if (!authorizationServerMetadata.pushed_authorization_request_endpoint) {
+    if (!pushedAuthorizationRequestEndpoint) {
       throw new Oauth2Error(
         `Authorization server '${authorizationServerMetadata.issuer}' indicated that pushed authorization requests are required, but the 'pushed_authorization_request_endpoint' is missing in the authorization server metadata.`
       )
     }
 
-    const { request_uri } = await pushAuthorizationRequest({
-      authorizationRequest,
-      pushedAuthorizationRequestEndpoint: authorizationServerMetadata.pushed_authorization_request_endpoint,
-      fetch: options.callbacks.fetch,
+    const clientAttestation = options.clientAttestation
+      ? await createClientAttestationForRequest({
+          authorizationServer: options.authorizationServerMetadata.issuer,
+          clientAttestation: options.clientAttestation,
+          callbacks: options.callbacks,
+        })
+      : undefined
+
+    const { pushedAuthorizationResponse, dpopNonce } = await authorizationServerRequestWithDpopRetry({
+      dpop: options.dpop,
+      request: async (dpop) => {
+        const dpopHeaders = dpop
+          ? await createDpopHeadersForRequest({
+              request: {
+                method: 'POST',
+                url: pushedAuthorizationRequestEndpoint,
+              },
+              signer: dpop.signer,
+              callbacks: options.callbacks,
+              nonce: dpop.nonce,
+            })
+          : undefined
+
+        return await pushAuthorizationRequest({
+          authorizationRequest: {
+            ...authorizationRequest,
+            ...clientAttestation?.headers,
+          },
+          pushedAuthorizationRequestEndpoint,
+          fetch: options.callbacks.fetch,
+          headers: {
+            ...clientAttestation?.headers,
+            ...dpopHeaders,
+          },
+        })
+      },
     })
 
     pushedAuthorizationRequest = {
-      request_uri,
+      request_uri: pushedAuthorizationResponse.request_uri,
       client_id: authorizationRequest.client_id,
+    }
+
+    if (options.dpop && dpopNonce) {
+      dpop = {
+        ...options.dpop,
+        nonce: dpopNonce,
+      }
+    }
+  } else {
+    // If not using PAR but dpop we include the `dpop_jkt` option
+    if (options.dpop) {
+      authorizationRequest.dpop_jkt = await calculateJwkThumbprint({
+        hashAlgorithm: HashAlgorithm.Sha256,
+        hashCallback: options.callbacks.hash,
+        jwk: options.dpop.signer.publicJwk,
+      })
     }
   }
 
@@ -122,12 +190,18 @@ export async function createAuthorizationRequestUrl(options: CreateAuthorization
   return {
     authorizationRequestUrl,
     pkce,
+    dpop,
   }
 }
 
 interface PushAuthorizationRequestOptions {
   pushedAuthorizationRequestEndpoint: string
   authorizationRequest: AuthorizationRequest
+
+  /**
+   * Headers to include in the PAR request
+   */
+  headers?: Record<string, unknown>
 
   /**
    * Custom fetch implementation to use
@@ -152,6 +226,7 @@ async function pushAuthorizationRequest(options: PushAuthorizationRequestOptions
       method: 'POST',
       body: objectToQueryParams(options.authorizationRequest).toString(),
       headers: {
+        ...options.headers,
         'Content-Type': ContentType.XWwwFormUrlencoded,
       },
     }
@@ -159,7 +234,7 @@ async function pushAuthorizationRequest(options: PushAuthorizationRequestOptions
 
   if (!response.ok || !result) {
     const parErrorResponse = v.safeParse(
-      vAccessTokenErrorResponse,
+      vOauth2ErrorResponse,
       await response
         .clone()
         .json()
@@ -184,5 +259,9 @@ async function pushAuthorizationRequest(options: PushAuthorizationRequestOptions
     throw new ValidationError('Error validating pushed authorization response', result.issues)
   }
 
-  return result.output
+  const dpopNonce = extractDpopNonceFromHeaders(response.headers)
+  return {
+    dpopNonce,
+    pushedAuthorizationResponse: result.output,
+  }
 }

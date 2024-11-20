@@ -33,6 +33,8 @@ export type JwtSigner = JwtSignerDid | JwtSignerJwk | JwtSignerX5c | JwtSignerCu
 export const vCompactJwt = v.string()
 
 export const vJwtConfirmationPayload = v.looseObject({
+  jwk: v.optional(vJwk),
+
   // RFC9449. jwk thumbprint of the dpop public key to which the access token is bound
   jkt: v.optional(v.string()),
 })

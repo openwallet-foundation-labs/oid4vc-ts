@@ -1,6 +1,6 @@
 import { type FetchRequestInit, type FetchResponse, type HttpMethod, defaultFetcher } from '@animo-id/oauth2-utils'
 import type { CallbackContext } from '../callbacks'
-import { type RequestDpopOptions, createDpopJwt, extractDpopNonceFromHeaders } from '../dpop/dpop'
+import { type RequestDpopOptions, createDpopHeadersForRequest, extractDpopNonceFromHeaders } from '../dpop/dpop'
 import { shouldRetryResourceRequestWithDPoPNonce } from '../dpop/dpop-retry'
 import {
   Oauth2ResourceUnauthorizedError,
@@ -64,8 +64,8 @@ export interface ResourceRequestResponseNotOk extends ResourceRequestResponseBas
 export async function resourceRequest(
   options: ResourceRequestOptions
 ): Promise<ResourceRequestResponseOk | ResourceRequestResponseNotOk> {
-  const dpopJwt = options.dpop
-    ? await createDpopJwt({
+  const dpopHeaders = options.dpop
+    ? await createDpopHeadersForRequest({
         request: {
           url: options.url,
           // in fetch the default is GET if not provided
@@ -83,8 +83,8 @@ export async function resourceRequest(
     ...options.requestOptions,
     headers: {
       ...options.requestOptions.headers,
-      Authorization: `${dpopJwt ? 'DPoP' : 'Bearer'} ${options.accessToken}`,
-      ...(dpopJwt ? { DPoP: dpopJwt } : {}),
+      Authorization: `${dpopHeaders ? 'DPoP' : 'Bearer'} ${options.accessToken}`,
+      ...dpopHeaders,
     },
   })
 
