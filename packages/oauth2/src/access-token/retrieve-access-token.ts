@@ -7,7 +7,11 @@ import { type RequestDpopOptions, createDpopJwt, extractDpopNonceFromHeaders } f
 import { shouldRetryTokenRequestWithDPoPNonce } from '../dpop/dpop-retry'
 import { Oauth2ClientErrorResponseError } from '../error/Oauth2ClientErrorResponseError'
 import type { AuthorizationServerMetadata } from '../metadata/authorization-server/v-authorization-server-metadata'
-import { authorizationCodeGrantIdentifier, preAuthorizedCodeGrantIdentifier } from '../v-grant-type'
+import {
+  authorizationCodeGrantIdentifier,
+  preAuthorizedCodeGrantIdentifier,
+  refreshTokenGrantIdentifier,
+} from '../v-grant-type'
 import {
   type AccessTokenRequest,
   type AccessTokenResponse,
@@ -112,6 +116,39 @@ export async function retrieveAuthorizationCodeAccessToken(
     code: options.authorizationCode,
     code_verifier: options.pkceCodeVerifier,
     redirect_uri: options.redirectUri,
+    resource: options.resource,
+    ...options.additionalRequestPayload,
+  } satisfies AccessTokenRequest
+
+  const accessTokenResponse = await retrieveAccessTokenWithDpopRetry({
+    authorizationServerMetadata: options.authorizationServerMetadata,
+    request,
+    dpop: options.dpop,
+    callbacks: options.callbacks,
+  })
+
+  return accessTokenResponse
+}
+
+export interface RetrieveRefreshTokenAccessTokenOptions extends RetrieveAccessTokenBaseOptions {
+  /**
+   * The refresh token
+   */
+  refreshToken: string
+
+  /**
+   * Additional payload to include in the access token request. Items will be encoded and sent
+   * using x-www-form-urlencoded format. Nested items (JSON) will be stringified and url encoded.
+   */
+  additionalRequestPayload?: Record<string, unknown>
+}
+
+export async function retrieveRefreshTokenAccessToken(
+  options: RetrieveRefreshTokenAccessTokenOptions
+): Promise<RetrieveAccessTokenReturn> {
+  const request = {
+    grant_type: refreshTokenGrantIdentifier,
+    refresh_token: options.refreshToken,
     resource: options.resource,
     ...options.additionalRequestPayload,
   } satisfies AccessTokenRequest

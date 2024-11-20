@@ -2,7 +2,11 @@ import * as v from 'valibot'
 
 import { vHttpsUrl } from '@animo-id/oauth2-utils'
 import { vOauth2ErrorResponse } from '../common/v-oauth2-error'
-import { vAuthorizationCodeGrantIdentifier, vPreAuthorizedCodeGrantIdentifier } from '../v-grant-type'
+import {
+  vAuthorizationCodeGrantIdentifier,
+  vPreAuthorizedCodeGrantIdentifier,
+  vRefreshTokenGrantIdentifier,
+} from '../v-grant-type'
 
 export const vAccessTokenRequest = v.intersect([
   v.looseObject({
@@ -13,12 +17,16 @@ export const vAccessTokenRequest = v.intersect([
     code: v.optional(v.string()),
     redirect_uri: v.optional(v.pipe(v.string(), v.url())),
 
+    // Refresh token grant
+    refresh_token: v.optional(v.string()),
+
     resource: v.optional(vHttpsUrl),
     code_verifier: v.optional(v.string()),
 
     grant_type: v.union([
       vPreAuthorizedCodeGrantIdentifier,
       vAuthorizationCodeGrantIdentifier,
+      vRefreshTokenGrantIdentifier,
       // string makes the previous ones unessary, but it does help with error messages
       v.string(),
     ]),
@@ -52,6 +60,8 @@ export const vAccessTokenResponse = v.looseObject({
   expires_in: v.optional(v.pipe(v.number(), v.integer())),
   scope: v.optional(v.string()),
   state: v.optional(v.string()),
+
+  refresh_token: v.optional(v.string()),
 
   // Oid4vci specific parameters
   c_nonce: v.optional(v.string()),

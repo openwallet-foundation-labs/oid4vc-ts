@@ -120,4 +120,7 @@ export {
   type PreAuthorizedCodeGrantIdentifier,
   vPreAuthorizedCodeGrantIdentifier,
   preAuthorizedCodeGrantIdentifier,
+  type RefreshTokenGrantIdentifier,
+  vRefreshTokenGrantIdentifier,
+  refreshTokenGrantIdentifier,
 } from './v-grant-type'

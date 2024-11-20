@@ -2,8 +2,10 @@ import { objectToQueryParams } from '@animo-id/oauth2-utils'
 import {
   type RetrieveAuthorizationCodeAccessTokenOptions,
   type RetrievePreAuthorizedCodeAccessTokenOptions,
+  type RetrieveRefreshTokenAccessTokenOptions,
   retrieveAuthorizationCodeAccessToken,
   retrievePreAuthorizedCodeAccessToken,
+  retrieveRefreshTokenAccessToken,
 } from './access-token/retrieve-access-token'
 import {
   type SendAuthorizationChallengeRequestOptions,
@@ -181,6 +183,25 @@ export class Oauth2Client {
       callbacks: this.options.callbacks,
       dpop,
       redirectUri,
+    })
+
+    return result
+  }
+
+  public async retrieveRefreshTokenAccessToken({
+    authorizationServerMetadata,
+    additionalRequestPayload,
+    refreshToken,
+    resource,
+    dpop,
+  }: Omit<RetrieveRefreshTokenAccessTokenOptions, 'callbacks'>) {
+    const result = await retrieveRefreshTokenAccessToken({
+      authorizationServerMetadata,
+      refreshToken,
+      additionalRequestPayload,
+      resource,
+      callbacks: this.options.callbacks,
+      dpop,
     })
 
     return result
