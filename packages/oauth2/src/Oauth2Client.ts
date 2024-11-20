@@ -26,6 +26,7 @@ import { fetchAuthorizationServerMetadata } from './metadata/authorization-serve
 import type { AuthorizationServerMetadata } from './metadata/authorization-server/v-authorization-server-metadata'
 import { createPkce } from './pkce'
 import { type ResourceRequestOptions, resourceRequest } from './resource-request/make-resource-request'
+import { extractDpopNonceFromHeaders } from './dpop/dpop'
 
 export interface Oauth2ClientOptions {
   /**
@@ -108,7 +109,14 @@ export class Oauth2Client {
             }
           ).toString()}`
 
+          const dpopNonce = extractDpopNonceFromHeaders(error.response.headers)
           return {
+            dpop: options.dpop
+              ? {
+                  ...options.dpop,
+                  nonce: dpopNonce,
+                }
+              : undefined,
             authorizationRequestUrl,
             pkce,
           }

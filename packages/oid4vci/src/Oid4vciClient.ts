@@ -1,10 +1,12 @@
 import {
   type CallbackContext,
   type CreateAuthorizationRequestUrlOptions,
+  type CreatePkceReturn,
   Oauth2Client,
   Oauth2ClientAuthorizationChallengeError,
   Oauth2Error,
   Oauth2ErrorCodes,
+  type RequestDpopOptions,
   type RetrieveAuthorizationCodeAccessTokenOptions,
   type RetrievePreAuthorizedCodeAccessTokenOptions,
   authorizationCodeGrantIdentifier,
@@ -12,7 +14,6 @@ import {
   preAuthorizedCodeGrantIdentifier,
 } from '@animo-id/oauth2'
 
-import type { CreatePkceReturn } from '../../oauth2/src/pkce'
 import {
   determineAuthorizationServerForCredentialOffer,
   resolveCredentialOffer,
@@ -100,6 +101,8 @@ export class Oid4vciClient {
 
     credentialOffer: CredentialOfferObject
     issuerMetadata: IssuerMetadataResult
+
+    dpop?: RequestDpopOptions
   }) {
     if (!options.credentialOffer.grants?.[authorizationCodeGrantIdentifier]) {
       throw new Oauth2Error(`Provided credential offer does not include the 'authorization_code' grant.`)
@@ -117,13 +120,14 @@ export class Oid4vciClient {
     )
 
     const oauth2Client = new Oauth2Client({ callbacks: this.options.callbacks })
-    const { authorizationChallengeResponse } = await oauth2Client.sendAuthorizationChallengeRequest({
+    const { authorizationChallengeResponse, dpop } = await oauth2Client.sendAuthorizationChallengeRequest({
       authorizationServerMetadata,
       authSession: options.authSession,
       presentationDuringIssuanceSession: options.presentationDuringIssuanceSession,
+      dpop: options.dpop,
     })
 
-    return { authorizationChallengeResponse }
+    return { authorizationChallengeResponse, dpop }
   }
 
   /**
@@ -187,6 +191,8 @@ export class Oid4vciClient {
           ...options.additionalRequestPayload,
           issuer_state: options.credentialOffer?.grants?.authorization_code?.issuer_state,
         },
+        dpop: options.dpop,
+        clientAttestation: options.clientAttestation,
         resource: options.issuerMetadata.credentialIssuer.credential_issuer,
         authorizationServerMetadata,
       })
@@ -245,7 +251,7 @@ export class Oid4vciClient {
       authorizationServer
     )
 
-    const { authorizationRequestUrl, pkce } = await this.oauth2Client.createAuthorizationRequestUrl({
+    const { authorizationRequestUrl, pkce, dpop } = await this.oauth2Client.createAuthorizationRequestUrl({
       authorizationServerMetadata,
       clientId: options.clientId,
       additionalRequestPayload: {
@@ -256,11 +262,14 @@ export class Oid4vciClient {
       redirectUri: options.redirectUri,
       scope: options.scope,
       pkceCodeVerifier: options.pkceCodeVerifier,
+      clientAttestation: options.clientAttestation,
+      dpop: options.dpop,
     })
 
     return {
       authorizationRequestUrl,
       pkce,
+      dpop,
       authorizationServer: authorizationServerMetadata.issuer,
     }
   }
@@ -275,6 +284,7 @@ export class Oid4vciClient {
     additionalRequestPayload,
     txCode,
     dpop,
+    clientAttestation,
   }: Omit<
     RetrievePreAuthorizedCodeAccessTokenOptions,
     'callbacks' | 'authorizationServerMetadata' | 'preAuthorizedCode' | 'resource'
@@ -312,6 +322,7 @@ export class Oid4vciClient {
       resource: issuerMetadata.credentialIssuer.credential_issuer,
       additionalRequestPayload,
       dpop,
+      clientAttestation,
     })
 
     return {
@@ -332,6 +343,7 @@ export class Oid4vciClient {
     pkceCodeVerifier,
     redirectUri,
     dpop,
+    clientAttestation,
   }: Omit<RetrieveAuthorizationCodeAccessTokenOptions, 'authorizationServerMetadata' | 'callbacks'> & {
     credentialOffer: CredentialOfferObject
     issuerMetadata: IssuerMetadataResult
@@ -356,6 +368,7 @@ export class Oid4vciClient {
       pkceCodeVerifier,
       additionalRequestPayload,
       dpop,
+      clientAttestation,
       redirectUri,
       resource: issuerMetadata.credentialIssuer.credential_issuer,
     })
