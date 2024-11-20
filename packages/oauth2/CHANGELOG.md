@@ -1,5 +1,12 @@
 # @animo-id/oauth2
 
+## 0.1.4
+
+### Patch Changes
+
+- 12a517a: feat: add refresh_token grant type
+  - @animo-id/oauth2-utils@0.1.4
+
 ## 0.1.3
 
 ### Patch Changes
