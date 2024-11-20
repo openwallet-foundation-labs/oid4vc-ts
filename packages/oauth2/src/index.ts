@@ -34,6 +34,13 @@ export {
 } from './common/jwt/v-jwt'
 
 export type { RequestDpopOptions } from './dpop/dpop'
+export type { RequestClientAttestationOptions } from './client-attestation/client-attestation-pop'
+export type {
+  ClientAttestationJwtHeader,
+  ClientAttestationJwtPayload,
+  ClientAttestationPopJwtHeader,
+  ClientAttestationPopJwtPayload,
+} from './client-attestation/v-client-attestation'
 
 export { Oauth2Error, Oauth2ErrorOptions } from './error/Oauth2Error'
 export { Oauth2JwtVerificationError } from './error/Oauth2JwtVerificationError'
