@@ -1,5 +1,13 @@
 # @animo-id/oid4vci
 
+## 0.1.4
+
+### Patch Changes
+
+- Updated dependencies [12a517a]
+  - @animo-id/oauth2@0.1.4
+  - @animo-id/oauth2-utils@0.1.4
+
 ## 0.1.3
 
 ### Patch Changes
