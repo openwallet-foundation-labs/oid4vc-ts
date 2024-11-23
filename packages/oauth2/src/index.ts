@@ -8,6 +8,10 @@ export { type HttpMethod, getGlobalConfig, setGlobalConfig, type Oid4vcTsConfig 
 
 export { Oauth2ErrorCodes, type Oauth2ErrorResponse, vOauth2ErrorResponse } from './common/v-oauth2-error'
 export { calculateJwkThumbprint, type CalculateJwkThumbprintOptions } from './common/jwk/jwk-thumbprint'
+
+// TODO: should we move this to oauth2-utils?
+export { isJwkInSet } from './common/jwk/jwks'
+
 export { type Jwk, type JwkSet, vJwk } from './common/jwk/v-jwk'
 export type { AccessTokenProfileJwtPayload } from './access-token/v-access-token-jwt'
 
@@ -28,15 +32,20 @@ export {
   JwtSignerDid,
   JwtSignerJwk,
   JwtSignerX5c,
+  JwtSignerWithJwk,
   vJwtHeader,
   vJwtPayload,
   vCompactJwt,
 } from './common/jwt/v-jwt'
 
+export type { RequestDpopOptions } from './dpop/dpop'
+export type { RequestClientAttestationOptions } from './client-attestation/client-attestation-pop'
 export type {
-  RequestDpopOptions,
-  ResponseDpopReturn,
-} from './dpop/dpop'
+  ClientAttestationJwtHeader,
+  ClientAttestationJwtPayload,
+  ClientAttestationPopJwtHeader,
+  ClientAttestationPopJwtPayload,
+} from './client-attestation/v-client-attestation'
 
 export { Oauth2Error, Oauth2ErrorOptions } from './error/Oauth2Error'
 export { Oauth2JwtVerificationError } from './error/Oauth2JwtVerificationError'

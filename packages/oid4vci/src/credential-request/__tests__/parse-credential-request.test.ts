@@ -11,13 +11,13 @@ describe('Parse Credential Request', () => {
           extra_prop: 'should-stay',
           proof: {
             proof_type: 'jwt',
-            jwt: 'hello',
+            jwt: 'ey.ey.S',
           },
         },
       })
     ).toStrictEqual({
       proofs: {
-        jwt: ['hello'],
+        jwt: ['ey.ey.S'],
       },
       format: {
         format: 'vc+sd-jwt',
@@ -29,7 +29,7 @@ describe('Parse Credential Request', () => {
         extra_prop: 'should-stay',
         proof: {
           proof_type: 'jwt',
-          jwt: 'hello',
+          jwt: 'ey.ey.S',
         },
       },
     })
@@ -44,13 +44,13 @@ describe('Parse Credential Request', () => {
           extra_prop: 'should-stay',
           proof: {
             proof_type: 'jwt',
-            jwt: 'hello',
+            jwt: 'ey.ey.S',
           },
         },
       })
     ).toStrictEqual({
       proofs: {
-        jwt: ['hello'],
+        jwt: ['ey.ey.S'],
       },
       format: {
         format: 'mso_mdoc',
@@ -62,7 +62,7 @@ describe('Parse Credential Request', () => {
         extra_prop: 'should-stay',
         proof: {
           proof_type: 'jwt',
-          jwt: 'hello',
+          jwt: 'ey.ey.S',
         },
       },
     })
@@ -85,7 +85,7 @@ describe('Parse Credential Request', () => {
           extra_prop: 'should-stay',
           proof: {
             proof_type: 'jwt',
-            jwt: 'hello',
+            jwt: 'ey.ey.S',
           },
         },
       })
@@ -103,7 +103,7 @@ describe('Parse Credential Request', () => {
         },
       },
       proofs: {
-        jwt: ['hello'],
+        jwt: ['ey.ey.S'],
       },
       credentialRequest: {
         format: 'ldp_vc',
@@ -119,7 +119,7 @@ describe('Parse Credential Request', () => {
         extra_prop: 'should-stay',
         proof: {
           proof_type: 'jwt',
-          jwt: 'hello',
+          jwt: 'ey.ey.S',
         },
       },
     })
@@ -142,13 +142,13 @@ describe('Parse Credential Request', () => {
           extra_prop: 'should-stay',
           proof: {
             proof_type: 'jwt',
-            jwt: 'hello',
+            jwt: 'ey.ey.S',
           },
         },
       })
     ).toStrictEqual({
       proofs: {
-        jwt: ['hello'],
+        jwt: ['ey.ey.S'],
       },
       format: {
         format: 'jwt_vc_json-ld',
@@ -176,7 +176,7 @@ describe('Parse Credential Request', () => {
         extra_prop: 'should-stay',
         proof: {
           proof_type: 'jwt',
-          jwt: 'hello',
+          jwt: 'ey.ey.S',
         },
       },
     })
@@ -198,13 +198,13 @@ describe('Parse Credential Request', () => {
           extra_prop: 'should-stay',
           proof: {
             proof_type: 'jwt',
-            jwt: 'hello',
+            jwt: 'ey.ey.S',
           },
         },
       })
     ).toStrictEqual({
       proofs: {
-        jwt: ['hello'],
+        jwt: ['ey.ey.S'],
       },
       format: {
         format: 'jwt_vc_json',
@@ -230,7 +230,7 @@ describe('Parse Credential Request', () => {
         extra_prop: 'should-stay',
         proof: {
           proof_type: 'jwt',
-          jwt: 'hello',
+          jwt: 'ey.ey.S',
         },
       },
     })
@@ -244,13 +244,13 @@ describe('Parse Credential Request', () => {
           extra_prop: 'should-stay',
           proof: {
             proof_type: 'jwt',
-            jwt: 'hello',
+            jwt: 'ey.ey.S',
           },
         },
       })
     ).toStrictEqual({
       proofs: {
-        jwt: ['hello'],
+        jwt: ['ey.ey.S'],
       },
       credentialIdentifier: 'some-identifier',
       credentialRequest: {
@@ -258,7 +258,7 @@ describe('Parse Credential Request', () => {
         extra_prop: 'should-stay',
         proof: {
           proof_type: 'jwt',
-          jwt: 'hello',
+          jwt: 'ey.ey.S',
         },
       },
     })
@@ -297,20 +297,20 @@ describe('Parse Credential Request', () => {
           credential_identifier: 'some-identifier',
           extra_prop: 'should-stay',
           proofs: {
-            jwt: ['one', 'two'],
+            jwt: ['ey.ey.S', 'ey.ey.S'],
           },
         },
       })
     ).toStrictEqual({
       proofs: {
-        jwt: ['one', 'two'],
+        jwt: ['ey.ey.S', 'ey.ey.S'],
       },
       credentialIdentifier: 'some-identifier',
       credentialRequest: {
         credential_identifier: 'some-identifier',
         extra_prop: 'should-stay',
         proofs: {
-          jwt: ['one', 'two'],
+          jwt: ['ey.ey.S', 'ey.ey.S'],
         },
       },
     })
@@ -348,13 +348,13 @@ describe('Parse Credential Request', () => {
           extra_prop: 'should-stay',
           proof: {
             proof_type: 'jwt',
-            jwt: 'hello',
+            jwt: 'ey.ey.S',
           },
         },
       })
     ).toStrictEqual({
       proofs: {
-        jwt: ['hello'],
+        jwt: ['ey.ey.S'],
       },
       credentialIdentifier: 'some-identifier',
       credentialRequest: {
@@ -362,7 +362,7 @@ describe('Parse Credential Request', () => {
         extra_prop: 'should-stay',
         proof: {
           proof_type: 'jwt',
-          jwt: 'hello',
+          jwt: 'ey.ey.S',
         },
       },
     })
@@ -375,19 +375,19 @@ describe('Parse Credential Request', () => {
           format: 'a-new-format',
           some_random_prop: 'should-be-allowed',
           proofs: {
-            jwt: ['hello'],
+            jwt: ['ey.ey.S'],
           },
         },
       })
     ).toStrictEqual({
       proofs: {
-        jwt: ['hello'],
+        jwt: ['ey.ey.S'],
       },
       credentialRequest: {
         format: 'a-new-format',
         some_random_prop: 'should-be-allowed',
         proofs: {
-          jwt: ['hello'],
+          jwt: ['ey.ey.S'],
         },
       },
     })
@@ -407,13 +407,13 @@ describe('Parse Credential Request', () => {
           },
           proof: {
             proof_type: 'jwt',
-            jwt: 'hello',
+            jwt: 'ey.ey.S',
           },
         },
       })
     ).toStrictEqual({
       proofs: {
-        jwt: ['hello'],
+        jwt: ['ey.ey.S'],
       },
       format: {
         format: 'jwt_vc_json',
@@ -439,7 +439,7 @@ describe('Parse Credential Request', () => {
         },
         proof: {
           proof_type: 'jwt',
-          jwt: 'hello',
+          jwt: 'ey.ey.S',
         },
       },
     })
@@ -462,7 +462,7 @@ describe('Parse Credential Request', () => {
           some_other_prop: 'should-stay',
           proof: {
             proof_type: 'jwt',
-            jwt: 'hello',
+            jwt: 'ey.ey.S',
           },
         },
       })
@@ -480,7 +480,7 @@ describe('Parse Credential Request', () => {
         },
       },
       proofs: {
-        jwt: ['hello'],
+        jwt: ['ey.ey.S'],
       },
       credentialRequest: {
         format: 'jwt_vc_json-ld',
@@ -496,7 +496,7 @@ describe('Parse Credential Request', () => {
         },
         proof: {
           proof_type: 'jwt',
-          jwt: 'hello',
+          jwt: 'ey.ey.S',
         },
       },
     })
@@ -519,13 +519,13 @@ describe('Parse Credential Request', () => {
           some_other_prop: 'should-stay',
           proof: {
             proof_type: 'jwt',
-            jwt: 'hello',
+            jwt: 'ey.ey.S',
           },
         },
       })
     ).toStrictEqual({
       proofs: {
-        jwt: ['hello'],
+        jwt: ['ey.ey.S'],
       },
       format: {
         format: 'ldp_vc',
@@ -553,7 +553,7 @@ describe('Parse Credential Request', () => {
         },
         proof: {
           proof_type: 'jwt',
-          jwt: 'hello',
+          jwt: 'ey.ey.S',
         },
       },
     })

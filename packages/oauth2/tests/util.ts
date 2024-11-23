@@ -29,9 +29,14 @@ export const callbacks = {
       await jose.jwtVerify(compact, josePublicKey, {
         currentDate: payload.exp ? new Date((payload.exp - 300) * 1000) : undefined,
       })
-      return true
+      return {
+        verified: true,
+        signerJwk: jwk,
+      }
     } catch (error) {
-      return false
+      return {
+        verified: false,
+      }
     }
   },
 } as const satisfies Partial<CallbackContext>
@@ -71,6 +76,9 @@ export const getSignJwtCallback = (privateJwks: Jwk[]): SignJwtCallback => {
     const josePrivateKey = await jose.importJWK(privateJwk as jose.JWK, signer.alg)
     const jwt = await new jose.SignJWT(payload).setProtectedHeader(header).sign(josePrivateKey)
 
-    return jwt
+    return {
+      jwt: jwt,
+      signerJwk: jwk,
+    }
   }
 }

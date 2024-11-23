@@ -3,8 +3,12 @@ import { InvalidFetchResponseError } from '@animo-id/oauth2-utils'
 import * as v from 'valibot'
 import { ValidationError } from '../../../utils/src/error/ValidationError'
 import type { CallbackContext } from '../callbacks'
-import { type RequestDpopOptions, createDpopJwt, extractDpopNonceFromHeaders } from '../dpop/dpop'
-import { shouldRetryTokenRequestWithDPoPNonce } from '../dpop/dpop-retry'
+import {
+  type RequestClientAttestationOptions,
+  createClientAttestationForRequest,
+} from '../client-attestation/client-attestation-pop'
+import { type RequestDpopOptions, createDpopHeadersForRequest, extractDpopNonceFromHeaders } from '../dpop/dpop'
+import { authorizationServerRequestWithDpopRetry } from '../dpop/dpop-retry'
 import { Oauth2ClientErrorResponseError } from '../error/Oauth2ClientErrorResponseError'
 import type { AuthorizationServerMetadata } from '../metadata/authorization-server/v-authorization-server-metadata'
 import {
@@ -50,6 +54,11 @@ interface RetrieveAccessTokenBaseOptions {
    * metadata, or the 'alg' value does not match an error will be thrown.
    */
   dpop?: RequestDpopOptions
+
+  /**
+   * If client attestation needs to be included in the request.
+   */
+  clientAttestation?: RequestClientAttestationOptions
 }
 
 export interface RetrievePreAuthorizedCodeAccessTokenOptions extends RetrieveAccessTokenBaseOptions {
@@ -74,14 +83,14 @@ export async function retrievePreAuthorizedCodeAccessToken(
     ...options.additionalRequestPayload,
   } satisfies AccessTokenRequest
 
-  const accessTokenResponse = await retrieveAccessTokenWithDpopRetry({
+  return retrieveAccessToken({
     authorizationServerMetadata: options.authorizationServerMetadata,
     request,
     dpop: options.dpop,
     callbacks: options.callbacks,
+    resource: options.resource,
+    clientAttestation: options.clientAttestation,
   })
-
-  return accessTokenResponse
 }
 
 export interface RetrieveAuthorizationCodeAccessTokenOptions extends RetrieveAccessTokenBaseOptions {
@@ -120,14 +129,14 @@ export async function retrieveAuthorizationCodeAccessToken(
     ...options.additionalRequestPayload,
   } satisfies AccessTokenRequest
 
-  const accessTokenResponse = await retrieveAccessTokenWithDpopRetry({
+  return retrieveAccessToken({
     authorizationServerMetadata: options.authorizationServerMetadata,
     request,
     dpop: options.dpop,
+    resource: options.resource,
     callbacks: options.callbacks,
+    clientAttestation: options.clientAttestation,
   })
-
-  return accessTokenResponse
 }
 
 export interface RetrieveRefreshTokenAccessTokenOptions extends RetrieveAccessTokenBaseOptions {
@@ -153,14 +162,14 @@ export async function retrieveRefreshTokenAccessToken(
     ...options.additionalRequestPayload,
   } satisfies AccessTokenRequest
 
-  const accessTokenResponse = await retrieveAccessTokenWithDpopRetry({
+  return retrieveAccessToken({
     authorizationServerMetadata: options.authorizationServerMetadata,
     request,
     dpop: options.dpop,
     callbacks: options.callbacks,
+    resource: options.resource,
+    clientAttestation: options.clientAttestation,
   })
-
-  return accessTokenResponse
 }
 
 interface RetrieveAccessTokenOptions extends RetrieveAccessTokenBaseOptions {
@@ -176,18 +185,6 @@ interface RetrieveAccessTokenOptions extends RetrieveAccessTokenBaseOptions {
 async function retrieveAccessToken(options: RetrieveAccessTokenOptions): Promise<RetrieveAccessTokenReturn> {
   const fetchWithValibot = createValibotFetcher(options.callbacks.fetch)
 
-  const dpopJwt = options.dpop
-    ? await createDpopJwt({
-        request: {
-          method: 'POST',
-          url: options.authorizationServerMetadata.token_endpoint,
-        },
-        signer: options.dpop.signer,
-        callbacks: options.callbacks,
-        nonce: options.dpop.nonce,
-      })
-    : undefined
-
   const accessTokenRequest = parseWithErrorHandling(
     vAccessTokenRequest,
     options.request,
@@ -199,82 +196,85 @@ async function retrieveAccessToken(options: RetrieveAccessTokenOptions): Promise
     accessTokenRequest.user_pin = accessTokenRequest.tx_code
   }
 
-  const requestQueryParams = objectToQueryParams(accessTokenRequest)
-  const { response, result } = await fetchWithValibot(
-    vAccessTokenResponse,
-    ContentType.Json,
-    options.authorizationServerMetadata.token_endpoint,
-    {
-      body: requestQueryParams.toString(),
-      method: 'POST',
-      headers: {
-        'Content-Type': ContentType.XWwwFormUrlencoded,
-        ...(dpopJwt ? { DPoP: dpopJwt } : {}),
-      },
-    }
-  )
-
-  if (!response.ok || !result) {
-    const tokenErrorResponse = v.safeParse(
-      vAccessTokenErrorResponse,
-      await response
-        .clone()
-        .json()
-        .catch(() => null)
-    )
-    if (tokenErrorResponse.success) {
-      throw new Oauth2ClientErrorResponseError(
-        `Unable to retrieve access token from '${options.authorizationServerMetadata.token_endpoint}'. Received token error response with status ${response.status}`,
-        tokenErrorResponse.output,
-        response
-      )
-    }
-
-    throw new InvalidFetchResponseError(
-      `Unable to retrieve access token from '${options.authorizationServerMetadata.token_endpoint}'. Received response with status ${response.status}`,
-      await response.clone().text(),
-      response
-    )
-  }
-
-  if (!result.success) {
-    throw new ValidationError('Error validating access token response', result.issues)
-  }
-
-  const dpopNonce = extractDpopNonceFromHeaders(response.headers) ?? undefined
-  return {
-    dpop: options.dpop
-      ? {
-          nonce: dpopNonce,
-          signer: options.dpop.signer,
-        }
-      : undefined,
-    accessTokenResponse: result.output,
-  }
-}
-
-async function retrieveAccessTokenWithDpopRetry(options: RetrieveAccessTokenOptions) {
-  try {
-    return await retrieveAccessToken(options)
-  } catch (error) {
-    if (options.dpop && error instanceof Oauth2ClientErrorResponseError) {
-      const dpopRetry = shouldRetryTokenRequestWithDPoPNonce({
-        responseHeaders: error.response.headers,
-        tokenErrorResponse: error.errorResponse,
+  const clientAttestation = options.clientAttestation
+    ? await createClientAttestationForRequest({
+        authorizationServer: options.authorizationServerMetadata.issuer,
+        clientAttestation: options.clientAttestation,
+        callbacks: options.callbacks,
       })
+    : undefined
 
-      // Retry with the dpop nonce
-      if (dpopRetry.retry) {
-        return retrieveAccessToken({
-          ...options,
-          dpop: {
-            ...options.dpop,
-            nonce: dpopRetry.dpopNonce,
+  return await authorizationServerRequestWithDpopRetry({
+    dpop: options.dpop,
+    request: async (dpop) => {
+      const dpopHeaders = dpop
+        ? await createDpopHeadersForRequest({
+            request: {
+              method: 'POST',
+              url: options.authorizationServerMetadata.token_endpoint,
+            },
+            signer: dpop.signer,
+            callbacks: options.callbacks,
+            nonce: dpop.nonce,
+          })
+        : undefined
+
+      const requestQueryParams = objectToQueryParams({
+        ...accessTokenRequest,
+        ...clientAttestation?.body,
+      })
+      const { response, result } = await fetchWithValibot(
+        vAccessTokenResponse,
+        ContentType.Json,
+        options.authorizationServerMetadata.token_endpoint,
+        {
+          body: requestQueryParams.toString(),
+          method: 'POST',
+          headers: {
+            'Content-Type': ContentType.XWwwFormUrlencoded,
+            ...clientAttestation?.headers,
+            ...dpopHeaders,
           },
-        })
-      }
-    }
+        }
+      )
 
-    throw error
-  }
+      if (!response.ok || !result) {
+        const tokenErrorResponse = v.safeParse(
+          vAccessTokenErrorResponse,
+          await response
+            .clone()
+            .json()
+            .catch(() => null)
+        )
+        if (tokenErrorResponse.success) {
+          throw new Oauth2ClientErrorResponseError(
+            `Unable to retrieve access token from '${options.authorizationServerMetadata.token_endpoint}'. Received token error response with status ${response.status}`,
+            tokenErrorResponse.output,
+            response
+          )
+        }
+
+        throw new InvalidFetchResponseError(
+          `Unable to retrieve access token from '${options.authorizationServerMetadata.token_endpoint}'. Received response with status ${response.status}`,
+          await response.clone().text(),
+          response
+        )
+      }
+
+      if (!result.success) {
+        throw new ValidationError('Error validating access token response', result.issues)
+      }
+
+      const dpopNonce = extractDpopNonceFromHeaders(response.headers) ?? undefined
+      return {
+        dpop: dpop
+          ? {
+              ...dpop,
+              nonce: dpopNonce,
+            }
+          : undefined,
+        accessTokenResponse: result.output,
+      }
+    },
+  })
 }

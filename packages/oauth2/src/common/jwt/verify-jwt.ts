@@ -1,7 +1,8 @@
 import { dateToSeconds } from '@animo-id/oauth2-utils'
 import type { VerifyJwtCallback } from '../../callbacks'
 import { Oauth2JwtVerificationError } from '../../error/Oauth2JwtVerificationError'
-import type { JwtHeader, JwtPayload, JwtSigner } from './v-jwt'
+import type { Jwk } from '../jwk/v-jwk'
+import type { JwtHeader, JwtPayload, JwtSigner, JwtSignerWithJwk } from './v-jwt'
 
 export interface VerifyJwtOptions {
   /**
@@ -76,16 +77,23 @@ export interface VerifyJwtOptions {
   expectedSubject?: string
 }
 
-export async function verifyJwt(options: VerifyJwtOptions) {
+export interface VerifyJwtReturn {
+  signer: JwtSignerWithJwk
+}
+
+export async function verifyJwt(options: VerifyJwtOptions): Promise<VerifyJwtReturn> {
   const errorMessage = options.errorMessage ?? 'Error during verification of jwt.'
+
+  let signerJwk: Jwk
   try {
-    const isValid = await options.verifyJwtCallback(options.signer, {
+    const result = await options.verifyJwtCallback(options.signer, {
       header: options.header,
       payload: options.payload,
       compact: options.compact,
     })
 
-    if (!isValid) throw new Oauth2JwtVerificationError(errorMessage)
+    if (!result.verified) throw new Oauth2JwtVerificationError(errorMessage)
+    signerJwk = result.signerJwk
   } catch (error) {
     if (error instanceof Oauth2JwtVerificationError) throw error
     throw new Oauth2JwtVerificationError(errorMessage, { cause: error })
@@ -117,5 +125,12 @@ export async function verifyJwt(options: VerifyJwtOptions) {
 
   if (options.expectedSubject && options.expectedSubject !== options.payload.sub) {
     throw new Oauth2JwtVerificationError(`${errorMessage} jwt 'sub' does not match expected value.`)
+  }
+
+  return {
+    signer: {
+      ...options.signer,
+      publicJwk: signerJwk,
+    },
   }
 }

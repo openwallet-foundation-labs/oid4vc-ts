@@ -16,7 +16,12 @@ import {
   createAuthorizationRequestUrl,
 } from './authorization-request/create-authorization-request'
 import type { CallbackContext } from './callbacks'
+import {
+  type CreateClientAttestationJwtOptions,
+  createClientAttestationJwt,
+} from './client-attestation/clent-attestation'
 import { Oauth2ErrorCodes } from './common/v-oauth2-error'
+import { extractDpopNonceFromHeaders } from './dpop/dpop'
 import { Oauth2ClientAuthorizationChallengeError } from './error/Oauth2ClientAuthorizationChallengeError'
 import { fetchAuthorizationServerMetadata } from './metadata/authorization-server/authorization-server-metadata'
 import type { AuthorizationServerMetadata } from './metadata/authorization-server/v-authorization-server-metadata'
@@ -84,6 +89,8 @@ export class Oauth2Client {
           pkceCodeVerifier: pkce?.codeVerifier,
           scope: options.scope,
           resource: options.resource,
+          clientAttestation: options.clientAttestation,
+          dpop: options.dpop,
         })
       } catch (error) {
         // In this case we resume with the normal auth flow
@@ -102,7 +109,14 @@ export class Oauth2Client {
             }
           ).toString()}`
 
+          const dpopNonce = extractDpopNonceFromHeaders(error.response.headers)
           return {
+            dpop: options.dpop
+              ? {
+                  ...options.dpop,
+                  nonce: dpopNonce,
+                }
+              : undefined,
             authorizationRequestUrl,
             pkce,
           }
@@ -118,6 +132,8 @@ export class Oauth2Client {
       scope: options.scope,
       pkceCodeVerifier: pkce?.codeVerifier,
       resource: options.resource,
+      clientAttestation: options.clientAttestation,
+      dpop: options.dpop,
     })
   }
 
@@ -138,6 +154,8 @@ export class Oauth2Client {
       scope: options.scope,
       callbacks: this.options.callbacks,
       pkceCodeVerifier: options.pkceCodeVerifier,
+      clientAttestation: options.clientAttestation,
+      dpop: options.dpop,
     })
   }
 
@@ -148,6 +166,7 @@ export class Oauth2Client {
     txCode,
     dpop,
     resource,
+    clientAttestation,
   }: Omit<RetrievePreAuthorizedCodeAccessTokenOptions, 'callbacks'>) {
     const result = await retrievePreAuthorizedCodeAccessToken({
       authorizationServerMetadata,
@@ -160,6 +179,7 @@ export class Oauth2Client {
       },
       callbacks: this.options.callbacks,
       dpop,
+      clientAttestation,
     })
 
     return result
@@ -173,6 +193,7 @@ export class Oauth2Client {
     redirectUri,
     resource,
     dpop,
+    clientAttestation,
   }: Omit<RetrieveAuthorizationCodeAccessTokenOptions, 'callbacks'>) {
     const result = await retrieveAuthorizationCodeAccessToken({
       authorizationServerMetadata,
@@ -183,6 +204,7 @@ export class Oauth2Client {
       callbacks: this.options.callbacks,
       dpop,
       redirectUri,
+      clientAttestation,
     })
 
     return result
@@ -194,6 +216,7 @@ export class Oauth2Client {
     refreshToken,
     resource,
     dpop,
+    clientAttestation,
   }: Omit<RetrieveRefreshTokenAccessTokenOptions, 'callbacks'>) {
     const result = await retrieveRefreshTokenAccessToken({
       authorizationServerMetadata,
@@ -202,6 +225,7 @@ export class Oauth2Client {
       resource,
       callbacks: this.options.callbacks,
       dpop,
+      clientAttestation,
     })
 
     return result
@@ -209,5 +233,15 @@ export class Oauth2Client {
 
   public async resourceRequest(options: ResourceRequestOptions) {
     return resourceRequest(options)
+  }
+
+  /**
+   * @todo move this to another class?
+   */
+  public async createClientAttestationJwt(options: Omit<CreateClientAttestationJwtOptions, 'callbacks'>) {
+    return await createClientAttestationJwt({
+      callbacks: this.options.callbacks,
+      ...options,
+    })
   }
 }

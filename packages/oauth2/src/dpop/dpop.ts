@@ -28,11 +28,12 @@ export interface RequestDpopOptions {
   signer: JwtSignerJwk
 }
 
-export interface ResponseDpopReturn {
-  /**
-   * Dpop nonce returned that needs to be used in the subsequent request.
-   */
-  nonce: string
+export async function createDpopHeadersForRequest(options: CreateDpopJwtOptions) {
+  const dpopJwt = await createDpopJwt(options)
+
+  return {
+    DPoP: dpopJwt,
+  }
 }
 
 export interface CreateDpopJwtOptions {
@@ -96,7 +97,7 @@ export async function createDpopJwt(options: CreateDpopJwtOptions) {
     ...options.additionalPayload,
   } satisfies DpopJwtPayload)
 
-  const jwt = await options.callbacks.signJwt(options.signer, {
+  const { jwt } = await options.callbacks.signJwt(options.signer, {
     header,
     payload,
   })
@@ -104,7 +105,7 @@ export async function createDpopJwt(options: CreateDpopJwtOptions) {
   return jwt
 }
 
-export type VerifyDpopJwtOptions = {
+export interface VerifyDpopJwtOptions {
   /**
    * The compact dpop jwt.
    */

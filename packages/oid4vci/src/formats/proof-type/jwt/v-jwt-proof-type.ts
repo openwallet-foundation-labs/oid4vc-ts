@@ -15,6 +15,7 @@ export const vCredentialRequestProofJwt = v.object({
 export const vCredentialRequestJwtProofTypeHeader = v.pipe(
   v.looseObject({
     ...vJwtHeader.entries,
+    key_attestation: v.optional(vCompactJwt),
     typ: v.literal('openid4vci-proof+jwt'),
   }),
   v.check(

@@ -1,4 +1,4 @@
-import { parseWithErrorHandling } from '@animo-id/oauth2-utils'
+import { type FetchHeaders, parseWithErrorHandling } from '@animo-id/oauth2-utils'
 import { type CreateAccessTokenOptions, createAccessTokenJwt } from './access-token/create-access-token'
 import {
   type CreateAccessTokenResponseOptions,
@@ -22,6 +22,11 @@ import {
   parseAuthorizationChallengeRequest,
 } from './authorization-challenge/parse-authorization-challenge-request'
 import type { CallbackContext } from './callbacks'
+import {
+  extractClientAttestationJwtsFromHeaders,
+  verifyClientAttestationJwt,
+} from './client-attestation/clent-attestation'
+import { verifyClientAttestationPopJwt } from './client-attestation/client-attestation-pop'
 import { Oauth2ErrorCodes } from './common/v-oauth2-error'
 import {
   type AuthorizationServerMetadata,
@@ -158,5 +163,29 @@ export class Oauth2AuthorizationServer {
 
   public createAuthorizationChallengeErrorResponse(options: CreateAuthorizationChallengeErrorResponseOptions) {
     return createAuthorizationChallengeErrorResponse(options)
+  }
+
+  public async verifyClientAttestation({
+    authorizationServer,
+    headers,
+  }: { authorizationServer: string; headers: FetchHeaders }) {
+    const { clientAttestationHeader, clientAttestationPopHeader } = extractClientAttestationJwtsFromHeaders(headers)
+
+    const clientAttestation = await verifyClientAttestationJwt({
+      callbacks: this.options.callbacks,
+      clientAttestationJwt: clientAttestationHeader,
+    })
+
+    const clientAttestationPop = await verifyClientAttestationPopJwt({
+      callbacks: this.options.callbacks,
+      authorizationServer,
+      clientAttestation,
+      clientAttestationPopJwt: clientAttestationPopHeader,
+    })
+
+    return {
+      clientAttestation,
+      clientAttestationPop,
+    }
   }
 }

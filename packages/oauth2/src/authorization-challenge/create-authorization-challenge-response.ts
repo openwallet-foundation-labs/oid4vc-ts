@@ -50,7 +50,7 @@ export interface CreateAuthorizationChallengeErrorResponseOptions {
    *
    * If you want to require presentation of a
    */
-  error: Oauth2ErrorCodes | StringWithAutoCompletion
+  error: StringWithAutoCompletion<Oauth2ErrorCodes>
 
   /**
    * Optional error description

@@ -1,4 +1,5 @@
 import * as v from 'valibot'
+import { vIso18045OrStringArray } from '../../key-attestation/v-key-attestation'
 
 export const vCredentialConfigurationSupportedClaims = v.looseObject({
   mandatory: v.optional(v.boolean()),
@@ -18,9 +19,15 @@ export const vCredentialConfigurationSupportedCommon = v.looseObject({
   credential_signing_alg_values_supported: v.optional(v.array(v.string())),
   proof_types_supported: v.optional(
     v.record(
-      v.union([v.literal('jwt'), v.string()]),
+      v.union([v.literal('jwt'), v.literal('attestation'), v.string()]),
       v.object({
         proof_signing_alg_values_supported: v.array(v.string()),
+        key_attestations_required: v.optional(
+          v.looseObject({
+            key_storage: v.optional(vIso18045OrStringArray),
+            user_authentication: v.optional(vIso18045OrStringArray),
+          })
+        ),
       })
     )
   ),

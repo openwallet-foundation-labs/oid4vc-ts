@@ -21,18 +21,31 @@ export type JwtSignerX5c = {
   alg: string
 }
 
+export type JwtSignerTrustChain = {
+  method: 'trustChain'
+  trustChain: string[]
+  alg: string
+  kid: string
+}
+
 // In case of custom nothing will be added to the header
 export type JwtSignerCustom = {
   method: 'custom'
   alg: string
 }
 
-export type JwtSigner = JwtSignerDid | JwtSignerJwk | JwtSignerX5c | JwtSignerCustom
+export type JwtSigner = JwtSignerDid | JwtSignerJwk | JwtSignerX5c | JwtSignerTrustChain | JwtSignerCustom
 
-// TODO: make more strict
-export const vCompactJwt = v.string()
+export type JwtSignerWithJwk = JwtSigner & { publicJwk: Jwk }
+
+export const vCompactJwt = v.pipe(
+  v.string(),
+  v.regex(/^([a-zA-Z0-9_=]+)\.([a-zA-Z0-9_=]+)\.([a-zA-Z0-9_\-\+\/=]*)$/, 'Not a valid compact jwt')
+)
 
 export const vJwtConfirmationPayload = v.looseObject({
+  jwk: v.optional(vJwk),
+
   // RFC9449. jwk thumbprint of the dpop public key to which the access token is bound
   jkt: v.optional(v.string()),
 })
@@ -47,6 +60,9 @@ export const vJwtPayload = v.looseObject({
   jti: v.optional(v.string()),
 
   cnf: v.optional(vJwtConfirmationPayload),
+
+  // Reserved for status parameters
+  status: v.optional(v.looseObject({})),
 })
 export type JwtPayload = v.InferOutput<typeof vJwtPayload>
 

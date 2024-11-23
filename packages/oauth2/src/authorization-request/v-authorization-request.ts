@@ -12,6 +12,9 @@ export const vAuthorizationRequest = v.looseObject({
   resource: v.optional(vHttpsUrl),
   scope: v.optional(v.string()),
 
+  // DPoP jwk thumbprint
+  dpop_jkt: v.optional(v.string()),
+
   code_challenge: v.optional(v.string()),
   code_challenge_method: v.optional(v.string()),
 })

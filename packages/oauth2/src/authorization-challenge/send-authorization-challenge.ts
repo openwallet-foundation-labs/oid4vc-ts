@@ -8,6 +8,12 @@ import {
 import { InvalidFetchResponseError } from '@animo-id/oauth2-utils'
 import * as v from 'valibot'
 import type { CallbackContext } from '../callbacks'
+import {
+  type RequestClientAttestationOptions,
+  createClientAttestationForRequest,
+} from '../client-attestation/client-attestation-pop'
+import { type RequestDpopOptions, createDpopHeadersForRequest, extractDpopNonceFromHeaders } from '../dpop/dpop'
+import { authorizationServerRequestWithDpopRetry } from '../dpop/dpop-retry'
 import { Oauth2ClientAuthorizationChallengeError } from '../error/Oauth2ClientAuthorizationChallengeError'
 import { Oauth2Error } from '../error/Oauth2Error'
 import type { AuthorizationServerMetadata } from '../metadata/authorization-server/v-authorization-server-metadata'
@@ -23,7 +29,7 @@ export interface SendAuthorizationChallengeRequestOptions {
   /**
    * Callback context
    */
-  callbacks: Pick<CallbackContext, 'fetch' | 'hash' | 'generateRandom'>
+  callbacks: Pick<CallbackContext, 'fetch' | 'hash' | 'generateRandom' | 'signJwt'>
 
   /**
    * Metadata of the authorization server where to perform the authorization challenge
@@ -67,6 +73,16 @@ export interface SendAuthorizationChallengeRequestOptions {
    * Code verifier to use for pkce. If not provided a value will generated when pkce is supported
    */
   pkceCodeVerifier?: string
+
+  /**
+   * If client attestation needs to be included in the request.
+   */
+  clientAttestation?: RequestClientAttestationOptions
+
+  /**
+   * DPoP options
+   */
+  dpop?: RequestDpopOptions
 }
 
 /**
@@ -80,7 +96,8 @@ export async function sendAuthorizationChallengeRequest(options: SendAuthorizati
   const fetchWithValibot = createValibotFetcher(options.callbacks.fetch)
 
   const authorizationServerMetadata = options.authorizationServerMetadata
-  if (!authorizationServerMetadata.authorization_challenge_endpoint) {
+  const authorizationChallengeEndpoint = authorizationServerMetadata.authorization_challenge_endpoint
+  if (!authorizationChallengeEndpoint) {
     throw new Oauth2Error(
       `Unable to send authorization challange. Authorization server '${authorizationServerMetadata.issuer}' has no 'authorization_challenge_endpoint'`
     )
@@ -97,6 +114,14 @@ export async function sendAuthorizationChallengeRequest(options: SendAuthorizati
         })
       : undefined
 
+  const clientAttestation = options.clientAttestation
+    ? await createClientAttestationForRequest({
+        authorizationServer: options.authorizationServerMetadata.issuer,
+        clientAttestation: options.clientAttestation,
+        callbacks: options.callbacks,
+      })
+    : undefined
+
   const authorizationChallengeRequest = parseWithErrorHandling(vAuthorizationChallengeRequest, {
     ...options.additionalRequestPayload,
     auth_session: options.authSession,
@@ -106,47 +131,77 @@ export async function sendAuthorizationChallengeRequest(options: SendAuthorizati
     code_challenge: pkce?.codeChallenge,
     code_challenge_method: pkce?.codeChallengeMethod,
     presentation_during_issuance_session: options.presentationDuringIssuanceSession,
+    ...clientAttestation?.body,
   } satisfies AuthorizationChallengeRequest)
 
-  const { response, result } = await fetchWithValibot(
-    vAuthorizationChallengeResponse,
-    ContentType.Json,
-    authorizationServerMetadata.authorization_challenge_endpoint,
-    {
-      method: 'POST',
-      body: objectToQueryParams(authorizationChallengeRequest).toString(),
-      headers: {
-        'Content-Type': ContentType.XWwwFormUrlencoded,
-      },
-    }
-  )
+  return authorizationServerRequestWithDpopRetry({
+    dpop: options.dpop,
+    request: async (dpop) => {
+      const dpopHeaders = dpop
+        ? await createDpopHeadersForRequest({
+            request: {
+              method: 'POST',
+              url: authorizationChallengeEndpoint,
+            },
+            signer: dpop.signer,
+            callbacks: options.callbacks,
+            nonce: dpop.nonce,
+          })
+        : undefined
 
-  if (!response.ok || !result) {
-    const authorizationChallengeErrorResponse = v.safeParse(
-      vAuthorizationChallengeErrorResponse,
-      await response
-        .clone()
-        .json()
-        .catch(() => null)
-    )
-    if (authorizationChallengeErrorResponse.success) {
-      throw new Oauth2ClientAuthorizationChallengeError(
-        `Error requesting authorization code from authorization challenge endpoint '${authorizationServerMetadata.authorization_challenge_endpoint}'. Received response with status ${response.status}`,
-        authorizationChallengeErrorResponse.output,
-        response
+      const { response, result } = await fetchWithValibot(
+        vAuthorizationChallengeResponse,
+        ContentType.Json,
+        authorizationChallengeEndpoint,
+        {
+          method: 'POST',
+          body: objectToQueryParams(authorizationChallengeRequest).toString(),
+          headers: {
+            ...clientAttestation?.headers,
+            ...dpopHeaders,
+            'Content-Type': ContentType.XWwwFormUrlencoded,
+          },
+        }
       )
-    }
 
-    throw new InvalidFetchResponseError(
-      `Error requesting authorization code from authorization challenge endpoint '${authorizationServerMetadata.authorization_challenge_endpoint}'. Received response with status ${response.status}`,
-      await response.clone().text(),
-      response
-    )
-  }
+      if (!response.ok || !result) {
+        const authorizationChallengeErrorResponse = v.safeParse(
+          vAuthorizationChallengeErrorResponse,
+          await response
+            .clone()
+            .json()
+            .catch(() => null)
+        )
+        if (authorizationChallengeErrorResponse.success) {
+          throw new Oauth2ClientAuthorizationChallengeError(
+            `Error requesting authorization code from authorization challenge endpoint '${authorizationServerMetadata.authorization_challenge_endpoint}'. Received response with status ${response.status}`,
+            authorizationChallengeErrorResponse.output,
+            response
+          )
+        }
 
-  if (!result.success) {
-    throw new ValidationError('Error validating authorization challenge response', result.issues)
-  }
+        throw new InvalidFetchResponseError(
+          `Error requesting authorization code from authorization challenge endpoint '${authorizationServerMetadata.authorization_challenge_endpoint}'. Received response with status ${response.status}`,
+          await response.clone().text(),
+          response
+        )
+      }
 
-  return { pkce, authorizationChallengeResponse: result.output }
+      if (!result.success) {
+        throw new ValidationError('Error validating authorization challenge response', result.issues)
+      }
+
+      const dpopNonce = extractDpopNonceFromHeaders(response.headers) ?? undefined
+      return {
+        pkce,
+        dpop: dpop
+          ? {
+              ...dpop,
+              nonce: dpopNonce,
+            }
+          : undefined,
+        authorizationChallengeResponse: result.output,
+      }
+    },
+  })
 }

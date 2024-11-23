@@ -11,10 +11,10 @@ describe('Credential Request', () => {
       extra_prop: 'should-stay',
       proof: {
         proof_type: 'jwt',
-        jwt: 'hello',
+        jwt: 'ey.ey.S',
       },
       proofs: {
-        jwt: ['one'],
+        jwt: ['ey.ey.S'],
       },
     })
 
@@ -38,7 +38,7 @@ describe('Credential Request', () => {
       extra_prop: 'should-stay',
       proof: {
         proof_type: 'jwt',
-        jwt: 'hello',
+        jwt: 'ey.ey.S',
       },
     })
 
@@ -63,7 +63,7 @@ describe('Credential Request', () => {
       extra_prop: 'should-stay',
       proof: {
         proof_type: 'jwt',
-        jwt: 'hello',
+        jwt: 'ey.ey.S',
       },
     })
 
@@ -75,7 +75,7 @@ describe('Credential Request', () => {
         extra_prop: 'should-stay',
         proof: {
           proof_type: 'jwt',
-          jwt: 'hello',
+          jwt: 'ey.ey.S',
         },
       },
       success: true,
@@ -90,7 +90,7 @@ describe('Credential Request', () => {
       extra_prop: 'should-stay',
       proof: {
         proof_type: 'jwt',
-        jwt: 'hello',
+        jwt: 'ey.ey.S',
       },
     })
 
@@ -102,7 +102,7 @@ describe('Credential Request', () => {
         extra_prop: 'should-stay',
         proof: {
           proof_type: 'jwt',
-          jwt: 'hello',
+          jwt: 'ey.ey.S',
         },
       },
       success: true,
@@ -125,7 +125,7 @@ describe('Credential Request', () => {
       extra_prop: 'should-stay',
       proof: {
         proof_type: 'jwt',
-        jwt: 'hello',
+        jwt: 'ey.ey.S',
       },
     })
 
@@ -145,7 +145,7 @@ describe('Credential Request', () => {
         extra_prop: 'should-stay',
         proof: {
           proof_type: 'jwt',
-          jwt: 'hello',
+          jwt: 'ey.ey.S',
         },
       },
       success: true,
@@ -168,7 +168,7 @@ describe('Credential Request', () => {
       extra_prop: 'should-stay',
       proof: {
         proof_type: 'jwt',
-        jwt: 'hello',
+        jwt: 'ey.ey.S',
       },
     })
 
@@ -188,7 +188,7 @@ describe('Credential Request', () => {
         extra_prop: 'should-stay',
         proof: {
           proof_type: 'jwt',
-          jwt: 'hello',
+          jwt: 'ey.ey.S',
         },
       },
       success: true,
@@ -210,7 +210,7 @@ describe('Credential Request', () => {
       extra_prop: 'should-stay',
       proof: {
         proof_type: 'jwt',
-        jwt: 'hello',
+        jwt: 'ey.ey.S',
       },
     })
 
@@ -229,7 +229,7 @@ describe('Credential Request', () => {
         extra_prop: 'should-stay',
         proof: {
           proof_type: 'jwt',
-          jwt: 'hello',
+          jwt: 'ey.ey.S',
         },
       },
       success: true,
@@ -242,7 +242,7 @@ describe('Credential Request', () => {
       credential_identifier: 'some-identifier',
       proof: {
         proof_type: 'jwt',
-        jwt: 'hello',
+        jwt: 'ey.ey.S',
       },
     })
 
@@ -252,7 +252,7 @@ describe('Credential Request', () => {
         credential_identifier: 'some-identifier',
         proof: {
           proof_type: 'jwt',
-          jwt: 'hello',
+          jwt: 'ey.ey.S',
         },
       },
       success: true,
@@ -266,7 +266,7 @@ describe('Credential Request', () => {
       some_random_prop: 'should-be-allowed',
       proof: {
         proof_type: 'jwt',
-        jwt: 'hello',
+        jwt: 'ey.ey.S',
       },
     })
 
@@ -277,7 +277,7 @@ describe('Credential Request', () => {
         some_random_prop: 'should-be-allowed',
         proof: {
           proof_type: 'jwt',
-          jwt: 'hello',
+          jwt: 'ey.ey.S',
         },
       },
       success: true,
@@ -297,7 +297,7 @@ describe('Credential Request', () => {
       },
       proof: {
         proof_type: 'jwt',
-        jwt: 'hello',
+        jwt: 'ey.ey.S',
       },
     })
 
@@ -316,7 +316,7 @@ describe('Credential Request', () => {
         },
         proof: {
           proof_type: 'jwt',
-          jwt: 'hello',
+          jwt: 'ey.ey.S',
         },
       },
       success: true,
@@ -339,7 +339,7 @@ describe('Credential Request', () => {
       some_other_prop: 'should-stay',
       proof: {
         proof_type: 'jwt',
-        jwt: 'hello',
+        jwt: 'ey.ey.S',
       },
     })
 
@@ -359,7 +359,7 @@ describe('Credential Request', () => {
         },
         proof: {
           proof_type: 'jwt',
-          jwt: 'hello',
+          jwt: 'ey.ey.S',
         },
       },
       success: true,
@@ -382,7 +382,7 @@ describe('Credential Request', () => {
       some_other_prop: 'should-stay',
       proof: {
         proof_type: 'jwt',
-        jwt: 'hello',
+        jwt: 'ey.ey.S',
       },
     })
 
@@ -402,7 +402,7 @@ describe('Credential Request', () => {
         },
         proof: {
           proof_type: 'jwt',
-          jwt: 'hello',
+          jwt: 'ey.ey.S',
         },
       },
       success: true,
