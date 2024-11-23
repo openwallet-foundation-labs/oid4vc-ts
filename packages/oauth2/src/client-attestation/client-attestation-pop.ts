@@ -220,7 +220,7 @@ export async function createClientAttestationPopJwt(options: CreateClientAttesta
     ...options.additionalPayload,
   } satisfies ClientAttestationPopJwtPayload)
 
-  const jwt = await options.callbacks.signJwt(options.signer, {
+  const { jwt } = await options.callbacks.signJwt(options.signer, {
     header,
     payload,
   })

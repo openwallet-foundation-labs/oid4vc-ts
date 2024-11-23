@@ -97,7 +97,7 @@ export async function createDpopJwt(options: CreateDpopJwtOptions) {
     ...options.additionalPayload,
   } satisfies DpopJwtPayload)
 
-  const jwt = await options.callbacks.signJwt(options.signer, {
+  const { jwt } = await options.callbacks.signJwt(options.signer, {
     header,
     payload,
   })

@@ -83,6 +83,14 @@ export function jwtHeaderFromJwtSigner(signer: JwtSigner) {
     } as const
   }
 
+  if (signer.method === 'trustChain') {
+    return {
+      alg: signer.alg,
+      kid: signer.kid,
+      trust_chain: signer.trustChain,
+    } as const
+  }
+
   if (signer.method === 'jwk') {
     return {
       alg: signer.alg,
@@ -111,6 +119,20 @@ export function jwtSignerFromJwt({ header, payload }: Pick<DecodeJwtResult, 'hea
       x5c: header.x5c,
     }
   }
+
+  if (header.trust_chain) {
+    if (!header.kid) {
+      throw new Error(`When 'trust_chain' is used in jwt header, the 'kid' parameter is required.`)
+    }
+
+    return {
+      method: 'trustChain',
+      alg: header.alg,
+      trustChain: header.trust_chain,
+      kid: header.kid,
+    }
+  }
+
   if (header.kid) {
     if (header.kid.startsWith('did:')) {
       if (payload.iss && header.kid.startsWith(payload.iss)) {

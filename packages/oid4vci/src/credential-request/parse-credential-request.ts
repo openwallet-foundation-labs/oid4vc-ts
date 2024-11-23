@@ -1,6 +1,7 @@
 import { parseWithErrorHandling } from '@animo-id/oauth2-utils'
 import * as v from 'valibot'
 import type { CredentialFormatIdentifier } from '../formats/credential'
+import { attestationProofTypeIdentifier } from '../formats/proof-type/attestation/v-attestation-proof-type'
 import { jwtProofTypeIdentifier } from '../formats/proof-type/jwt/v-jwt-proof-type'
 import {
   type CredentialRequest,
@@ -28,7 +29,7 @@ export interface ParseCredentialRequestReturn {
   format?: CredentialRequestFormatSpecific
 
   /**
-   * If the reuest contains `proof` or `proofs` with a `proof_type` that is known to this
+   * If the request contains `proof` or `proofs` with a `proof_type` that is known to this
    * library it will have the proof type specific data defined here. Will not be defined
    * if the `proof_type` is not known or no `proof` or `proofs` were included.
    *
@@ -72,6 +73,8 @@ export function parseCredentialRequest(options: ParseCredentialRequestOptions): 
   const knownProof = v.safeParse(v.union(allCredentialRequestProofs), credentialRequest.proof)
   if (knownProof.success && knownProof.output.proof_type === jwtProofTypeIdentifier) {
     proofs = { [jwtProofTypeIdentifier]: [knownProof.output.jwt] }
+  } else if (knownProof.success && knownProof.output.proof_type === attestationProofTypeIdentifier) {
+    proofs = { [attestationProofTypeIdentifier]: [knownProof.output.attestation] }
   }
 
   if (credentialRequest.credential_identifier) {

@@ -1,11 +1,16 @@
-import { addSecondsToDate, dateToSeconds, encodeToBase64Url } from '@animo-id/oauth2-utils'
+import { addSecondsToDate, dateToSeconds, encodeToBase64Url, parseWithErrorHandling } from '@animo-id/oauth2-utils'
 import type { CallbackContext } from '../callbacks'
 import { HashAlgorithm } from '../callbacks'
 import { calculateJwkThumbprint } from '../common/jwk/jwk-thumbprint'
 import type { Jwk } from '../common/jwk/v-jwk'
 import { jwtHeaderFromJwtSigner } from '../common/jwt/decode-jwt'
 import type { JwtSigner } from '../common/jwt/v-jwt'
-import type { AccessTokenProfileJwtHeader, AccessTokenProfileJwtPayload } from './v-access-token-jwt'
+import {
+  type AccessTokenProfileJwtHeader,
+  type AccessTokenProfileJwtPayload,
+  vAccessTokenProfileJwtHeader,
+  vAccessTokenProfileJwtPayload,
+} from './v-access-token-jwt'
 
 export interface CreateAccessTokenOptions {
   callbacks: Pick<CallbackContext, 'signJwt' | 'generateRandom' | 'hash'>
@@ -70,14 +75,14 @@ export interface CreateAccessTokenOptions {
  * @see https://datatracker.ietf.org/doc/html/rfc9068
  */
 export async function createAccessTokenJwt(options: CreateAccessTokenOptions) {
-  const header = {
+  const header = parseWithErrorHandling(vAccessTokenProfileJwtHeader, {
     ...jwtHeaderFromJwtSigner(options.signer),
     typ: 'at+jwt',
-  } satisfies AccessTokenProfileJwtHeader
+  } satisfies AccessTokenProfileJwtHeader)
 
   const now = options.now ?? new Date()
 
-  const payload: AccessTokenProfileJwtPayload = {
+  const payload = parseWithErrorHandling(vAccessTokenProfileJwtPayload, {
     iat: dateToSeconds(now),
     exp: dateToSeconds(addSecondsToDate(now, options.expiresInSeconds)),
     aud: options.audience,
@@ -86,23 +91,23 @@ export async function createAccessTokenJwt(options: CreateAccessTokenOptions) {
     client_id: options.clientId,
     sub: options.subject,
     scope: options.scope,
+    cnf: options.dpopJwk
+      ? {
+          jkt: await calculateJwkThumbprint({
+            hashAlgorithm: HashAlgorithm.Sha256,
+            hashCallback: options.callbacks.hash,
+            jwk: options.dpopJwk,
+          }),
+        }
+      : undefined,
     ...options.additionalPayload,
-  }
+  } satisfies AccessTokenProfileJwtPayload)
 
-  if (options.dpopJwk) {
-    payload.cnf = {
-      jkt: await calculateJwkThumbprint({
-        hashAlgorithm: HashAlgorithm.Sha256,
-        hashCallback: options.callbacks.hash,
-        jwk: options.dpopJwk,
-      }),
-    }
-  }
-
-  const jwt = await options.callbacks.signJwt(options.signer, {
+  const { jwt } = await options.callbacks.signJwt(options.signer, {
     header,
     payload,
   })
+
   return {
     jwt,
   }

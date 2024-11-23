@@ -1,14 +1,19 @@
 import { vJwk } from '@animo-id/oauth2'
 import type { InferOutputUnion, Simplify } from '@animo-id/oauth2-utils'
 import * as v from 'valibot'
-import type { ProofTypeIdentifier } from '../formats/proof-type'
-import { vCredentialRequestProofJwt, vJwtProofTypeIdentifier } from '../formats/proof-type/jwt/v-jwt-proof-type'
+import {
+  type ProofTypeIdentifier,
+  vAttestationProofTypeIdentifier,
+  vCredentialRequestProofAttestation,
+  vCredentialRequestProofJwt,
+  vJwtProofTypeIdentifier,
+} from '../formats/proof-type'
 
 const vCredentialRequestProofCommon = v.looseObject({
   proof_type: v.string(),
 })
 
-export const allCredentialRequestProofs = [vCredentialRequestProofJwt] as const
+export const allCredentialRequestProofs = [vCredentialRequestProofJwt, vCredentialRequestProofAttestation] as const
 const allCredentialRequestProofsTypes = allCredentialRequestProofs.map((format) => format.entries.proof_type.literal)
 
 export const vCredentialRequestProof = v.intersect([
@@ -31,6 +36,9 @@ export const vCredentialRequestProof = v.intersect([
 const vCredentialRequestProofsCommon = v.record(v.string(), v.array(v.unknown()))
 export const vCredentialRequestProofs = v.object({
   [vJwtProofTypeIdentifier.literal]: v.optional(v.array(vCredentialRequestProofJwt.entries.jwt)),
+  [vAttestationProofTypeIdentifier.literal]: v.optional(
+    v.array(vCredentialRequestProofAttestation.entries.attestation)
+  ),
 })
 
 type CredentialRequestProofCommon = v.InferOutput<typeof vCredentialRequestProofCommon>
@@ -48,7 +56,15 @@ export type CredentialRequestProofs = v.InferOutput<typeof vCredentialRequestPro
 export const vCredentialRequestCommon = v.pipe(
   v.looseObject({
     proof: v.optional(vCredentialRequestProof),
-    proofs: v.optional(v.intersect([vCredentialRequestProofsCommon, vCredentialRequestProofs])),
+    proofs: v.optional(
+      v.pipe(
+        v.intersect([vCredentialRequestProofsCommon, vCredentialRequestProofs]), // Only one proof type allowed per requet
+        v.check(
+          (proofs) => Object.values(proofs).length === 1,
+          `The 'proofs' object in a credential request should contain exactly one attribute`
+        )
+      )
+    ),
 
     credential_response_encryption: v.optional(
       v.looseObject({
@@ -62,10 +78,5 @@ export const vCredentialRequestCommon = v.pipe(
   v.check(
     ({ proof, proofs }) => !(proof !== undefined && proofs !== undefined),
     `Both 'proof' and 'proofs' are defined. Only one is allowed`
-  ),
-  // Only one proof type allowed per requet
-  v.check(
-    ({ proofs }) => (proofs === undefined ? true : Object.values(proofs).length === 1),
-    `The 'proofs' object in a credential request should contain exactly one attribute`
   )
 )

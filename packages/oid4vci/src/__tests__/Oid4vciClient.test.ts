@@ -99,7 +99,7 @@ describe('Oid4vciClient', () => {
       nonce: accessTokenResponse.c_nonce,
     })
     expect(proofJwt).toMatch(
-      'eyJhbGciOiJFUzI1NiIsImtpZCI6ImRpZDpqd2s6ZXlKcmRIa2lPaUpGUXlJc0luZ2lPaUpCUlZod1NIa3hNRWRvZEZkb2JGWlFUbTF5Um5OaWVYUmZkMFJ6VVY4M2NUTmthazV1Y21oNmFsODBJaXdpZVNJNklrUkhWRUZEVDBGQmJsRlVaWEJoUkRRd1ozbEhPVnBzTFc5RWFFOXNkak5WUW14VWRIaEpaWEkxWlc4aUxDSmpjbllpT2lKUUxUSTFOaUo5IzAiLCJ0eXAiOiJvcGVuaWQ0dmNpLXByb29mK2p3dCJ9.eyJub25jZSI6IjQ2MzI1MzkxNzA5NDg2OTE3MjA3ODMxMCIsImF1ZCI6Imh0dHBzOi8vYWdlbnQucGFyYWR5bS5pZC9vaWQ0dmNpL2RyYWZ0LTEzLWlzc3VlciIsImlhdCI6MTcyODUxODQwMH0.'
+      'eyJhbGciOiJFUzI1NiIsInR5cCI6Im9wZW5pZDR2Y2ktcHJvb2Yrand0Iiwia2lkIjoiZGlkOmp3azpleUpyZEhraU9pSkZReUlzSW5naU9pSkJSVmh3U0hreE1FZG9kRmRvYkZaUVRtMXlSbk5pZVhSZmQwUnpVVjgzY1ROa2FrNXVjbWg2YWw4MElpd2llU0k2SWtSSFZFRkRUMEZCYmxGVVpYQmhSRFF3WjNsSE9WcHNMVzlFYUU5c2RqTlZRbXhVZEhoSlpYSTFaVzhpTENKamNuWWlPaUpRTFRJMU5pSjkjMCJ9.eyJhdWQiOiJodHRwczovL2FnZW50LnBhcmFkeW0uaWQvb2lkNHZjaS9kcmFmdC0xMy1pc3N1ZXIiLCJpYXQiOjE3Mjg1MTg0MDAsIm5vbmNlIjoiNDYzMjUzOTE3MDk0ODY5MTcyMDc4MzEwIn0.'
     )
     expect(decodeJwt({ jwt: proofJwt })).toStrictEqual({
       header: {
@@ -258,7 +258,7 @@ describe('Oid4vciClient', () => {
       nonce: accessTokenResponse.c_nonce,
     })
     expect(proofJwt).toMatch(
-      'eyJhbGciOiJFUzI1NiIsImtpZCI6ImRpZDpqd2s6ZXlKcmRIa2lPaUpGUXlJc0luZ2lPaUpCUlZod1NIa3hNRWRvZEZkb2JGWlFUbTF5Um5OaWVYUmZkMFJ6VVY4M2NUTmthazV1Y21oNmFsODBJaXdpZVNJNklrUkhWRUZEVDBGQmJsRlVaWEJoUkRRd1ozbEhPVnBzTFc5RWFFOXNkak5WUW14VWRIaEpaWEkxWlc4aUxDSmpjbllpT2lKUUxUSTFOaUo5IzAiLCJ0eXAiOiJvcGVuaWQ0dmNpLXByb29mK2p3dCJ9.eyJub25jZSI6IjQ2MzI1MzkxNzA5NDg2OTE3MjA3ODMxMCIsImF1ZCI6Imh0dHBzOi8vYWdlbnQucGFyYWR5bS5pZC9vaWQ0dmNpL2RyYWZ0LTExLWlzc3VlciIsImlhdCI6MTcyODUxODQwMH0.'
+      'eyJhbGciOiJFUzI1NiIsInR5cCI6Im9wZW5pZDR2Y2ktcHJvb2Yrand0Iiwia2lkIjoiZGlkOmp3azpleUpyZEhraU9pSkZReUlzSW5naU9pSkJSVmh3U0hreE1FZG9kRmRvYkZaUVRtMXlSbk5pZVhSZmQwUnpVVjgzY1ROa2FrNXVjbWg2YWw4MElpd2llU0k2SWtSSFZFRkRUMEZCYmxGVVpYQmhSRFF3WjNsSE9WcHNMVzlFYUU5c2RqTlZRbXhVZEhoSlpYSTFaVzhpTENKamNuWWlPaUpRTFRJMU5pSjkjMCJ9.eyJhdWQiOiJodHRwczovL2FnZW50LnBhcmFkeW0uaWQvb2lkNHZjaS9kcmFmdC0xMS1pc3N1ZXIiLCJpYXQiOjE3Mjg1MTg0MDAsIm5vbmNlIjoiNDYzMjUzOTE3MDk0ODY5MTcyMDc4MzEwIn0.'
     )
     expect(decodeJwt({ jwt: proofJwt })).toStrictEqual({
       header: {
@@ -462,7 +462,7 @@ describe('Oid4vciClient', () => {
     })
 
     expect(proofJwt).toMatch(
-      'eyJhbGciOiJFUzI1NiIsImp3ayI6eyJrdHkiOiJFQyIsIngiOiJBRVhwSHkxMEdodFdobFZQTm1yRnNieXRfd0RzUV83cTNkak5ucmh6al80IiwieSI6IkRHVEFDT0FBblFUZXBhRDQwZ3lHOVpsLW9EaE9sdjNVQmxUdHhJZXI1ZW8iLCJjcnYiOiJQLTI1NiJ9LCJ0eXAiOiJvcGVuaWQ0dmNpLXByb29mK2p3dCJ9.eyJub25jZSI6InNqTk1pcXlmbUJlRDFxaW9DVnlxdlMiLCJhdWQiOiJodHRwczovL2RlbW8ucGlkLWlzc3Vlci5idW5kZXNkcnVja2VyZWkuZGUvYyIsImlhdCI6MTcyODUxODQwMCwiaXNzIjoiNzZjN2M4OWItODc5OS00YmQxLWE2OTMtZDQ5OTQ4YTkxYjAwIn0.'
+      'eyJhbGciOiJFUzI1NiIsInR5cCI6Im9wZW5pZDR2Y2ktcHJvb2Yrand0IiwiandrIjp7Imt0eSI6IkVDIiwiY3J2IjoiUC0yNTYiLCJ4IjoiQUVYcEh5MTBHaHRXaGxWUE5tckZzYnl0X3dEc1FfN3EzZGpObnJoempfNCIsInkiOiJER1RBQ09BQW5RVGVwYUQ0MGd5RzlabC1vRGhPbHYzVUJsVHR4SWVyNWVvIn19.eyJpc3MiOiI3NmM3Yzg5Yi04Nzk5LTRiZDEtYTY5My1kNDk5NDhhOTFiMDAiLCJhdWQiOiJodHRwczovL2RlbW8ucGlkLWlzc3Vlci5idW5kZXNkcnVja2VyZWkuZGUvYyIsImlhdCI6MTcyODUxODQwMCwibm9uY2UiOiJzak5NaXF5Zm1CZUQxcWlvQ1Z5cXZTIn0.'
     )
     expect(decodeJwt({ jwt: proofJwt })).toStrictEqual({
       header: {

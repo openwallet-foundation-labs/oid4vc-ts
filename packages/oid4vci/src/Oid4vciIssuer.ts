@@ -17,6 +17,10 @@ import {
 } from './credential-request/parse-credential-request'
 import { Oid4vciError } from './error/Oid4vciError'
 import {
+  type VerifyCredentialRequestAttestationProofOptions,
+  verifyCredentialRequestAttestationProof,
+} from './formats/proof-type/attestation/attestation-proof-type'
+import {
   type VerifyCredentialRequestJwtProofOptions,
   verifyCredentialRequestJwtProof,
 } from './formats/proof-type/jwt/jwt-proof-type'
@@ -99,6 +103,7 @@ export class Oid4vciIssuer {
         callbacks: this.options.callbacks,
         credentialIssuer: options.issuerMetadata.credentialIssuer.credential_issuer,
         expectedNonce: options.expectedNonce,
+        nonceExpiresAt: options.nonceExpiresAt,
         jwt: options.jwt,
         clientId: options.clientId,
         now: options.now,
@@ -116,6 +121,45 @@ export class Oid4vciIssuer {
 
         {
           internalMessage: 'Error verifying credential request proof jwt',
+          cause: error,
+        }
+      )
+    }
+  }
+
+  /**
+   * @throws Oauth2ServerErrorResponseError - if verification of the key attestation failed. You can extract
+   *  the credential error response from this.
+   */
+  public async verifyCredentialRequestAttestationProof(
+    options: Pick<
+      VerifyCredentialRequestAttestationProofOptions,
+      'keyAttestationJwt' | 'expectedNonce' | 'nonceExpiresAt' | 'now'
+    > & {
+      issuerMetadata: IssuerMetadataResult
+    }
+  ) {
+    try {
+      return await verifyCredentialRequestAttestationProof({
+        callbacks: this.options.callbacks,
+        expectedNonce: options.expectedNonce,
+        keyAttestationJwt: options.keyAttestationJwt,
+        nonceExpiresAt: options.nonceExpiresAt,
+        now: options.now,
+      })
+    } catch (error) {
+      throw new Oauth2ServerErrorResponseError(
+        {
+          error: Oauth2ErrorCodes.InvalidProof,
+          error_description:
+            // TOOD: error should have a internalErrorMessage and a publicErrorMessage
+            error instanceof Oauth2JwtVerificationError || error instanceof Oid4vciError
+              ? error.message
+              : 'Invalid proof',
+        },
+
+        {
+          internalMessage: 'Error verifying credential request proof attestation',
           cause: error,
         }
       )
@@ -144,6 +188,11 @@ export class Oid4vciIssuer {
         }
       )
     }
+
+    // TOOD: might be nice to add some extra validation params here so it's
+    // easy for an issuer to verify whether the request matches with the configuration
+    // e.g. alg of holder binding, key_attestations_required, proof_types_supported,
+    // request matches offer, etc..
   }
 
   /**

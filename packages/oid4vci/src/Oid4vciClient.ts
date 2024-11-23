@@ -394,7 +394,10 @@ export class Oid4vciClient {
    * Creates the jwt proof payload and header to be included in a credential request.
    */
   public async createCredentialRequestJwtProof(
-    options: Pick<CreateCredentialRequestJwtProofOptions, 'signer' | 'nonce' | 'issuedAt' | 'clientId'> & {
+    options: Pick<
+      CreateCredentialRequestJwtProofOptions,
+      'signer' | 'nonce' | 'issuedAt' | 'clientId' | 'keyAttestationJwt'
+    > & {
       issuerMetadata: IssuerMetadataResult
       credentialConfigurationId: string
     }
@@ -423,6 +426,13 @@ export class Oid4vciClient {
           `Credential configuration with id '${options.credentialConfigurationId}' does not support the '${options.signer.alg}' alg for 'jwt' proof type.`
         )
       }
+
+      // TODO: might be beneficial to also decode the key attestation and see if the required level is reached
+      if (credentialConfiguration.proof_types_supported.jwt.key_attestations_required && !options.keyAttestationJwt) {
+        throw new Oid4vciError(
+          `Credential configuration with id '${options.credentialConfigurationId}' requires key attestations for 'jwt' proof type but no 'keyAttestationJwt' was provided`
+        )
+      }
     }
 
     const jwt = await createCredentialRequestJwtProof({
@@ -431,6 +441,7 @@ export class Oid4vciClient {
       clientId: options.clientId,
       issuedAt: options.issuedAt,
       nonce: options.nonce,
+      keyAttestationJwt: options.keyAttestationJwt,
       callbacks: this.options.callbacks,
     })
 
