@@ -132,7 +132,7 @@ export async function verifyClientAttestationPopJwt(options: VerifyClientAttesta
     )
   }
 
-  await verifyJwt({
+  const { signer } = await verifyJwt({
     signer: {
       alg: header.alg,
       method: 'jwk',
@@ -150,6 +150,7 @@ export async function verifyClientAttestationPopJwt(options: VerifyClientAttesta
   return {
     header,
     payload,
+    signer,
   }
 }
 

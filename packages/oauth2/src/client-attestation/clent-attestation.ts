@@ -40,10 +40,8 @@ export async function verifyClientAttestationJwt(options: VerifyClientAttestatio
     payloadSchema: vClientAttestationJwtPayload,
   })
 
-  const signer = jwtSignerFromJwt({ header, payload })
-
-  await verifyJwt({
-    signer,
+  const { signer } = await verifyJwt({
+    signer: jwtSignerFromJwt({ header, payload }),
     now: options.now,
     header,
     payload,
