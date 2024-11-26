@@ -11,7 +11,6 @@ import {
   oauthClientAttestationPopHeader,
   vClientAttestationJwtHeader,
   vClientAttestationJwtPayload,
-  vClientAttestationPopJwtHeader,
 } from './v-client-attestation'
 
 export interface VerifyClientAttestationJwtOptions {
@@ -101,7 +100,7 @@ export interface CreateClientAttestationJwtOptions {
 }
 
 export async function createClientAttestationJwt(options: CreateClientAttestationJwtOptions) {
-  const header = parseWithErrorHandling(vClientAttestationPopJwtHeader, {
+  const header = parseWithErrorHandling(vClientAttestationJwtHeader, {
     typ: 'oauth-client-attestation+jwt',
     ...jwtHeaderFromJwtSigner(options.signer),
   } satisfies ClientAttestationJwtHeader)

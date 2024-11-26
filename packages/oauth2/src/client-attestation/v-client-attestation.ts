@@ -14,14 +14,18 @@ export const vClientAttestationJwtPayload = v.looseObject({
   exp: vInteger,
   cnf: v.looseObject({
     jwk: vJwk,
-    key_type: v.union([
-      v.picklist(['software', 'hardware', 'tee', 'secure_enclave', 'strong_box', 'secure_element', 'hsm']),
-      v.string(),
-    ]),
-    user_authentication: v.union([
-      v.picklist(['system_biometry', 'system_pin', 'internal_biometry', 'internal_pin', 'secure_element_pin']),
-      v.string(),
-    ]),
+    key_type: v.optional(
+      v.union([
+        v.picklist(['software', 'hardware', 'tee', 'secure_enclave', 'strong_box', 'secure_element', 'hsm']),
+        v.string(),
+      ])
+    ),
+    user_authentication: v.optional(
+      v.union([
+        v.picklist(['system_biometry', 'system_pin', 'internal_biometry', 'internal_pin', 'secure_element_pin']),
+        v.string(),
+      ])
+    ),
   }),
 
   aal: v.optional(v.string()),
