@@ -27,8 +27,6 @@ export async function fetchCredentialIssuerMetadata(
   credentialIssuer: string,
   options: FetchCredentialIssuerMetadataOptions
 ): Promise<{ credentialIssuerMetadata: CredentialIssuerMetadata; originalDraftVersion: Oid4vciDraftVersion } | null> {
-  // TODO: What should we do when it has the property trust_chain?
-
   let result: v.InferOutput<typeof vCredentialIssuerMetadataWithDraftVersion> | null = null
 
   const entityConfiguration = await fetchEntityConfiguration({
@@ -42,7 +40,7 @@ export async function fetchCredentialIssuerMetadata(
         {
           alg: jwk.alg,
           method: 'jwk',
-          publicJwk: jwk as Jwk, // TODO: Check why this type is not correct
+          publicJwk: jwk as Jwk,
         },
         {
           header: header as JwtHeader,
