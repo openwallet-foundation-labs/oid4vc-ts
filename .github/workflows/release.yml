@@ -81,7 +81,7 @@ jobs:
           # this ensures there's always a patch release created
           cat << 'EOF' > .changeset/snapshot-template-changeset.md
           ---
-          '@animo-id/oid4vci': patch
+          '@openid4vc/oid4vci': patch
           ---
 
           snapshot release

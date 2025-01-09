@@ -4,7 +4,7 @@ export type {
 } from './access-token/v-access-token'
 
 // Re-export some types from utils (we don't want people depending on that lib)
-export { type HttpMethod, getGlobalConfig, setGlobalConfig, type Oid4vcTsConfig } from '@animo-id/oauth2-utils'
+export { type HttpMethod, getGlobalConfig, setGlobalConfig, type Oid4vcTsConfig } from '@openid4vc/utils'
 
 export { Oauth2ErrorCodes, type Oauth2ErrorResponse, vOauth2ErrorResponse } from './common/v-oauth2-error'
 export { calculateJwkThumbprint, type CalculateJwkThumbprintOptions } from './common/jwk/jwk-thumbprint'
@@ -54,7 +54,7 @@ export {
   Oauth2ResourceUnauthorizedError,
   type WwwAuthenticateHeaderChallenge,
 } from './error/Oauth2ResourceUnauthorizedError'
-export { InvalidFetchResponseError } from '@animo-id/oauth2-utils'
+export { InvalidFetchResponseError } from '@openid4vc/utils'
 export { Oauth2ClientErrorResponseError } from './error/Oauth2ClientErrorResponseError'
 export { Oauth2ClientAuthorizationChallengeError } from './error/Oauth2ClientAuthorizationChallengeError'
 export { Oauth2ServerErrorResponseError } from './error/Oauth2ServerErrorResponseError'

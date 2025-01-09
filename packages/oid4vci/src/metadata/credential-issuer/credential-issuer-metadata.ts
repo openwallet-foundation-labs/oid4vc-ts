@@ -1,5 +1,5 @@
-import { Oauth2Error, fetchWellKnownMetadata } from '@animo-id/oauth2'
-import { type Fetch, joinUriParts } from '@animo-id/oauth2-utils'
+import { Oauth2Error, fetchWellKnownMetadata } from '@openid4vc/oauth2'
+import { type Fetch, joinUriParts } from '@openid4vc/utils'
 import type { CredentialFormatIdentifier } from '../../formats/credential'
 import type { Oid4vciDraftVersion } from '../../version'
 import {

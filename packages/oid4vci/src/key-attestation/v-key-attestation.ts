@@ -1,7 +1,7 @@
 import * as v from 'valibot'
 
-import { vJwk, vJwtHeader, vJwtPayload } from '@animo-id/oauth2'
-import { vInteger } from '@animo-id/oauth2-utils'
+import { vJwk, vJwtHeader, vJwtPayload } from '@openid4vc/oauth2'
+import { vInteger } from '@openid4vc/utils'
 
 export type KeyAttestationJwtUse = 'proof_type.jwt' | 'proof_type.attestation'
 

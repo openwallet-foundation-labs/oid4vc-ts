@@ -1,4 +1,4 @@
-import { parseWithErrorHandling } from '@animo-id/oauth2-utils'
+import { parseWithErrorHandling } from '@openid4vc/utils'
 import * as v from 'valibot'
 import type { CredentialFormatIdentifier } from '../formats/credential'
 import { attestationProofTypeIdentifier } from '../formats/proof-type/attestation/v-attestation-proof-type'

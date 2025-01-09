@@ -1,4 +1,4 @@
-import { ContentType } from '@animo-id/oauth2-utils'
+import { ContentType } from '@openid4vc/utils'
 import { http, HttpResponse } from 'msw'
 import { setupServer } from 'msw/node'
 import { afterAll, afterEach, beforeAll, describe, expect, test } from 'vitest'

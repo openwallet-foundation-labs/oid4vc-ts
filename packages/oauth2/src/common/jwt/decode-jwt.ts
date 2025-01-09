@@ -6,7 +6,7 @@ import {
   encodeToUtf8String,
   parseWithErrorHandling,
   stringToJsonWithErrorHandling,
-} from '@animo-id/oauth2-utils'
+} from '@openid4vc/utils'
 import { Oauth2JwtParseError } from '../../error/Oauth2JwtParseError'
 import { type JwtSigner, vJwtHeader, vJwtPayload } from './v-jwt'
 

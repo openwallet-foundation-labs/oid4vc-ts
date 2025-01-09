@@ -1,7 +1,7 @@
 import * as v from 'valibot'
 
-import { vCompactJwt, vJwtHeader, vJwtPayload } from '@animo-id/oauth2'
-import { vHttpsUrl, vInteger } from '@animo-id/oauth2-utils'
+import { vCompactJwt, vJwtHeader, vJwtPayload } from '@openid4vc/oauth2'
+import { vHttpsUrl, vInteger } from '@openid4vc/utils'
 
 export const vJwtProofTypeIdentifier = v.literal('jwt')
 export const jwtProofTypeIdentifier = vJwtProofTypeIdentifier.literal

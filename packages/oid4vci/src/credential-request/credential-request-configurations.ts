@@ -1,4 +1,4 @@
-import { arrayEqualsIgnoreOrder } from '@animo-id/oauth2-utils'
+import { arrayEqualsIgnoreOrder } from '@openid4vc/utils'
 import { extractKnownCredentialConfigurationSupportedFormats } from '../metadata/credential-issuer/credential-issuer-metadata'
 import type {
   CredentialConfigurationsSupported,

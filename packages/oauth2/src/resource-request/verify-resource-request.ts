@@ -1,4 +1,4 @@
-import { ValidationError } from '@animo-id/oauth2-utils'
+import { ValidationError } from '@openid4vc/utils'
 import { introspectToken } from '../access-token/introspect-token'
 import type { AccessTokenProfileJwtPayload } from '../access-token/v-access-token-jwt'
 import type { TokenIntrospectionResponse } from '../access-token/v-token-introspection'

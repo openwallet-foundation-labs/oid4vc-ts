@@ -9,7 +9,7 @@ import {
   authorizationCodeGrantIdentifier,
   getAuthorizationServerMetadataFromList,
   preAuthorizedCodeGrantIdentifier,
-} from '@animo-id/oauth2'
+} from '@openid4vc/oauth2'
 import {
   ContentType,
   type Fetch,
@@ -21,7 +21,7 @@ import {
   getQueryParams,
   objectToQueryParams,
   parseWithErrorHandling,
-} from '@animo-id/oauth2-utils'
+} from '@openid4vc/utils'
 import type { IssuerMetadataResult } from '../metadata/fetch-issuer-metadata'
 import { Oid4vciDraftVersion } from '../version'
 import {

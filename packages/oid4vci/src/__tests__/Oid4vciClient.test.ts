@@ -1,5 +1,5 @@
-import { decodeJwt, preAuthorizedCodeGrantIdentifier } from '@animo-id/oauth2'
-import { parseWithErrorHandling } from '@animo-id/oauth2-utils'
+import { decodeJwt, preAuthorizedCodeGrantIdentifier } from '@openid4vc/oauth2'
+import { parseWithErrorHandling } from '@openid4vc/utils'
 import { http, HttpResponse } from 'msw'
 import { setupServer } from 'msw/node'
 import { afterAll, afterEach, beforeAll, describe, expect, test } from 'vitest'

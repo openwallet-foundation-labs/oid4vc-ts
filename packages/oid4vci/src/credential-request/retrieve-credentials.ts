@@ -5,8 +5,8 @@ import {
   type ResourceRequestResponseNotOk,
   type ResourceRequestResponseOk,
   resourceRequest,
-} from '@animo-id/oauth2'
-import { ContentType, isResponseContentType, parseWithErrorHandling } from '@animo-id/oauth2-utils'
+} from '@openid4vc/oauth2'
+import { ContentType, isResponseContentType, parseWithErrorHandling } from '@openid4vc/utils'
 import { type SafeParseResult, safeParse } from 'valibot'
 import type { IssuerMetadataResult } from '../metadata/fetch-issuer-metadata'
 import { Oid4vciDraftVersion } from '../version'

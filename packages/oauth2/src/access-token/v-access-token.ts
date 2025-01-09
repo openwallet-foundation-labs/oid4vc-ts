@@ -1,6 +1,6 @@
 import * as v from 'valibot'
 
-import { vHttpsUrl } from '@animo-id/oauth2-utils'
+import { vHttpsUrl } from '@openid4vc/utils'
 import { vOauth2ErrorResponse } from '../common/v-oauth2-error'
 import {
   vAuthorizationCodeGrantIdentifier,

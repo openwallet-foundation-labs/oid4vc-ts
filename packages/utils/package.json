@@ -1,9 +1,15 @@
 {
-  "name": "@animo-id/oauth2-utils",
+  "name": "@openid4vc/utils",
   "version": "0.1.4",
   "exports": "./src/index.ts",
   "files": ["dist"],
   "license": "Apache-2.0",
+  "homepage": "https://github.com/openwallet-foundation-labs/oid4vc-ts/tree/main/packages/utils",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/openwallet-foundation-labs/oid4vc-ts",
+    "directory": "packages/utils"
+  },
   "publishConfig": {
     "main": "./dist/index.js",
     "module": "./dist/index.mjs",
@@ -21,7 +27,7 @@
     "build": "tsup src/index.ts --format cjs,esm --dts --clean --sourcemap"
   },
   "dependencies": {
-    "buffer": "^6.0.3",
-    "valibot": "^0.42.1"
+    "buffer": "catalog:",
+    "valibot": "catalog:"
   }
 }

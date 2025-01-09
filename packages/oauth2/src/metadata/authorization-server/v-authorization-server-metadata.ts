@@ -1,4 +1,4 @@
-import { vHttpsUrl } from '@animo-id/oauth2-utils'
+import { vHttpsUrl } from '@openid4vc/utils'
 import * as v from 'valibot'
 import { vAlgValueNotNone } from '../../common/v-common'
 

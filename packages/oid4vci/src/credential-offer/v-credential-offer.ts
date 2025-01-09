@@ -2,8 +2,8 @@ import {
   type AuthorizationCodeGrantIdentifier,
   type PreAuthorizedCodeGrantIdentifier,
   preAuthorizedCodeGrantIdentifier,
-} from '@animo-id/oauth2'
-import { vHttpsUrl } from '@animo-id/oauth2-utils'
+} from '@openid4vc/oauth2'
+import { vHttpsUrl } from '@openid4vc/utils'
 import * as v from 'valibot'
 
 const vTxCode = v.looseObject({

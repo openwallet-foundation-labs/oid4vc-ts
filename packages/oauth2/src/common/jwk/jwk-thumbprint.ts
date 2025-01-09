@@ -1,7 +1,7 @@
 import * as v from 'valibot'
 import type { HashAlgorithm, HashCallback } from '../../callbacks'
 
-import { decodeUtf8String, encodeToBase64Url, parseWithErrorHandling } from '@animo-id/oauth2-utils'
+import { decodeUtf8String, encodeToBase64Url, parseWithErrorHandling } from '@openid4vc/utils'
 import type { Jwk } from './v-jwk'
 
 const vJwkThumbprintComponents = v.variant('kty', [

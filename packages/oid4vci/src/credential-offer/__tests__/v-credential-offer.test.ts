@@ -1,4 +1,4 @@
-import { preAuthorizedCodeGrantIdentifier } from '@animo-id/oauth2'
+import { preAuthorizedCodeGrantIdentifier } from '@openid4vc/oauth2'
 import * as v from 'valibot'
 import { describe, expect, test } from 'vitest'
 import { vCredentialOfferObject, vCredentialOfferObjectDraft11To14 } from '../v-credential-offer'

@@ -1,9 +1,9 @@
-import { ContentType, createValibotFetcher, objectToQueryParams, parseWithErrorHandling } from '@animo-id/oauth2-utils'
-import { InvalidFetchResponseError } from '@animo-id/oauth2-utils'
+import { ContentType, createValibotFetcher, objectToQueryParams, parseWithErrorHandling } from '@openid4vc/utils'
+import { InvalidFetchResponseError } from '@openid4vc/utils'
 import { Oauth2Error } from '../error/Oauth2Error'
 import type { AuthorizationServerMetadata } from '../metadata/authorization-server/v-authorization-server-metadata'
 
-import { Headers } from '@animo-id/oauth2-utils'
+import { Headers } from '@openid4vc/utils'
 import type { CallbackContext } from '../callbacks'
 import {
   type TokenIntrospectionRequest,

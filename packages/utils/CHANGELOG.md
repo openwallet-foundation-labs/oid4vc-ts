@@ -1,4 +1,4 @@
-# @animo-id/oauth2-utils
+# @openid4vc/utils
 
 ## 0.1.4
 

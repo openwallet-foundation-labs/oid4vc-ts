@@ -2,7 +2,7 @@
   "$schema": "https://unpkg.com/@changesets/config@3.0.1/schema.json",
   "changelog": "@changesets/cli/changelog",
   "privatePackages": false,
-  "fixed": [["@animo-id/*"]],
+  "fixed": [["@openid4vc/*"]],
   "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",

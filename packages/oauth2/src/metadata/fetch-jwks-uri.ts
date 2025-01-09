@@ -1,5 +1,5 @@
-import { ContentType, type Fetch, createValibotFetcher } from '@animo-id/oauth2-utils'
-import { InvalidFetchResponseError } from '@animo-id/oauth2-utils'
+import { ContentType, type Fetch, createValibotFetcher } from '@openid4vc/utils'
+import { InvalidFetchResponseError } from '@openid4vc/utils'
 import { ValidationError } from '../../../utils/src/error/ValidationError'
 import { type JwkSet, vJwkSet } from '../common/jwk/v-jwk'
 import { Oauth2Error } from '../error/Oauth2Error'

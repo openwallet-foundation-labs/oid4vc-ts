@@ -1,7 +1,7 @@
-import { type Jwk, type JwtSigner, decodeJwt, jwtHeaderFromJwtSigner } from '@animo-id/oauth2'
+import { type Jwk, type JwtSigner, decodeJwt, jwtHeaderFromJwtSigner } from '@openid4vc/oauth2'
 
-import { type CallbackContext, jwtSignerFromJwt, verifyJwt } from '@animo-id/oauth2'
-import { type StringWithAutoCompletion, dateToSeconds, parseWithErrorHandling } from '@animo-id/oauth2-utils'
+import { type CallbackContext, jwtSignerFromJwt, verifyJwt } from '@openid4vc/oauth2'
+import { type StringWithAutoCompletion, dateToSeconds, parseWithErrorHandling } from '@openid4vc/utils'
 import { Oid4vciError } from '../error/Oid4vciError'
 import {
   type Iso18045,

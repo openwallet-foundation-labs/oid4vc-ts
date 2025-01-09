@@ -3,8 +3,8 @@ import {
   Oauth2ErrorCodes,
   Oauth2JwtVerificationError,
   Oauth2ServerErrorResponseError,
-} from '@animo-id/oauth2'
-import { ValidationError, parseWithErrorHandling } from '@animo-id/oauth2-utils'
+} from '@openid4vc/oauth2'
+import { ValidationError, parseWithErrorHandling } from '@openid4vc/utils'
 import { type CreateCredentialOfferOptions, createCredentialOffer } from './credential-offer/credential-offer'
 import {
   type CreateCredentialResponseOptions,
