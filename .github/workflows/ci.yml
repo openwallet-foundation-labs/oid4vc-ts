@@ -1,6 +1,8 @@
 name: Continuous Integration
 
 on:
+  pull_request_review:
+
   pull_request:
     branches:
       - main
@@ -10,6 +12,7 @@ on:
 
 jobs:
   validate:
+    if: github.event_name != 'pull_request_review' || github.ref == 'refs/heads/changeset-release/main'
     runs-on: ubuntu-20.04
     name: Validate
     steps:
@@ -38,6 +41,7 @@ jobs:
   tests:
     runs-on: ubuntu-20.04
     name: Tests
+    if: github.event_name != 'pull_request_review' || github.ref == 'refs/heads/changeset-release/main'
 
     strategy:
       fail-fast: false
