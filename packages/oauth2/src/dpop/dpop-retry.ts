@@ -1,4 +1,4 @@
-import type { FetchHeaders } from '@animo-id/oauth2-utils'
+import type { FetchHeaders } from '@openid4vc/utils'
 import { SupportedAuthenticationScheme } from '../access-token/verify-access-token'
 import { Oauth2ErrorCodes, type Oauth2ErrorResponse } from '../common/v-oauth2-error'
 import { Oauth2ClientErrorResponseError } from '../error/Oauth2ClientErrorResponseError'

@@ -1,4 +1,4 @@
-import { addSecondsToDate, dateToSeconds, encodeToBase64Url, parseWithErrorHandling } from '@animo-id/oauth2-utils'
+import { addSecondsToDate, dateToSeconds, encodeToBase64Url, parseWithErrorHandling } from '@openid4vc/utils'
 import type { CallbackContext } from '../callbacks'
 import { HashAlgorithm } from '../callbacks'
 import { calculateJwkThumbprint } from '../common/jwk/jwk-thumbprint'

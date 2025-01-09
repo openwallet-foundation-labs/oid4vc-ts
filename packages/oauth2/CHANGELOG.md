@@ -1,11 +1,11 @@
-# @animo-id/oauth2
+# @openid4vc/oauth2
 
 ## 0.1.4
 
 ### Patch Changes
 
 - 12a517a: feat: add refresh_token grant type
-  - @animo-id/oauth2-utils@0.1.4
+  - @openid4vc/utils@0.1.4
 
 ## 0.1.3
 
@@ -13,7 +13,7 @@
 
 - d4b9279: chore: create github release
 - Updated dependencies [d4b9279]
-  - @animo-id/oauth2-utils@0.1.3
+  - @openid4vc/utils@0.1.3
 
 ## 0.1.2
 
@@ -21,7 +21,7 @@
 
 - 1de27e5: chore: correct formatting for publishing
 - Updated dependencies [1de27e5]
-  - @animo-id/oauth2-utils@0.1.2
+  - @openid4vc/utils@0.1.2
 
 ## 0.1.1
 
@@ -29,7 +29,7 @@
 
 - 6434781: docs: add readme
 - Updated dependencies [6434781]
-  - @animo-id/oauth2-utils@0.1.1
+  - @openid4vc/utils@0.1.1
 
 ## 0.1.0
 
@@ -40,4 +40,4 @@
 ### Patch Changes
 
 - Updated dependencies [71326c8]
-  - @animo-id/oauth2-utils@0.1.0
+  - @openid4vc/utils@0.1.0

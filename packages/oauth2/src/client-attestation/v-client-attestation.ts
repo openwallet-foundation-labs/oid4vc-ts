@@ -1,7 +1,7 @@
 import * as v from 'valibot'
 import { vJwtHeader, vJwtPayload } from '../common/jwt/v-jwt'
 
-import { vHttpsUrl, vInteger } from '@animo-id/oauth2-utils'
+import { vHttpsUrl, vInteger } from '@openid4vc/utils'
 import { vJwk } from '../common/jwk/v-jwk'
 
 export const vOauthClientAttestationHeader = v.literal('OAuth-Client-Attestation')

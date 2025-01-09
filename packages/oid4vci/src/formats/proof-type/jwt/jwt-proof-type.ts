@@ -1,4 +1,4 @@
-import { type JwtSigner, decodeJwt, isJwkInSet, jwtHeaderFromJwtSigner } from '@animo-id/oauth2'
+import { type JwtSigner, decodeJwt, isJwkInSet, jwtHeaderFromJwtSigner } from '@openid4vc/oauth2'
 import {
   type CredentialRequestJwtProofTypeHeader,
   type CredentialRequestJwtProofTypePayload,
@@ -6,8 +6,8 @@ import {
   vCredentialRequestJwtProofTypePayload,
 } from './v-jwt-proof-type'
 
-import { type CallbackContext, jwtSignerFromJwt, verifyJwt } from '@animo-id/oauth2'
-import { dateToSeconds, parseWithErrorHandling } from '@animo-id/oauth2-utils'
+import { type CallbackContext, jwtSignerFromJwt, verifyJwt } from '@openid4vc/oauth2'
+import { dateToSeconds, parseWithErrorHandling } from '@openid4vc/utils'
 import { Oid4vciError } from '../../../error/Oid4vciError'
 import { type VerifyKeyAttestationJwtReturn, verifyKeyAttestationJwt } from '../../../key-attestation/key-attestation'
 import { vKeyAttestationJwtHeader, vKeyAttestationJwtPayload } from '../../../key-attestation/v-key-attestation'

@@ -1,2 +1,7 @@
 packages:
   - packages/**
+
+catalog:
+  valibot: ^0.42.1
+  buffer: ^6.0.3
+  jose: ^5.9.6

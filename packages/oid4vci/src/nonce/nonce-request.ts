@@ -1,11 +1,11 @@
-import { InvalidFetchResponseError } from '@animo-id/oauth2'
+import { InvalidFetchResponseError } from '@openid4vc/oauth2'
 import {
   ContentType,
   type Fetch,
   ValidationError,
   createValibotFetcher,
   parseWithErrorHandling,
-} from '@animo-id/oauth2-utils'
+} from '@openid4vc/utils'
 import { Oid4vciError } from '../error/Oid4vciError'
 import type { IssuerMetadataResult } from '../metadata/fetch-issuer-metadata'
 import { type NonceResponse, vNonceResponse } from './v-nonce'

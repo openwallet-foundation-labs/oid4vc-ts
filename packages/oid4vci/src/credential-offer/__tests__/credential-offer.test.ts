@@ -1,4 +1,4 @@
-import { authorizationCodeGrantIdentifier, preAuthorizedCodeGrantIdentifier } from '@animo-id/oauth2'
+import { authorizationCodeGrantIdentifier, preAuthorizedCodeGrantIdentifier } from '@openid4vc/oauth2'
 import { describe, expect, test } from 'vitest'
 import { callbacks } from '../../../../oauth2/tests/util'
 import type { IssuerMetadataResult } from '../../metadata/fetch-issuer-metadata'

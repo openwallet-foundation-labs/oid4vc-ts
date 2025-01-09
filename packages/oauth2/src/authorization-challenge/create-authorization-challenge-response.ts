@@ -1,4 +1,4 @@
-import { type StringWithAutoCompletion, parseWithErrorHandling } from '@animo-id/oauth2-utils'
+import { type StringWithAutoCompletion, parseWithErrorHandling } from '@openid4vc/utils'
 import type { Oauth2ErrorCodes } from '../common/v-oauth2-error'
 import {
   type AuthorizationChallengeErrorResponse,

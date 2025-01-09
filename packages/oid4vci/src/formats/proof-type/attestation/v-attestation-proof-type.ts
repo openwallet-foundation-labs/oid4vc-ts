@@ -1,6 +1,6 @@
 import * as v from 'valibot'
 
-import { vCompactJwt } from '@animo-id/oauth2'
+import { vCompactJwt } from '@openid4vc/oauth2'
 import {
   type KeyAttestationJwtHeader,
   vKeyAttestationJwtHeader,

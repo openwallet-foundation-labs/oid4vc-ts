@@ -4,6 +4,18 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+catalogs:
+  default:
+    buffer:
+      specifier: ^6.0.3
+      version: 6.0.3
+    jose:
+      specifier: ^5.9.6
+      version: 5.9.6
+    valibot:
+      specifier: ^0.42.1
+      version: 0.42.1
+
 importers:
 
   .:
@@ -29,40 +41,40 @@ importers:
 
   packages/oauth2:
     dependencies:
-      '@animo-id/oauth2-utils':
+      '@openid4vc/utils':
         specifier: workspace:*
         version: link:../utils
       valibot:
-        specifier: ^0.42.1
+        specifier: 'catalog:'
         version: 0.42.1(typescript@5.6.3)
     devDependencies:
       jose:
-        specifier: ^5.9.6
+        specifier: 'catalog:'
         version: 5.9.6
 
   packages/oid4vci:
     dependencies:
-      '@animo-id/oauth2':
+      '@openid4vc/oauth2':
         specifier: workspace:*
         version: link:../oauth2
-      '@animo-id/oauth2-utils':
+      '@openid4vc/utils':
         specifier: workspace:*
         version: link:../utils
       valibot:
-        specifier: ^0.42.1
+        specifier: 'catalog:'
         version: 0.42.1(typescript@5.6.3)
     devDependencies:
       jose:
-        specifier: ^5.9.6
+        specifier: 'catalog:'
         version: 5.9.6
 
   packages/utils:
     dependencies:
       buffer:
-        specifier: ^6.0.3
+        specifier: 'catalog:'
         version: 6.0.3
       valibot:
-        specifier: ^0.42.1
+        specifier: 'catalog:'
         version: 0.42.1(typescript@5.6.3)
 
 packages:

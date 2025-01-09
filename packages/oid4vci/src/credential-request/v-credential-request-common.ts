@@ -1,5 +1,5 @@
-import { vJwk } from '@animo-id/oauth2'
-import type { InferOutputUnion, Simplify } from '@animo-id/oauth2-utils'
+import { vJwk } from '@openid4vc/oauth2'
+import type { InferOutputUnion, Simplify } from '@openid4vc/utils'
 import * as v from 'valibot'
 import {
   type ProofTypeIdentifier,

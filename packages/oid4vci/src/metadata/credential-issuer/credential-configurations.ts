@@ -1,5 +1,5 @@
-import { Oauth2Error } from '@animo-id/oauth2'
-import { ValidationError } from '@animo-id/oauth2-utils'
+import { Oauth2Error } from '@openid4vc/oauth2'
+import { ValidationError } from '@openid4vc/utils'
 import * as v from 'valibot'
 import { Oid4vciError } from '../../error/Oid4vciError'
 import type { IssuerMetadataResult } from '../fetch-issuer-metadata'

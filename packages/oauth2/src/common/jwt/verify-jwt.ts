@@ -1,4 +1,4 @@
-import { dateToSeconds } from '@animo-id/oauth2-utils'
+import { dateToSeconds } from '@openid4vc/utils'
 import type { VerifyJwtCallback } from '../../callbacks'
 import { Oauth2JwtVerificationError } from '../../error/Oauth2JwtVerificationError'
 import type { Jwk } from '../jwk/v-jwk'

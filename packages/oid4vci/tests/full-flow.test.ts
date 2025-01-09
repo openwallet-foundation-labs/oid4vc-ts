@@ -10,8 +10,8 @@ import {
   authorizationCodeGrantIdentifier,
   calculateJwkThumbprint,
   preAuthorizedCodeGrantIdentifier,
-} from '@animo-id/oauth2'
-import { ContentType, type HttpMethod, decodeUtf8String, encodeToBase64Url } from '@animo-id/oauth2-utils'
+} from '@openid4vc/oauth2'
+import { ContentType, type HttpMethod, decodeUtf8String, encodeToBase64Url } from '@openid4vc/utils'
 import { http, HttpResponse } from 'msw'
 import { setupServer } from 'msw/node'
 import { afterAll, afterEach, beforeAll, describe, expect, test } from 'vitest'

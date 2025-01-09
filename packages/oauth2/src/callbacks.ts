@@ -1,4 +1,4 @@
-import type { Fetch, OrPromise } from '@animo-id/oauth2-utils'
+import type { Fetch, OrPromise } from '@openid4vc/utils'
 import type { ClientAuthenticationCallback } from './client-authentication'
 import type { Jwk } from './common/jwk/v-jwk'
 import type { JwtHeader, JwtPayload, JwtSigner } from './common/jwt/v-jwt'

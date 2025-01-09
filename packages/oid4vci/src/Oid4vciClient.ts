@@ -12,7 +12,7 @@ import {
   authorizationCodeGrantIdentifier,
   getAuthorizationServerMetadataFromList,
   preAuthorizedCodeGrantIdentifier,
-} from '@animo-id/oauth2'
+} from '@openid4vc/oauth2'
 
 import {
   determineAuthorizationServerForCredentialOffer,

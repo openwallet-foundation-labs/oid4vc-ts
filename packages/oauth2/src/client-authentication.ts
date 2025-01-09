@@ -1,7 +1,7 @@
-import type { ContentType, FetchHeaders, HttpMethod } from '@animo-id/oauth2-utils'
+import type { ContentType, FetchHeaders, HttpMethod } from '@openid4vc/utils'
 import type { AuthorizationServerMetadata } from './metadata/authorization-server/v-authorization-server-metadata'
 
-import { decodeUtf8String, encodeToBase64Url } from '@animo-id/oauth2-utils'
+import { decodeUtf8String, encodeToBase64Url } from '@openid4vc/utils'
 import { Oauth2Error } from './error/Oauth2Error'
 
 // These two are well-supported and easy to implement

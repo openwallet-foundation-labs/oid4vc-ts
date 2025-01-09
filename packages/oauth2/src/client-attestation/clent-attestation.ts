@@ -1,4 +1,4 @@
-import { type FetchHeaders, dateToSeconds, parseWithErrorHandling } from '@animo-id/oauth2-utils'
+import { type FetchHeaders, dateToSeconds, parseWithErrorHandling } from '@openid4vc/utils'
 import type { CallbackContext } from '../callbacks'
 import { decodeJwt, jwtHeaderFromJwtSigner, jwtSignerFromJwt } from '../common/jwt/decode-jwt'
 import type { JwtSigner } from '../common/jwt/v-jwt'

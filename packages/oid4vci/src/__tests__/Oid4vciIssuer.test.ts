@@ -1,5 +1,5 @@
-import { preAuthorizedCodeGrantIdentifier } from '@animo-id/oauth2'
-import { addSecondsToDate } from '@animo-id/oauth2-utils'
+import { preAuthorizedCodeGrantIdentifier } from '@openid4vc/oauth2'
+import { addSecondsToDate } from '@openid4vc/utils'
 import { describe, expect, test } from 'vitest'
 import { callbacks, getSignJwtCallback } from '../../../oauth2/tests/util'
 import { Oid4vciIssuer } from '../Oid4vciIssuer'

@@ -1,4 +1,4 @@
-import { encodeWwwAuthenticateHeader, parseWwwAuthenticateHeader } from '@animo-id/oauth2-utils'
+import { encodeWwwAuthenticateHeader, parseWwwAuthenticateHeader } from '@openid4vc/utils'
 import type { SupportedAuthenticationScheme } from '../access-token/verify-access-token'
 import type { Oauth2ErrorCodes } from '../common/v-oauth2-error'
 import { Oauth2Error } from './Oauth2Error'

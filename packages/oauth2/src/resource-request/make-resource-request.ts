@@ -1,4 +1,4 @@
-import { type FetchRequestInit, type FetchResponse, type HttpMethod, defaultFetcher } from '@animo-id/oauth2-utils'
+import { type FetchRequestInit, type FetchResponse, type HttpMethod, defaultFetcher } from '@openid4vc/utils'
 import type { CallbackContext } from '../callbacks'
 import { type RequestDpopOptions, createDpopHeadersForRequest, extractDpopNonceFromHeaders } from '../dpop/dpop'
 import { shouldRetryResourceRequestWithDPoPNonce } from '../dpop/dpop-retry'

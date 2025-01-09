@@ -1,4 +1,4 @@
-import { type FetchHeaders, parseWithErrorHandling } from '@animo-id/oauth2-utils'
+import { type FetchHeaders, parseWithErrorHandling } from '@openid4vc/utils'
 import { type CreateAccessTokenOptions, createAccessTokenJwt } from './access-token/create-access-token'
 import {
   type CreateAccessTokenResponseOptions,

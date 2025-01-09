@@ -1,12 +1,12 @@
-# @animo-id/oid4vci
+# @openid4vc/oid4vci
 
 ## 0.1.4
 
 ### Patch Changes
 
 - Updated dependencies [12a517a]
-  - @animo-id/oauth2@0.1.4
-  - @animo-id/oauth2-utils@0.1.4
+  - @openid4vc/oauth2@0.1.4
+  - @openid4vc/utils@0.1.4
 
 ## 0.1.3
 
@@ -14,8 +14,8 @@
 
 - d4b9279: chore: create github release
 - Updated dependencies [d4b9279]
-  - @animo-id/oauth2@0.1.3
-  - @animo-id/oauth2-utils@0.1.3
+  - @openid4vc/oauth2@0.1.3
+  - @openid4vc/utils@0.1.3
 
 ## 0.1.2
 
@@ -23,8 +23,8 @@
 
 - 1de27e5: chore: correct formatting for publishing
 - Updated dependencies [1de27e5]
-  - @animo-id/oauth2@0.1.2
-  - @animo-id/oauth2-utils@0.1.2
+  - @openid4vc/oauth2@0.1.2
+  - @openid4vc/utils@0.1.2
 
 ## 0.1.1
 
@@ -32,8 +32,8 @@
 
 - 6434781: docs: add readme
 - Updated dependencies [6434781]
-  - @animo-id/oauth2@0.1.1
-  - @animo-id/oauth2-utils@0.1.1
+  - @openid4vc/oauth2@0.1.1
+  - @openid4vc/utils@0.1.1
 
 ## 0.1.0
 
@@ -45,5 +45,5 @@
 
 - 3bcbd08: export additional types
 - Updated dependencies [71326c8]
-  - @animo-id/oauth2@0.1.0
-  - @animo-id/oauth2-utils@0.1.0
+  - @openid4vc/oauth2@0.1.0
+  - @openid4vc/utils@0.1.0

@@ -1,5 +1,5 @@
-import { ContentType, createValibotFetcher, objectToQueryParams, parseWithErrorHandling } from '@animo-id/oauth2-utils'
-import { InvalidFetchResponseError } from '@animo-id/oauth2-utils'
+import { ContentType, createValibotFetcher, objectToQueryParams, parseWithErrorHandling } from '@openid4vc/utils'
+import { InvalidFetchResponseError } from '@openid4vc/utils'
 import * as v from 'valibot'
 import { ValidationError } from '../../../utils/src/error/ValidationError'
 import type { CallbackContext } from '../callbacks'

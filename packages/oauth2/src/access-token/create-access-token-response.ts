@@ -1,4 +1,4 @@
-import { parseWithErrorHandling } from '@animo-id/oauth2-utils'
+import { parseWithErrorHandling } from '@openid4vc/utils'
 import type { CallbackContext } from '../callbacks'
 import { type AccessTokenResponse, vAccessTokenResponse } from './v-access-token'
 
