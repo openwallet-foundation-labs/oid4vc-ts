@@ -12,7 +12,7 @@ on:
 
 jobs:
   validate:
-    if: github.event_name != 'pull_request_review' || github.ref == 'refs/heads/changeset-release/main'
+    if: github.event_name != 'pull_request_review' ||  github.event.pull_request.head.ref == 'changeset-release/main'
     runs-on: ubuntu-20.04
     name: Validate
     steps:
@@ -41,7 +41,7 @@ jobs:
   tests:
     runs-on: ubuntu-20.04
     name: Tests
-    if: github.event_name != 'pull_request_review' || github.ref == 'refs/heads/changeset-release/main'
+    if: github.event_name != 'pull_request_review' ||  github.event.pull_request.head.ref == 'changeset-release/main'
 
     strategy:
       fail-fast: false
