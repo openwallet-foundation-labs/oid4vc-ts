@@ -7,47 +7,48 @@ const wellKnownAuthorizationServerSuffix = '.well-known/oauth-authorization-serv
 const wellKnownOpenIdConfigurationServerSuffix = '.well-known/openid-configuration'
 
 /**
- * fetch authorization server metadata. It first tries to fetch the openid configuration. If that reutrns
- *  a 404, the oauth authorization server metadata will be tries.
+ * fetch authorization server metadata. It first tries to fetch the oauth-authorization-server metadata. If that returns
+ *  a 404, the openid-configuration metadata will be fetched.
  */
 export async function fetchAuthorizationServerMetadata(
   issuer: string,
   fetch?: Fetch
 ): Promise<AuthorizationServerMetadata | null> {
-  // First try openid configuration
   const openIdConfigurationWellKnownMetadataUrl = joinUriParts(issuer, [wellKnownOpenIdConfigurationServerSuffix])
-  const openIdConfigurationResult = await fetchWellKnownMetadata(
-    openIdConfigurationWellKnownMetadataUrl,
-    vAuthorizationServerMetadata,
-    fetch
-  )
-
-  if (openIdConfigurationResult) {
-    if (openIdConfigurationResult.issuer !== issuer) {
-      // issuer param MUST match
-      throw new Oauth2Error(
-        `The 'issuer' parameter '${openIdConfigurationResult.issuer}' in the well known openid configuration at '${openIdConfigurationWellKnownMetadataUrl}' does not match the provided issuer '${issuer}'.`
-      )
-    }
-
-    return openIdConfigurationResult
-  }
-
   const authorizationServerWellKnownMetadataUrl = joinUriParts(issuer, [wellKnownAuthorizationServerSuffix])
+
+  // First try oauth-authorization-server
   const authorizationServerResult = await fetchWellKnownMetadata(
     authorizationServerWellKnownMetadataUrl,
     vAuthorizationServerMetadata,
     fetch
   )
 
-  // issuer param MUST match
   if (authorizationServerResult) {
     if (authorizationServerResult.issuer !== issuer) {
+      // issuer param MUST match
       throw new Oauth2Error(
         `The 'issuer' parameter '${authorizationServerResult.issuer}' in the well known authorization server metadata at '${authorizationServerWellKnownMetadataUrl}' does not match the provided issuer '${issuer}'.`
       )
     }
+
     return authorizationServerResult
+  }
+
+  const openIdConfigurationResult = await fetchWellKnownMetadata(
+    openIdConfigurationWellKnownMetadataUrl,
+    vAuthorizationServerMetadata,
+    fetch
+  )
+
+  // issuer param MUST match
+  if (openIdConfigurationResult) {
+    if (openIdConfigurationResult.issuer !== issuer) {
+      throw new Oauth2Error(
+        `The 'issuer' parameter '${openIdConfigurationResult.issuer}' in the well openid configuration metadata at '${openIdConfigurationWellKnownMetadataUrl}' does not match the provided issuer '${issuer}'.`
+      )
+    }
+    return openIdConfigurationResult
   }
 
   return null
