@@ -1,5 +1,16 @@
 # @openid4vc/oauth2
 
+## 0.2.0
+
+### Minor Changes
+
+- 0f60387: feat: add client attestations
+- 3f6d360: change order of fetching authorization server metadata. First `oauth-authorization-server` metadata is fetched now. If that returns a 404, the `openid-configuration` will be fetched.
+
+### Patch Changes
+
+- @openid4vc/utils@0.2.0
+
 ## 0.1.4
 
 ### Patch Changes
