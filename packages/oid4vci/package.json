@@ -1,8 +1,10 @@
 {
   "name": "@openid4vc/oid4vci",
-  "version": "0.1.4",
+  "version": "0.2.0",
   "exports": "./src/index.ts",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "license": "Apache-2.0",
   "homepage": "https://github.com/openwallet-foundation-labs/oid4vc-ts/tree/main/packages/oid4vci",
   "repository": {
