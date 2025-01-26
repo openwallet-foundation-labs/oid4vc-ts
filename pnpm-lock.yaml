@@ -68,6 +68,18 @@ importers:
         specifier: 'catalog:'
         version: 5.9.6
 
+  packages/openid4vp:
+    dependencies:
+      '@openid4vc/oauth2':
+        specifier: workspace:*
+        version: link:../oauth2
+      '@openid4vc/utils':
+        specifier: workspace:*
+        version: link:../utils
+      valibot:
+        specifier: 'catalog:'
+        version: 0.42.1(typescript@5.6.3)
+
   packages/utils:
     dependencies:
       buffer:

@@ -32,7 +32,7 @@ export interface Oauth2ClientOptions {
   /**
    * Callbacks required for the oauth2 client
    */
-  callbacks: Omit<CallbackContext, 'verifyJwt' | 'clientAuthentication'>
+  callbacks: Omit<CallbackContext, 'verifyJwt' | 'clientAuthentication' | 'decryptJwt' | 'encryptJwe'>
 }
 
 export class Oauth2Client {

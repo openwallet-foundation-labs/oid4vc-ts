@@ -36,6 +36,12 @@ export type JwtSignerCustom = {
 
 export type JwtSigner = JwtSignerDid | JwtSignerJwk | JwtSignerX5c | JwtSignerTrustChain | JwtSignerCustom
 
+export type JweEncryptor = JwtSignerJwk & {
+  enc: string
+  apu?: string
+  apv?: string
+}
+
 export type JwtSignerWithJwk = JwtSigner & { publicJwk: Jwk }
 
 export const vCompactJwt = v.pipe(

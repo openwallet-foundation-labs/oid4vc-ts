@@ -28,7 +28,7 @@ export const vJwk = v.looseObject({
   q: v.optional(v.string()),
   qi: v.optional(v.string()),
   use: v.optional(v.string()),
-  x5c: v.optional(v.string()),
+  x5c: v.optional(v.array(v.string())),
   x5t: v.optional(v.string()),
   'x5t#S256': v.optional(v.string()),
   x5u: v.optional(v.string()),

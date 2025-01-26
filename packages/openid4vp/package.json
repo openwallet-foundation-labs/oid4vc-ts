@@ -1,0 +1,34 @@
+{
+  "name": "@openid4vc/oid4vp",
+  "version": "0.1.4",
+  "files": ["dist"],
+  "license": "Apache-2.0",
+  "exports": "./src/index.ts",
+  "homepage": "https://github.com/openwallet-foundation-labs/oid4vc-ts/tree/main/packages/oid4vp",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/openwallet-foundation-labs/oid4vc-ts",
+    "directory": "packages/oid4vcp"
+  },
+  "publishConfig": {
+    "main": "./dist/index.js",
+    "module": "./dist/index.mjs",
+    "types": "./dist/index.d.ts",
+    "exports": {
+      ".": {
+        "import": "./dist/index.mjs",
+        "require": "./dist/index.js",
+        "types": "./dist/index.d.ts"
+      },
+      "./package.json": "./package.json"
+    }
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --dts --clean --sourcemap --watch"
+  },
+  "dependencies": {
+    "@openid4vc/oauth2": "workspace:*",
+    "@openid4vc/utils": "workspace:*",
+    "valibot": "catalog:"
+  }
+}

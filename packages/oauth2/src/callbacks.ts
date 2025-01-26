@@ -1,7 +1,7 @@
 import type { Fetch, OrPromise } from '@openid4vc/utils'
 import type { ClientAuthenticationCallback } from './client-authentication'
 import type { Jwk } from './common/jwk/v-jwk'
-import type { JwtHeader, JwtPayload, JwtSigner } from './common/jwt/v-jwt'
+import type { JweEncryptor, JwtHeader, JwtPayload, JwtSigner } from './common/jwt/v-jwt'
 
 /**
  * Supported hashing algorithms
@@ -39,6 +39,36 @@ export type VerifyJwtCallback = (
     }
 >
 
+export interface DecryptJwtCallbackOptions {
+  jwk: Jwk
+}
+
+export type DecryptJwtCallback = (
+  jwe: string,
+  options?: DecryptJwtCallbackOptions
+) => OrPromise<
+  | {
+      decrypted: true
+      decryptionJwk: Jwk
+      payload: string
+      header: JwtHeader
+    }
+  | {
+      decrypted: false
+      decryptionJwk?: Jwk
+      payload?: string
+      header?: JwtHeader
+    }
+>
+
+export type EncryptJweCallback = (
+  jweEncryptor: JweEncryptor,
+  data: string
+) => OrPromise<{
+  encryptionJwk: Jwk
+  jwe: string
+}>
+
 /**
  * Callback context provides the callbacks that are required for the oid4vc library
  */
@@ -57,6 +87,16 @@ export interface CallbackContext {
    * Sign jwt callback for signing of Json Web Tokens
    */
   signJwt: SignJwtCallback
+
+  /**
+   * Decrypt jwe callback for decrypting of Json Web Encryptions
+   */
+  decryptJwt: DecryptJwtCallback
+
+  /**
+   * Encrypt jwt callback for encrypting of Json Web Encryptions
+   */
+  encryptJwe: EncryptJweCallback
 
   /**
    * Verify jwt callback for verification of Json Web Tokens
@@ -83,4 +123,14 @@ export interface CallbackContext {
    * scenarios where multiple authorization servers are supported.
    */
   clientAuthentication: ClientAuthenticationCallback
+
+  /**
+   * Get the DNS names from a X.509 certificate
+   */
+  getX509SanDnsNames?: (certificate: string) => string[]
+
+  /**
+   * Get the URI names from a X.509 certificate
+   */
+  getX509SanUriNames?: (certificate: string) => string[]
 }

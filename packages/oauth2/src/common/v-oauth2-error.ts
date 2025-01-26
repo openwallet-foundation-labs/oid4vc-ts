@@ -33,6 +33,12 @@ export enum Oauth2ErrorCodes {
   InvalidProof = 'invalid_proof',
   InvalidNonce = 'invalid_nonce',
   InvalidEncryptionParameters = 'invalid_encryption_parameters',
+
+  // Jar
+  InvalidRequestUri = 'invalid_request_uri',
+  InvalidRequestObject = 'invalid_request_object',
+  RequestNotSupported = 'request_not_supported',
+  RequestUriNotSupported = 'request_uri_not_supported',
 }
 
 export const vOauth2ErrorResponse = v.looseObject({

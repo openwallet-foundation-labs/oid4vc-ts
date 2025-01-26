@@ -46,7 +46,7 @@ export interface Oid4vciClientOptions {
   /**
    * Callbacks required for the oid4vc client
    */
-  callbacks: Omit<CallbackContext, 'verifyJwt' | 'clientAuthentication'>
+  callbacks: Omit<CallbackContext, 'verifyJwt' | 'clientAuthentication' | 'decryptJwt' | 'encryptJwe'>
 }
 
 export class Oid4vciClient {

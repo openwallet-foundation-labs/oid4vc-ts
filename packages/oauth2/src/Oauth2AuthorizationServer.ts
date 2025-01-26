@@ -37,7 +37,7 @@ export interface Oauth2AuthorizationServerOptions {
   /**
    * Callbacks required for the oauth2 authorization server
    */
-  callbacks: CallbackContext
+  callbacks: Omit<CallbackContext, 'decryptJwt' | 'encryptJwe'>
 }
 
 export class Oauth2AuthorizationServer {

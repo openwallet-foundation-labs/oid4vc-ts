@@ -8,7 +8,8 @@ import {
   stringToJsonWithErrorHandling,
 } from '@openid4vc/utils'
 import { Oauth2JwtParseError } from '../../error/Oauth2JwtParseError'
-import { type JwtSigner, vJwtHeader, vJwtPayload } from './v-jwt'
+import { decodeJwtHeader } from './decode-jwt-header.js'
+import { type JwtSigner, type vJwtHeader, vJwtPayload } from './v-jwt'
 
 export interface DecodeJwtOptions<
   HeaderSchema extends BaseSchema | undefined,
@@ -50,13 +51,8 @@ export function decodeJwt<
     throw new Oauth2JwtParseError('Jwt is not a valid jwt, unable to decode')
   }
 
-  let headerJson: Record<string, unknown>
   let payloadJson: Record<string, unknown>
   try {
-    headerJson = stringToJsonWithErrorHandling(
-      encodeToUtf8String(decodeBase64(jwtParts[0])),
-      'Unable to parse jwt header to JSON'
-    )
     payloadJson = stringToJsonWithErrorHandling(
       encodeToUtf8String(decodeBase64(jwtParts[1])),
       'Unable to parse jwt payload to JSON'
@@ -65,7 +61,7 @@ export function decodeJwt<
     throw new Oauth2JwtParseError('Error parsing JWT')
   }
 
-  const header = parseWithErrorHandling(options.headerSchema ?? vJwtHeader, headerJson)
+  const { header } = decodeJwtHeader({ jwe: jwtParts[0], headerSchema: options.headerSchema })
   const payload = parseWithErrorHandling(options.payloadSchema ?? vJwtPayload, payloadJson)
 
   return {
@@ -175,7 +171,7 @@ export function jwtSignerFromJwt({ header, payload }: Pick<DecodeJwtResult, 'hea
 type IsSchemaProvided<T> = T extends undefined ? false : true
 
 // Helper type to infer the output type based on whether a schema is provided
-type InferSchemaOutput<
+export type InferSchemaOutput<
   ProvidedSchema extends BaseSchema | undefined,
   DefaultSchema extends BaseSchema,
 > = IsSchemaProvided<ProvidedSchema> extends true

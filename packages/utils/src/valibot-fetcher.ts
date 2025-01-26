@@ -1,5 +1,5 @@
 import * as v from 'valibot'
-import { type ContentType, isResponseContentType } from './content-type'
+import { ContentType, isResponseContentType } from './content-type'
 import { InvalidFetchResponseError } from './error/InvalidFetchResponseError'
 import type { Fetch } from './globals'
 
@@ -51,6 +51,13 @@ export function createValibotFetcher(
         await response.clone().text(),
         response
       )
+    }
+
+    if (expectedContentType === ContentType.OAuthRequestObjectJwt) {
+      return {
+        response,
+        result: response.ok ? v.safeParse(schema, await response.text()) : undefined,
+      }
     }
 
     return {

@@ -1,37 +1,48 @@
 export {
-  type Fetch,
   Headers,
-  type FetchRequestInit,
-  type FetchHeaders,
-  type FetchResponse,
   URL,
   URLSearchParams,
+  type Fetch,
+  type FetchHeaders,
+  type FetchRequestInit,
+  type FetchResponse,
 } from './globals'
 
+export { InvalidFetchResponseError } from './error/InvalidFetchResponseError'
 export { JsonParseError } from './error/JsonParseError'
 export { ValidationError } from './error/ValidationError'
-export { InvalidFetchResponseError } from './error/InvalidFetchResponseError'
 
+export { arrayEqualsIgnoreOrder } from './array'
+export { getGlobalConfig, setGlobalConfig, type Oid4vcTsConfig } from './config'
+export { ContentType, isContentType, isResponseContentType } from './content-type'
 export { addSecondsToDate, dateToSeconds } from './date'
-export { decodeBase64, decodeUtf8String, encodeToBase64, encodeToBase64Url, encodeToUtf8String } from './encoding'
+export {
+  decodeBase64,
+  decodeUtf8String,
+  encodeToBase64,
+  encodeToBase64Url,
+  encodeToUtf8String,
+  uriEncodeObject,
+} from './encoding'
+export { mergeDeep } from './object'
 export {
   parseWithErrorHandling,
   stringToJsonWithErrorHandling,
+  valibotRecursiveFlattenIssues,
+  parseIfJson,
   type BaseSchema,
   type InferOutputUnion,
-  valibotRecursiveFlattenIssues,
 } from './parse'
 export { joinUriParts } from './path'
-export type { Optional, Simplify, StringWithAutoCompletion, OrPromise } from './type'
+export type { Optional, OrPromise, Simplify, StringWithAutoCompletion } from './type'
 export { getQueryParams, objectToQueryParams } from './url'
-export { type ValibotFetcher, createValibotFetcher, defaultFetcher } from './valibot-fetcher'
-export { type HttpMethod, vHttpMethod, vHttpsUrl, vInteger } from './validation'
-export { mergeDeep } from './object'
-export { arrayEqualsIgnoreOrder } from './array'
+export { createValibotFetcher, defaultFetcher, type ValibotFetcher } from './valibot-fetcher'
+export { vHttpMethod, vHttpsUrl, vInteger, type HttpMethod } from './validation'
 export {
+  encodeWwwAuthenticateHeader,
   parseWwwAuthenticateHeader,
   type WwwAuthenticateHeaderChallenge,
-  encodeWwwAuthenticateHeader,
 } from './www-authenticate'
-export { ContentType, isContentType, isResponseContentType } from './content-type'
-export { setGlobalConfig, type Oid4vcTsConfig, getGlobalConfig } from './config'
+
+export { xWwwFormUrlEncodeObject } from './x-www-form-url-encode'
+export { uriDecodeObject } from './uri-encode-object'

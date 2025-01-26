@@ -37,7 +37,7 @@ export interface Oid4vciIssuerOptions {
   /**
    * Callbacks required for the oid4vc issuer
    */
-  callbacks: CallbackContext
+  callbacks: Omit<CallbackContext, 'decryptJwt' | 'encryptJwe'>
 }
 
 export class Oid4vciIssuer {
