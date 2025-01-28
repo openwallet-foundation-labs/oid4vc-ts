@@ -1,26 +1,21 @@
-import * as v from 'valibot'
 import { expect, test } from 'vitest'
 import { vMsoMdocCredentialIssuerMetadata, vMsoMdocFormatIdentifier } from '../v-mso-mdoc'
 
 test('should parse mso mdoc format identifier', () => {
-  expect(v.safeParse(vMsoMdocFormatIdentifier, 'mso_mdoc')).toStrictEqual({
-    issues: undefined,
-    output: 'mso_mdoc',
+  expect(vMsoMdocFormatIdentifier.safeParse('mso_mdoc')).toStrictEqual({
+    data: 'mso_mdoc',
     success: true,
-    typed: true,
   })
 
-  expect(v.safeParse(vMsoMdocFormatIdentifier, 'mso_mdoc2')).toStrictEqual({
-    issues: expect.any(Array),
-    output: 'mso_mdoc2',
+  expect(vMsoMdocFormatIdentifier.safeParse('mso_mdoc2')).toStrictEqual({
+    error: expect.any(Error),
     success: false,
-    typed: false,
   })
 })
 
 test('should parse mso mdoc credential issuer metadata', () => {
   expect(
-    v.safeParse(vMsoMdocCredentialIssuerMetadata, {
+    vMsoMdocCredentialIssuerMetadata.safeParse({
       format: 'mso_mdoc',
       doctype: 'org.iso.18013.5.1.mDL',
       cryptographic_binding_methods_supported: ['cose_key'],
@@ -79,9 +74,7 @@ test('should parse mso mdoc credential issuer metadata', () => {
       },
     })
   ).toStrictEqual({
-    issues: undefined,
-    output: expect.objectContaining({}),
+    data: expect.objectContaining({}),
     success: true,
-    typed: true,
   })
 })

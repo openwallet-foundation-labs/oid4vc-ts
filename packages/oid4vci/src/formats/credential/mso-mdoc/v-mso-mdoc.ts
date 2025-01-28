@@ -1,18 +1,18 @@
-import * as v from 'valibot'
+import z from 'zod'
 import { vCredentialConfigurationSupportedClaims } from '../../../metadata/credential-issuer/v-credential-configuration-supported-common'
 
-export const vMsoMdocFormatIdentifier = v.literal('mso_mdoc')
-export type MsoMdocFormatIdentifier = v.InferOutput<typeof vMsoMdocFormatIdentifier>
+export const vMsoMdocFormatIdentifier = z.literal('mso_mdoc')
+export type MsoMdocFormatIdentifier = z.infer<typeof vMsoMdocFormatIdentifier>
 
-export const vMsoMdocCredentialIssuerMetadata = v.object({
+export const vMsoMdocCredentialIssuerMetadata = z.object({
   format: vMsoMdocFormatIdentifier,
-  doctype: v.string(),
-  claims: v.optional(vCredentialConfigurationSupportedClaims),
-  order: v.optional(v.array(v.pipe(v.string(), v.includes('~')))),
+  doctype: z.string(),
+  claims: z.optional(vCredentialConfigurationSupportedClaims),
+  order: z.optional(z.array(z.string())),
 })
 
-export const vMsoMdocCredentialRequestFormat = v.object({
+export const vMsoMdocCredentialRequestFormat = z.object({
   format: vMsoMdocFormatIdentifier,
-  doctype: v.string(),
-  claims: v.optional(vCredentialConfigurationSupportedClaims),
+  doctype: z.string(),
+  claims: z.optional(vCredentialConfigurationSupportedClaims),
 })
