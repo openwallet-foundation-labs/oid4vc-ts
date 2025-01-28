@@ -28,6 +28,7 @@
   },
   "dependencies": {
     "buffer": "catalog:",
-    "valibot": "catalog:"
+    "valibot": "catalog:",
+    "zod": "catalog:"
   }
 }
