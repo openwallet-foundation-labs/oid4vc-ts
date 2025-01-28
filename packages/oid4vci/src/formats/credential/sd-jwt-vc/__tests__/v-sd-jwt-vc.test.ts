@@ -1,26 +1,21 @@
-import * as v from 'valibot'
 import { expect, test } from 'vitest'
 import { vSdJwtVcCredentialIssuerMetadata, vSdJwtVcFormatIdentifier } from '../v-sd-jwt-vc'
 
 test('should parse sd-jwt-vc format identifier', () => {
-  expect(v.safeParse(vSdJwtVcFormatIdentifier, 'vc+sd-jwt')).toStrictEqual({
-    issues: undefined,
-    output: 'vc+sd-jwt',
+  expect(vSdJwtVcFormatIdentifier.safeParse('vc+sd-jwt')).toStrictEqual({
+    data: 'vc+sd-jwt',
     success: true,
-    typed: true,
   })
 
-  expect(v.safeParse(vSdJwtVcFormatIdentifier, 'vc+sd-jwt2')).toStrictEqual({
-    issues: expect.any(Array),
-    output: 'vc+sd-jwt2',
+  expect(vSdJwtVcFormatIdentifier.safeParse('vc+sd-jwt2')).toStrictEqual({
+    error: expect.any(Error),
     success: false,
-    typed: false,
   })
 })
 
 test('should parse sd-jwt-vc credential issuer metadata', () => {
   expect(
-    v.safeParse(vSdJwtVcCredentialIssuerMetadata, {
+    vSdJwtVcCredentialIssuerMetadata.safeParse({
       format: 'vc+sd-jwt',
       scope: 'SD_JWT_VC_example_in_OpenID4VCI',
       cryptographic_binding_methods_supported: ['jwk'],
@@ -83,9 +78,7 @@ test('should parse sd-jwt-vc credential issuer metadata', () => {
       },
     })
   ).toStrictEqual({
-    issues: undefined,
-    output: expect.objectContaining({}),
+    data: expect.objectContaining({}),
     success: true,
-    typed: true,
   })
 })
