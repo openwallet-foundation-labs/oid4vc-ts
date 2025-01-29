@@ -1,59 +1,70 @@
-import * as v from 'valibot'
 import { vJwtHeader, vJwtPayload } from '../common/jwt/v-jwt'
 
 import { vHttpsUrl, vInteger } from '@openid4vc/utils'
 import { vJwk } from '../common/jwk/v-jwk'
+import z from 'zod'
 
-export const vOauthClientAttestationHeader = v.literal('OAuth-Client-Attestation')
-export const oauthClientAttestationHeader = vOauthClientAttestationHeader.literal
+export const vOauthClientAttestationHeader = z.literal('OAuth-Client-Attestation')
+export const oauthClientAttestationHeader = vOauthClientAttestationHeader.value
 
-export const vClientAttestationJwtPayload = v.looseObject({
-  ...vJwtPayload.entries,
-  iss: v.string(),
-  sub: v.string(),
-  exp: vInteger,
-  cnf: v.looseObject({
-    jwk: vJwk,
-    key_type: v.optional(
-      v.union([
-        v.picklist(['software', 'hardware', 'tee', 'secure_enclave', 'strong_box', 'secure_element', 'hsm']),
-        v.string(),
-      ])
-    ),
-    user_authentication: v.optional(
-      v.union([
-        v.picklist(['system_biometry', 'system_pin', 'internal_biometry', 'internal_pin', 'secure_element_pin']),
-        v.string(),
-      ])
-    ),
-  }),
+export const vClientAttestationJwtPayload = z
+  .object({
+    ...vJwtPayload.shape,
+    iss: z.string(),
+    sub: z.string(),
+    exp: vInteger,
+    cnf: z
+      .object({
+        jwk: vJwk,
+        key_type: z.optional(
+          z.union([
+            z.enum(['software', 'hardware', 'tee', 'secure_enclave', 'strong_box', 'secure_element', 'hsm']),
+            z.string(),
+          ])
+        ),
+        user_authentication: z.optional(
+          z.union([
+            z.enum(['system_biometry', 'system_pin', 'internal_biometry', 'internal_pin', 'secure_element_pin']),
+            z.string(),
+          ])
+        ),
+      })
+      .passthrough(),
 
-  aal: v.optional(v.string()),
-})
-export type ClientAttestationJwtPayload = v.InferOutput<typeof vClientAttestationJwtPayload>
+    aal: z.optional(z.string()),
+  })
+  .passthrough()
+export type ClientAttestationJwtPayload = z.infer<typeof vClientAttestationJwtPayload>
 
-export const vClientAttestationJwtHeader = v.looseObject({
-  ...vJwtHeader.entries,
-  typ: v.literal('oauth-client-attestation+jwt'),
-})
-export type ClientAttestationJwtHeader = v.InferOutput<typeof vClientAttestationJwtHeader>
+export const vClientAttestationJwtHeader = z
+  .object({
+    ...vJwtHeader.shape,
+    typ: z.literal('oauth-client-attestation+jwt'),
+  })
+  .passthrough()
 
-export const vOauthClientAttestationPopHeader = v.literal('OAuth-Client-Attestation-PoP')
-export const oauthClientAttestationPopHeader = vOauthClientAttestationPopHeader.literal
+export type ClientAttestationJwtHeader = z.infer<typeof vClientAttestationJwtHeader>
 
-export const vClientAttestationPopJwtPayload = v.looseObject({
-  ...vJwtPayload.entries,
-  iss: v.string(),
-  exp: vInteger,
-  aud: vHttpsUrl,
+export const vOauthClientAttestationPopHeader = z.literal('OAuth-Client-Attestation-PoP')
+export const oauthClientAttestationPopHeader = vOauthClientAttestationPopHeader.value
 
-  jti: v.string(),
-  nonce: v.optional(v.string()),
-})
-export type ClientAttestationPopJwtPayload = v.InferOutput<typeof vClientAttestationPopJwtPayload>
+export const vClientAttestationPopJwtPayload = z
+  .object({
+    ...vJwtPayload.shape,
+    iss: z.string(),
+    exp: vInteger,
+    aud: vHttpsUrl,
 
-export const vClientAttestationPopJwtHeader = v.looseObject({
-  ...vJwtHeader.entries,
-  typ: v.literal('oauth-client-attestation-pop+jwt'),
-})
-export type ClientAttestationPopJwtHeader = v.InferOutput<typeof vClientAttestationPopJwtHeader>
+    jti: z.string(),
+    nonce: z.optional(z.string()),
+  })
+  .passthrough()
+export type ClientAttestationPopJwtPayload = z.infer<typeof vClientAttestationPopJwtPayload>
+
+export const vClientAttestationPopJwtHeader = z
+  .object({
+    ...vJwtHeader.shape,
+    typ: z.literal('oauth-client-attestation-pop+jwt'),
+  })
+  .passthrough()
+export type ClientAttestationPopJwtHeader = z.infer<typeof vClientAttestationPopJwtHeader>

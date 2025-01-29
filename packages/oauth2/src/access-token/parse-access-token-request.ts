@@ -1,4 +1,3 @@
-import { valibotRecursiveFlattenIssues } from '@openid4vc/utils'
 import type { RequestLike } from '../common/v-common'
 import { Oauth2ErrorCodes } from '../common/v-oauth2-error'
 import { extractDpopJwtFromHeaders } from '../dpop/dpop'
@@ -63,7 +62,7 @@ export function parseAccessTokenRequest(options: ParseAccessTokenRequestOptions)
   if (!parsedAccessTokenRequest.success) {
     throw new Oauth2ServerErrorResponseError({
       error: Oauth2ErrorCodes.InvalidRequest,
-      error_description: `Error occured during validation of authorization request.\n${JSON.stringify(valibotRecursiveFlattenIssues(parsedAccessTokenRequest.error.issues), null, 2)}`,
+      error_description: `Error occured during validation of authorization request.\n${JSON.stringify(parsedAccessTokenRequest.error.issues, null, 2)}`,
     })
   }
 
