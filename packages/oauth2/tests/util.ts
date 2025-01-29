@@ -57,6 +57,7 @@ export const getSignJwtCallback = (privateJwks: Jwk[]): SignJwtCallback => {
       hashAlgorithm: HashAlgorithm.Sha256,
       hashCallback: callbacks.hash,
     })
+
     const privateJwk = await Promise.all(
       privateJwks.map(async (jwk) =>
         (await calculateJwkThumbprint({

@@ -68,14 +68,16 @@ export const vAccessTokenResponse = z
     c_nonce_expires_in: z.optional(z.number().int()),
 
     // TODO: add additional params
-    authorization_details: z.array(
-      z
-        .object({
-          // requried when type is openid_credential (so we probably need a discriminator)
-          // credential_identifiers: z.array(z.string()),
-        })
-        .passthrough()
-    ),
+    authorization_details: z
+      .array(
+        z
+          .object({
+            // requried when type is openid_credential (so we probably need a discriminator)
+            // credential_identifiers: z.array(z.string()),
+          })
+          .passthrough()
+      )
+      .optional(),
   })
   .passthrough()
 

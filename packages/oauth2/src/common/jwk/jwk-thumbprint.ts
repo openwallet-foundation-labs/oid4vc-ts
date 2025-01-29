@@ -4,28 +4,48 @@ import { decodeUtf8String, encodeToBase64Url, parseWithErrorHandling } from '@op
 import type { Jwk } from './v-jwk'
 import z from 'zod'
 
-export const vJwkThumbprintComponents = z.discriminatedUnion('kty', [
-  z.object({
-    kty: z.literal('EC'),
-    crv: z.string(),
-    x: z.string(),
-    y: z.string(),
-  }),
-  z.object({
-    kty: z.literal('OKP'),
-    crv: z.string(),
-    x: z.string(),
-  }),
-  z.object({
-    kty: z.literal('RSA'),
-    e: z.string(),
-    n: z.string(),
-  }),
-  z.object({
-    kty: z.literal('oct'),
-    k: z.string(),
-  }),
-])
+export const vJwkThumbprintComponents = z
+  .discriminatedUnion('kty', [
+    z.object({
+      kty: z.literal('EC'),
+      crv: z.string(),
+      x: z.string(),
+      y: z.string(),
+    }),
+    z.object({
+      kty: z.literal('OKP'),
+      crv: z.string(),
+      x: z.string(),
+    }),
+    z.object({
+      kty: z.literal('RSA'),
+      e: z.string(),
+      n: z.string(),
+    }),
+    z.object({
+      kty: z.literal('oct'),
+      k: z.string(),
+    }),
+  ])
+  .transform((data) => {
+    if (data.kty === 'EC') {
+      return { crv: data.crv, kty: data.kty, x: data.x, y: data.y }
+    }
+
+    if (data.kty === 'OKP') {
+      return { crv: data.crv, kty: data.kty, x: data.x }
+    }
+
+    if (data.kty === 'RSA') {
+      return { e: data.e, kty: data.kty, n: data.n }
+    }
+
+    if (data.kty === 'oct') {
+      return { k: data.k, kty: data.kty }
+    }
+
+    throw new Error('Unsupported kty')
+  })
 
 export interface CalculateJwkThumbprintOptions {
   /**
