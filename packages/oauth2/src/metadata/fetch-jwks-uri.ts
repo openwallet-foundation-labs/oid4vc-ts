@@ -1,4 +1,4 @@
-import { ContentType, type Fetch, createValibotFetcher } from '@openid4vc/utils'
+import { ContentType, createZodFetcher, type Fetch } from '@openid4vc/utils'
 import { InvalidFetchResponseError } from '@openid4vc/utils'
 import { ValidationError } from '../../../utils/src/error/ValidationError'
 import { type JwkSet, vJwkSet } from '../common/jwk/v-jwk'
@@ -17,7 +17,7 @@ import type { AuthorizationServerMetadata } from './authorization-server/v-autho
  * @throws {Oauth2Error} if authorization server does not have a jwks_uri
  */
 export async function fetchJwks(authorizationServer: AuthorizationServerMetadata, fetch?: Fetch): Promise<JwkSet> {
-  const fetcher = createValibotFetcher(fetch)
+  const fetcher = createZodFetcher(fetch)
 
   const jwksUrl = authorizationServer.jwks_uri
   if (!jwksUrl) {
@@ -36,8 +36,8 @@ export async function fetchJwks(authorizationServer: AuthorizationServerMetadata
   }
 
   if (!result || !result.success) {
-    throw new ValidationError(`Validation of JWKs from jwks_uri '${jwksUrl}' failed`, result?.issues)
+    throw new ValidationError(`Validation of JWKs from jwks_uri '${jwksUrl}' failed`, result?.error.issues)
   }
 
-  return result.output
+  return result.data
 }
