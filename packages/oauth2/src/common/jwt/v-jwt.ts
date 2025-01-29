@@ -1,7 +1,7 @@
 import { vInteger } from '@openid4vc/utils'
-import * as v from 'valibot'
 import { type Jwk, vJwk } from '../jwk/v-jwk'
 import { vAlgValueNotNone } from '../v-common'
+import z from 'zod'
 
 export type JwtSignerDid = {
   method: 'did'
@@ -38,41 +38,48 @@ export type JwtSigner = JwtSignerDid | JwtSignerJwk | JwtSignerX5c | JwtSignerTr
 
 export type JwtSignerWithJwk = JwtSigner & { publicJwk: Jwk }
 
-export const vCompactJwt = v.pipe(
-  v.string(),
-  v.regex(/^([a-zA-Z0-9_=]+)\.([a-zA-Z0-9_=]+)\.([a-zA-Z0-9_\-\+\/=]*)$/, 'Not a valid compact jwt')
-)
-
-export const vJwtConfirmationPayload = v.looseObject({
-  jwk: v.optional(vJwk),
-
-  // RFC9449. jwk thumbprint of the dpop public key to which the access token is bound
-  jkt: v.optional(v.string()),
+export const vCompactJwt = z.string().regex(/^([a-zA-Z0-9_=]+)\.([a-zA-Z0-9_=]+)\.([a-zA-Z0-9_\-\+\/=]*)$/, {
+  message: 'Not a valid compact jwt',
 })
 
-export const vJwtPayload = v.looseObject({
-  iss: v.optional(v.string()),
-  aud: v.optional(v.string()),
-  iat: v.optional(vInteger),
-  exp: v.optional(vInteger),
-  nbf: v.optional(vInteger),
-  nonce: v.optional(v.string()),
-  jti: v.optional(v.string()),
+export const vJwtConfirmationPayload = z
+  .object({
+    jwk: vJwk.optional(),
 
-  cnf: v.optional(vJwtConfirmationPayload),
+    // RFC9449. jwk thumbprint of the dpop public key to which the access token is bound
+    jkt: z.string().optional(),
+  })
+  .passthrough()
 
-  // Reserved for status parameters
-  status: v.optional(v.looseObject({})),
-})
-export type JwtPayload = v.InferOutput<typeof vJwtPayload>
+export const vJwtPayload = z
+  .object({
+    iss: z.string().optional(),
+    aud: z.string().optional(),
+    iat: vInteger.optional(),
+    exp: vInteger.optional(),
+    nbf: vInteger.optional(),
+    nonce: z.string().optional(),
+    jti: z.string().optional(),
 
-export const vJwtHeader = v.looseObject({
-  alg: vAlgValueNotNone,
-  typ: v.optional(v.string()),
+    cnf: vJwtConfirmationPayload.optional(),
 
-  kid: v.optional(v.string()),
-  jwk: v.optional(vJwk),
-  x5c: v.optional(v.array(v.string())),
-  trust_chain: v.optional(v.array(v.string())),
-})
-export type JwtHeader = v.InferOutput<typeof vJwtHeader>
+    // Reserved for status parameters
+    status: z.record(z.string(), z.any()).optional(),
+  })
+  .passthrough()
+
+export type JwtPayload = z.infer<typeof vJwtPayload>
+
+export const vJwtHeader = z
+  .object({
+    alg: vAlgValueNotNone,
+    typ: z.string().optional(),
+
+    kid: z.string().optional(),
+    jwk: vJwk.optional(),
+    x5c: z.array(z.string()).optional(),
+    trust_chain: z.array(z.string()).optional(),
+  })
+  .passthrough()
+
+export type JwtHeader = z.infer<typeof vJwtHeader>

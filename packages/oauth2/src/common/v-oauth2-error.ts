@@ -1,4 +1,4 @@
-import * as v from 'valibot'
+import z from 'zod'
 
 export enum Oauth2ErrorCodes {
   ServerError = 'server_error',
@@ -35,10 +35,12 @@ export enum Oauth2ErrorCodes {
   InvalidEncryptionParameters = 'invalid_encryption_parameters',
 }
 
-export const vOauth2ErrorResponse = v.looseObject({
-  error: v.union([v.enum(Oauth2ErrorCodes), v.string()]),
-  error_description: v.optional(v.string()),
-  error_uri: v.optional(v.string()),
-})
+export const vOauth2ErrorResponse = z
+  .object({
+    error: z.union([z.nativeEnum(Oauth2ErrorCodes), z.string()]),
+    error_description: z.string().optional(),
+    error_uri: z.string().optional(),
+  })
+  .passthrough()
 
-export type Oauth2ErrorResponse = v.InferOutput<typeof vOauth2ErrorResponse>
+export type Oauth2ErrorResponse = z.infer<typeof vOauth2ErrorResponse>

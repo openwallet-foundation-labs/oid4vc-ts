@@ -1,6 +1,5 @@
-import { ContentType, createValibotFetcher, objectToQueryParams, parseWithErrorHandling } from '@openid4vc/utils'
+import { ContentType, createZodFetcher, objectToQueryParams, parseWithErrorHandling } from '@openid4vc/utils'
 import { InvalidFetchResponseError } from '@openid4vc/utils'
-import * as v from 'valibot'
 import { ValidationError } from '../../../utils/src/error/ValidationError'
 import type { CallbackContext } from '../callbacks'
 import {
@@ -183,7 +182,7 @@ interface RetrieveAccessTokenOptions extends RetrieveAccessTokenBaseOptions {
  * Internal method
  */
 async function retrieveAccessToken(options: RetrieveAccessTokenOptions): Promise<RetrieveAccessTokenReturn> {
-  const fetchWithValibot = createValibotFetcher(options.callbacks.fetch)
+  const fetchWithZod = createZodFetcher(options.callbacks.fetch)
 
   const accessTokenRequest = parseWithErrorHandling(
     vAccessTokenRequest,
@@ -223,7 +222,7 @@ async function retrieveAccessToken(options: RetrieveAccessTokenOptions): Promise
         ...accessTokenRequest,
         ...clientAttestation?.body,
       })
-      const { response, result } = await fetchWithValibot(
+      const { response, result } = await fetchWithZod(
         vAccessTokenResponse,
         ContentType.Json,
         options.authorizationServerMetadata.token_endpoint,
@@ -239,8 +238,7 @@ async function retrieveAccessToken(options: RetrieveAccessTokenOptions): Promise
       )
 
       if (!response.ok || !result) {
-        const tokenErrorResponse = v.safeParse(
-          vAccessTokenErrorResponse,
+        const tokenErrorResponse = vAccessTokenErrorResponse.safeParse(
           await response
             .clone()
             .json()
@@ -249,7 +247,7 @@ async function retrieveAccessToken(options: RetrieveAccessTokenOptions): Promise
         if (tokenErrorResponse.success) {
           throw new Oauth2ClientErrorResponseError(
             `Unable to retrieve access token from '${options.authorizationServerMetadata.token_endpoint}'. Received token error response with status ${response.status}`,
-            tokenErrorResponse.output,
+            tokenErrorResponse.data,
             response
           )
         }
@@ -262,7 +260,7 @@ async function retrieveAccessToken(options: RetrieveAccessTokenOptions): Promise
       }
 
       if (!result.success) {
-        throw new ValidationError('Error validating access token response', result.issues)
+        throw new ValidationError('Error validating access token response', result.error.issues)
       }
 
       const dpopNonce = extractDpopNonceFromHeaders(response.headers) ?? undefined
@@ -273,7 +271,7 @@ async function retrieveAccessToken(options: RetrieveAccessTokenOptions): Promise
               nonce: dpopNonce,
             }
           : undefined,
-        accessTokenResponse: result.output,
+        accessTokenResponse: result.data,
       }
     },
   })

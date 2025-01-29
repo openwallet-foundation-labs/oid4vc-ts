@@ -1,5 +1,4 @@
 import { valibotRecursiveFlattenIssues } from '@openid4vc/utils'
-import * as v from 'valibot'
 import type { RequestLike } from '../common/v-common'
 import { Oauth2ErrorCodes } from '../common/v-oauth2-error'
 import { extractDpopJwtFromHeaders } from '../dpop/dpop'
@@ -60,15 +59,15 @@ export interface ParseAccessTokenRequestOptions {
  * that can be returned to the client.
  */
 export function parseAccessTokenRequest(options: ParseAccessTokenRequestOptions): ParseAccessTokenRequestResult {
-  const parsedAccessTokenRequest = v.safeParse(vAccessTokenRequest, options.accessTokenRequest)
+  const parsedAccessTokenRequest = vAccessTokenRequest.safeParse(options.accessTokenRequest)
   if (!parsedAccessTokenRequest.success) {
     throw new Oauth2ServerErrorResponseError({
       error: Oauth2ErrorCodes.InvalidRequest,
-      error_description: `Error occured during validation of authorization request.\n${JSON.stringify(valibotRecursiveFlattenIssues(parsedAccessTokenRequest.issues), null, 2)}`,
+      error_description: `Error occured during validation of authorization request.\n${JSON.stringify(valibotRecursiveFlattenIssues(parsedAccessTokenRequest.error.issues), null, 2)}`,
     })
   }
 
-  const accessTokenRequest = parsedAccessTokenRequest.output
+  const accessTokenRequest = parsedAccessTokenRequest.data
   let grant: ParsedAccessTokenRequestGrant
 
   if (accessTokenRequest.grant_type === preAuthorizedCodeGrantIdentifier) {

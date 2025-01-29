@@ -1,15 +1,18 @@
-import * as v from 'valibot'
 import { getGlobalConfig } from './config'
+import z from 'zod'
 
-export const vHttpsUrl = v.pipe(
-  v.string(),
-  v.url(),
-  v.check((url) => {
-    const { allowInsecureUrls } = getGlobalConfig()
-    return allowInsecureUrls ? url.startsWith('http://') || url.startsWith('https://') : url.startsWith('https://')
-  }, 'url must be an https:// url')
-)
-export const vInteger = v.pipe(v.number(), v.integer())
+export const vHttpsUrl = z
+  .string()
+  .url()
+  .refine(
+    (url) => {
+      const { allowInsecureUrls } = getGlobalConfig()
+      return allowInsecureUrls ? url.startsWith('http://') || url.startsWith('https://') : url.startsWith('https://')
+    },
+    { message: 'url must be an https:// url' }
+  )
 
-export const vHttpMethod = v.picklist(['GET', 'POST', 'PUT', 'DELETE', 'HEAD', 'OPTIONS', 'TRACE', 'CONNECT', 'PATCH'])
-export type HttpMethod = v.InferOutput<typeof vHttpMethod>
+export const vInteger = z.number().int()
+
+export const vHttpMethod = z.enum(['GET', 'POST', 'PUT', 'DELETE', 'HEAD', 'OPTIONS', 'TRACE', 'CONNECT', 'PATCH'])
+export type HttpMethod = z.infer<typeof vHttpMethod>

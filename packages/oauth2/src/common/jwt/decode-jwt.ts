@@ -1,5 +1,3 @@
-import type * as v from 'valibot'
-
 import {
   type BaseSchema,
   decodeBase64,
@@ -9,6 +7,7 @@ import {
 } from '@openid4vc/utils'
 import { Oauth2JwtParseError } from '../../error/Oauth2JwtParseError'
 import { type JwtSigner, vJwtHeader, vJwtPayload } from './v-jwt'
+import type z from 'zod'
 
 export interface DecodeJwtOptions<
   HeaderSchema extends BaseSchema | undefined,
@@ -69,8 +68,8 @@ export function decodeJwt<
   const payload = parseWithErrorHandling(options.payloadSchema ?? vJwtPayload, payloadJson)
 
   return {
-    header,
-    payload,
+    header: header as InferSchemaOutput<HeaderSchema, typeof vJwtHeader>,
+    payload: payload as InferSchemaOutput<PayloadSchema, typeof vJwtPayload>,
     signature: jwtParts[2],
   }
 }
@@ -180,6 +179,6 @@ type InferSchemaOutput<
   DefaultSchema extends BaseSchema,
 > = IsSchemaProvided<ProvidedSchema> extends true
   ? ProvidedSchema extends BaseSchema
-    ? v.InferOutput<ProvidedSchema>
+    ? z.infer<ProvidedSchema>
     : never
-  : v.InferOutput<DefaultSchema>
+  : z.infer<DefaultSchema>

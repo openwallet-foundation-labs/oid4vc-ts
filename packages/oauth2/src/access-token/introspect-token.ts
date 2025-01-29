@@ -1,4 +1,4 @@
-import { ContentType, createValibotFetcher, objectToQueryParams, parseWithErrorHandling } from '@openid4vc/utils'
+import { ContentType, createZodFetcher, objectToQueryParams, parseWithErrorHandling } from '@openid4vc/utils'
 import { InvalidFetchResponseError } from '@openid4vc/utils'
 import { Oauth2Error } from '../error/Oauth2Error'
 import type { AuthorizationServerMetadata } from '../metadata/authorization-server/v-authorization-server-metadata'
@@ -38,7 +38,7 @@ export interface IntrospectTokenOptions {
 }
 
 export async function introspectToken(options: IntrospectTokenOptions) {
-  const fetchWithValibot = createValibotFetcher(options.callbacks.fetch)
+  const fetchWithZod = createZodFetcher(options.callbacks.fetch)
 
   const introspectionRequest = parseWithErrorHandling(vTokenIntrospectionRequest, {
     token: options.token,
@@ -65,7 +65,7 @@ export async function introspectToken(options: IntrospectTokenOptions) {
     headers,
   })
 
-  const { result, response } = await fetchWithValibot(
+  const { result, response } = await fetchWithZod(
     vTokenIntrospectionResponse,
     ContentType.Json,
     introspectionEndpoint,
@@ -85,5 +85,5 @@ export async function introspectToken(options: IntrospectTokenOptions) {
     )
   }
 
-  return result.output
+  return result.data
 }

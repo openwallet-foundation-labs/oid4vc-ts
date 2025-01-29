@@ -1,31 +1,36 @@
 import { vInteger } from '@openid4vc/utils'
-import * as v from 'valibot'
+import z from 'zod'
 import { vJwtConfirmationPayload } from '../common/jwt/v-jwt'
 
-export const vTokenIntrospectionRequest = v.looseObject({
-  token: v.string(),
-  token_type_hint: v.optional(v.string()),
-})
-export type TokenIntrospectionRequest = v.InferOutput<typeof vTokenIntrospectionRequest>
+export const vTokenIntrospectionRequest = z
+  .object({
+    token: z.string(),
+    token_type_hint: z.optional(z.string()),
+  })
+  .passthrough()
 
-export const vTokenIntrospectionResponse = v.looseObject({
-  active: v.boolean(),
-  scope: v.optional(v.string()),
-  client_id: v.optional(v.string()),
-  username: v.optional(v.string()),
-  token_type: v.optional(v.string()),
+export type TokenIntrospectionRequest = z.infer<typeof vTokenIntrospectionRequest>
 
-  exp: v.optional(vInteger),
-  iat: v.optional(vInteger),
-  nbf: v.optional(vInteger),
+export const vTokenIntrospectionResponse = z
+  .object({
+    active: z.boolean(),
+    scope: z.optional(z.string()),
+    client_id: z.optional(z.string()),
+    username: z.optional(z.string()),
+    token_type: z.optional(z.string()),
 
-  sub: v.optional(v.string()),
-  aud: v.optional(v.string()),
+    exp: z.optional(vInteger),
+    iat: z.optional(vInteger),
+    nbf: z.optional(vInteger),
 
-  iss: v.optional(v.string()),
-  jti: v.optional(v.string()),
+    sub: z.optional(z.string()),
+    aud: z.optional(z.string()),
 
-  cnf: v.optional(vJwtConfirmationPayload),
-})
+    iss: z.optional(z.string()),
+    jti: z.optional(z.string()),
 
-export type TokenIntrospectionResponse = v.InferOutput<typeof vTokenIntrospectionResponse>
+    cnf: z.optional(vJwtConfirmationPayload),
+  })
+  .passthrough()
+
+export type TokenIntrospectionResponse = z.infer<typeof vTokenIntrospectionResponse>

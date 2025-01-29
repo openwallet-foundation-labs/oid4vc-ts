@@ -1,10 +1,7 @@
 import type { FetchHeaders, HttpMethod } from '@openid4vc/utils'
-import * as v from 'valibot'
+import z from 'zod'
 
-export const vAlgValueNotNone = v.pipe(
-  v.string(),
-  v.check((alg: string) => alg !== 'none', `alg value may not be 'none'`)
-)
+export const vAlgValueNotNone = z.string().refine((alg) => alg !== 'none', { message: `alg value may not be 'none'` })
 
 export interface RequestLike {
   headers: FetchHeaders

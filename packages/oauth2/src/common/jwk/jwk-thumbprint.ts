@@ -1,42 +1,30 @@
-import * as v from 'valibot'
 import type { HashAlgorithm, HashCallback } from '../../callbacks'
 
 import { decodeUtf8String, encodeToBase64Url, parseWithErrorHandling } from '@openid4vc/utils'
 import type { Jwk } from './v-jwk'
+import z from 'zod'
 
-const vJwkThumbprintComponents = v.variant('kty', [
-  v.pipe(
-    v.looseObject({
-      kty: v.literal('EC'),
-      crv: v.string(),
-      x: v.string(),
-      y: v.string(),
-    }),
-    v.transform(({ crv, kty, x, y }) => ({ crv, kty, x, y }))
-  ),
-  v.pipe(
-    v.looseObject({
-      kty: v.literal('OKP'),
-      crv: v.string(),
-      x: v.string(),
-    }),
-    v.transform(({ crv, kty, x }) => ({ crv, kty, x }))
-  ),
-  v.pipe(
-    v.looseObject({
-      kty: v.literal('RSA'),
-      e: v.string(),
-      n: v.string(),
-    }),
-    v.transform(({ e, kty, n }) => ({ e, kty, n }))
-  ),
-  v.pipe(
-    v.looseObject({
-      kty: v.literal('oct'),
-      k: v.string(),
-    }),
-    v.transform(({ k, kty }) => ({ k, kty }))
-  ),
+export const vJwkThumbprintComponents = z.discriminatedUnion('kty', [
+  z.object({
+    kty: z.literal('EC'),
+    crv: z.string(),
+    x: z.string(),
+    y: z.string(),
+  }),
+  z.object({
+    kty: z.literal('OKP'),
+    crv: z.string(),
+    x: z.string(),
+  }),
+  z.object({
+    kty: z.literal('RSA'),
+    e: z.string(),
+    n: z.string(),
+  }),
+  z.object({
+    kty: z.literal('oct'),
+    k: z.string(),
+  }),
 ])
 
 export interface CalculateJwkThumbprintOptions {

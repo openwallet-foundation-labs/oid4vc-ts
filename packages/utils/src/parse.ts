@@ -2,12 +2,12 @@ import * as v from 'valibot'
 import { JsonParseError } from './error/JsonParseError'
 import { ValidationError } from './error/ValidationError'
 import { mergeDeep } from './object'
+import type z from 'zod'
 
-// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-export type BaseSchema = v.BaseSchema<any, any, any>
+export type BaseSchema = z.ZodTypeAny
 // biome-ignore lint/suspicious/noExplicitAny: <explanation>
 export type InferOutputUnion<T extends readonly any[]> = {
-  [K in keyof T]: v.InferOutput<T[K]>
+  [K in keyof T]: z.infer<T[K]>
 }[number]
 
 export function stringToJsonWithErrorHandling(string: string, errorMessage?: string) {
@@ -22,17 +22,17 @@ export function parseWithErrorHandling<Schema extends BaseSchema>(
   schema: Schema,
   data: unknown,
   customErrorMessage?: string
-): v.InferOutput<Schema> {
-  const parseResult = v.safeParse(schema, data)
+): z.infer<Schema> {
+  const parseResult = schema.safeParse(data)
 
   if (!parseResult.success) {
     throw new ValidationError(
       customErrorMessage ?? `Error validating schema with data ${JSON.stringify(data)}`,
-      parseResult.issues
+      parseResult.error.issues
     )
   }
 
-  return parseResult.output
+  return parseResult.data
 }
 
 export function valibotRecursiveFlattenIssues(issues: v.BaseIssue<unknown>[]): Record<string, unknown> {
