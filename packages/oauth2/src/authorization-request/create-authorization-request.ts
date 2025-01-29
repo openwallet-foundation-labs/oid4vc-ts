@@ -1,6 +1,5 @@
-import { ContentType, type Fetch, createValibotFetcher, objectToQueryParams } from '@openid4vc/utils'
+import { ContentType, createZodFetcher, type Fetch, objectToQueryParams } from '@openid4vc/utils'
 import { InvalidFetchResponseError } from '@openid4vc/utils'
-import * as v from 'valibot'
 import { ValidationError } from '../../../utils/src/error/ValidationError'
 import { type CallbackContext, HashAlgorithm } from '../callbacks'
 import {
@@ -210,7 +209,7 @@ interface PushAuthorizationRequestOptions {
 }
 
 async function pushAuthorizationRequest(options: PushAuthorizationRequestOptions) {
-  const fetchWithValibot = createValibotFetcher(options.fetch)
+  const fetchWithZod = createZodFetcher(options.fetch)
 
   if (options.authorizationRequest.request_uri) {
     throw new Oauth2Error(
@@ -218,7 +217,7 @@ async function pushAuthorizationRequest(options: PushAuthorizationRequestOptions
     )
   }
 
-  const { response, result } = await fetchWithValibot(
+  const { response, result } = await fetchWithZod(
     vPushedAuthorizationResponse,
     ContentType.Json,
     options.pushedAuthorizationRequestEndpoint,
@@ -233,8 +232,7 @@ async function pushAuthorizationRequest(options: PushAuthorizationRequestOptions
   )
 
   if (!response.ok || !result) {
-    const parErrorResponse = v.safeParse(
-      vOauth2ErrorResponse,
+    const parErrorResponse = vOauth2ErrorResponse.safeParse(
       await response
         .clone()
         .json()
@@ -243,7 +241,7 @@ async function pushAuthorizationRequest(options: PushAuthorizationRequestOptions
     if (parErrorResponse.success) {
       throw new Oauth2ClientErrorResponseError(
         `Unable to push authorization request to '${options.pushedAuthorizationRequestEndpoint}'. Received response with status ${response.status}`,
-        parErrorResponse.output,
+        parErrorResponse.data,
         response
       )
     }
@@ -256,12 +254,12 @@ async function pushAuthorizationRequest(options: PushAuthorizationRequestOptions
   }
 
   if (!result.success) {
-    throw new ValidationError('Error validating pushed authorization response', result.issues)
+    throw new ValidationError('Error validating pushed authorization response', result.error.issues)
   }
 
   const dpopNonce = extractDpopNonceFromHeaders(response.headers)
   return {
     dpopNonce,
-    pushedAuthorizationResponse: result.output,
+    pushedAuthorizationResponse: result.data,
   }
 }

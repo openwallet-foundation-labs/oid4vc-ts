@@ -1,4 +1,3 @@
-// import * as v from 'valibot'
 import z from 'zod'
 
 import { vHttpsUrl } from '@openid4vc/utils'

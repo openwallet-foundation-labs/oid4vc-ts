@@ -1,12 +1,11 @@
 import {
   ContentType,
   ValidationError,
-  createValibotFetcher,
+  createZodFetcher,
   objectToQueryParams,
   parseWithErrorHandling,
 } from '@openid4vc/utils'
 import { InvalidFetchResponseError } from '@openid4vc/utils'
-import * as v from 'valibot'
 import type { CallbackContext } from '../callbacks'
 import {
   type RequestClientAttestationOptions,
@@ -93,7 +92,7 @@ export interface SendAuthorizationChallengeRequestOptions {
  * @throws {ValidationError} if a successful response was received but an error occured during verification of the {@link AuthorizationChallengeResponse}
  */
 export async function sendAuthorizationChallengeRequest(options: SendAuthorizationChallengeRequestOptions) {
-  const fetchWithValibot = createValibotFetcher(options.callbacks.fetch)
+  const fetchWithZod = createZodFetcher(options.callbacks.fetch)
 
   const authorizationServerMetadata = options.authorizationServerMetadata
   const authorizationChallengeEndpoint = authorizationServerMetadata.authorization_challenge_endpoint
@@ -149,7 +148,7 @@ export async function sendAuthorizationChallengeRequest(options: SendAuthorizati
           })
         : undefined
 
-      const { response, result } = await fetchWithValibot(
+      const { response, result } = await fetchWithZod(
         vAuthorizationChallengeResponse,
         ContentType.Json,
         authorizationChallengeEndpoint,
@@ -165,8 +164,7 @@ export async function sendAuthorizationChallengeRequest(options: SendAuthorizati
       )
 
       if (!response.ok || !result) {
-        const authorizationChallengeErrorResponse = v.safeParse(
-          vAuthorizationChallengeErrorResponse,
+        const authorizationChallengeErrorResponse = vAuthorizationChallengeErrorResponse.safeParse(
           await response
             .clone()
             .json()
@@ -175,7 +173,7 @@ export async function sendAuthorizationChallengeRequest(options: SendAuthorizati
         if (authorizationChallengeErrorResponse.success) {
           throw new Oauth2ClientAuthorizationChallengeError(
             `Error requesting authorization code from authorization challenge endpoint '${authorizationServerMetadata.authorization_challenge_endpoint}'. Received response with status ${response.status}`,
-            authorizationChallengeErrorResponse.output,
+            authorizationChallengeErrorResponse.data,
             response
           )
         }
@@ -188,7 +186,7 @@ export async function sendAuthorizationChallengeRequest(options: SendAuthorizati
       }
 
       if (!result.success) {
-        throw new ValidationError('Error validating authorization challenge response', result.issues)
+        throw new ValidationError('Error validating authorization challenge response', result.error.issues)
       }
 
       const dpopNonce = extractDpopNonceFromHeaders(response.headers) ?? undefined
@@ -200,7 +198,7 @@ export async function sendAuthorizationChallengeRequest(options: SendAuthorizati
               nonce: dpopNonce,
             }
           : undefined,
-        authorizationChallengeResponse: result.output,
+        authorizationChallengeResponse: result.data,
       }
     },
   })
