@@ -1,17 +1,16 @@
-import * as v from 'valibot'
-
 import { vCompactJwt } from '@openid4vc/oauth2'
 import {
   type KeyAttestationJwtHeader,
   vKeyAttestationJwtHeader,
   vKeyAttestationJwtPayloadForUse,
 } from '../../../key-attestation/v-key-attestation'
+import z from 'zod'
 
-export const vAttestationProofTypeIdentifier = v.literal('attestation')
-export const attestationProofTypeIdentifier = vAttestationProofTypeIdentifier.literal
-export type AttestationProofTypeIdentifier = v.InferOutput<typeof vAttestationProofTypeIdentifier>
+export const vAttestationProofTypeIdentifier = z.literal('attestation')
+export const attestationProofTypeIdentifier = vAttestationProofTypeIdentifier.value
+export type AttestationProofTypeIdentifier = z.infer<typeof vAttestationProofTypeIdentifier>
 
-export const vCredentialRequestProofAttestation = v.object({
+export const vCredentialRequestProofAttestation = z.object({
   proof_type: vAttestationProofTypeIdentifier,
   attestation: vCompactJwt,
 })
@@ -20,6 +19,4 @@ export const vCredentialRequestAttestationProofTypeHeader = vKeyAttestationJwtHe
 export type CredentialRequestAttestationProofTypeHeader = KeyAttestationJwtHeader
 
 export const vCredentialRequestAttestationProofTypePayload = vKeyAttestationJwtPayloadForUse('proof_type.attestation')
-export type CredentialRequestAttestationProofTypePayload = v.InferOutput<
-  typeof vCredentialRequestAttestationProofTypePayload
->
+export type CredentialRequestAttestationProofTypePayload = z.infer<typeof vCredentialRequestAttestationProofTypePayload>

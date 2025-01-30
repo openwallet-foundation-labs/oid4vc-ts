@@ -1,25 +1,30 @@
-import * as v from 'valibot'
+import z from 'zod'
 
-const vCredentialSubjectLeafType = v.looseObject({
-  mandatory: v.optional(v.boolean(), false),
-  value_type: v.optional(v.string()),
-  display: v.optional(
-    v.array(
-      v.looseObject({
-        name: v.optional(v.string()),
-        locale: v.optional(v.string()),
-      })
-    )
-  ),
-})
+const vCredentialSubjectLeafType = z
+  .object({
+    mandatory: z.boolean().optional(),
+    value_type: z.string().optional(),
+    display: z
+      .array(
+        z
+          .object({
+            name: z.string().optional(),
+            locale: z.string().optional(),
+          })
+          .passthrough()
+      )
+      .optional(),
+  })
+  .passthrough()
 
-// TODO: fix this type, having issues with recursiveness
-const vClaimValueSchema = v.union([v.array(v.any()), v.record(v.string(), v.any()), vCredentialSubjectLeafType])
+const vClaimValueSchema = z.union([z.array(z.any()), z.record(z.string(), z.any()), vCredentialSubjectLeafType])
 
-export const vW3cVcCredentialSubject = v.record(v.string(), vClaimValueSchema)
+export const vW3cVcCredentialSubject = z.record(z.string(), vClaimValueSchema)
 
-export const vW3cVcJsonLdCredentialDefinition = v.looseObject({
-  '@context': v.array(v.string()),
-  type: v.array(v.string()),
-  credentialSubject: v.optional(vW3cVcCredentialSubject),
-})
+export const vW3cVcJsonLdCredentialDefinition = z
+  .object({
+    '@context': z.array(z.string()),
+    type: z.array(z.string()),
+    credentialSubject: vW3cVcCredentialSubject.optional(),
+  })
+  .passthrough()
