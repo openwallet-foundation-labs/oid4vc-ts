@@ -7,7 +7,6 @@ import {
   resourceRequest,
 } from '@openid4vc/oauth2'
 import { ContentType, isResponseContentType, parseWithErrorHandling } from '@openid4vc/utils'
-import { type SafeParseResult, safeParse } from 'valibot'
 import type { IssuerMetadataResult } from '../metadata/fetch-issuer-metadata'
 import { Oid4vciDraftVersion } from '../version'
 import {
@@ -18,6 +17,7 @@ import {
 } from './v-credential-request'
 import type { CredentialRequestProof, CredentialRequestProofs } from './v-credential-request-common'
 import { type CredentialResponse, vCredentialErrorResponse, vCredentialResponse } from './v-credential-response'
+import type { SafeParseReturnType } from 'zod'
 
 interface RetrieveCredentialsBaseOptions {
   /**
@@ -94,13 +94,13 @@ export interface RetrieveCredentialsResponseNotOk extends ResourceRequestRespons
    * If this is defined it means the response itself was succesfull but the validation of the
    * credential response data structure failed
    */
-  credentialResponseResult?: SafeParseResult<typeof vCredentialResponse>
+  credentialResponseResult?: SafeParseReturnType<typeof vCredentialResponse, typeof vCredentialResponse>
 
   /**
    * If this is defined it means the response was JSON and we tried to parse it as
    * a credential error response. It may be successfull or it may not be.
    */
-  credentialErrorResponseResult?: SafeParseResult<typeof vCredentialErrorResponse>
+  credentialErrorResponseResult?: SafeParseReturnType<typeof vCredentialErrorResponse, typeof vCredentialErrorResponse>
 }
 
 /**
@@ -157,7 +157,7 @@ async function retrieveCredentials(
 
   if (!resourceResponse.ok) {
     const credentialErrorResponseResult = isResponseContentType(ContentType.Json, resourceResponse.response)
-      ? safeParse(vCredentialErrorResponse, await resourceResponse.response.clone().json())
+      ? vCredentialErrorResponse.safeParse(await resourceResponse.response.clone().json())
       : undefined
 
     return {
@@ -168,7 +168,7 @@ async function retrieveCredentials(
 
   // Try to parse the credential response
   const credentialResponseResult = isResponseContentType(ContentType.Json, resourceResponse.response)
-    ? safeParse(vCredentialResponse, await resourceResponse.response.clone().json())
+    ? vCredentialResponse.safeParse(await resourceResponse.response.clone().json())
     : undefined
   if (!credentialResponseResult?.success) {
     return {
@@ -180,6 +180,6 @@ async function retrieveCredentials(
 
   return {
     ...resourceResponse,
-    credentialResponse: credentialResponseResult.output,
+    credentialResponse: credentialResponseResult.data,
   }
 }

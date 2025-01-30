@@ -1,5 +1,4 @@
 import { parseWithErrorHandling } from '@openid4vc/utils'
-import * as v from 'valibot'
 import type { CredentialFormatIdentifier } from '../formats/credential'
 import { attestationProofTypeIdentifier } from '../formats/proof-type/attestation/v-attestation-proof-type'
 import { jwtProofTypeIdentifier } from '../formats/proof-type/jwt/v-jwt-proof-type'
@@ -15,6 +14,7 @@ import {
   allCredentialRequestProofs,
   vCredentialRequestProofs,
 } from './v-credential-request-common'
+import z from 'zod'
 
 export interface ParseCredentialRequestOptions {
   credentialRequest: Record<string, unknown>
@@ -64,22 +64,22 @@ export function parseCredentialRequest(options: ParseCredentialRequestOptions): 
   let proofs: CredentialRequestProofsFormatSpecific | undefined = undefined
 
   // Try to parse the known proofs from the `proofs` object
-  const knownProofs = v.safeParse(v.strictObject({ ...vCredentialRequestProofs.entries }), credentialRequest.proofs)
+  const knownProofs = vCredentialRequestProofs.strict().safeParse(credentialRequest.proofs)
   if (knownProofs.success) {
-    proofs = knownProofs.output
+    proofs = knownProofs.data
   }
 
   // Try to parse the known proof from the `proof`
-  const knownProof = v.safeParse(v.union(allCredentialRequestProofs), credentialRequest.proof)
-  if (knownProof.success && knownProof.output.proof_type === jwtProofTypeIdentifier) {
-    proofs = { [jwtProofTypeIdentifier]: [knownProof.output.jwt] }
-  } else if (knownProof.success && knownProof.output.proof_type === attestationProofTypeIdentifier) {
-    proofs = { [attestationProofTypeIdentifier]: [knownProof.output.attestation] }
+  const knownProof = z.union(allCredentialRequestProofs).safeParse(credentialRequest.proof)
+  if (knownProof.success && knownProof.data.proof_type === jwtProofTypeIdentifier) {
+    proofs = { [jwtProofTypeIdentifier]: [knownProof.data.jwt] }
+  } else if (knownProof.success && knownProof.data.proof_type === attestationProofTypeIdentifier) {
+    proofs = { [attestationProofTypeIdentifier]: [knownProof.data.attestation] }
   }
 
   if (credentialRequest.credential_identifier) {
     return {
-      credentialIdentifier: credentialRequest.credential_identifier,
+      credentialIdentifier: credentialRequest.credential_identifier as string,
       credentialRequest,
       proofs,
     }
@@ -92,7 +92,7 @@ export function parseCredentialRequest(options: ParseCredentialRequestOptions): 
     return {
       // Removes all claims that are not specific to this format
       format: parseWithErrorHandling(
-        v.union(allCredentialRequestFormats),
+        z.union(allCredentialRequestFormats),
         credentialRequest,
         'Unable to validate format specific properties from credential request'
       ),

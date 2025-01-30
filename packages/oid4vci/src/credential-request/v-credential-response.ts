@@ -1,32 +1,40 @@
-import * as v from 'valibot'
 import { vOauth2ErrorResponse } from '../../../oauth2/src/common/v-oauth2-error'
+import z from 'zod'
 
-const vCredentialEncoding = v.union([v.string(), v.record(v.string(), v.any())])
+const vCredentialEncoding = z.union([z.string(), z.record(z.string(), z.any())])
 
-export const vCredentialResponse = v.pipe(
-  v.looseObject({
-    credential: v.optional(vCredentialEncoding),
-    credentials: v.optional(v.array(vCredentialEncoding)),
+export const vCredentialResponse = z
+  .object({
+    credential: z.optional(vCredentialEncoding),
+    credentials: z.optional(z.array(vCredentialEncoding)),
 
-    transaction_id: v.optional(v.string()),
+    transaction_id: z.string().optional(),
 
-    c_nonce: v.optional(v.string()),
-    c_nonce_expires_in: v.optional(v.pipe(v.number(), v.integer())),
+    c_nonce: z.string().optional(),
+    c_nonce_expires_in: z.number().int().optional(),
 
-    notification_id: v.optional(v.string()),
-  }),
-  v.check(
-    ({ credential, credentials, transaction_id }) =>
-      [credential, credentials, transaction_id].filter((i) => i !== undefined).length === 1,
-    `Exactly one of 'credential', 'credentials', or 'transaction_id' MUST be defined.`
+    notification_id: z.string().optional(),
+  })
+  .passthrough()
+  .refine(
+    (value) => {
+      const { credential, credentials, transaction_id } = value
+      return [credential, credentials, transaction_id].filter((i) => i !== undefined).length === 1
+    },
+    {
+      message: `Exactly one of 'credential', 'credentials', or 'transaction_id' MUST be defined.`,
+    }
   )
-)
-export type CredentialResponse = v.InferOutput<typeof vCredentialResponse>
 
-export const vCredentialErrorResponse = v.looseObject({
-  ...vOauth2ErrorResponse.entries,
+export type CredentialResponse = z.infer<typeof vCredentialResponse>
 
-  c_nonce: v.optional(v.string()),
-  c_nonce_expires_in: v.optional(v.pipe(v.number(), v.integer())),
-})
-export type CredentialErrorResponse = v.InferOutput<typeof vCredentialErrorResponse>
+export const vCredentialErrorResponse = z
+  .object({
+    ...vOauth2ErrorResponse.shape,
+
+    c_nonce: z.string().optional(),
+    c_nonce_expires_in: z.number().int().optional(),
+  })
+  .passthrough()
+
+export type CredentialErrorResponse = z.infer<typeof vCredentialErrorResponse>

@@ -1,58 +1,68 @@
-import * as v from 'valibot'
 import { vIso18045OrStringArray } from '../../key-attestation/v-key-attestation'
+import z from 'zod'
 
-export const vCredentialConfigurationSupportedClaims = v.looseObject({
-  mandatory: v.optional(v.boolean()),
-  value_type: v.optional(v.string()),
-  display: v.optional(
-    v.looseObject({
-      name: v.optional(v.string()),
-      locale: v.optional(v.string()),
-    })
-  ),
-})
+export const vCredentialConfigurationSupportedClaims = z
+  .object({
+    mandatory: z.boolean().optional(),
+    value_type: z.string().optional(),
+    display: z
+      .object({
+        name: z.string().optional(),
+        locale: z.string().optional(),
+      })
+      .passthrough()
+      .optional(),
+  })
+  .passthrough()
 
-export const vCredentialConfigurationSupportedCommon = v.looseObject({
-  format: v.string(),
-  scope: v.optional(v.string()),
-  cryptographic_binding_methods_supported: v.optional(v.array(v.string())),
-  credential_signing_alg_values_supported: v.optional(v.array(v.string())),
-  proof_types_supported: v.optional(
-    v.record(
-      v.union([v.literal('jwt'), v.literal('attestation'), v.string()]),
-      v.object({
-        proof_signing_alg_values_supported: v.array(v.string()),
-        key_attestations_required: v.optional(
-          v.looseObject({
-            key_storage: v.optional(vIso18045OrStringArray),
-            user_authentication: v.optional(vIso18045OrStringArray),
+export const vCredentialConfigurationSupportedCommon = z
+  .object({
+    format: z.string(),
+    scope: z.string().optional(),
+    cryptographic_binding_methods_supported: z.array(z.string()).optional(),
+    credential_signing_alg_values_supported: z.array(z.string()).optional(),
+    proof_types_supported: z
+      .record(
+        z.union([z.literal('jwt'), z.literal('attestation'), z.string()]),
+        z.object({
+          proof_signing_alg_values_supported: z.array(z.string()),
+          key_attestations_required: z
+            .object({
+              key_storage: vIso18045OrStringArray.optional(),
+              user_authentication: vIso18045OrStringArray.optional(),
+            })
+            .passthrough()
+            .optional(),
+        })
+      )
+      .optional(),
+    display: z
+      .array(
+        z
+          .object({
+            name: z.string(),
+            locale: z.string().optional(),
+            logo: z
+              .object({
+                // FIXME: make required again, but need to support draft 11 first
+                uri: z.string().optional(),
+                alt_text: z.string().optional(),
+              })
+              .passthrough()
+              .optional(),
+            description: z.string().optional(),
+            background_color: z.string().optional(),
+            background_image: z
+              .object({
+                // TODO: should be required, but paradym's metadata is wrong here.
+                uri: z.string().optional(),
+              })
+              .passthrough()
+              .optional(),
+            text_color: z.string().optional(),
           })
-        ),
-      })
-    )
-  ),
-  display: v.optional(
-    v.array(
-      v.looseObject({
-        name: v.string(),
-        locale: v.optional(v.string()),
-        logo: v.optional(
-          v.looseObject({
-            // FIXME: make required again, but need to support draft 11 first
-            uri: v.optional(v.string()),
-            alt_text: v.optional(v.string()),
-          })
-        ),
-        description: v.optional(v.string()),
-        background_color: v.optional(v.string()),
-        background_image: v.optional(
-          v.looseObject({
-            // TODO: should be required, but paradym's metadata is wrong here.
-            uri: v.optional(v.string()),
-          })
-        ),
-        text_color: v.optional(v.string()),
-      })
-    )
-  ),
-})
+          .passthrough()
+      )
+      .optional(),
+  })
+  .passthrough()
