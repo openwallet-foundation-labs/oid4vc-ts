@@ -11,6 +11,8 @@ jobs:
   release-stable:
     runs-on: ubuntu-20.04
     name: Release Stable
+    outputs:
+      published: ${{ steps.changesets.outputs.published }}
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
@@ -25,7 +27,7 @@ jobs:
       - name: Install Dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Create Release Pull Request
+      - name: Create Release Pull Request or Publish to npm
         id: changesets
         uses: changesets/action@v1
         with:
@@ -42,7 +44,7 @@ jobs:
         run: echo "CURRENT_PACKAGE_VERSION=$(node -p "require('./packages/oid4vci/package.json').version")" >> $GITHUB_ENV
 
       - name: Create Github Release
-        if: "startsWith(github.event.head_commit.message, 'chore(release): new version')"
+        if: steps.changesets.outputs.published == 'true'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ env.CURRENT_PACKAGE_VERSION }}
@@ -50,7 +52,8 @@ jobs:
   release-unstable:
     runs-on: ubuntu-20.04
     name: Release Unstable
-    if: "always() && github.event_name == 'push' && !startsWith(github.event.head_commit.message, 'chore(release): new version')"
+    needs: release-stable
+    if: always() && github.event_name == 'push' && needs.release-stable.outputs.published == 'false'
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
