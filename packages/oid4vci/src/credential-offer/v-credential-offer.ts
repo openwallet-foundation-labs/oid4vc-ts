@@ -3,63 +3,77 @@ import {
   type PreAuthorizedCodeGrantIdentifier,
   preAuthorizedCodeGrantIdentifier,
 } from '@openid4vc/oauth2'
-import { vHttpsUrl } from '@openid4vc/utils'
-import * as v from 'valibot'
+import z from 'zod'
+import { vHttpsUrl } from '../../../utils/src/validation'
 
-const vTxCode = v.looseObject({
-  input_mode: v.optional(v.union([v.literal('numeric'), v.literal('text')])),
-  length: v.optional(v.pipe(v.number(), v.integer())),
-  description: v.optional(v.pipe(v.string(), v.maxLength(300))),
-})
-export type CredentialOfferPreAuthorizedCodeGrantTxCode = v.InferInput<typeof vTxCode>
+const vTxCode = z
+  .object({
+    input_mode: z.union([z.literal('numeric'), z.literal('text')]).optional(),
+    length: z.number().int().optional(),
+    description: z.string().max(300).optional(),
+  })
+  .passthrough()
 
-export const vCredentialOfferGrants = v.looseObject({
-  authorization_code: v.optional(
-    v.looseObject({
-      issuer_state: v.optional(v.string()),
-      authorization_server: v.optional(vHttpsUrl),
-    })
-  ),
+export type CredentialOfferPreAuthorizedCodeGrantTxCode = z.input<typeof vTxCode>
 
-  [preAuthorizedCodeGrantIdentifier]: v.optional(
-    v.looseObject({
-      'pre-authorized_code': v.string(),
-      tx_code: v.optional(vTxCode),
-      authorization_server: v.optional(vHttpsUrl),
-    })
-  ),
-})
-export type CredentialOfferGrants = v.InferInput<typeof vCredentialOfferGrants>
+export const vCredentialOfferGrants = z
+  .object({
+    authorization_code: z
+      .object({
+        issuer_state: z.string().optional(),
+        authorization_server: vHttpsUrl.optional(),
+      })
+      .passthrough()
+      .optional(),
+    [preAuthorizedCodeGrantIdentifier]: z
+      .object({
+        'pre-authorized_code': z.string(),
+        tx_code: vTxCode.optional(),
+        authorization_server: vHttpsUrl.optional(),
+      })
+      .passthrough()
+      .optional(),
+  })
+  .passthrough()
+
+export type CredentialOfferGrants = z.input<typeof vCredentialOfferGrants>
+
 export type CredentialOfferPreAuthorizedCodeGrant = CredentialOfferGrants[PreAuthorizedCodeGrantIdentifier]
 export type CredenialOfferAuthorizationCodeGrant = CredentialOfferGrants[AuthorizationCodeGrantIdentifier]
 
-const vCredentialOfferObjectDraft14 = v.looseObject({
-  credential_issuer: vHttpsUrl,
-  credential_configuration_ids: v.array(v.string()),
-  grants: v.optional(vCredentialOfferGrants),
-})
-export type CredentialOfferObject = v.InferInput<typeof vCredentialOfferObjectDraft14>
+const vCredentialOfferObjectDraft14 = z
+  .object({
+    credential_issuer: vHttpsUrl,
+    credential_configuration_ids: z.array(z.string()),
+    grants: z.optional(vCredentialOfferGrants),
+  })
+  .passthrough()
+export type CredentialOfferObject = z.input<typeof vCredentialOfferObjectDraft14>
 
-export const vCredentialOfferObjectDraft11To14 = v.pipe(
-  v.looseObject({
+export const vCredentialOfferObjectDraft11To14 = z
+  .object({
     credential_issuer: vHttpsUrl,
     // We don't support the inline offer objects from draft 11
-    credentials: v.array(v.string(), 'Only string credential identifiers are supported for draft 11 credential offers'),
-    grants: v.optional(
-      v.looseObject({
+    credentials: z.array(
+      z.string({ message: 'Only string credential identifiers are supported for draft 11 credential offers' })
+    ),
+    grants: z.optional(
+      z.object({
         // Has extra param in draft 14, but doesn't matter for transform purposes
-        authorization_code: vCredentialOfferGrants.entries.authorization_code,
+        authorization_code: vCredentialOfferGrants.shape.authorization_code,
 
-        [preAuthorizedCodeGrantIdentifier]: v.optional(
-          v.looseObject({
-            'pre-authorized_code': v.string(),
-            user_pin_required: v.optional(v.boolean()),
+        [preAuthorizedCodeGrantIdentifier]: z
+          .object({
+            'pre-authorized_code': z.string(),
+            user_pin_required: z.optional(z.boolean()),
           })
-        ),
+          .passthrough()
+          .optional(),
       })
     ),
-  }),
-  v.transform(({ credentials, grants, ...rest }) => {
+  })
+  .passthrough()
+  .transform(({ credentials, grants, ...rest }) => {
     const v14: CredentialOfferObject = {
       ...rest,
       credential_configuration_ids: credentials,
@@ -84,11 +98,10 @@ export const vCredentialOfferObjectDraft11To14 = v.pipe(
     }
 
     return v14
-  }),
-  vCredentialOfferObjectDraft14
-)
+  })
+  .pipe(vCredentialOfferObjectDraft14)
 
-export const vCredentialOfferObject = v.union([
+export const vCredentialOfferObject = z.union([
   // First prioritize draft 14 (and 13)
   vCredentialOfferObjectDraft14,
   // Then try parsing draft 11 and transform into draft 14

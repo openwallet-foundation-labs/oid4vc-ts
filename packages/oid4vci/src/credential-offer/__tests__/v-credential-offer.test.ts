@@ -1,11 +1,10 @@
 import { preAuthorizedCodeGrantIdentifier } from '@openid4vc/oauth2'
-import * as v from 'valibot'
 import { describe, expect, test } from 'vitest'
 import { vCredentialOfferObject, vCredentialOfferObjectDraft11To14 } from '../v-credential-offer'
 
 describe('Credential Offer', () => {
   test('parse draft 14 credential offer', () => {
-    const parseResult = v.safeParse(vCredentialOfferObject, {
+    const parseResult = vCredentialOfferObject.safeParse({
       credential_issuer: 'https://issuer.com',
       grants: {
         authorization_code: {
@@ -25,8 +24,8 @@ describe('Credential Offer', () => {
     })
 
     expect(parseResult).toStrictEqual({
-      issues: undefined,
-      output: {
+      success: true,
+      data: {
         credential_issuer: 'https://issuer.com',
         grants: {
           authorization_code: {
@@ -44,13 +43,11 @@ describe('Credential Offer', () => {
         },
         credential_configuration_ids: ['credential-1', 'credential-2'],
       },
-      success: true,
-      typed: true,
     })
   })
 
   test('parse draft 11 credential offer and transform into draft 14', () => {
-    const parseResult = v.safeParse(vCredentialOfferObject, {
+    const parseResult = vCredentialOfferObject.safeParse({
       credential_issuer: 'https://issuer.com',
       grants: {
         authorization_code: {
@@ -66,8 +63,7 @@ describe('Credential Offer', () => {
     })
 
     expect(parseResult).toStrictEqual({
-      issues: undefined,
-      output: {
+      data: {
         credential_configuration_ids: ['credential-1', 'credential-2'],
         credential_issuer: 'https://issuer.com',
         grants: {
@@ -84,12 +80,11 @@ describe('Credential Offer', () => {
         },
       },
       success: true,
-      typed: true,
     })
   })
 
   test('parse draft 11 credential offer with inline offer object and throw error', () => {
-    const parseResult = v.safeParse(vCredentialOfferObjectDraft11To14, {
+    const parseResult = vCredentialOfferObjectDraft11To14.safeParse({
       credential_issuer: 'https://issuer.com',
       grants: {},
       credentials: [
@@ -99,69 +94,20 @@ describe('Credential Offer', () => {
       ],
     })
 
-    expect(parseResult).toStrictEqual({
-      issues: [
+    expect(parseResult.success).toBe(false)
+    expect(parseResult.error?.errors).toMatchInlineSnapshot(`
+      [
         {
-          abortEarly: undefined,
-          abortPipeEarly: undefined,
-          expected: 'string',
-          input: {
-            format: 'vc+sd-jwt',
-          },
-          issues: undefined,
-          kind: 'schema',
-          lang: undefined,
-          message: 'Invalid type: Expected string but received Object',
-          path: [
-            {
-              input: {
-                credential_issuer: 'https://issuer.com',
-                credentials: [
-                  {
-                    format: 'vc+sd-jwt',
-                  },
-                ],
-                grants: {},
-              },
-              key: 'credentials',
-              origin: 'value',
-              type: 'object',
-              value: [
-                {
-                  format: 'vc+sd-jwt',
-                },
-              ],
-            },
-            {
-              input: [
-                {
-                  format: 'vc+sd-jwt',
-                },
-              ],
-              key: 0,
-              origin: 'value',
-              type: 'array',
-              value: {
-                format: 'vc+sd-jwt',
-              },
-            },
+          "code": "invalid_type",
+          "expected": "string",
+          "message": "Only string credential identifiers are supported for draft 11 credential offers",
+          "path": [
+            "credentials",
+            0,
           ],
-          received: 'Object',
-          requirement: undefined,
-          type: 'string',
+          "received": "object",
         },
-      ],
-      output: {
-        credential_issuer: 'https://issuer.com',
-        credentials: [
-          {
-            format: 'vc+sd-jwt',
-          },
-        ],
-        grants: {},
-      },
-      success: false,
-      typed: false,
-    })
+      ]
+    `)
   })
 })

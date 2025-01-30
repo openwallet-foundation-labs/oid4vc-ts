@@ -1,5 +1,3 @@
-import * as v from 'valibot'
-
 import {
   type AuthorizationCodeGrantIdentifier,
   type CallbackContext,
@@ -16,7 +14,7 @@ import {
   URL,
   URLSearchParams,
   ValidationError,
-  createValibotFetcher,
+  createZodFetcher,
   encodeToBase64Url,
   getQueryParams,
   objectToQueryParams,
@@ -31,6 +29,7 @@ import {
   type CredentialOfferPreAuthorizedCodeGrant,
   vCredentialOfferObject,
 } from './v-credential-offer'
+import type z from 'zod'
 
 export interface ResolveCredentialOfferOptions {
   /**
@@ -48,12 +47,12 @@ export async function resolveCredentialOffer(
 ): Promise<CredentialOfferObject> {
   const parsedQueryParams = getQueryParams(credentialOffer)
 
-  let credentialOfferParseResult: v.SafeParseResult<typeof vCredentialOfferObject>
+  let credentialOfferParseResult: z.SafeParseReturnType<unknown, z.infer<typeof vCredentialOfferObject>>
 
   if (parsedQueryParams.credential_offer_uri) {
-    const fetchWithValibot = createValibotFetcher(options?.fetch)
+    const fetchWithZod = createZodFetcher(options?.fetch)
 
-    const { response, result } = await fetchWithValibot(
+    const { response, result } = await fetchWithZod(
       vCredentialOfferObject,
       ContentType.Json,
       parsedQueryParams.credential_offer_uri
@@ -76,19 +75,19 @@ export async function resolveCredentialOffer(
       throw new Oauth2Error(`Error parsing JSON from 'credential_offer' param in credential offer '${credentialOffer}'`)
     }
 
-    credentialOfferParseResult = v.safeParse(vCredentialOfferObject, credentialOfferJson)
+    credentialOfferParseResult = vCredentialOfferObject.safeParse(credentialOfferJson)
   } else {
     throw new Oauth2Error(`Credential offer did not contain either 'credential_offer' or 'credential_offer_uri' param.`)
   }
 
-  if (credentialOfferParseResult.issues) {
+  if (credentialOfferParseResult.error) {
     throw new ValidationError(
       `Error parsing credential offer in draft 11, 13 or 14 format extracted from credential offer '${credentialOffer}'`,
-      credentialOfferParseResult.issues
+      credentialOfferParseResult.error
     )
   }
 
-  return credentialOfferParseResult.output
+  return credentialOfferParseResult.data
 }
 
 export interface CreateCredentialOfferGrantsOptions {
