@@ -52,6 +52,7 @@ jobs:
   release-unstable:
     runs-on: ubuntu-20.04
     name: Release Unstable
+    needs: release-stable
     if: always() && github.event_name == 'push' && needs.release-stable.outputs.published == 'false'
     steps:
       - name: Checkout Repo
