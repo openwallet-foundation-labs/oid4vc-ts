@@ -1,8 +1,10 @@
 import { vInteger } from '@openid4vc/utils'
-import * as v from 'valibot'
+import z from 'zod'
 
-export const vNonceResponse = v.looseObject({
-  c_nonce: v.string(),
-  c_nonce_expires_in: v.optional(vInteger),
-})
-export type NonceResponse = v.InferOutput<typeof vNonceResponse>
+export const vNonceResponse = z
+  .object({
+    c_nonce: z.string(),
+    c_nonce_expires_in: z.optional(vInteger),
+  })
+  .passthrough()
+export type NonceResponse = z.infer<typeof vNonceResponse>

@@ -1,11 +1,5 @@
 import { InvalidFetchResponseError } from '@openid4vc/oauth2'
-import {
-  ContentType,
-  type Fetch,
-  ValidationError,
-  createValibotFetcher,
-  parseWithErrorHandling,
-} from '@openid4vc/utils'
+import { ContentType, type Fetch, ValidationError, createZodFetcher, parseWithErrorHandling } from '@openid4vc/utils'
 import { Oid4vciError } from '../error/Oid4vciError'
 import type { IssuerMetadataResult } from '../metadata/fetch-issuer-metadata'
 import { type NonceResponse, vNonceResponse } from './v-nonce'
@@ -27,7 +21,7 @@ export interface RequestNonceOptions {
  * @throws ValidationError - if validating the nonce response failed
  */
 export async function requestNonce(options: RequestNonceOptions): Promise<NonceResponse> {
-  const fetchWithValibot = createValibotFetcher(options?.fetch)
+  const fetchWithZod = createZodFetcher(options?.fetch)
   const nonceEndpoint = options.issuerMetadata.credentialIssuer.nonce_endpoint
 
   if (!nonceEndpoint) {
@@ -36,9 +30,10 @@ export async function requestNonce(options: RequestNonceOptions): Promise<NonceR
     )
   }
 
-  const { response, result } = await fetchWithValibot(vNonceResponse, ContentType.Json, nonceEndpoint, {
+  const { response, result } = await fetchWithZod(vNonceResponse, ContentType.Json, nonceEndpoint, {
     method: 'POST',
   })
+
   if (!response.ok || !result) {
     throw new InvalidFetchResponseError(
       `Requesting nonce from '${nonceEndpoint}' resulted in an unsuccesfull response with status '${response.status}'`,
@@ -47,11 +42,11 @@ export async function requestNonce(options: RequestNonceOptions): Promise<NonceR
     )
   }
 
-  if (result.issues) {
-    throw new ValidationError('Error parsing nonce response', result.issues)
+  if (!result.success) {
+    throw new ValidationError('Error parsing nonce response', result.error?.issues)
   }
 
-  return result.output
+  return result.data
 }
 
 export interface CreateNonceResponseOptions {
