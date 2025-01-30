@@ -186,7 +186,7 @@ export async function sendAuthorizationChallengeRequest(options: SendAuthorizati
       }
 
       if (!result.success) {
-        throw new ValidationError('Error validating authorization challenge response', result.error.issues)
+        throw new ValidationError('Error validating authorization challenge response', result.error)
       }
 
       const dpopNonce = extractDpopNonceFromHeaders(response.headers) ?? undefined

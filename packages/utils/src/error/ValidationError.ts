@@ -1,18 +1,15 @@
-import type * as v from 'valibot'
-import { valibotRecursiveFlattenIssues } from '../parse'
+import type z from 'zod'
 
-export class ValidationError<
-  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-  Schema extends v.BaseSchema<any, any, any> = v.BaseSchema<any, any, any>,
-> extends Error {
+export class ValidationError<Schema extends z.ZodTypeAny = z.ZodTypeAny> extends Error {
   public constructor(
     message: string,
-    public readonly valibotIssues: Array<v.InferIssue<Schema>> = []
+    public readonly error?: z.ZodError<Schema>
   ) {
-    const errorDetails =
-      valibotIssues.length > 0
-        ? JSON.stringify(valibotRecursiveFlattenIssues(valibotIssues), null, 2)
-        : 'No details provided'
+    /**
+     * TODO: Before Zod, we were using some flattening logic to make the error message more readable.
+     * We may want to do the same thing here again.
+     */
+    const errorDetails = JSON.stringify(error, null, 2)
     super(`${message}\n${errorDetails}`)
   }
 }

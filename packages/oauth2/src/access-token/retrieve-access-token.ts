@@ -260,7 +260,7 @@ async function retrieveAccessToken(options: RetrieveAccessTokenOptions): Promise
       }
 
       if (!result.success) {
-        throw new ValidationError('Error validating access token response', result.error.issues)
+        throw new ValidationError('Error validating access token response', result.error)
       }
 
       const dpopNonce = extractDpopNonceFromHeaders(response.headers) ?? undefined

@@ -35,8 +35,8 @@ export async function fetchJwks(authorizationServer: AuthorizationServerMetadata
     )
   }
 
-  if (!result || !result.success) {
-    throw new ValidationError(`Validation of JWKs from jwks_uri '${jwksUrl}' failed`, result?.error.issues)
+  if (!result?.success) {
+    throw new ValidationError(`Validation of JWKs from jwks_uri '${jwksUrl}' failed`, result?.error)
   }
 
   return result.data

@@ -254,7 +254,7 @@ async function pushAuthorizationRequest(options: PushAuthorizationRequestOptions
   }
 
   if (!result.success) {
-    throw new ValidationError('Error validating pushed authorization response', result.error.issues)
+    throw new ValidationError('Error validating pushed authorization response', result.error)
   }
 
   const dpopNonce = extractDpopNonceFromHeaders(response.headers)

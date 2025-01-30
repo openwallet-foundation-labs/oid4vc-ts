@@ -11,7 +11,7 @@ export type ZodFetcher = <Schema extends z.ZodTypeAny>(
   schema: Schema,
   expectedContentType: ContentType,
   ...args: Parameters<Fetch>
-) => Promise<{ response: Awaited<ReturnType<Fetch>>; result?: z.SafeParseReturnType<unknown, z.infer<Schema>> }>
+) => Promise<{ response: Awaited<ReturnType<Fetch>>; result?: z.SafeParseReturnType<Schema, z.infer<Schema>> }>
 
 /**
  * The default fetcher used by createZodFetcher when no

@@ -43,7 +43,7 @@ export async function requestNonce(options: RequestNonceOptions): Promise<NonceR
   }
 
   if (!result.success) {
-    throw new ValidationError('Error parsing nonce response', result.error?.issues)
+    throw new ValidationError('Error parsing nonce response', result.error)
   }
 
   return result.data

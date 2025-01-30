@@ -34,8 +34,8 @@ export async function fetchWellKnownMetadata<Schema extends BaseSchema>(
     )
   }
 
-  if (!result || !result.success) {
-    throw new ValidationError(`Validation of metadata from '${wellKnownMetadataUrl}' failed`, result?.error.issues)
+  if (!result?.success) {
+    throw new ValidationError(`Validation of metadata from '${wellKnownMetadataUrl}' failed`, result?.error)
   }
 
   return result.data

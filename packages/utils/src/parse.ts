@@ -1,7 +1,5 @@
-import * as v from 'valibot'
 import { JsonParseError } from './error/JsonParseError'
 import { ValidationError } from './error/ValidationError'
-import { mergeDeep } from './object'
 import type z from 'zod'
 
 export type BaseSchema = z.ZodTypeAny
@@ -28,21 +26,9 @@ export function parseWithErrorHandling<Schema extends BaseSchema>(
   if (!parseResult.success) {
     throw new ValidationError(
       customErrorMessage ?? `Error validating schema with data ${JSON.stringify(data)}`,
-      parseResult.error.issues
+      parseResult.error
     )
   }
 
   return parseResult.data
-}
-
-export function valibotRecursiveFlattenIssues(issues: v.BaseIssue<unknown>[]): Record<string, unknown> {
-  let flattened: unknown = v.flatten(issues as [v.BaseIssue<unknown>])
-
-  for (const issue of issues) {
-    if (issue.issues) {
-      flattened = mergeDeep(flattened, valibotRecursiveFlattenIssues(issue.issues))
-    }
-  }
-
-  return flattened as Record<string, unknown>
 }
