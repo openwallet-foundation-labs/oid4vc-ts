@@ -5,9 +5,9 @@ import {
   parseWithErrorHandling,
   stringToJsonWithErrorHandling,
 } from '@openid4vc/utils'
+import type z from 'zod'
 import { Oauth2JwtParseError } from '../../error/Oauth2JwtParseError'
 import { type JwtSigner, vJwtHeader, vJwtPayload } from './v-jwt'
-import type z from 'zod'
 
 export interface DecodeJwtOptions<
   HeaderSchema extends BaseSchema | undefined,

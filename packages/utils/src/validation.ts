@@ -1,5 +1,5 @@
-import { getGlobalConfig } from './config'
 import z from 'zod'
+import { getGlobalConfig } from './config'
 
 export const vHttpsUrl = z
   .string()
@@ -16,3 +16,6 @@ export const vInteger = z.number().int()
 
 export const vHttpMethod = z.enum(['GET', 'POST', 'PUT', 'DELETE', 'HEAD', 'OPTIONS', 'TRACE', 'CONNECT', 'PATCH'])
 export type HttpMethod = z.infer<typeof vHttpMethod>
+
+export const zIs = <Schema extends z.ZodSchema>(schema: Schema, data: unknown): data is z.infer<typeof schema> =>
+  schema.safeParse(data).success

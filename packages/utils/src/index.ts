@@ -24,7 +24,7 @@ export { joinUriParts } from './path'
 export type { Optional, Simplify, StringWithAutoCompletion, OrPromise } from './type'
 export { getQueryParams, objectToQueryParams } from './url'
 export { type ZodFetcher, createZodFetcher, defaultFetcher } from './zod-fetcher'
-export { type HttpMethod, vHttpMethod, vHttpsUrl, vInteger } from './validation'
+export { type HttpMethod, vHttpMethod, vHttpsUrl, vInteger, zIs } from './validation'
 export { mergeDeep } from './object'
 export { arrayEqualsIgnoreOrder } from './array'
 export {

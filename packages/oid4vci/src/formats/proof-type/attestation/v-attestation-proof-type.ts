@@ -1,10 +1,10 @@
 import { vCompactJwt } from '@openid4vc/oauth2'
+import z from 'zod'
 import {
   type KeyAttestationJwtHeader,
   vKeyAttestationJwtHeader,
   vKeyAttestationJwtPayloadForUse,
 } from '../../../key-attestation/v-key-attestation'
-import z from 'zod'
 
 export const vAttestationProofTypeIdentifier = z.literal('attestation')
 export const attestationProofTypeIdentifier = vAttestationProofTypeIdentifier.value

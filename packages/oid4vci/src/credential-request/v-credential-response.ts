@@ -1,5 +1,5 @@
-import { vOauth2ErrorResponse } from '../../../oauth2/src/common/v-oauth2-error'
 import z from 'zod'
+import { vOauth2ErrorResponse } from '../../../oauth2/src/common/v-oauth2-error'
 
 const vCredentialEncoding = z.union([z.string(), z.record(z.string(), z.any())])
 

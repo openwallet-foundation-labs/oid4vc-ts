@@ -1,6 +1,5 @@
-import * as v from 'valibot'
-
-import type { InferOutputUnion } from '@openid4vc/utils'
+import type { InferOutputUnion, Simplify } from '@openid4vc/utils'
+import z from 'zod'
 import {
   type CredentialFormatIdentifier,
   vJwtVcJsonCredentialRequestFormat,
@@ -35,99 +34,100 @@ export const allCredentialRequestFormats = [
 ] as const
 
 export const allCredentialRequestFormatIdentifiers = allCredentialRequestFormats.map(
-  (format) => format.entries.format.literal
+  (format) => format.shape.format.value
 )
 
 // Authorization details no format used
-const vAuthorizationDetailsCredentialRequest = v.object({
-  credential_identifier: v.string(),
+const vAuthorizationDetailsCredentialRequest = z.object({
+  credential_identifier: z.string(),
 
   // Cannot be present if credential identifier is present
-  format: v.optional(v.never("'format' cannot be defined when 'credential_identifier' is set.")),
+  format: z.never({ message: "'format' cannot be defined when 'credential_identifier' is set." }).optional(),
 })
 
-const vCredenialRequestDraft14WithFormat = v.intersect([
-  vCredentialRequestCommon,
-  v.union([
-    ...allCredentialRequestFormats,
-    // To handle unrecognized format values and not error immediately we allow the common format as well
-    // but they can't use any of the format identifiers already registered. This way if a format is
-    // recognized it NEEDS to use the format specific validation, and otherwise we fall back to the common validation
-    v.looseObject({
-      format: v.pipe(
-        v.string(),
-        v.check((input) => !allCredentialRequestFormatIdentifiers.includes(input as CredentialFormatIdentifier))
-      ),
-    }),
-  ]),
-  v.object({
-    credential_identifier: v.optional(v.never("'credential_identifier' cannot be defined when 'format' is set.")),
-  }),
-])
+const zCredentialRequestFormatNoCredentialIdentifier = z
+  .object({
+    format: z.string(),
+    credential_identifier: z
+      .never({ message: "'credential_identifier' cannot be defined when 'format' is set." })
+      .optional(),
+  })
+  .passthrough()
 
-const vCredentialRequestDraft14 = v.union([
+export const vCredenialRequestDraft14WithFormat = vCredentialRequestCommon
+  .and(zCredentialRequestFormatNoCredentialIdentifier)
+  .transform((data, ctx) => {
+    // No additional validation for unknown formats
+    if (!allCredentialRequestFormatIdentifiers.includes(data.format as CredentialFormatIdentifier)) return data
+
+    const result = z
+      // We use object and passthrough as otherwise the non-format specific properties will be stripped
+      .object({})
+      .passthrough()
+      .and(z.discriminatedUnion('format', allCredentialRequestFormats))
+      .safeParse(data)
+    if (result.success) {
+      return result.data as Simplify<typeof result.data & typeof data>
+    }
+    for (const issue of result.error.issues) {
+      ctx.addIssue(issue)
+    }
+    return z.NEVER
+  })
+
+const vCredentialRequestDraft14 = z.union([
   vCredenialRequestDraft14WithFormat,
-  v.intersect([vCredentialRequestCommon, vAuthorizationDetailsCredentialRequest]),
+  vCredentialRequestCommon.and(vAuthorizationDetailsCredentialRequest),
 ])
 
-export const vCredentialRequestDraft11To14 = v.pipe(
-  vCredentialRequestCommon,
-  v.intersect([
-    v.union([
-      vLdpVcCredentialRequestDraft11To14,
-      vJwtVcJsonLdCredentialRequestDraft11To14,
-      vJwtVcJsonCredentialRequestDraft11To14,
-    ]),
-    v.object({
-      credential_identifier: v.optional(v.never("'credential_identifier' cannot be defined when 'format' is set.")),
-    }),
-  ]),
-  // Same as draft 14 but only for above used formats
-  v.intersect([
-    vCredentialRequestCommon,
-    v.union([vLdpVcCredentialRequestFormat, vJwtVcJsonLdCredentialRequestFormat, vJwtVcJsonCredentialRequestFormat]),
-    v.object({
-      credential_identifier: v.optional(v.never("'credential_identifier' cannot be defined when 'format' is set.")),
-    }),
-  ])
-)
+export const vCredentialRequestDraft11To14 = vCredentialRequestCommon
+  .and(zCredentialRequestFormatNoCredentialIdentifier)
+  .transform((data, ctx) => {
+    const formatSpecificTransformations = {
+      [vLdpVcFormatIdentifier.value]: vLdpVcCredentialRequestDraft11To14,
+      [vJwtVcJsonFormatIdentifier.value]: vJwtVcJsonCredentialRequestDraft11To14,
+      [vJwtVcJsonLdFormatIdentifier.value]: vJwtVcJsonLdCredentialRequestDraft11To14,
+    } as const
 
-export const vCredentialRequestDraft14To11 = v.pipe(
-  vCredentialRequestDraft14,
-  v.check(
-    ({ credential_identifier }) => credential_identifier === undefined,
+    if (!Object.keys(formatSpecificTransformations).includes(data.format)) return data
+
+    const schema = formatSpecificTransformations[data.format as keyof typeof formatSpecificTransformations]
+    const result = schema.safeParse(data)
+    if (result.success) return result.data
+    for (const issue of result.error.issues) {
+      ctx.addIssue(issue)
+    }
+    return z.NEVER
+  })
+  .pipe(vCredentialRequestDraft14)
+
+export const vCredentialRequestDraft14To11 = vCredentialRequestDraft14
+  .refine(
+    (data): data is Exclude<typeof data, { credential_identifier: string }> => data.credential_identifier === undefined,
     `'credential_identifier' is not supported in OID4VCI draft 11`
-  ),
+  )
+  .transform((data, ctx) => {
+    const formatSpecificTransformations = {
+      [vLdpVcFormatIdentifier.value]: vLdpVcCredentialRequestDraft14To11,
+      [vJwtVcJsonFormatIdentifier.value]: vJwtVcJsonLdCredentialRequestDraft14To11,
+      [vJwtVcJsonLdFormatIdentifier.value]: vJwtVcJsonCredentialRequestDraft14To11,
+    } as const
 
-  v.union([
-    vLdpVcCredentialRequestDraft14To11,
-    vJwtVcJsonLdCredentialRequestDraft14To11,
-    vJwtVcJsonCredentialRequestDraft14To11,
-    // To handle unrecognized format values and not error immediately we allow the common format as well
-    // but they can't use any of the format identifiers already registered. This way if a format is
-    // recognized it NEEDS to use the format specific validation, and otherwise we fall back to the common validation
-    v.looseObject({
-      format: v.pipe(
-        v.string(),
-        v.check(
-          (input) =>
-            !(
-              [
-                vJwtVcJsonFormatIdentifier.literal,
-                vJwtVcJsonLdFormatIdentifier.literal,
-                vLdpVcFormatIdentifier.literal,
-              ] as string[]
-            ).includes(input)
-        )
-      ),
-    }),
-  ])
-)
+    if (!Object.keys(formatSpecificTransformations).includes(data.format)) return data
 
-export const vCredentialRequest = v.union([vCredentialRequestDraft14, vCredentialRequestDraft11To14])
+    const schema = formatSpecificTransformations[data.format as keyof typeof formatSpecificTransformations]
+    const result = schema.safeParse(data)
+    if (result.success) return result.data
+    for (const issue of result.error.issues) {
+      ctx.addIssue(issue)
+    }
+    return z.NEVER
+  })
 
-type CredentialRequestCommon = v.InferOutput<typeof vCredentialRequestCommon>
+export const vCredentialRequest = z.union([vCredentialRequestDraft14, vCredentialRequestDraft11To14])
+
+type CredentialRequestCommon = z.infer<typeof vCredentialRequestCommon>
 export type CredentialRequestFormatSpecific = InferOutputUnion<typeof allCredentialRequestFormats>
 export type CredentialRequestWithFormats = CredentialRequestCommon & CredentialRequestFormatSpecific
 
-export type CredentialRequest = v.InferOutput<typeof vCredentialRequestDraft14>
+export type CredentialRequest = z.infer<typeof vCredentialRequestDraft14>

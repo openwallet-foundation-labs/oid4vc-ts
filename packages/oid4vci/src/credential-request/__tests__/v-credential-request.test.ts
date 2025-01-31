@@ -1,11 +1,9 @@
-import { valibotRecursiveFlattenIssues } from '@openid4vc/utils'
-import * as v from 'valibot'
 import { describe, expect, test } from 'vitest'
 import { vCredentialRequest, vCredentialRequestDraft11To14 } from '../v-credential-request'
 
 describe('Credential Request', () => {
   test('error when both proof and proofs are defined', () => {
-    const parseResult = v.safeParse(vCredentialRequest, {
+    const parseResult = vCredentialRequest.safeParse({
       format: 'vc+sd-jwt',
       vct: 'some-vct',
       extra_prop: 'should-stay',
@@ -18,20 +16,16 @@ describe('Credential Request', () => {
       },
     })
 
-    expect(parseResult).toStrictEqual({
-      issues: [
-        expect.objectContaining({
-          message: "Both 'proof' and 'proofs' are defined. Only one is allowed",
-        }),
-      ],
-      output: expect.any(Object),
-      success: false,
-      typed: true,
+    expect(parseResult.success).toBe(false)
+    expect(parseResult.error?.errors[0]).toEqual({
+      code: 'custom',
+      message: "Both 'proof' and 'proofs' are defined. Only one is allowed",
+      path: [],
     })
   })
 
   test('error when both format and credential_identifier are defined', () => {
-    const parseResult = v.safeParse(vCredentialRequest, {
+    const parseResult = vCredentialRequest.safeParse({
       format: 'vc+sd-jwt',
       vct: 'some-vct',
       credential_identifier: 'some',
@@ -42,22 +36,23 @@ describe('Credential Request', () => {
       },
     })
 
-    expect(valibotRecursiveFlattenIssues(parseResult.issues ?? [])).toMatchObject({
-      nested: {
-        credential_identifier: ["'credential_identifier' cannot be defined when 'format' is set."],
+    expect(parseResult.success).toBe(false)
+    expect(parseResult.error?.format()).toEqual({
+      _errors: [],
+      credential_identifier: {
+        _errors: [
+          "'credential_identifier' cannot be defined when 'format' is set.",
+          "'credential_identifier' cannot be defined when 'format' is set.",
+        ],
       },
-    })
-
-    expect(parseResult).toStrictEqual({
-      issues: expect.any(Array),
-      output: expect.any(Object),
-      success: false,
-      typed: false,
+      format: {
+        _errors: ["'format' cannot be defined when 'credential_identifier' is set."],
+      },
     })
   })
 
   test('parse draft 14 credential request with vc+sd-jwt format', () => {
-    const parseResult = v.safeParse(vCredentialRequest, {
+    const parseResult = vCredentialRequest.safeParse({
       format: 'vc+sd-jwt',
       vct: 'some-vct',
       extra_prop: 'should-stay',
@@ -68,8 +63,7 @@ describe('Credential Request', () => {
     })
 
     expect(parseResult).toStrictEqual({
-      issues: undefined,
-      output: {
+      data: {
         format: 'vc+sd-jwt',
         vct: 'some-vct',
         extra_prop: 'should-stay',
@@ -79,12 +73,11 @@ describe('Credential Request', () => {
         },
       },
       success: true,
-      typed: true,
     })
   })
 
   test('parse draft 14 credential request with mso_mdoc format', () => {
-    const parseResult = v.safeParse(vCredentialRequest, {
+    const parseResult = vCredentialRequest.safeParse({
       format: 'mso_mdoc',
       doctype: 'eu.pid',
       extra_prop: 'should-stay',
@@ -95,8 +88,7 @@ describe('Credential Request', () => {
     })
 
     expect(parseResult).toStrictEqual({
-      issues: undefined,
-      output: {
+      data: {
         format: 'mso_mdoc',
         doctype: 'eu.pid',
         extra_prop: 'should-stay',
@@ -106,12 +98,11 @@ describe('Credential Request', () => {
         },
       },
       success: true,
-      typed: true,
     })
   })
 
   test('parse draft 14 credential request with ldp_vc format', () => {
-    const parseResult = v.safeParse(vCredentialRequest, {
+    const parseResult = vCredentialRequest.safeParse({
       format: 'ldp_vc',
       credential_definition: {
         '@context': ['context'],
@@ -130,8 +121,7 @@ describe('Credential Request', () => {
     })
 
     expect(parseResult).toStrictEqual({
-      issues: undefined,
-      output: {
+      data: {
         format: 'ldp_vc',
         credential_definition: {
           '@context': ['context'],
@@ -149,12 +139,11 @@ describe('Credential Request', () => {
         },
       },
       success: true,
-      typed: true,
     })
   })
 
   test('parse draft 14 credential request with jwt_vc_json-ld format', () => {
-    const parseResult = v.safeParse(vCredentialRequest, {
+    const parseResult = vCredentialRequest.safeParse({
       format: 'jwt_vc_json-ld',
       credential_definition: {
         '@context': ['context'],
@@ -173,8 +162,7 @@ describe('Credential Request', () => {
     })
 
     expect(parseResult).toStrictEqual({
-      issues: undefined,
-      output: {
+      data: {
         format: 'jwt_vc_json-ld',
         credential_definition: {
           '@context': ['context'],
@@ -192,12 +180,11 @@ describe('Credential Request', () => {
         },
       },
       success: true,
-      typed: true,
     })
   })
 
   test('parse draft 14 credential request with jwt_vc_json format', () => {
-    const parseResult = v.safeParse(vCredentialRequest, {
+    const parseResult = vCredentialRequest.safeParse({
       format: 'jwt_vc_json',
       credential_definition: {
         type: ['types'],
@@ -215,8 +202,7 @@ describe('Credential Request', () => {
     })
 
     expect(parseResult).toStrictEqual({
-      issues: undefined,
-      output: {
+      data: {
         format: 'jwt_vc_json',
         credential_definition: {
           type: ['types'],
@@ -233,12 +219,11 @@ describe('Credential Request', () => {
         },
       },
       success: true,
-      typed: true,
     })
   })
 
   test('parse draft 14 credential request without format with credential_identifier', () => {
-    const parseResult = v.safeParse(vCredentialRequest, {
+    const parseResult = vCredentialRequest.safeParse({
       credential_identifier: 'some-identifier',
       proof: {
         proof_type: 'jwt',
@@ -247,8 +232,7 @@ describe('Credential Request', () => {
     })
 
     expect(parseResult).toStrictEqual({
-      issues: undefined,
-      output: {
+      data: {
         credential_identifier: 'some-identifier',
         proof: {
           proof_type: 'jwt',
@@ -256,12 +240,11 @@ describe('Credential Request', () => {
         },
       },
       success: true,
-      typed: true,
     })
   })
 
   test('parse draft 14 credential request without recognized format', () => {
-    const parseResult = v.safeParse(vCredentialRequest, {
+    const parseResult = vCredentialRequest.safeParse({
       format: 'a-new-format',
       some_random_prop: 'should-be-allowed',
       proof: {
@@ -271,8 +254,7 @@ describe('Credential Request', () => {
     })
 
     expect(parseResult).toStrictEqual({
-      issues: undefined,
-      output: {
+      data: {
         format: 'a-new-format',
         some_random_prop: 'should-be-allowed',
         proof: {
@@ -281,12 +263,11 @@ describe('Credential Request', () => {
         },
       },
       success: true,
-      typed: true,
     })
   })
 
   test('parse draft 11 credential request with jwt_vc_json format and transfrom to draft 14', () => {
-    const parseResult = v.safeParse(vCredentialRequestDraft11To14, {
+    const parseResult = vCredentialRequestDraft11To14.safeParse({
       format: 'jwt_vc_json',
       types: ['one', 'two'],
       some_other_prop: 'should-stay',
@@ -302,8 +283,7 @@ describe('Credential Request', () => {
     })
 
     expect(parseResult).toStrictEqual({
-      issues: undefined,
-      output: {
+      data: {
         format: 'jwt_vc_json',
         some_other_prop: 'should-stay',
         credential_definition: {
@@ -320,12 +300,11 @@ describe('Credential Request', () => {
         },
       },
       success: true,
-      typed: true,
     })
   })
 
   test('parse draft 11 credential request with jwt_vc_json-ld format and transfrom to draft 14', () => {
-    const parseResult = v.safeParse(vCredentialRequest, {
+    const parseResult = vCredentialRequest.safeParse({
       format: 'jwt_vc_json-ld',
       credential_definition: {
         '@context': ['context'],
@@ -344,8 +323,7 @@ describe('Credential Request', () => {
     })
 
     expect(parseResult).toStrictEqual({
-      issues: undefined,
-      output: {
+      data: {
         format: 'jwt_vc_json-ld',
         some_other_prop: 'should-stay',
         credential_definition: {
@@ -363,12 +341,11 @@ describe('Credential Request', () => {
         },
       },
       success: true,
-      typed: true,
     })
   })
 
   test('parse draft 11 credential request with ldp_vc format and transfrom to draft 14', () => {
-    const parseResult = v.safeParse(vCredentialRequest, {
+    const parseResult = vCredentialRequest.safeParse({
       format: 'ldp_vc',
       credential_definition: {
         '@context': ['context'],
@@ -387,8 +364,7 @@ describe('Credential Request', () => {
     })
 
     expect(parseResult).toStrictEqual({
-      issues: undefined,
-      output: {
+      data: {
         format: 'ldp_vc',
         some_other_prop: 'should-stay',
         credential_definition: {
@@ -406,7 +382,6 @@ describe('Credential Request', () => {
         },
       },
       success: true,
-      typed: true,
     })
   })
 })

@@ -1,6 +1,6 @@
+import type z from 'zod'
 import { JsonParseError } from './error/JsonParseError'
 import { ValidationError } from './error/ValidationError'
-import type z from 'zod'
 
 export type BaseSchema = z.ZodTypeAny
 // biome-ignore lint/suspicious/noExplicitAny: <explanation>

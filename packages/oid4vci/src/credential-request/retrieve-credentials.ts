@@ -17,7 +17,6 @@ import {
 } from './v-credential-request'
 import type { CredentialRequestProof, CredentialRequestProofs } from './v-credential-request-common'
 import { type CredentialResponse, vCredentialErrorResponse, vCredentialResponse } from './v-credential-response'
-import type { SafeParseReturnType } from 'zod'
 
 interface RetrieveCredentialsBaseOptions {
   /**
@@ -94,13 +93,13 @@ export interface RetrieveCredentialsResponseNotOk extends ResourceRequestRespons
    * If this is defined it means the response itself was succesfull but the validation of the
    * credential response data structure failed
    */
-  credentialResponseResult?: SafeParseReturnType<typeof vCredentialResponse, typeof vCredentialResponse>
+  credentialResponseResult?: ReturnType<typeof vCredentialResponse.safeParse>
 
   /**
    * If this is defined it means the response was JSON and we tried to parse it as
    * a credential error response. It may be successfull or it may not be.
    */
-  credentialErrorResponseResult?: SafeParseReturnType<typeof vCredentialErrorResponse, typeof vCredentialErrorResponse>
+  credentialErrorResponseResult?: ReturnType<typeof vCredentialErrorResponse.safeParse>
 }
 
 /**

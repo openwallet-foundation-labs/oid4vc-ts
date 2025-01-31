@@ -1,4 +1,4 @@
-import { ContentType, createZodFetcher, type Fetch } from '@openid4vc/utils'
+import { ContentType, type Fetch, createZodFetcher } from '@openid4vc/utils'
 import { InvalidFetchResponseError } from '@openid4vc/utils'
 import { ValidationError } from '../../../utils/src/error/ValidationError'
 import { type JwkSet, vJwkSet } from '../common/jwk/v-jwk'

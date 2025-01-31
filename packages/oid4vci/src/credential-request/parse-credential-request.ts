@@ -1,4 +1,5 @@
 import { parseWithErrorHandling } from '@openid4vc/utils'
+import z from 'zod'
 import type { CredentialFormatIdentifier } from '../formats/credential'
 import { attestationProofTypeIdentifier } from '../formats/proof-type/attestation/v-attestation-proof-type'
 import { jwtProofTypeIdentifier } from '../formats/proof-type/jwt/v-jwt-proof-type'
@@ -14,7 +15,6 @@ import {
   allCredentialRequestProofs,
   vCredentialRequestProofs,
 } from './v-credential-request-common'
-import z from 'zod'
 
 export interface ParseCredentialRequestOptions {
   credentialRequest: Record<string, unknown>

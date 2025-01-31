@@ -1,7 +1,7 @@
 import { vInteger } from '@openid4vc/utils'
+import z from 'zod'
 import { type Jwk, vJwk } from '../jwk/v-jwk'
 import { vAlgValueNotNone } from '../v-common'
-import z from 'zod'
 
 export type JwtSignerDid = {
   method: 'did'

@@ -1,12 +1,12 @@
 import { vJwk } from '@openid4vc/oauth2'
 import type { InferOutputUnion, Simplify } from '@openid4vc/utils'
+import z from 'zod'
 import {
   vAttestationProofTypeIdentifier,
   vCredentialRequestProofAttestation,
   vCredentialRequestProofJwt,
   vJwtProofTypeIdentifier,
 } from '../formats/proof-type'
-import z from 'zod'
 
 const vCredentialRequestProofCommon = z
   .object({

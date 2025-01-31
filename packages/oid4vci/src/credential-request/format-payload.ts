@@ -1,3 +1,4 @@
+import { zIs } from '@openid4vc/utils'
 import { Oid4vciError } from '../error/Oid4vciError'
 import {
   vJwtVcJsonCredentialIssuerMetadata,
@@ -33,21 +34,21 @@ export function getCredentialRequestFormatPayloadForCredentialConfigurationId(
     )
   }
 
-  if (vSdJwtVcCredentialIssuerMetadata.safeParse(credentialConfiguration).success) {
+  if (zIs(vSdJwtVcCredentialIssuerMetadata, credentialConfiguration)) {
     return {
       format: credentialConfiguration.format,
       vct: credentialConfiguration.vct,
     }
   }
 
-  if (vMsoMdocCredentialIssuerMetadata.safeParse(credentialConfiguration).success) {
+  if (zIs(vMsoMdocCredentialIssuerMetadata, credentialConfiguration)) {
     return {
       format: credentialConfiguration.format,
       doctype: credentialConfiguration.doctype,
     }
   }
 
-  if (vLdpVcCredentialIssuerMetadata.safeParse(credentialConfiguration).success) {
+  if (zIs(vLdpVcCredentialIssuerMetadata, credentialConfiguration)) {
     return {
       format: credentialConfiguration.format,
       credential_definition: {
@@ -57,7 +58,7 @@ export function getCredentialRequestFormatPayloadForCredentialConfigurationId(
     }
   }
 
-  if (vJwtVcJsonLdCredentialIssuerMetadata.safeParse(credentialConfiguration).success) {
+  if (zIs(vJwtVcJsonLdCredentialIssuerMetadata, credentialConfiguration)) {
     return {
       format: credentialConfiguration.format,
       credential_definition: {
@@ -67,7 +68,7 @@ export function getCredentialRequestFormatPayloadForCredentialConfigurationId(
     }
   }
 
-  if (vJwtVcJsonCredentialIssuerMetadata.safeParse(credentialConfiguration).success) {
+  if (zIs(vJwtVcJsonCredentialIssuerMetadata, credentialConfiguration)) {
     return {
       format: credentialConfiguration.format,
       credential_definition: {

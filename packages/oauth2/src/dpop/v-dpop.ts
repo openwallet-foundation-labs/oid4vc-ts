@@ -1,8 +1,8 @@
 import { vJwtHeader, vJwtPayload } from '../common/jwt/v-jwt'
 
 import { vHttpMethod, vHttpsUrl, vInteger } from '@openid4vc/utils'
-import { vJwk } from '../common/jwk/v-jwk'
 import z from 'zod'
+import { vJwk } from '../common/jwk/v-jwk'
 
 export const vDpopJwtPayload = z
   .object({

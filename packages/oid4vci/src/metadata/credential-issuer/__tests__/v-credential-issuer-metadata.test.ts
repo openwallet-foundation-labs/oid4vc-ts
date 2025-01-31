@@ -1,4 +1,3 @@
-import * as v from 'valibot'
 import { describe, expect, test } from 'vitest'
 import { paradymDraft13 } from '../../../__tests__/__fixtures__/paradym'
 import {
@@ -11,68 +10,65 @@ describe('Credential Issuer Metadata', () => {
   test('should parse credential configurations supported with format', () => {
     // Correct: sd-jwt with vct
     expect(
-      v.safeParse(vCredentialConfigurationSupportedWithFormats, {
+      vCredentialConfigurationSupportedWithFormats.safeParse({
         format: 'vc+sd-jwt',
         // vct should be required if format is vc+sd-jwt
         vct: 'SD_JWT_VC_example_in_OpenID4VCI',
       })
     ).toStrictEqual({
-      issues: undefined,
-      output: expect.objectContaining({}),
+      data: expect.objectContaining({}),
       success: true,
-      typed: true,
+    })
+
+    const parseResult = vCredentialConfigurationSupportedWithFormats.safeParse({
+      format: 'vc+sd-jwt',
+      // vct should be required if format is vc+sd-jwt
+      // vct: 'SD_JWT_VC_example_in_OpenID4VCI',
     })
 
     // Incorrect: sd-jwt without vct
-    expect(
-      v.safeParse(vCredentialConfigurationSupportedWithFormats, {
-        format: 'vc+sd-jwt',
-        // vct should be required if format is vc+sd-jwt
-        // vct: 'SD_JWT_VC_example_in_OpenID4VCI',
-      })
-    ).toStrictEqual({
-      issues: expect.any(Array),
-      output: expect.objectContaining({}),
-      success: false,
-      typed: false,
+    expect(parseResult.success).toBe(false)
+    expect(parseResult.error?.errors[0]).toEqual({
+      code: 'invalid_type',
+      expected: 'string',
+      received: 'undefined',
+      path: ['vct'],
+      message: 'Required',
     })
 
     // Correct: mso mdoc with doctype
     expect(
-      v.safeParse(vCredentialConfigurationSupportedWithFormats, {
+      vCredentialConfigurationSupportedWithFormats.safeParse({
         format: 'mso_mdoc',
         // doctype should be required if format is mso_mdoc
         doctype: 'org.iso.18013.5.1.mDL',
       })
     ).toStrictEqual({
-      issues: undefined,
-      output: expect.objectContaining({}),
+      data: expect.objectContaining({}),
       success: true,
-      typed: true,
     })
 
     // Incorrect: mso mdoc without doctype
-    expect(
-      v.safeParse(vCredentialConfigurationSupportedWithFormats, {
-        format: 'mso_mdoc',
-        // doctype should be required if format is mso_mdoc
-        // doctype: 'org.iso.18013.5.1.mDL',
-      })
-    ).toStrictEqual({
-      issues: expect.any(Array),
-      output: expect.objectContaining({}),
-      success: false,
-      typed: false,
+    const parseResultMdoc = vCredentialConfigurationSupportedWithFormats.safeParse({
+      format: 'mso_mdoc',
+      // doctype should be required if format is mso_mdoc
+      // doctype: 'org.iso.18013.5.1.mDL',
+    })
+    expect(parseResultMdoc.success).toEqual(false)
+    expect(parseResultMdoc.error?.errors[0]).toEqual({
+      code: 'invalid_type',
+      expected: 'string',
+      received: 'undefined',
+      path: ['doctype'],
+      message: 'Required',
     })
   })
 
   test('parse draft 13 credential issuer metadata', () => {
-    const parseResult = v.safeParse(vCredentialIssuerMetadata, paradymDraft13.credentialIssuerMetadata)
+    const parseResult = vCredentialIssuerMetadata.safeParse(paradymDraft13.credentialIssuerMetadata)
     expect(parseResult).toStrictEqual({
-      issues: undefined,
-      output: paradymDraft13.credentialIssuerMetadata,
+      data: paradymDraft13.credentialIssuerMetadata,
       success: true,
-      typed: true,
     })
   })
 
@@ -197,22 +193,20 @@ describe('Credential Issuer Metadata', () => {
       },
     }
 
-    const parseResult = v.safeParse(vCredentialIssuerMetadataDraft11To14, {
+    const parseResult = vCredentialIssuerMetadataDraft11To14.safeParse({
       credential_endpoint: 'https://credential-issuer.com/credential',
       credential_issuer: 'https://credential-issuer.com',
       credentials_supported,
       authorization_server: 'https://test.auth.com',
     })
     expect(parseResult).toStrictEqual({
-      issues: undefined,
-      output: {
+      data: {
         credential_endpoint: 'https://credential-issuer.com/credential',
         credential_issuer: 'https://credential-issuer.com',
         credential_configurations_supported,
         authorization_servers: ['https://test.auth.com'],
       },
       success: true,
-      typed: true,
     })
   })
 })

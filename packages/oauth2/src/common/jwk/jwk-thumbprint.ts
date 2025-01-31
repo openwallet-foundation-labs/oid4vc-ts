@@ -1,8 +1,8 @@
 import type { HashAlgorithm, HashCallback } from '../../callbacks'
 
 import { decodeUtf8String, encodeToBase64Url, parseWithErrorHandling } from '@openid4vc/utils'
-import type { Jwk } from './v-jwk'
 import z from 'zod'
+import type { Jwk } from './v-jwk'
 
 export const vJwkThumbprintComponents = z
   .discriminatedUnion('kty', [

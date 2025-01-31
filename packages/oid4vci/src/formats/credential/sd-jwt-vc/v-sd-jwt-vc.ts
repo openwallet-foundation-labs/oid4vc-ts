@@ -1,5 +1,5 @@
-import { vCredentialConfigurationSupportedClaims } from '../../../metadata/credential-issuer/v-credential-configuration-supported-common'
 import z from 'zod'
+import { vCredentialConfigurationSupportedClaims } from '../../../metadata/credential-issuer/v-credential-configuration-supported-common'
 
 export const vSdJwtVcFormatIdentifier = z.literal('vc+sd-jwt')
 export type SdJwtVcFormatIdentifier = z.infer<typeof vSdJwtVcFormatIdentifier>

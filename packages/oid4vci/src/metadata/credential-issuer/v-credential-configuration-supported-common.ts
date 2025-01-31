@@ -1,5 +1,5 @@
-import { vIso18045OrStringArray } from '../../key-attestation/v-key-attestation'
 import z from 'zod'
+import { vIso18045OrStringArray } from '../../key-attestation/v-key-attestation'
 
 export const vCredentialConfigurationSupportedClaims = z
   .object({

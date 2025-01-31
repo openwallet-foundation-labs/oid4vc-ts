@@ -1,6 +1,6 @@
 import { vInteger } from '@openid4vc/utils'
-import { vJwtHeader, vJwtPayload } from '../common/jwt/v-jwt'
 import z from 'zod'
+import { vJwtHeader, vJwtPayload } from '../common/jwt/v-jwt'
 
 export const vAccessTokenProfileJwtHeader = z
   .object({

@@ -1,5 +1,5 @@
-import { vW3cVcCredentialSubject, vW3cVcJsonLdCredentialDefinition } from './v-w3c-vc-common'
 import z from 'zod'
+import { vW3cVcCredentialSubject, vW3cVcJsonLdCredentialDefinition } from './v-w3c-vc-common'
 
 export const vLdpVcFormatIdentifier = z.literal('ldp_vc')
 export type LdpVcFormatIdentifier = z.infer<typeof vLdpVcFormatIdentifier>

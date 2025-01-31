@@ -20,6 +20,7 @@ import {
   objectToQueryParams,
   parseWithErrorHandling,
 } from '@openid4vc/utils'
+import type z from 'zod'
 import type { IssuerMetadataResult } from '../metadata/fetch-issuer-metadata'
 import { Oid4vciDraftVersion } from '../version'
 import {
@@ -29,7 +30,6 @@ import {
   type CredentialOfferPreAuthorizedCodeGrant,
   vCredentialOfferObject,
 } from './v-credential-offer'
-import type z from 'zod'
 
 export interface ResolveCredentialOfferOptions {
   /**

@@ -1,7 +1,7 @@
 import { type BaseSchema, ContentType, type Fetch, createZodFetcher } from '@openid4vc/utils'
 import { InvalidFetchResponseError } from '@openid4vc/utils'
-import { ValidationError } from '../../../utils/src/error/ValidationError'
 import type z from 'zod'
+import { ValidationError } from '../../../utils/src/error/ValidationError'
 
 /**
  * Fetch well known metadata and validate the response.

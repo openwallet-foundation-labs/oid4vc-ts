@@ -1,8 +1,8 @@
 import { vInteger } from '@openid4vc/utils'
 
+import z from 'zod'
 import { vAuthorizationRequest } from '../authorization-request/v-authorization-request'
 import { vOauth2ErrorResponse } from '../common/v-oauth2-error'
-import z from 'zod'
 
 export const vAuthorizationChallengeRequest = z
   .object({

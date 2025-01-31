@@ -1,5 +1,5 @@
-import { vW3cVcCredentialSubject, vW3cVcJsonLdCredentialDefinition } from './v-w3c-vc-common'
 import z from 'zod'
+import { vW3cVcCredentialSubject, vW3cVcJsonLdCredentialDefinition } from './v-w3c-vc-common'
 
 export const vJwtVcJsonLdFormatIdentifier = z.literal('jwt_vc_json-ld')
 export type JwtVcJsonLdFormatIdentifier = z.infer<typeof vJwtVcJsonLdFormatIdentifier>

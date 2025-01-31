@@ -14,7 +14,6 @@ import {
   vNotificationErrorResponse,
   vNotificationRequest,
 } from './v-notification'
-import type z from 'zod'
 
 export interface SendNotifcationOptions {
   notification: {
@@ -66,7 +65,7 @@ export interface SendNotificationResponseNotOk extends ResourceRequestResponseNo
    * If this is defined it means the response was JSON and we tried to parse it as
    * a notification error response. It may be successfull or it may not be.
    */
-  notificationErrorResponseResult?: z.SafeParseReturnType<unknown, typeof vNotificationErrorResponse>
+  notificationErrorResponseResult?: ReturnType<typeof vNotificationErrorResponse.safeParse>
 }
 
 export async function sendNotifcation(
@@ -111,10 +110,7 @@ export async function sendNotifcation(
 
     return {
       ...resourceResponse,
-      notificationErrorResponseResult: notificationErrorResponseResult as z.SafeParseReturnType<
-        unknown,
-        typeof vNotificationErrorResponse
-      >,
+      notificationErrorResponseResult,
     }
   }
 

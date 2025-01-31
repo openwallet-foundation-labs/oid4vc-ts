@@ -1,4 +1,4 @@
-import { ContentType, createZodFetcher, type Fetch, objectToQueryParams } from '@openid4vc/utils'
+import { ContentType, type Fetch, createZodFetcher, objectToQueryParams } from '@openid4vc/utils'
 import { InvalidFetchResponseError } from '@openid4vc/utils'
 import { ValidationError } from '../../../utils/src/error/ValidationError'
 import { type CallbackContext, HashAlgorithm } from '../callbacks'
