@@ -3,7 +3,7 @@ import { parseWithErrorHandling } from '@openid4vc/utils'
 import { http, HttpResponse } from 'msw'
 import { setupServer } from 'msw/node'
 import { afterAll, afterEach, beforeAll, describe, expect, test } from 'vitest'
-import { vAuthorizationChallengeRequest } from '../../../oauth2/src/authorization-challenge/v-authorization-challenge'
+import { zAuthorizationChallengeRequest } from '../../../oauth2/src/authorization-challenge/z-authorization-challenge'
 import { callbacks, getSignJwtCallback, parseXwwwFormUrlEncoded } from '../../../oauth2/tests/util'
 import { AuthorizationFlow, Oid4vciClient } from '../Oid4vciClient'
 import { extractScopesForCredentialConfigurationIds } from '../metadata/credential-issuer/credential-configurations'
@@ -513,7 +513,7 @@ describe('Oid4vciClient', () => {
         presentationDuringIssuance.authorizationServerMetadata.authorization_challenge_endpoint,
         async ({ request }) => {
           const authorizationChallengeRequest = parseWithErrorHandling(
-            vAuthorizationChallengeRequest,
+            zAuthorizationChallengeRequest,
             parseXwwwFormUrlEncoded(await request.text())
           )
 

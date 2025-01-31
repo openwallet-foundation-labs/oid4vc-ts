@@ -2,7 +2,7 @@ import { InvalidFetchResponseError } from '@openid4vc/oauth2'
 import { ContentType, type Fetch, ValidationError, createZodFetcher, parseWithErrorHandling } from '@openid4vc/utils'
 import { Oid4vciError } from '../error/Oid4vciError'
 import type { IssuerMetadataResult } from '../metadata/fetch-issuer-metadata'
-import { type NonceResponse, vNonceResponse } from './v-nonce'
+import { type NonceResponse, zNonceResponse } from './z-nonce'
 
 export interface RequestNonceOptions {
   issuerMetadata: IssuerMetadataResult
@@ -30,7 +30,7 @@ export async function requestNonce(options: RequestNonceOptions): Promise<NonceR
     )
   }
 
-  const { response, result } = await fetchWithZod(vNonceResponse, ContentType.Json, nonceEndpoint, {
+  const { response, result } = await fetchWithZod(zNonceResponse, ContentType.Json, nonceEndpoint, {
     method: 'POST',
   })
 
@@ -62,7 +62,7 @@ export interface CreateNonceResponseOptions {
 }
 
 export function createNonceResponse(options: CreateNonceResponseOptions) {
-  return parseWithErrorHandling(vNonceResponse, {
+  return parseWithErrorHandling(zNonceResponse, {
     c_nonce: options.cNonce,
     c_nonce_expires_in: options.cNonceExpiresIn,
     ...options.additionalPayload,

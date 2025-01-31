@@ -9,19 +9,19 @@ import {
 import { type RequestDpopOptions, createDpopHeadersForRequest, extractDpopNonceFromHeaders } from '../dpop/dpop'
 import { authorizationServerRequestWithDpopRetry } from '../dpop/dpop-retry'
 import { Oauth2ClientErrorResponseError } from '../error/Oauth2ClientErrorResponseError'
-import type { AuthorizationServerMetadata } from '../metadata/authorization-server/v-authorization-server-metadata'
+import type { AuthorizationServerMetadata } from '../metadata/authorization-server/z-authorization-server-metadata'
 import {
   authorizationCodeGrantIdentifier,
   preAuthorizedCodeGrantIdentifier,
   refreshTokenGrantIdentifier,
-} from '../v-grant-type'
+} from '../z-grant-type'
 import {
   type AccessTokenRequest,
   type AccessTokenResponse,
-  vAccessTokenErrorResponse,
-  vAccessTokenRequest,
-  vAccessTokenResponse,
-} from './v-access-token'
+  zAccessTokenErrorResponse,
+  zAccessTokenRequest,
+  zAccessTokenResponse,
+} from './z-access-token'
 
 export interface RetrieveAccessTokenReturn {
   accessTokenResponse: AccessTokenResponse
@@ -185,7 +185,7 @@ async function retrieveAccessToken(options: RetrieveAccessTokenOptions): Promise
   const fetchWithZod = createZodFetcher(options.callbacks.fetch)
 
   const accessTokenRequest = parseWithErrorHandling(
-    vAccessTokenRequest,
+    zAccessTokenRequest,
     options.request,
     'Error validating access token request'
   )
@@ -223,7 +223,7 @@ async function retrieveAccessToken(options: RetrieveAccessTokenOptions): Promise
         ...clientAttestation?.body,
       })
       const { response, result } = await fetchWithZod(
-        vAccessTokenResponse,
+        zAccessTokenResponse,
         ContentType.Json,
         options.authorizationServerMetadata.token_endpoint,
         {
@@ -238,7 +238,7 @@ async function retrieveAccessToken(options: RetrieveAccessTokenOptions): Promise
       )
 
       if (!response.ok || !result) {
-        const tokenErrorResponse = vAccessTokenErrorResponse.safeParse(
+        const tokenErrorResponse = zAccessTokenErrorResponse.safeParse(
           await response
             .clone()
             .json()

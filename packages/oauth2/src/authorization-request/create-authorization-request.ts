@@ -7,18 +7,18 @@ import {
   createClientAttestationForRequest,
 } from '../client-attestation/client-attestation-pop'
 import { calculateJwkThumbprint } from '../common/jwk/jwk-thumbprint'
-import { vOauth2ErrorResponse } from '../common/v-oauth2-error'
+import { zOauth2ErrorResponse } from '../common/z-oauth2-error'
 import { type RequestDpopOptions, createDpopHeadersForRequest, extractDpopNonceFromHeaders } from '../dpop/dpop'
 import { authorizationServerRequestWithDpopRetry } from '../dpop/dpop-retry'
 import { Oauth2ClientErrorResponseError } from '../error/Oauth2ClientErrorResponseError'
 import { Oauth2Error } from '../error/Oauth2Error'
-import type { AuthorizationServerMetadata } from '../metadata/authorization-server/v-authorization-server-metadata'
+import type { AuthorizationServerMetadata } from '../metadata/authorization-server/z-authorization-server-metadata'
 import { createPkce } from '../pkce'
 import {
   type AuthorizationRequest,
   type PushedAuthorizationRequest,
-  vPushedAuthorizationResponse,
-} from './v-authorization-request'
+  zPushedAuthorizationResponse,
+} from './z-authorization-request'
 
 export interface CreateAuthorizationRequestUrlOptions {
   /**
@@ -218,7 +218,7 @@ async function pushAuthorizationRequest(options: PushAuthorizationRequestOptions
   }
 
   const { response, result } = await fetchWithZod(
-    vPushedAuthorizationResponse,
+    zPushedAuthorizationResponse,
     ContentType.Json,
     options.pushedAuthorizationRequestEndpoint,
     {
@@ -232,7 +232,7 @@ async function pushAuthorizationRequest(options: PushAuthorizationRequestOptions
   )
 
   if (!response.ok || !result) {
-    const parErrorResponse = vOauth2ErrorResponse.safeParse(
+    const parErrorResponse = zOauth2ErrorResponse.safeParse(
       await response
         .clone()
         .json()

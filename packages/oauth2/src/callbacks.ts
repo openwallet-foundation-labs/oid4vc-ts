@@ -1,7 +1,7 @@
 import type { Fetch, OrPromise } from '@openid4vc/utils'
 import type { ClientAuthenticationCallback } from './client-authentication'
-import type { Jwk } from './common/jwk/v-jwk'
-import type { JwtHeader, JwtPayload, JwtSigner } from './common/jwt/v-jwt'
+import type { Jwk } from './common/jwk/z-jwk'
+import type { JwtHeader, JwtPayload, JwtSigner } from './common/jwt/z-jwt'
 
 /**
  * Supported hashing algorithms

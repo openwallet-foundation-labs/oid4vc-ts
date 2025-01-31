@@ -28,8 +28,8 @@ import {
   type CredentialOfferGrants,
   type CredentialOfferObject,
   type CredentialOfferPreAuthorizedCodeGrant,
-  vCredentialOfferObject,
-} from './v-credential-offer'
+  zCredentialOfferObject,
+} from './z-credential-offer'
 
 export interface ResolveCredentialOfferOptions {
   /**
@@ -47,13 +47,13 @@ export async function resolveCredentialOffer(
 ): Promise<CredentialOfferObject> {
   const parsedQueryParams = getQueryParams(credentialOffer)
 
-  let credentialOfferParseResult: z.SafeParseReturnType<unknown, z.infer<typeof vCredentialOfferObject>>
+  let credentialOfferParseResult: z.SafeParseReturnType<unknown, z.infer<typeof zCredentialOfferObject>>
 
   if (parsedQueryParams.credential_offer_uri) {
     const fetchWithZod = createZodFetcher(options?.fetch)
 
     const { response, result } = await fetchWithZod(
-      vCredentialOfferObject,
+      zCredentialOfferObject,
       ContentType.Json,
       parsedQueryParams.credential_offer_uri
     )
@@ -75,7 +75,7 @@ export async function resolveCredentialOffer(
       throw new Oauth2Error(`Error parsing JSON from 'credential_offer' param in credential offer '${credentialOffer}'`)
     }
 
-    credentialOfferParseResult = vCredentialOfferObject.safeParse(credentialOfferJson)
+    credentialOfferParseResult = zCredentialOfferObject.safeParse(credentialOfferJson)
   } else {
     throw new Oauth2Error(`Credential offer did not contain either 'credential_offer' or 'credential_offer_uri' param.`)
   }
@@ -223,7 +223,7 @@ export async function createCredentialOffer(
   }
 
   const credentialOfferScheme = options.credentialOfferScheme ?? 'openid-credential-offer://'
-  const credentialOfferObject = parseWithErrorHandling(vCredentialOfferObject, {
+  const credentialOfferObject = parseWithErrorHandling(zCredentialOfferObject, {
     credential_issuer: options.issuerMetadata.credentialIssuer.credential_issuer,
     credential_configuration_ids: options.credentialConfigurationIds,
     grants,

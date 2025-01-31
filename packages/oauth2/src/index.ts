@@ -1,19 +1,23 @@
 export type {
   AccessTokenErrorResponse,
   AccessTokenResponse,
-} from './access-token/v-access-token'
+} from './access-token/z-access-token'
 
 // Re-export some types from utils (we don't want people depending on that lib)
 export { type HttpMethod, getGlobalConfig, setGlobalConfig, type Oid4vcTsConfig } from '@openid4vc/utils'
 
-export { Oauth2ErrorCodes, type Oauth2ErrorResponse, vOauth2ErrorResponse } from './common/v-oauth2-error'
+export {
+  Oauth2ErrorCodes,
+  type Oauth2ErrorResponse,
+  zOauth2ErrorResponse,
+} from './common/z-oauth2-error'
 export { calculateJwkThumbprint, type CalculateJwkThumbprintOptions } from './common/jwk/jwk-thumbprint'
 
 // TODO: should we move this to oauth2-utils?
 export { isJwkInSet } from './common/jwk/jwks'
 
-export { type Jwk, type JwkSet, vJwk } from './common/jwk/v-jwk'
-export type { AccessTokenProfileJwtPayload } from './access-token/v-access-token-jwt'
+export { type Jwk, type JwkSet, zJwk } from './common/jwk/z-jwk'
+export type { AccessTokenProfileJwtPayload } from './access-token/z-access-token-jwt'
 
 export {
   verifyJwt,
@@ -33,10 +37,10 @@ export {
   JwtSignerJwk,
   JwtSignerX5c,
   JwtSignerWithJwk,
-  vJwtHeader,
-  vJwtPayload,
-  vCompactJwt,
-} from './common/jwt/v-jwt'
+  zJwtHeader,
+  zJwtPayload,
+  zCompactJwt,
+} from './common/jwt/z-jwt'
 
 export type { RequestDpopOptions } from './dpop/dpop'
 export type { RequestClientAttestationOptions } from './client-attestation/client-attestation-pop'
@@ -45,7 +49,7 @@ export type {
   ClientAttestationJwtPayload,
   ClientAttestationPopJwtHeader,
   ClientAttestationPopJwtPayload,
-} from './client-attestation/v-client-attestation'
+} from './client-attestation/z-client-attestation'
 
 export { Oauth2Error, Oauth2ErrorOptions } from './error/Oauth2Error'
 export { Oauth2JwtVerificationError } from './error/Oauth2JwtVerificationError'
@@ -63,12 +67,12 @@ export type {
   AuthorizationChallengeRequest,
   AuthorizationChallengeErrorResponse,
   AuthorizationChallengeResponse,
-} from './authorization-challenge/v-authorization-challenge'
+} from './authorization-challenge/z-authorization-challenge'
 export {
   AuthorizationServerMetadata,
   // Ideally we don't export this, but it's needed in oid4vci
-  vAuthorizationServerMetadata,
-} from './metadata/authorization-server/v-authorization-server-metadata'
+  zAuthorizationServerMetadata,
+} from './metadata/authorization-server/z-authorization-server-metadata'
 export {
   getAuthorizationServerMetadataFromList,
   fetchAuthorizationServerMetadata,
@@ -76,7 +80,7 @@ export {
 export { fetchJwks } from './metadata/fetch-jwks-uri'
 export { fetchWellKnownMetadata } from './metadata/fetch-well-known-metadata'
 
-export type { TokenIntrospectionResponse } from './access-token/v-token-introspection'
+export type { TokenIntrospectionResponse } from './access-token/z-token-introspection'
 
 export { SupportedAuthenticationScheme } from './access-token/verify-access-token'
 export type { VerifyAccessTokenRequestReturn } from './access-token/verify-access-token-request'
@@ -124,12 +128,12 @@ export { type Oauth2ClientOptions, Oauth2Client } from './Oauth2Client'
 export { PkceCodeChallengeMethod, CreatePkceReturn } from './pkce'
 export {
   type AuthorizationCodeGrantIdentifier,
-  vAuthorizationCodeGrantIdentifier,
+  zAuthorizationCodeGrantIdentifier,
   authorizationCodeGrantIdentifier,
   type PreAuthorizedCodeGrantIdentifier,
-  vPreAuthorizedCodeGrantIdentifier,
+  zPreAuthorizedCodeGrantIdentifier,
   preAuthorizedCodeGrantIdentifier,
   type RefreshTokenGrantIdentifier,
-  vRefreshTokenGrantIdentifier,
+  zRefreshTokenGrantIdentifier,
   refreshTokenGrantIdentifier,
-} from './v-grant-type'
+} from './z-grant-type'

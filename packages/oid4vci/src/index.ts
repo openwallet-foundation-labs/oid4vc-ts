@@ -4,7 +4,7 @@ export type {
   CredentialOfferGrants,
   CredenialOfferAuthorizationCodeGrant,
   CredentialOfferPreAuthorizedCodeGrant,
-} from './credential-offer/v-credential-offer'
+} from './credential-offer/z-credential-offer'
 
 // Re-export some types from utils (we don't want people depending on that lib)
 export { getGlobalConfig, setGlobalConfig, type Oid4vcTsConfig } from '@openid4vc/utils'
@@ -18,8 +18,8 @@ export type {
   CredentialRequestWithFormats,
   CredentialRequest,
   CredentialRequestFormatSpecific,
-} from './credential-request/v-credential-request'
-export type { CredentialErrorResponse, CredentialResponse } from './credential-request/v-credential-response'
+} from './credential-request/z-credential-request'
+export type { CredentialErrorResponse, CredentialResponse } from './credential-request/z-credential-response'
 export {
   type GetCredentialConfigurationsMatchingRequestFormatOptions,
   getCredentialConfigurationsMatchingRequestFormat,
@@ -29,14 +29,14 @@ export { Oid4vciError, Oid4vciErrorOptions } from './error/Oid4vciError'
 export { Oid4vciRetrieveCredentialsError } from './error/Oid4vciRetrieveCredentialsError'
 export { Oid4vciSendNotificationError } from './error/Oid4vciSendNotificationError'
 
-export type { NonceResponse } from './nonce/v-nonce'
+export type { NonceResponse } from './nonce/z-nonce'
 
 export type { SendNotificationResponseNotOk, SendNotificationResponseOk } from './notification/notification'
-export type { NotificationErrorResponse, NotificationEvent } from './notification/v-notification'
+export type { NotificationErrorResponse, NotificationEvent } from './notification/z-notification'
 export type {
   CredentialRequestJwtProofTypeHeader,
   CredentialRequestJwtProofTypePayload,
-} from './formats/proof-type/jwt/v-jwt-proof-type'
+} from './formats/proof-type/jwt/z-jwt-proof-type'
 export type { JwtProofTypeIdentifier, ProofTypeIdentifier } from './formats/proof-type'
 
 export type {
@@ -57,7 +57,7 @@ export type {
   CredentialConfigurationsSupportedWithFormats,
   CredentialIssuerMetadata,
   CredentialIssuerMetadataDisplayEntry,
-} from './metadata/credential-issuer/v-credential-issuer-metadata'
+} from './metadata/credential-issuer/z-credential-issuer-metadata'
 
 export {
   extractScopesForCredentialConfigurationIds,

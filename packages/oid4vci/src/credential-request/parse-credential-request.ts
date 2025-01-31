@@ -1,20 +1,20 @@
 import { parseWithErrorHandling } from '@openid4vc/utils'
 import z from 'zod'
 import type { CredentialFormatIdentifier } from '../formats/credential'
-import { attestationProofTypeIdentifier } from '../formats/proof-type/attestation/v-attestation-proof-type'
-import { jwtProofTypeIdentifier } from '../formats/proof-type/jwt/v-jwt-proof-type'
+import { attestationProofTypeIdentifier } from '../formats/proof-type/attestation/z-attestation-proof-type'
+import { jwtProofTypeIdentifier } from '../formats/proof-type/jwt/z-jwt-proof-type'
 import {
   type CredentialRequest,
   type CredentialRequestFormatSpecific,
   allCredentialRequestFormatIdentifiers,
   allCredentialRequestFormats,
-  vCredentialRequest,
-} from './v-credential-request'
+  zCredentialRequest,
+} from './z-credential-request'
 import {
   type CredentialRequestProofsFormatSpecific,
   allCredentialRequestProofs,
-  vCredentialRequestProofs,
-} from './v-credential-request-common'
+  zCredentialRequestProofs,
+} from './z-credential-request-common'
 
 export interface ParseCredentialRequestOptions {
   credentialRequest: Record<string, unknown>
@@ -57,14 +57,14 @@ export interface ParseCredentialRequestReturn {
 
 export function parseCredentialRequest(options: ParseCredentialRequestOptions): ParseCredentialRequestReturn {
   const credentialRequest = parseWithErrorHandling(
-    vCredentialRequest,
+    zCredentialRequest,
     options.credentialRequest,
     'Error validating credential request'
   )
   let proofs: CredentialRequestProofsFormatSpecific | undefined = undefined
 
   // Try to parse the known proofs from the `proofs` object
-  const knownProofs = vCredentialRequestProofs.strict().safeParse(credentialRequest.proofs)
+  const knownProofs = zCredentialRequestProofs.strict().safeParse(credentialRequest.proofs)
   if (knownProofs.success) {
     proofs = knownProofs.data
   }

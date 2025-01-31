@@ -27,11 +27,11 @@ import {
   verifyClientAttestationJwt,
 } from './client-attestation/clent-attestation'
 import { verifyClientAttestationPopJwt } from './client-attestation/client-attestation-pop'
-import { Oauth2ErrorCodes } from './common/v-oauth2-error'
+import { Oauth2ErrorCodes } from './common/z-oauth2-error'
 import {
   type AuthorizationServerMetadata,
-  vAuthorizationServerMetadata,
-} from './metadata/authorization-server/v-authorization-server-metadata'
+  zAuthorizationServerMetadata,
+} from './metadata/authorization-server/z-authorization-server-metadata'
 
 export interface Oauth2AuthorizationServerOptions {
   /**
@@ -45,7 +45,7 @@ export class Oauth2AuthorizationServer {
 
   public createAuthorizationServerMetadata(authorizationServerMetadata: AuthorizationServerMetadata) {
     return parseWithErrorHandling(
-      vAuthorizationServerMetadata,
+      zAuthorizationServerMetadata,
       authorizationServerMetadata,
       'Error validating authorization server metadata'
     )

@@ -8,8 +8,8 @@ import {
   type CredentialConfigurationsSupportedWithFormats,
   type CredentialIssuerMetadata,
   allCredentialIssuerMetadataFormatIdentifiers,
-  vCredentialIssuerMetadataWithDraftVersion,
-} from './v-credential-issuer-metadata'
+  zCredentialIssuerMetadataWithDraftVersion,
+} from './z-credential-issuer-metadata'
 
 const wellKnownCredentialIssuerSuffix = '.well-known/openid-credential-issuer'
 
@@ -21,7 +21,7 @@ export async function fetchCredentialIssuerMetadata(
   fetch?: Fetch
 ): Promise<{ credentialIssuerMetadata: CredentialIssuerMetadata; originalDraftVersion: Oid4vciDraftVersion } | null> {
   const wellKnownMetadataUrl = joinUriParts(credentialIssuer, [wellKnownCredentialIssuerSuffix])
-  const result = await fetchWellKnownMetadata(wellKnownMetadataUrl, vCredentialIssuerMetadataWithDraftVersion, fetch)
+  const result = await fetchWellKnownMetadata(wellKnownMetadataUrl, zCredentialIssuerMetadataWithDraftVersion, fetch)
 
   // credential issuer param MUST match
   if (result && result.credentialIssuerMetadata.credential_issuer !== credentialIssuer) {

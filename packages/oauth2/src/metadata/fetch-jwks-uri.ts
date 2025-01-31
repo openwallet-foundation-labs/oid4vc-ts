@@ -1,9 +1,9 @@
 import { ContentType, type Fetch, createZodFetcher } from '@openid4vc/utils'
 import { InvalidFetchResponseError } from '@openid4vc/utils'
 import { ValidationError } from '../../../utils/src/error/ValidationError'
-import { type JwkSet, vJwkSet } from '../common/jwk/v-jwk'
+import { type JwkSet, zJwkSet } from '../common/jwk/z-jwk'
 import { Oauth2Error } from '../error/Oauth2Error'
-import type { AuthorizationServerMetadata } from './authorization-server/v-authorization-server-metadata'
+import type { AuthorizationServerMetadata } from './authorization-server/z-authorization-server-metadata'
 
 /**
  * Fetch JWKs from jwks_uri in authorization server metadata
@@ -26,7 +26,7 @@ export async function fetchJwks(authorizationServer: AuthorizationServerMetadata
     )
   }
 
-  const { result, response } = await fetcher(vJwkSet, ContentType.JwkSet, jwksUrl)
+  const { result, response } = await fetcher(zJwkSet, ContentType.JwkSet, jwksUrl)
   if (!response.ok) {
     throw new InvalidFetchResponseError(
       `Fetching JWKs from jwks_uri '${jwksUrl}' resulted in an unsuccessfull response with status code '${response.status}'.`,

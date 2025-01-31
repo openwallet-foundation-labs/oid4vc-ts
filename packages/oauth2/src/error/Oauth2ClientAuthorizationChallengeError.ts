@@ -1,5 +1,5 @@
 import type { FetchResponse } from '@openid4vc/utils'
-import type { AuthorizationChallengeErrorResponse } from '../authorization-challenge/v-authorization-challenge'
+import type { AuthorizationChallengeErrorResponse } from '../authorization-challenge/z-authorization-challenge'
 import { Oauth2ClientErrorResponseError } from './Oauth2ClientErrorResponseError'
 
 export class Oauth2ClientAuthorizationChallengeError extends Oauth2ClientErrorResponseError {

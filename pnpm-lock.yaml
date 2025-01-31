@@ -19,10 +19,6 @@ catalogs:
 importers:
 
   .:
-    dependencies:
-      zod:
-        specifier: ^3.24.1
-        version: 3.24.1
     devDependencies:
       '@biomejs/biome':
         specifier: ^1.9.4

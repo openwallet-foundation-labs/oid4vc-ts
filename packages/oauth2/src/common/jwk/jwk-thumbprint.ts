@@ -2,9 +2,9 @@ import type { HashAlgorithm, HashCallback } from '../../callbacks'
 
 import { decodeUtf8String, encodeToBase64Url, parseWithErrorHandling } from '@openid4vc/utils'
 import z from 'zod'
-import type { Jwk } from './v-jwk'
+import type { Jwk } from './z-jwk'
 
-export const vJwkThumbprintComponents = z
+export const zJwkThumbprintComponents = z
   .discriminatedUnion('kty', [
     z.object({
       kty: z.literal('EC'),
@@ -66,7 +66,7 @@ export interface CalculateJwkThumbprintOptions {
 
 export async function calculateJwkThumbprint(options: CalculateJwkThumbprintOptions): Promise<string> {
   const jwkThumbprintComponents = parseWithErrorHandling(
-    vJwkThumbprintComponents,
+    zJwkThumbprintComponents,
     options.jwk,
     `Provided jwk does not match a supported jwk structure. Either the 'kty' is not supported, or required values are missing.`
   )

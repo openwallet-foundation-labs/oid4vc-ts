@@ -15,14 +15,14 @@ import { type RequestDpopOptions, createDpopHeadersForRequest, extractDpopNonceF
 import { authorizationServerRequestWithDpopRetry } from '../dpop/dpop-retry'
 import { Oauth2ClientAuthorizationChallengeError } from '../error/Oauth2ClientAuthorizationChallengeError'
 import { Oauth2Error } from '../error/Oauth2Error'
-import type { AuthorizationServerMetadata } from '../metadata/authorization-server/v-authorization-server-metadata'
+import type { AuthorizationServerMetadata } from '../metadata/authorization-server/z-authorization-server-metadata'
 import { createPkce } from '../pkce'
 import {
   type AuthorizationChallengeRequest,
-  vAuthorizationChallengeErrorResponse,
-  vAuthorizationChallengeRequest,
-  vAuthorizationChallengeResponse,
-} from './v-authorization-challenge'
+  zAuthorizationChallengeErrorResponse,
+  zAuthorizationChallengeRequest,
+  zAuthorizationChallengeResponse,
+} from './z-authorization-challenge'
 
 export interface SendAuthorizationChallengeRequestOptions {
   /**
@@ -121,7 +121,7 @@ export async function sendAuthorizationChallengeRequest(options: SendAuthorizati
       })
     : undefined
 
-  const authorizationChallengeRequest = parseWithErrorHandling(vAuthorizationChallengeRequest, {
+  const authorizationChallengeRequest = parseWithErrorHandling(zAuthorizationChallengeRequest, {
     ...options.additionalRequestPayload,
     auth_session: options.authSession,
     client_id: options.clientId,
@@ -149,7 +149,7 @@ export async function sendAuthorizationChallengeRequest(options: SendAuthorizati
         : undefined
 
       const { response, result } = await fetchWithZod(
-        vAuthorizationChallengeResponse,
+        zAuthorizationChallengeResponse,
         ContentType.Json,
         authorizationChallengeEndpoint,
         {
@@ -164,7 +164,7 @@ export async function sendAuthorizationChallengeRequest(options: SendAuthorizati
       )
 
       if (!response.ok || !result) {
-        const authorizationChallengeErrorResponse = vAuthorizationChallengeErrorResponse.safeParse(
+        const authorizationChallengeErrorResponse = zAuthorizationChallengeErrorResponse.safeParse(
           await response
             .clone()
             .json()
