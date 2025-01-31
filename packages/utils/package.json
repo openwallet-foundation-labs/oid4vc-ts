@@ -28,6 +28,7 @@
   },
   "dependencies": {
     "buffer": "catalog:",
-    "zod": "catalog:"
+    "zod": "catalog:",
+    "zod-validation-error": "^3.4.0"
   }
 }
