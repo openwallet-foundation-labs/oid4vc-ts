@@ -3,7 +3,7 @@ import z from 'zod'
 import { ValidationError } from '../error/ValidationError'
 
 describe('Validation error', () => {
-  test('basic', () => {
+  test('basic formatting', () => {
     const schema = z.object({
       name: z.string(),
       age: z.number(),
@@ -23,10 +23,18 @@ describe('Validation error', () => {
 
     const error = new ValidationError('Validation failed', result.error)
     expect(error.message).toMatchInlineSnapshot(`
-      "[ValidationError] Validation failed
+      "Validation failed
       	- Required at "name"
       	- Required at "age"
       	- Invalid discriminator value. Expected 'a' | 'b' at "object.foo.bar.type""
     `)
+  })
+
+  test('should be able to get original zod error instance', () => {
+    const schema = z.object({ name: z.string() })
+    const result = schema.safeParse({ name: 123 })
+
+    const error = new ValidationError('Validation failed', result.error)
+    expect(error.zodError).toBe(result.error)
   })
 })
