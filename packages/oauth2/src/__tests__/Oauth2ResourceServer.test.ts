@@ -5,9 +5,9 @@ import { afterAll, afterEach, beforeAll, describe, expect, test } from 'vitest'
 import { callbacks, getSignJwtCallback } from '../../tests/util'
 import { Oauth2ResourceServer } from '../Oauth2ResourceServer'
 import { createAccessTokenJwt } from '../access-token/create-access-token'
-import type { Jwk, JwkSet } from '../common/jwk/v-jwk'
+import type { Jwk, JwkSet } from '../common/jwk/z-jwk'
 import { createDpopJwt } from '../dpop/dpop'
-import type { AuthorizationServerMetadata } from '../metadata/authorization-server/v-authorization-server-metadata'
+import type { AuthorizationServerMetadata } from '../metadata/authorization-server/z-authorization-server-metadata'
 
 const server = setupServer()
 

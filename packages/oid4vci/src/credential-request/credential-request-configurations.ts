@@ -3,8 +3,8 @@ import { extractKnownCredentialConfigurationSupportedFormats } from '../metadata
 import type {
   CredentialConfigurationsSupported,
   CredentialConfigurationsSupportedWithFormats,
-} from '../metadata/credential-issuer/v-credential-issuer-metadata'
-import type { CredentialRequestFormatSpecific } from './v-credential-request'
+} from '../metadata/credential-issuer/z-credential-issuer-metadata'
+import type { CredentialRequestFormatSpecific } from './z-credential-request'
 
 export interface GetCredentialConfigurationsMatchingRequestFormatOptions {
   requestFormat: CredentialRequestFormatSpecific

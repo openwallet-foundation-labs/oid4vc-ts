@@ -1,5 +1,5 @@
 import { parseWithErrorHandling } from '@openid4vc/utils'
-import { vAuthorizationChallengeRequest } from './v-authorization-challenge'
+import { zAuthorizationChallengeRequest } from './z-authorization-challenge'
 
 export interface ParseAuthorizationChallengeRequestOptions {
   authorizationChallengeRequest: unknown
@@ -12,7 +12,7 @@ export interface ParseAuthorizationChallengeRequestOptions {
  */
 export function parseAuthorizationChallengeRequest(options: ParseAuthorizationChallengeRequestOptions) {
   const authorizationChallengeRequest = parseWithErrorHandling(
-    vAuthorizationChallengeRequest,
+    zAuthorizationChallengeRequest,
     options.authorizationChallengeRequest
   )
 

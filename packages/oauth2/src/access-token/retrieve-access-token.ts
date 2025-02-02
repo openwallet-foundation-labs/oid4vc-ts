@@ -1,6 +1,5 @@
-import { ContentType, createValibotFetcher, objectToQueryParams, parseWithErrorHandling } from '@openid4vc/utils'
+import { ContentType, createZodFetcher, objectToQueryParams, parseWithErrorHandling } from '@openid4vc/utils'
 import { InvalidFetchResponseError } from '@openid4vc/utils'
-import * as v from 'valibot'
 import { ValidationError } from '../../../utils/src/error/ValidationError'
 import type { CallbackContext } from '../callbacks'
 import {
@@ -10,19 +9,19 @@ import {
 import { type RequestDpopOptions, createDpopHeadersForRequest, extractDpopNonceFromHeaders } from '../dpop/dpop'
 import { authorizationServerRequestWithDpopRetry } from '../dpop/dpop-retry'
 import { Oauth2ClientErrorResponseError } from '../error/Oauth2ClientErrorResponseError'
-import type { AuthorizationServerMetadata } from '../metadata/authorization-server/v-authorization-server-metadata'
+import type { AuthorizationServerMetadata } from '../metadata/authorization-server/z-authorization-server-metadata'
 import {
   authorizationCodeGrantIdentifier,
   preAuthorizedCodeGrantIdentifier,
   refreshTokenGrantIdentifier,
-} from '../v-grant-type'
+} from '../z-grant-type'
 import {
   type AccessTokenRequest,
   type AccessTokenResponse,
-  vAccessTokenErrorResponse,
-  vAccessTokenRequest,
-  vAccessTokenResponse,
-} from './v-access-token'
+  zAccessTokenErrorResponse,
+  zAccessTokenRequest,
+  zAccessTokenResponse,
+} from './z-access-token'
 
 export interface RetrieveAccessTokenReturn {
   accessTokenResponse: AccessTokenResponse
@@ -183,10 +182,10 @@ interface RetrieveAccessTokenOptions extends RetrieveAccessTokenBaseOptions {
  * Internal method
  */
 async function retrieveAccessToken(options: RetrieveAccessTokenOptions): Promise<RetrieveAccessTokenReturn> {
-  const fetchWithValibot = createValibotFetcher(options.callbacks.fetch)
+  const fetchWithZod = createZodFetcher(options.callbacks.fetch)
 
   const accessTokenRequest = parseWithErrorHandling(
-    vAccessTokenRequest,
+    zAccessTokenRequest,
     options.request,
     'Error validating access token request'
   )
@@ -223,8 +222,8 @@ async function retrieveAccessToken(options: RetrieveAccessTokenOptions): Promise
         ...accessTokenRequest,
         ...clientAttestation?.body,
       })
-      const { response, result } = await fetchWithValibot(
-        vAccessTokenResponse,
+      const { response, result } = await fetchWithZod(
+        zAccessTokenResponse,
         ContentType.Json,
         options.authorizationServerMetadata.token_endpoint,
         {
@@ -239,8 +238,7 @@ async function retrieveAccessToken(options: RetrieveAccessTokenOptions): Promise
       )
 
       if (!response.ok || !result) {
-        const tokenErrorResponse = v.safeParse(
-          vAccessTokenErrorResponse,
+        const tokenErrorResponse = zAccessTokenErrorResponse.safeParse(
           await response
             .clone()
             .json()
@@ -249,7 +247,7 @@ async function retrieveAccessToken(options: RetrieveAccessTokenOptions): Promise
         if (tokenErrorResponse.success) {
           throw new Oauth2ClientErrorResponseError(
             `Unable to retrieve access token from '${options.authorizationServerMetadata.token_endpoint}'. Received token error response with status ${response.status}`,
-            tokenErrorResponse.output,
+            tokenErrorResponse.data,
             response
           )
         }
@@ -262,7 +260,7 @@ async function retrieveAccessToken(options: RetrieveAccessTokenOptions): Promise
       }
 
       if (!result.success) {
-        throw new ValidationError('Error validating access token response', result.issues)
+        throw new ValidationError('Error validating access token response', result.error)
       }
 
       const dpopNonce = extractDpopNonceFromHeaders(response.headers) ?? undefined
@@ -273,7 +271,7 @@ async function retrieveAccessToken(options: RetrieveAccessTokenOptions): Promise
               nonce: dpopNonce,
             }
           : undefined,
-        accessTokenResponse: result.output,
+        accessTokenResponse: result.data,
       }
     },
   })

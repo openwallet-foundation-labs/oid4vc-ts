@@ -1,4 +1,4 @@
-import type { Oauth2ErrorResponse } from '../common/v-oauth2-error'
+import type { Oauth2ErrorResponse } from '../common/z-oauth2-error'
 import type { Oauth2ErrorOptions } from '../error/Oauth2Error'
 import { Oauth2Error } from './Oauth2Error'
 

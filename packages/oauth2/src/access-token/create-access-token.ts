@@ -2,15 +2,15 @@ import { addSecondsToDate, dateToSeconds, encodeToBase64Url, parseWithErrorHandl
 import type { CallbackContext } from '../callbacks'
 import { HashAlgorithm } from '../callbacks'
 import { calculateJwkThumbprint } from '../common/jwk/jwk-thumbprint'
-import type { Jwk } from '../common/jwk/v-jwk'
+import type { Jwk } from '../common/jwk/z-jwk'
 import { jwtHeaderFromJwtSigner } from '../common/jwt/decode-jwt'
-import type { JwtSigner } from '../common/jwt/v-jwt'
+import type { JwtSigner } from '../common/jwt/z-jwt'
 import {
   type AccessTokenProfileJwtHeader,
   type AccessTokenProfileJwtPayload,
-  vAccessTokenProfileJwtHeader,
-  vAccessTokenProfileJwtPayload,
-} from './v-access-token-jwt'
+  zAccessTokenProfileJwtHeader,
+  zAccessTokenProfileJwtPayload,
+} from './z-access-token-jwt'
 
 export interface CreateAccessTokenOptions {
   callbacks: Pick<CallbackContext, 'signJwt' | 'generateRandom' | 'hash'>
@@ -75,14 +75,14 @@ export interface CreateAccessTokenOptions {
  * @see https://datatracker.ietf.org/doc/html/rfc9068
  */
 export async function createAccessTokenJwt(options: CreateAccessTokenOptions) {
-  const header = parseWithErrorHandling(vAccessTokenProfileJwtHeader, {
+  const header = parseWithErrorHandling(zAccessTokenProfileJwtHeader, {
     ...jwtHeaderFromJwtSigner(options.signer),
     typ: 'at+jwt',
   } satisfies AccessTokenProfileJwtHeader)
 
   const now = options.now ?? new Date()
 
-  const payload = parseWithErrorHandling(vAccessTokenProfileJwtPayload, {
+  const payload = parseWithErrorHandling(zAccessTokenProfileJwtPayload, {
     iat: dateToSeconds(now),
     exp: dateToSeconds(addSecondsToDate(now, options.expiresInSeconds)),
     aud: options.audience,

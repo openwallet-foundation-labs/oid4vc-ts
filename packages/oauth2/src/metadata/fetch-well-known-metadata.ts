@@ -1,6 +1,6 @@
-import { type BaseSchema, ContentType, type Fetch, createValibotFetcher } from '@openid4vc/utils'
+import { type BaseSchema, ContentType, type Fetch, createZodFetcher } from '@openid4vc/utils'
 import { InvalidFetchResponseError } from '@openid4vc/utils'
-import type * as v from 'valibot'
+import type z from 'zod'
 import { ValidationError } from '../../../utils/src/error/ValidationError'
 
 /**
@@ -18,8 +18,8 @@ export async function fetchWellKnownMetadata<Schema extends BaseSchema>(
   wellKnownMetadataUrl: string,
   schema: Schema,
   fetch?: Fetch
-): Promise<v.InferOutput<Schema> | null> {
-  const fetcher = createValibotFetcher(fetch)
+): Promise<z.infer<Schema> | null> {
+  const fetcher = createZodFetcher(fetch)
 
   const { result, response } = await fetcher(schema, ContentType.Json, wellKnownMetadataUrl)
   if (response.status === 404) {
@@ -34,9 +34,9 @@ export async function fetchWellKnownMetadata<Schema extends BaseSchema>(
     )
   }
 
-  if (!result || !result.success) {
-    throw new ValidationError(`Validation of metadata from '${wellKnownMetadataUrl}' failed`, result?.issues)
+  if (!result?.success) {
+    throw new ValidationError(`Validation of metadata from '${wellKnownMetadataUrl}' failed`, result?.error)
   }
 
-  return result.output
+  return result.data
 }

@@ -1,7 +1,5 @@
-import { valibotRecursiveFlattenIssues } from '@openid4vc/utils'
-import * as v from 'valibot'
-import type { RequestLike } from '../common/v-common'
-import { Oauth2ErrorCodes } from '../common/v-oauth2-error'
+import type { RequestLike } from '../common/z-common'
+import { Oauth2ErrorCodes } from '../common/z-oauth2-error'
 import { extractDpopJwtFromHeaders } from '../dpop/dpop'
 import { Oauth2ServerErrorResponseError } from '../error/Oauth2ServerErrorResponseError'
 import {
@@ -9,8 +7,8 @@ import {
   type PreAuthorizedCodeGrantIdentifier,
   authorizationCodeGrantIdentifier,
   preAuthorizedCodeGrantIdentifier,
-} from '../v-grant-type'
-import { type AccessTokenRequest, vAccessTokenRequest } from './v-access-token'
+} from '../z-grant-type'
+import { type AccessTokenRequest, zAccessTokenRequest } from './z-access-token'
 
 export interface ParsedAccessTokenPreAuthorizedCodeRequestGrant {
   grantType: PreAuthorizedCodeGrantIdentifier
@@ -60,15 +58,15 @@ export interface ParseAccessTokenRequestOptions {
  * that can be returned to the client.
  */
 export function parseAccessTokenRequest(options: ParseAccessTokenRequestOptions): ParseAccessTokenRequestResult {
-  const parsedAccessTokenRequest = v.safeParse(vAccessTokenRequest, options.accessTokenRequest)
+  const parsedAccessTokenRequest = zAccessTokenRequest.safeParse(options.accessTokenRequest)
   if (!parsedAccessTokenRequest.success) {
     throw new Oauth2ServerErrorResponseError({
       error: Oauth2ErrorCodes.InvalidRequest,
-      error_description: `Error occured during validation of authorization request.\n${JSON.stringify(valibotRecursiveFlattenIssues(parsedAccessTokenRequest.issues), null, 2)}`,
+      error_description: `Error occured during validation of authorization request.\n${JSON.stringify(parsedAccessTokenRequest.error.issues, null, 2)}`,
     })
   }
 
-  const accessTokenRequest = parsedAccessTokenRequest.output
+  const accessTokenRequest = parsedAccessTokenRequest.data
   let grant: ParsedAccessTokenRequestGrant
 
   if (accessTokenRequest.grant_type === preAuthorizedCodeGrantIdentifier) {

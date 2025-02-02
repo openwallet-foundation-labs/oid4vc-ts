@@ -4,7 +4,7 @@ import * as jose from 'jose'
 import { type CallbackContext, HashAlgorithm, type SignJwtCallback } from '../src/callbacks'
 import { clientAuthenticationNone } from '../src/client-authentication'
 import { calculateJwkThumbprint } from '../src/common/jwk/jwk-thumbprint'
-import type { Jwk } from '../src/common/jwk/v-jwk'
+import type { Jwk } from '../src/common/jwk/z-jwk'
 
 export function parseXwwwFormUrlEncoded(text: string) {
   return Object.fromEntries(Array.from(new URLSearchParams(text).entries()))
@@ -57,6 +57,7 @@ export const getSignJwtCallback = (privateJwks: Jwk[]): SignJwtCallback => {
       hashAlgorithm: HashAlgorithm.Sha256,
       hashCallback: callbacks.hash,
     })
+
     const privateJwk = await Promise.all(
       privateJwks.map(async (jwk) =>
         (await calculateJwkThumbprint({

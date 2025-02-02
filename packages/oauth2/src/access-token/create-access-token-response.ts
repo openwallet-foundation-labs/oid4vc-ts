@@ -1,6 +1,6 @@
 import { parseWithErrorHandling } from '@openid4vc/utils'
 import type { CallbackContext } from '../callbacks'
-import { type AccessTokenResponse, vAccessTokenResponse } from './v-access-token'
+import { type AccessTokenResponse, zAccessTokenResponse } from './z-access-token'
 
 export interface CreateAccessTokenResponseOptions {
   callbacks: Pick<CallbackContext, 'signJwt' | 'generateRandom' | 'hash'>
@@ -36,7 +36,7 @@ export interface CreateAccessTokenResponseOptions {
 }
 
 export async function createAccessTokenResponse(options: CreateAccessTokenResponseOptions) {
-  const accessTokenResponse = parseWithErrorHandling(vAccessTokenResponse, {
+  const accessTokenResponse = parseWithErrorHandling(zAccessTokenResponse, {
     access_token: options.accessToken,
     token_type: options.tokenType,
     expires_in: options.expiresInSeconds,

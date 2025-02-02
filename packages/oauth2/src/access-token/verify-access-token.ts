@@ -3,9 +3,9 @@ import { extractJwkFromJwksForJwt } from '../common/jwk/jwks'
 import { decodeJwt } from '../common/jwt/decode-jwt'
 import { verifyJwt } from '../common/jwt/verify-jwt'
 import { Oauth2Error } from '../error/Oauth2Error'
-import type { AuthorizationServerMetadata } from '../metadata/authorization-server/v-authorization-server-metadata'
+import type { AuthorizationServerMetadata } from '../metadata/authorization-server/z-authorization-server-metadata'
 import { fetchJwks } from '../metadata/fetch-jwks-uri'
-import { vAccessTokenProfileJwtHeader, vAccessTokenProfileJwtPayload } from './v-access-token-jwt'
+import { zAccessTokenProfileJwtHeader, zAccessTokenProfileJwtPayload } from './z-access-token-jwt'
 
 export enum SupportedAuthenticationScheme {
   Bearer = 'Bearer',
@@ -50,8 +50,8 @@ export interface VerifyJwtProfileAccessTokenOptions {
 export async function verifyJwtProfileAccessToken(options: VerifyJwtProfileAccessTokenOptions) {
   const decodedJwt = decodeJwt({
     jwt: options.accessToken,
-    headerSchema: vAccessTokenProfileJwtHeader,
-    payloadSchema: vAccessTokenProfileJwtPayload,
+    headerSchema: zAccessTokenProfileJwtHeader,
+    payloadSchema: zAccessTokenProfileJwtPayload,
   })
 
   const authorizationServer = options.authorizationServers.find(({ issuer }) => decodedJwt.payload.iss === issuer)

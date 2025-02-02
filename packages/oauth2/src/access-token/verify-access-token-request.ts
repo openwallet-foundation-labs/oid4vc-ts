@@ -1,7 +1,7 @@
 import type { CallbackContext } from '../callbacks'
-import type { Jwk } from '../common/jwk/v-jwk'
-import type { RequestLike } from '../common/v-common'
-import { Oauth2ErrorCodes } from '../common/v-oauth2-error'
+import type { Jwk } from '../common/jwk/z-jwk'
+import type { RequestLike } from '../common/z-common'
+import { Oauth2ErrorCodes } from '../common/z-oauth2-error'
 import { verifyDpopJwt } from '../dpop/dpop'
 import { Oauth2Error } from '../error/Oauth2Error'
 import { Oauth2ServerErrorResponseError } from '../error/Oauth2ServerErrorResponseError'
@@ -10,7 +10,7 @@ import type {
   ParsedAccessTokenAuthorizationCodeRequestGrant,
   ParsedAccessTokenPreAuthorizedCodeRequestGrant,
 } from './parse-access-token-request'
-import type { AccessTokenRequest } from './v-access-token'
+import type { AccessTokenRequest } from './z-access-token'
 
 export interface VerifyAccessTokenRequestDpop {
   /**

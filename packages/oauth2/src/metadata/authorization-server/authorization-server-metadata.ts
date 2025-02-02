@@ -1,7 +1,7 @@
 import { type Fetch, joinUriParts } from '@openid4vc/utils'
 import { Oauth2Error } from '../../error/Oauth2Error'
 import { fetchWellKnownMetadata } from '../fetch-well-known-metadata'
-import { type AuthorizationServerMetadata, vAuthorizationServerMetadata } from './v-authorization-server-metadata'
+import { type AuthorizationServerMetadata, zAuthorizationServerMetadata } from './z-authorization-server-metadata'
 
 const wellKnownAuthorizationServerSuffix = '.well-known/oauth-authorization-server'
 const wellKnownOpenIdConfigurationServerSuffix = '.well-known/openid-configuration'
@@ -20,7 +20,7 @@ export async function fetchAuthorizationServerMetadata(
   // First try oauth-authorization-server
   const authorizationServerResult = await fetchWellKnownMetadata(
     authorizationServerWellKnownMetadataUrl,
-    vAuthorizationServerMetadata,
+    zAuthorizationServerMetadata,
     fetch
   )
 
@@ -37,7 +37,7 @@ export async function fetchAuthorizationServerMetadata(
 
   const openIdConfigurationResult = await fetchWellKnownMetadata(
     openIdConfigurationWellKnownMetadataUrl,
-    vAuthorizationServerMetadata,
+    zAuthorizationServerMetadata,
     fetch
   )
 

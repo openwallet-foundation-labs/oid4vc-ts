@@ -1,8 +1,8 @@
 import { dateToSeconds } from '@openid4vc/utils'
 import type { VerifyJwtCallback } from '../../callbacks'
 import { Oauth2JwtVerificationError } from '../../error/Oauth2JwtVerificationError'
-import type { Jwk } from '../jwk/v-jwk'
-import type { JwtHeader, JwtPayload, JwtSigner, JwtSignerWithJwk } from './v-jwt'
+import type { Jwk } from '../jwk/z-jwk'
+import type { JwtHeader, JwtPayload, JwtSigner, JwtSignerWithJwk } from './z-jwt'
 
 export interface VerifyJwtOptions {
   /**

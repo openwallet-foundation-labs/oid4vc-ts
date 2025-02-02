@@ -28,7 +28,7 @@
   },
   "dependencies": {
     "@openid4vc/utils": "workspace:*",
-    "valibot": "catalog:"
+    "zod": "catalog:"
   },
   "devDependencies": {
     "jose": "catalog:"
