@@ -14,7 +14,7 @@ export interface VerifyOpenid4VpPexAuthorizationResponseResult {
 export interface VerifyOpenid4VpDcqlAuthorizationResponseResult {
   type: 'dcql'
   dcql: {
-    presentation: VpTokenPresentationParseResult
+    presentation: Record<string, VpTokenPresentationParseResult>
   } & ({ scope: string; query?: never } | { scope?: never; query: unknown })
 }
 

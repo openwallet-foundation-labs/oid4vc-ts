@@ -8,7 +8,7 @@ import {
   stringToJsonWithErrorHandling,
 } from '@openid4vc/utils'
 import { Oauth2JwtParseError } from '../../error/Oauth2JwtParseError'
-import { decodeJwtHeader } from './decode-jwt-header.js'
+import { decodeJwtHeader } from './decode-jwt-header'
 import { type JwtSigner, type vJwtHeader, vJwtPayload } from './v-jwt'
 
 export interface DecodeJwtOptions<
@@ -61,7 +61,7 @@ export function decodeJwt<
     throw new Oauth2JwtParseError('Error parsing JWT')
   }
 
-  const { header } = decodeJwtHeader({ jwe: jwtParts[0], headerSchema: options.headerSchema })
+  const { header } = decodeJwtHeader({ jwe: options.jwt, headerSchema: options.headerSchema })
   const payload = parseWithErrorHandling(options.payloadSchema ?? vJwtPayload, payloadJson)
 
   return {

@@ -7,7 +7,7 @@ import {
 } from '@openid4vc/utils'
 import { Oauth2JwtParseError } from '../../error/Oauth2JwtParseError'
 import type { InferSchemaOutput } from './decode-jwt'
-import { vJwtHeader } from './v-jwt.js'
+import { vJwtHeader } from './v-jwt'
 
 export interface DecodeJwtHeaderOptions<HeaderSchema extends BaseSchema | undefined> {
   /**

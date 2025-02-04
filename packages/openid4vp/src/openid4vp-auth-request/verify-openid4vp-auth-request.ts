@@ -1,7 +1,7 @@
 import type { CallbackContext } from '@openid4vc/oauth2'
 import * as v from 'valibot'
 import { parseClientIdentifier } from '../client-identifier-scheme/parse-client-identifier-scheme'
-import { verifyJarRequest } from '../jar/handle-jar-request/verify-jar-request.js'
+import { verifyJarRequest } from '../jar/handle-jar-request/verify-jar-request'
 import { type JarAuthRequest, vJarAuthRequest } from '../jar/v-jar-auth-request'
 import type { WalletMetadata } from '../models/v-wallet-metadata'
 import { parseTransactionData } from '../transaction-data/parse-transaction-data'
@@ -41,6 +41,12 @@ export async function verifyOpenid4vpAuthRequest(
       }
     | undefined
 
+  let dcql:
+    | {
+        query: unknown
+      }
+    | undefined
+
   if (authRequestParams.presentation_definition || authRequestParams.presentation_definition_uri) {
     if (authRequestParams.presentation_definition_uri) {
       throw new Error('presentation_definition_uri is not supported')
@@ -48,6 +54,12 @@ export async function verifyOpenid4vpAuthRequest(
     pex = {
       presentation_definition: authRequestParams.presentation_definition,
       presentation_definition_uri: authRequestParams.presentation_definition_uri,
+    }
+  }
+
+  if (authRequestParams.dcql_query) {
+    dcql = {
+      query: authRequestParams.dcql_query,
     }
   }
 
@@ -61,6 +73,7 @@ export async function verifyOpenid4vpAuthRequest(
     jar,
     client: { ...clientMeta },
     pex,
+    dcql,
   }
 }
 

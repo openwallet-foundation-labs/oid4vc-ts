@@ -1,8 +1,8 @@
 import { Oauth2Error } from '@openid4vc/oauth2'
 import type { Openid4vpAuthRequest } from '../openid4vp-auth-request/v-openid4vp-auth-request'
 import {
+  parseDcqlPresentationFromVpToken,
   parsePresentationsFromVpToken,
-  parseSinglePresentationsFromVpToken,
 } from '../vp-token/parse-presentations-from-vp-token'
 import type { Openid4vpAuthResponse } from './v-openid4vp-auth-response'
 import type { VerifyOpenid4VpAuthorizationResponseResult } from './verify-openid4vp-auth-response-result'
@@ -70,17 +70,12 @@ export function verifyOpenid4vpAuthorizationResponse(options: {
       )
     }
 
-    if (typeof responseParams.vp_token === 'string') {
+    if (typeof responseParams.vp_token !== 'string') {
       throw new Oauth2Error('If DCQL was used the vp_token must be a JSON-encoded object.')
     }
 
-    // TODO: ENABLE THIS CHECK ALL THE TIME ONCE WE KNOW HOW TO GET THE NONCE FOR MDOCS AND ANONCREDS
-    const presentation = parseSinglePresentationsFromVpToken({ vpToken: responseParams.vp_token, path: '$' })
-    if (presentation.nonce && requestParams.nonce !== presentation.nonce) {
-      throw new Oauth2Error(
-        'Presentation nonce mismatch. The nonce of the presentation does not match the nonce of the request.'
-      )
-    }
+    const presentation = parseDcqlPresentationFromVpToken({ vpToken: responseParams.vp_token, path: '$' })
+    // TODO: CHECK ALL THE NONCES ONCE WE KNOW HOW TO GET THE NONCE FOR MDOCS AND ANONCREDS
 
     return {
       type: 'dcql',

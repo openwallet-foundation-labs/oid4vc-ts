@@ -45,6 +45,26 @@ export function parsePresentationsFromVpToken(options: { vpToken: VpToken }): [
   )
 }
 
+export function parseDcqlPresentationFromVpToken(options: {
+  vpToken: unknown
+  path: string
+}) {
+  const { vpToken: _vpToken } = options
+
+  const vpToken = parseIfJson(_vpToken)
+  if (!v.is(v.looseObject({}), vpToken)) {
+    throw new Oauth2Error(`Could not parse vp_token. Expected a JSON object. Received: ${typeof vpToken}`)
+  }
+
+  const dcqlPresentationRecord = Object.fromEntries(
+    Object.entries(vpToken).map(([key, value]) => {
+      return [key, parseSinglePresentationsFromVpToken({ vpToken: value, path: '$' })]
+    })
+  )
+
+  return dcqlPresentationRecord
+}
+
 export function parseSinglePresentationsFromVpToken(options: {
   vpToken: unknown
   path: string
