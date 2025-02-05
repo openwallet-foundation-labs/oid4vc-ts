@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { authorizationCodeGrantIdentifier, preAuthorizedCodeGrantIdentifier } from '../../v-grant-type'
+import { authorizationCodeGrantIdentifier, preAuthorizedCodeGrantIdentifier } from '../../z-grant-type'
 import { parseAccessTokenRequest } from '../parse-access-token-request'
 
 describe('Parse Access Token Request', () => {

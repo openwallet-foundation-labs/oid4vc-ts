@@ -2,8 +2,8 @@ import type { CallbackContext } from '@openid4vc/oauth2'
 import { ContentType, defaultFetcher } from '@openid4vc/utils'
 import { xWwwFormUrlEncodeObject } from '@openid4vc/utils'
 import { jarmAuthResponseSend } from '../jarm/jarm-auth-response-send'
-import type { Openid4vpAuthRequest } from '../openid4vp-auth-request/v-openid4vp-auth-request'
-import type { Openid4vpAuthResponse } from './v-openid4vp-auth-response'
+import type { Openid4vpAuthRequest } from '../openid4vp-auth-request/z-openid4vp-auth-request'
+import type { Openid4vpAuthResponse } from './z-openid4vp-auth-response'
 
 export async function submitOpenid4vpAuthorizationResponse(input: {
   request: Pick<Openid4vpAuthRequest, 'redirect_uri' | 'response_uri'>

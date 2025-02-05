@@ -1,8 +1,8 @@
 import { addSecondsToDate, dateToSeconds, encodeToBase64Url, parseWithErrorHandling } from '@openid4vc/utils'
 import type { CallbackContext } from '../callbacks'
 import { decodeJwt } from '../common/jwt/decode-jwt'
-import type { JwtSignerJwk } from '../common/jwt/v-jwt'
 import { verifyJwt } from '../common/jwt/verify-jwt'
+import type { JwtSignerJwk } from '../common/jwt/z-jwt'
 import { Oauth2Error } from '../error/Oauth2Error'
 import {
   type ClientAttestationJwtHeader,
@@ -11,11 +11,11 @@ import {
   type ClientAttestationPopJwtPayload,
   oauthClientAttestationHeader,
   oauthClientAttestationPopHeader,
-  vClientAttestationJwtHeader,
-  vClientAttestationJwtPayload,
-  vClientAttestationPopJwtHeader,
-  vClientAttestationPopJwtPayload,
-} from './v-client-attestation'
+  zClientAttestationJwtHeader,
+  zClientAttestationJwtPayload,
+  zClientAttestationPopJwtHeader,
+  zClientAttestationPopJwtPayload,
+} from './z-client-attestation'
 
 export interface RequestClientAttestationOptions {
   /**
@@ -116,8 +116,8 @@ export interface VerifyClientAttestationPopJwtOptions {
 export async function verifyClientAttestationPopJwt(options: VerifyClientAttestationPopJwtOptions) {
   const { header, payload } = decodeJwt({
     jwt: options.clientAttestationPopJwt,
-    headerSchema: vClientAttestationPopJwtHeader,
-    payloadSchema: vClientAttestationPopJwtPayload,
+    headerSchema: zClientAttestationPopJwtHeader,
+    payloadSchema: zClientAttestationPopJwtPayload,
   })
 
   if (payload.iss !== options.clientAttestation.payload.sub) {
@@ -198,20 +198,20 @@ export interface CreateClientAttestationPopJwtOptions {
 }
 
 export async function createClientAttestationPopJwt(options: CreateClientAttestationPopJwtOptions) {
-  const header = parseWithErrorHandling(vClientAttestationPopJwtHeader, {
+  const header = parseWithErrorHandling(zClientAttestationPopJwtHeader, {
     typ: 'oauth-client-attestation-pop+jwt',
     alg: options.signer.alg,
   } satisfies ClientAttestationPopJwtHeader)
 
   const clientAttestation = decodeJwt({
     jwt: options.clientAttestation,
-    headerSchema: vClientAttestationJwtHeader,
-    payloadSchema: vClientAttestationJwtPayload,
+    headerSchema: zClientAttestationJwtHeader,
+    payloadSchema: zClientAttestationJwtPayload,
   })
 
   const expiresAt = options.expiresAt ?? addSecondsToDate(options.issuedAt ?? new Date(), 1 * 60)
 
-  const payload = parseWithErrorHandling(vClientAttestationPopJwtPayload, {
+  const payload = parseWithErrorHandling(zClientAttestationPopJwtPayload, {
     aud: options.authorizationServer,
     iss: clientAttestation.payload.sub,
     iat: dateToSeconds(options.issuedAt),

@@ -1,7 +1,7 @@
 import { type CallbackContext, HashAlgorithm } from '../callbacks'
 import { calculateJwkThumbprint } from '../common/jwk/jwk-thumbprint'
 import { decodeJwt } from '../common/jwt/decode-jwt'
-import type { JwtSignerJwk } from '../common/jwt/v-jwt'
+import type { JwtSignerJwk } from '../common/jwt/z-jwt'
 import { Oauth2Error } from '../error/Oauth2Error'
 
 import {
@@ -13,8 +13,8 @@ import {
   parseWithErrorHandling,
 } from '@openid4vc/utils'
 import { verifyJwt } from '../common/jwt/verify-jwt'
-import type { RequestLike } from '../common/v-common'
-import { type DpopJwtHeader, type DpopJwtPayload, vDpopJwtHeader, vDpopJwtPayload } from './v-dpop'
+import type { RequestLike } from '../common/z-common'
+import { type DpopJwtHeader, type DpopJwtPayload, zDpopJwtHeader, zDpopJwtPayload } from './z-dpop'
 
 export interface RequestDpopOptions {
   /**
@@ -81,13 +81,13 @@ export async function createDpopJwt(options: CreateDpopJwtOptions) {
     ath = encodeToBase64Url(await options.callbacks.hash(decodeUtf8String(options.accessToken), HashAlgorithm.Sha256))
   }
 
-  const header = parseWithErrorHandling(vDpopJwtHeader, {
+  const header = parseWithErrorHandling(zDpopJwtHeader, {
     typ: 'dpop+jwt',
     jwk: options.signer.publicJwk,
     alg: options.signer.alg,
   } satisfies DpopJwtHeader)
 
-  const payload = parseWithErrorHandling(vDpopJwtPayload, {
+  const payload = parseWithErrorHandling(zDpopJwtPayload, {
     htu: htuFromRequestUrl(options.request.url),
     iat: dateToSeconds(options.issuedAt),
     htm: options.request.method,
@@ -153,8 +153,8 @@ export interface VerifyDpopJwtOptions {
 export async function verifyDpopJwt(options: VerifyDpopJwtOptions) {
   const { header, payload } = decodeJwt({
     jwt: options.dpopJwt,
-    headerSchema: vDpopJwtHeader,
-    payloadSchema: vDpopJwtPayload,
+    headerSchema: zDpopJwtHeader,
+    payloadSchema: zDpopJwtPayload,
   })
 
   if (options.allowedSigningAlgs && !options.allowedSigningAlgs.includes(header.alg)) {

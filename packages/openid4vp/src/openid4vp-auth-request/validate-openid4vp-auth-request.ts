@@ -1,5 +1,5 @@
 import { Oauth2Error } from '@openid4vc/oauth2'
-import type { Openid4vpAuthRequest } from './v-openid4vp-auth-request'
+import type { Openid4vpAuthRequest } from './z-openid4vp-auth-request'
 
 /**
  * Validate the OpenId4Vp Authorization Request parameters
@@ -23,8 +23,9 @@ export const validateOpenid4vpAuthRequestParams = (
   }
 
   if (
-    [params.presentation_definition_uri, params.presentation_definition, params.dcql, params.scope].filter(Boolean)
-      .length > 1
+    [params.presentation_definition_uri, params.presentation_definition, params.dcql_query, params.scope].filter(
+      Boolean
+    ).length > 1
   ) {
     throw new Oauth2Error(
       'Exactly one of the following parameters MUST be present in the Authorization Request: dcql_query, presentation_definition, presentation_definition_uri, or a scope value representing a Presentation Definition.'

@@ -1,6 +1,6 @@
 import { parseWithErrorHandling } from '@openid4vc/utils'
 import type { ParseCredentialRequestReturn } from './parse-credential-request'
-import { type CredentialResponse, vCredentialResponse } from './v-credential-response'
+import { type CredentialResponse, zCredentialResponse } from './z-credential-response'
 
 export interface CreateCredentialResponseOptions {
   credentialRequest: ParseCredentialRequestReturn
@@ -20,7 +20,7 @@ export interface CreateCredentialResponseOptions {
 }
 
 export function createCredentialResponse(options: CreateCredentialResponseOptions) {
-  const credentialResponse = parseWithErrorHandling(vCredentialResponse, {
+  const credentialResponse = parseWithErrorHandling(zCredentialResponse, {
     c_nonce: options.cNonce,
     c_nonce_expires_in: options.cNonceExpiresInSeconds,
     credential: options.credential,

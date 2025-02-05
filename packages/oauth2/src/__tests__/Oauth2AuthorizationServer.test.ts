@@ -1,11 +1,11 @@
 import { describe, expect, test } from 'vitest'
 import { getSignJwtCallback, callbacks as partialCallbacks } from '../../tests/util'
 import { Oauth2AuthorizationServer } from '../Oauth2AuthorizationServer'
-import type { Jwk } from '../common/jwk/v-jwk'
+import type { Jwk } from '../common/jwk/z-jwk'
 import { decodeJwt } from '../common/jwt/decode-jwt'
 import { createDpopJwt } from '../dpop/dpop'
 import { PkceCodeChallengeMethod, createPkce } from '../pkce'
-import { authorizationCodeGrantIdentifier, preAuthorizedCodeGrantIdentifier } from '../v-grant-type'
+import { authorizationCodeGrantIdentifier, preAuthorizedCodeGrantIdentifier } from '../z-grant-type'
 
 const dpopSignerJwk = {
   kty: 'EC',

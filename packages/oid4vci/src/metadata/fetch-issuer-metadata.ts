@@ -2,13 +2,13 @@ import {
   type AuthorizationServerMetadata,
   Oauth2Error,
   fetchAuthorizationServerMetadata,
-  vAuthorizationServerMetadata,
+  zAuthorizationServerMetadata,
 } from '@openid4vc/oauth2'
 import type { Fetch } from '@openid4vc/utils'
 import { parseWithErrorHandling } from '@openid4vc/utils'
 import type { Oid4vciDraftVersion } from '../version'
 import { fetchCredentialIssuerMetadata } from './credential-issuer/credential-issuer-metadata'
-import type { CredentialIssuerMetadata } from './credential-issuer/v-credential-issuer-metadata'
+import type { CredentialIssuerMetadata } from './credential-issuer/z-credential-issuer-metadata'
 
 export interface ResolveIssuerMetadataOptions {
   /**
@@ -72,7 +72,7 @@ export async function resolveIssuerMetadata(
       allowAuthorizationMetadataFromCredentialIssuerMetadata
     ) {
       authorizationServerMetadata = parseWithErrorHandling(
-        vAuthorizationServerMetadata,
+        zAuthorizationServerMetadata,
         {
           token_endpoint: credentialIssuerMetadata.token_endpoint,
           issuer: credentialIssuer,

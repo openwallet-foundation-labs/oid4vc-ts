@@ -1,43 +1,51 @@
-import * as v from 'valibot'
 import type { HashAlgorithm, HashCallback } from '../../callbacks'
 
 import { decodeUtf8String, encodeToBase64Url, parseWithErrorHandling } from '@openid4vc/utils'
-import type { Jwk } from './v-jwk'
+import z from 'zod'
+import type { Jwk } from './z-jwk'
 
-const vJwkThumbprintComponents = v.variant('kty', [
-  v.pipe(
-    v.looseObject({
-      kty: v.literal('EC'),
-      crv: v.string(),
-      x: v.string(),
-      y: v.string(),
+export const zJwkThumbprintComponents = z
+  .discriminatedUnion('kty', [
+    z.object({
+      kty: z.literal('EC'),
+      crv: z.string(),
+      x: z.string(),
+      y: z.string(),
     }),
-    v.transform(({ crv, kty, x, y }) => ({ crv, kty, x, y }))
-  ),
-  v.pipe(
-    v.looseObject({
-      kty: v.literal('OKP'),
-      crv: v.string(),
-      x: v.string(),
+    z.object({
+      kty: z.literal('OKP'),
+      crv: z.string(),
+      x: z.string(),
     }),
-    v.transform(({ crv, kty, x }) => ({ crv, kty, x }))
-  ),
-  v.pipe(
-    v.looseObject({
-      kty: v.literal('RSA'),
-      e: v.string(),
-      n: v.string(),
+    z.object({
+      kty: z.literal('RSA'),
+      e: z.string(),
+      n: z.string(),
     }),
-    v.transform(({ e, kty, n }) => ({ e, kty, n }))
-  ),
-  v.pipe(
-    v.looseObject({
-      kty: v.literal('oct'),
-      k: v.string(),
+    z.object({
+      kty: z.literal('oct'),
+      k: z.string(),
     }),
-    v.transform(({ k, kty }) => ({ k, kty }))
-  ),
-])
+  ])
+  .transform((data) => {
+    if (data.kty === 'EC') {
+      return { crv: data.crv, kty: data.kty, x: data.x, y: data.y }
+    }
+
+    if (data.kty === 'OKP') {
+      return { crv: data.crv, kty: data.kty, x: data.x }
+    }
+
+    if (data.kty === 'RSA') {
+      return { e: data.e, kty: data.kty, n: data.n }
+    }
+
+    if (data.kty === 'oct') {
+      return { k: data.k, kty: data.kty }
+    }
+
+    throw new Error('Unsupported kty')
+  })
 
 export interface CalculateJwkThumbprintOptions {
   /**
@@ -58,7 +66,7 @@ export interface CalculateJwkThumbprintOptions {
 
 export async function calculateJwkThumbprint(options: CalculateJwkThumbprintOptions): Promise<string> {
   const jwkThumbprintComponents = parseWithErrorHandling(
-    vJwkThumbprintComponents,
+    zJwkThumbprintComponents,
     options.jwk,
     `Provided jwk does not match a supported jwk structure. Either the 'kty' is not supported, or required values are missing.`
   )

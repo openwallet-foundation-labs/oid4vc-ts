@@ -1,12 +1,12 @@
 import { Oauth2Error } from '@openid4vc/oauth2'
 import { ValidationError } from '@openid4vc/utils'
-import * as v from 'valibot'
+import type z from 'zod'
 import { Oid4vciError } from '../../error/Oid4vciError'
 import type { IssuerMetadataResult } from '../fetch-issuer-metadata'
 import {
   type CredentialConfigurationsSupported,
-  vCredentialConfigurationSupportedDraft11To14,
-} from './v-credential-issuer-metadata'
+  zCredentialConfigurationSupportedDraft11To14,
+} from './z-credential-issuer-metadata'
 
 export interface ExtractScopesForCredentialConfigurationIdsOptions {
   /**
@@ -62,7 +62,7 @@ export function extractScopesForCredentialConfigurationIds(
  * @throws if a credentials supported entry with invalid structure or format specific properties is passed
  */
 export function credentialsSupportedToCredentialConfigurationsSupported(
-  credentialsSupported: Array<v.InferInput<typeof vCredentialConfigurationSupportedDraft11To14>>
+  credentialsSupported: Array<z.input<typeof zCredentialConfigurationSupportedDraft11To14>>
 ) {
   const credentialConfigurationsSupported: CredentialConfigurationsSupported = {}
 
@@ -74,15 +74,15 @@ export function credentialsSupportedToCredentialConfigurationsSupported(
       )
     }
 
-    const parseResult = v.safeParse(vCredentialConfigurationSupportedDraft11To14, credentialSupported)
+    const parseResult = zCredentialConfigurationSupportedDraft11To14.safeParse(credentialSupported)
     if (!parseResult.success) {
       throw new ValidationError(
         `Error transforming credential supported with id '${credentialSupported.id}' to credential configuration supported format`,
-        parseResult.issues
+        parseResult.error
       )
     }
 
-    credentialConfigurationsSupported[credentialSupported.id] = parseResult.output
+    credentialConfigurationsSupported[credentialSupported.id] = parseResult.data
   }
 
   return credentialConfigurationsSupported

@@ -1,7 +1,7 @@
 import { type CallbackContext, HashAlgorithm } from '../../callbacks'
 import { Oauth2Error } from '../../error/Oauth2Error'
 import { calculateJwkThumbprint } from './jwk-thumbprint'
-import type { Jwk, JwkSet } from './v-jwk'
+import type { Jwk, JwkSet } from './z-jwk'
 
 interface ExtractJwkFromJwksForJwtOptions {
   kid?: string

@@ -6,7 +6,7 @@ import {
   type JwtSigner,
   jwtHeaderFromJwtSigner,
 } from '@openid4vc/oauth2'
-import type { JarAuthRequest } from './v-jar-auth-request'
+import type { JarAuthRequest } from './z-jar-auth-request'
 
 export interface CreateJarAuthRequestOptions {
   authRequestParams: JwtPayload & { client_id: string }

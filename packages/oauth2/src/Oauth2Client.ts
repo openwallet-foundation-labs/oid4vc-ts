@@ -20,11 +20,11 @@ import {
   type CreateClientAttestationJwtOptions,
   createClientAttestationJwt,
 } from './client-attestation/clent-attestation'
-import { Oauth2ErrorCodes } from './common/v-oauth2-error'
+import { Oauth2ErrorCodes } from './common/z-oauth2-error'
 import { extractDpopNonceFromHeaders } from './dpop/dpop'
 import { Oauth2ClientAuthorizationChallengeError } from './error/Oauth2ClientAuthorizationChallengeError'
 import { fetchAuthorizationServerMetadata } from './metadata/authorization-server/authorization-server-metadata'
-import type { AuthorizationServerMetadata } from './metadata/authorization-server/v-authorization-server-metadata'
+import type { AuthorizationServerMetadata } from './metadata/authorization-server/z-authorization-server-metadata'
 import { createPkce } from './pkce'
 import { type ResourceRequestOptions, resourceRequest } from './resource-request/make-resource-request'
 

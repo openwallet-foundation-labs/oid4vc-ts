@@ -1,6 +1,5 @@
-import { ContentType, type Fetch, createValibotFetcher, objectToQueryParams } from '@openid4vc/utils'
+import { ContentType, type Fetch, createZodFetcher, objectToQueryParams } from '@openid4vc/utils'
 import { InvalidFetchResponseError } from '@openid4vc/utils'
-import * as v from 'valibot'
 import { ValidationError } from '../../../utils/src/error/ValidationError'
 import { type CallbackContext, HashAlgorithm } from '../callbacks'
 import {
@@ -8,18 +7,18 @@ import {
   createClientAttestationForRequest,
 } from '../client-attestation/client-attestation-pop'
 import { calculateJwkThumbprint } from '../common/jwk/jwk-thumbprint'
-import { vOauth2ErrorResponse } from '../common/v-oauth2-error'
+import { zOauth2ErrorResponse } from '../common/z-oauth2-error'
 import { type RequestDpopOptions, createDpopHeadersForRequest, extractDpopNonceFromHeaders } from '../dpop/dpop'
 import { authorizationServerRequestWithDpopRetry } from '../dpop/dpop-retry'
 import { Oauth2ClientErrorResponseError } from '../error/Oauth2ClientErrorResponseError'
 import { Oauth2Error } from '../error/Oauth2Error'
-import type { AuthorizationServerMetadata } from '../metadata/authorization-server/v-authorization-server-metadata'
+import type { AuthorizationServerMetadata } from '../metadata/authorization-server/z-authorization-server-metadata'
 import { createPkce } from '../pkce'
 import {
   type AuthorizationRequest,
   type PushedAuthorizationRequest,
-  vPushedAuthorizationResponse,
-} from './v-authorization-request'
+  zPushedAuthorizationResponse,
+} from './z-authorization-request'
 
 export interface CreateAuthorizationRequestUrlOptions {
   /**
@@ -210,7 +209,7 @@ interface PushAuthorizationRequestOptions {
 }
 
 async function pushAuthorizationRequest(options: PushAuthorizationRequestOptions) {
-  const fetchWithValibot = createValibotFetcher(options.fetch)
+  const fetchWithZod = createZodFetcher(options.fetch)
 
   if (options.authorizationRequest.request_uri) {
     throw new Oauth2Error(
@@ -218,8 +217,8 @@ async function pushAuthorizationRequest(options: PushAuthorizationRequestOptions
     )
   }
 
-  const { response, result } = await fetchWithValibot(
-    vPushedAuthorizationResponse,
+  const { response, result } = await fetchWithZod(
+    zPushedAuthorizationResponse,
     ContentType.Json,
     options.pushedAuthorizationRequestEndpoint,
     {
@@ -233,8 +232,7 @@ async function pushAuthorizationRequest(options: PushAuthorizationRequestOptions
   )
 
   if (!response.ok || !result) {
-    const parErrorResponse = v.safeParse(
-      vOauth2ErrorResponse,
+    const parErrorResponse = zOauth2ErrorResponse.safeParse(
       await response
         .clone()
         .json()
@@ -243,7 +241,7 @@ async function pushAuthorizationRequest(options: PushAuthorizationRequestOptions
     if (parErrorResponse.success) {
       throw new Oauth2ClientErrorResponseError(
         `Unable to push authorization request to '${options.pushedAuthorizationRequestEndpoint}'. Received response with status ${response.status}`,
-        parErrorResponse.output,
+        parErrorResponse.data,
         response
       )
     }
@@ -256,12 +254,12 @@ async function pushAuthorizationRequest(options: PushAuthorizationRequestOptions
   }
 
   if (!result.success) {
-    throw new ValidationError('Error validating pushed authorization response', result.issues)
+    throw new ValidationError('Error validating pushed authorization response', result.error)
   }
 
   const dpopNonce = extractDpopNonceFromHeaders(response.headers)
   return {
     dpopNonce,
-    pushedAuthorizationResponse: result.output,
+    pushedAuthorizationResponse: result.data,
   }
 }

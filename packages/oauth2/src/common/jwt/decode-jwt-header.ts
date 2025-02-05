@@ -7,13 +7,13 @@ import {
 } from '@openid4vc/utils'
 import { Oauth2JwtParseError } from '../../error/Oauth2JwtParseError'
 import type { InferSchemaOutput } from './decode-jwt'
-import { vJwtHeader } from './v-jwt'
+import { zJwtHeader } from './z-jwt'
 
 export interface DecodeJwtHeaderOptions<HeaderSchema extends BaseSchema | undefined> {
   /**
    * The comapct encoded jwt
    */
-  jwe: string
+  jwt: string
 
   /**
    * Schema to use for validating the header. If not provided the
@@ -22,14 +22,14 @@ export interface DecodeJwtHeaderOptions<HeaderSchema extends BaseSchema | undefi
   headerSchema?: HeaderSchema
 }
 
-export type DecodeJweResult<HeaderSchema extends BaseSchema | undefined = undefined> = {
-  header: InferSchemaOutput<HeaderSchema, typeof vJwtHeader>
+export type DecodeJwtHeaderResult<HeaderSchema extends BaseSchema | undefined = undefined> = {
+  header: InferSchemaOutput<HeaderSchema, typeof zJwtHeader>
 }
 
 export function decodeJwtHeader<HeaderSchema extends BaseSchema | undefined = undefined>(
   options: DecodeJwtHeaderOptions<HeaderSchema>
-): DecodeJweResult<HeaderSchema> {
-  const jwtParts = options.jwe.split('.')
+): DecodeJwtHeaderResult<HeaderSchema> {
+  const jwtParts = options.jwt.split('.')
   if (jwtParts.length <= 2) {
     throw new Oauth2JwtParseError('Jwt is not a valid jwt, unable to decode')
   }
@@ -44,7 +44,10 @@ export function decodeJwtHeader<HeaderSchema extends BaseSchema | undefined = un
     throw new Oauth2JwtParseError('Error parsing JWT')
   }
 
-  const header = parseWithErrorHandling(options.headerSchema ?? vJwtHeader, headerJson)
+  const header = parseWithErrorHandling(options.headerSchema ?? zJwtHeader, headerJson) as InferSchemaOutput<
+    HeaderSchema,
+    typeof zJwtHeader
+  >
 
   return {
     header,

@@ -8,9 +8,9 @@ import {
   type KeyAttestationJwtHeader,
   type KeyAttestationJwtPayload,
   type KeyAttestationJwtUse,
-  vKeyAttestationJwtHeader,
-  vKeyAttestationJwtPayloadForUse,
-} from './v-key-attestation'
+  zKeyAttestationJwtHeader,
+  zKeyAttestationJwtPayloadForUse,
+} from './z-key-attestation'
 
 export interface CreateKeyAttestationJwtOptions {
   /**
@@ -79,12 +79,12 @@ export interface CreateKeyAttestationJwtOptions {
 }
 
 export async function createKeyAttestationJwt(options: CreateKeyAttestationJwtOptions): Promise<string> {
-  const header = parseWithErrorHandling(vKeyAttestationJwtHeader, {
+  const header = parseWithErrorHandling(zKeyAttestationJwtHeader, {
     ...jwtHeaderFromJwtSigner(options.signer),
     typ: 'keyattestation+jwt',
   } satisfies KeyAttestationJwtHeader)
 
-  const payload = parseWithErrorHandling(vKeyAttestationJwtPayloadForUse(options.use), {
+  const payload = parseWithErrorHandling(zKeyAttestationJwtPayloadForUse(options.use), {
     iat: dateToSeconds(options.issuedAt),
     exp: options.expiresAt ? dateToSeconds(options.expiresAt) : undefined,
     nonce: options.nonce,
@@ -139,8 +139,8 @@ export type VerifyKeyAttestationJwtReturn = Awaited<ReturnType<typeof verifyKeyA
 export async function verifyKeyAttestationJwt(options: VerifyKeyAttestationJwtOptions) {
   const { header, payload } = decodeJwt({
     jwt: options.keyAttestationJwt,
-    headerSchema: vKeyAttestationJwtHeader,
-    payloadSchema: vKeyAttestationJwtPayloadForUse(options.use),
+    headerSchema: zKeyAttestationJwtHeader,
+    payloadSchema: zKeyAttestationJwtPayloadForUse(options.use),
   })
 
   // TODO: if you use stateless nonce, it doesn't make sense to verify the nonce here

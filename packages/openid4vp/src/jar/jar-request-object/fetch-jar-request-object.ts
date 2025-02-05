@@ -1,13 +1,7 @@
 import { Oauth2ServerErrorResponseError } from '@openid4vc/oauth2'
-import {
-  type BaseSchema,
-  ContentType,
-  type Fetch,
-  createValibotFetcher,
-  xWwwFormUrlEncodeObject,
-} from '@openid4vc/utils'
-import * as v from 'valibot'
-import type { WalletMetadata } from '../../models/v-wallet-metadata'
+import { type BaseSchema, ContentType, type Fetch, createZodFetcher, xWwwFormUrlEncodeObject } from '@openid4vc/utils'
+import { z } from 'zod'
+import type { WalletMetadata } from '../../models/z-wallet-metadata'
 
 /**
  * Fetch a request object and parse the response.
@@ -29,8 +23,8 @@ export async function fetchJarRequestObject<Schema extends BaseSchema>(
     nonce?: string
   },
   fetch?: Fetch
-): Promise<v.InferOutput<Schema> | null> {
-  const fetcher = createValibotFetcher(fetch)
+): Promise<z.infer<Schema> | null> {
+  const fetcher = createZodFetcher(fetch)
 
   let requestBody = wallet.metadata ? { wallet_metadata: wallet.metadata, wallet_nonce: wallet.nonce } : undefined
   if (
@@ -42,7 +36,7 @@ export async function fetchJarRequestObject<Schema extends BaseSchema>(
     requestBody = { ...requestBody, wallet_metadata: { ...rest } }
   }
 
-  const { result, response } = await fetcher(v.string(), ContentType.OAuthRequestObjectJwt, requestUri, {
+  const { result, response } = await fetcher(z.string(), ContentType.OAuthRequestObjectJwt, requestUri, {
     method,
     headers: {
       Accept: `${ContentType.OAuthRequestObjectJwt}, ${ContentType.Jwt};q=0.9`,
@@ -65,5 +59,5 @@ export async function fetchJarRequestObject<Schema extends BaseSchema>(
     })
   }
 
-  return result.output
+  return result.data
 }

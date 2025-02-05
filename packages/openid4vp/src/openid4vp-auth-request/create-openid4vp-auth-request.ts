@@ -1,8 +1,8 @@
 import type { CallbackContext, JwtSigner } from '@openid4vc/oauth2'
 import { uriEncodeObject } from '@openid4vc/utils'
 import { createJarAuthRequest } from '../jar/create-jar-auth-request'
-import type { Openid4vpAuthRequest } from './v-openid4vp-auth-request'
 import { validateOpenid4vpAuthRequestParams } from './validate-openid4vp-auth-request'
+import type { Openid4vpAuthRequest } from './z-openid4vp-auth-request'
 
 /**
  * Creates an OpenID4VP authorization request, optionally with a JWT Secured Authorization Request (JAR)

@@ -5,7 +5,7 @@ import {
   Oauth2Error,
   jwtHeaderFromJwtSigner,
 } from '@openid4vc/oauth2'
-import type { JarmAuthResponse, JarmAuthResponseEncryptedOnly } from './jarm-auth-response/v-jarm-auth-response'
+import type { JarmAuthResponse, JarmAuthResponseEncryptedOnly } from './jarm-auth-response/z-jarm-auth-response'
 
 export interface CreateJarmAuthResponseOptions {
   jarmAuthResponse: JarmAuthResponse | JarmAuthResponseEncryptedOnly

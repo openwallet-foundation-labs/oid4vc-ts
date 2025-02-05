@@ -1,17 +1,17 @@
 import { type FetchHeaders, dateToSeconds, parseWithErrorHandling } from '@openid4vc/utils'
 import type { CallbackContext } from '../callbacks'
 import { decodeJwt, jwtHeaderFromJwtSigner, jwtSignerFromJwt } from '../common/jwt/decode-jwt'
-import type { JwtSigner } from '../common/jwt/v-jwt'
 import { verifyJwt } from '../common/jwt/verify-jwt'
+import type { JwtSigner } from '../common/jwt/z-jwt'
 import { Oauth2Error } from '../error/Oauth2Error'
 import {
   type ClientAttestationJwtHeader,
   type ClientAttestationJwtPayload,
   oauthClientAttestationHeader,
   oauthClientAttestationPopHeader,
-  vClientAttestationJwtHeader,
-  vClientAttestationJwtPayload,
-} from './v-client-attestation'
+  zClientAttestationJwtHeader,
+  zClientAttestationJwtPayload,
+} from './z-client-attestation'
 
 export interface VerifyClientAttestationJwtOptions {
   /**
@@ -35,8 +35,8 @@ export interface VerifyClientAttestationJwtOptions {
 export async function verifyClientAttestationJwt(options: VerifyClientAttestationJwtOptions) {
   const { header, payload } = decodeJwt({
     jwt: options.clientAttestationJwt,
-    headerSchema: vClientAttestationJwtHeader,
-    payloadSchema: vClientAttestationJwtPayload,
+    headerSchema: zClientAttestationJwtHeader,
+    payloadSchema: zClientAttestationJwtPayload,
   })
 
   const { signer } = await verifyJwt({
@@ -100,12 +100,12 @@ export interface CreateClientAttestationJwtOptions {
 }
 
 export async function createClientAttestationJwt(options: CreateClientAttestationJwtOptions) {
-  const header = parseWithErrorHandling(vClientAttestationJwtHeader, {
+  const header = parseWithErrorHandling(zClientAttestationJwtHeader, {
     typ: 'oauth-client-attestation+jwt',
     ...jwtHeaderFromJwtSigner(options.signer),
   } satisfies ClientAttestationJwtHeader)
 
-  const payload = parseWithErrorHandling(vClientAttestationJwtPayload, {
+  const payload = parseWithErrorHandling(zClientAttestationJwtPayload, {
     iss: options.issuer,
     iat: dateToSeconds(options.issuedAt),
     exp: dateToSeconds(options.expiresAt),

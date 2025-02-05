@@ -1,5 +1,3 @@
-import type * as v from 'valibot'
-
 import {
   type BaseSchema,
   decodeBase64,
@@ -7,10 +5,10 @@ import {
   parseWithErrorHandling,
   stringToJsonWithErrorHandling,
 } from '@openid4vc/utils'
+import type z from 'zod'
 import { Oauth2JwtParseError } from '../../error/Oauth2JwtParseError'
 import { decodeJwtHeader } from './decode-jwt-header'
-import { type JwtSigner, type vJwtHeader, vJwtPayload } from './v-jwt'
-
+import { type JwtSigner, type zJwtHeader, zJwtPayload } from './z-jwt'
 export interface DecodeJwtOptions<
   HeaderSchema extends BaseSchema | undefined,
   PayloadSchema extends BaseSchema | undefined,
@@ -22,13 +20,13 @@ export interface DecodeJwtOptions<
 
   /**
    * Schema to use for validating the header. If not provided the
-   * default `vJwtHeader` schema will be used
+   * default `zJwtHeader` schema will be used
    */
   headerSchema?: HeaderSchema
 
   /**
    * Schema to use for validating the payload. If not provided the
-   * default `vJwtPayload` schema will be used
+   * default `zJwtPayload` schema will be used
    */
   payloadSchema?: PayloadSchema
 }
@@ -37,8 +35,8 @@ export type DecodeJwtResult<
   HeaderSchema extends BaseSchema | undefined = undefined,
   PayloadSchema extends BaseSchema | undefined = undefined,
 > = {
-  header: InferSchemaOutput<HeaderSchema, typeof vJwtHeader>
-  payload: InferSchemaOutput<PayloadSchema, typeof vJwtPayload>
+  header: InferSchemaOutput<HeaderSchema, typeof zJwtHeader>
+  payload: InferSchemaOutput<PayloadSchema, typeof zJwtPayload>
   signature: string
 }
 
@@ -61,12 +59,12 @@ export function decodeJwt<
     throw new Oauth2JwtParseError('Error parsing JWT')
   }
 
-  const { header } = decodeJwtHeader({ jwe: options.jwt, headerSchema: options.headerSchema })
-  const payload = parseWithErrorHandling(options.payloadSchema ?? vJwtPayload, payloadJson)
+  const { header } = decodeJwtHeader({ jwt: options.jwt, headerSchema: options.headerSchema })
+  const payload = parseWithErrorHandling(options.payloadSchema ?? zJwtPayload, payloadJson)
 
   return {
-    header,
-    payload,
+    header: header as InferSchemaOutput<HeaderSchema, typeof zJwtHeader>,
+    payload: payload as InferSchemaOutput<PayloadSchema, typeof zJwtPayload>,
     signature: jwtParts[2],
   }
 }
@@ -176,6 +174,6 @@ export type InferSchemaOutput<
   DefaultSchema extends BaseSchema,
 > = IsSchemaProvided<ProvidedSchema> extends true
   ? ProvidedSchema extends BaseSchema
-    ? v.InferOutput<ProvidedSchema>
+    ? z.infer<ProvidedSchema>
     : never
-  : v.InferOutput<DefaultSchema>
+  : z.infer<DefaultSchema>

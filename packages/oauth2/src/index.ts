@@ -1,21 +1,22 @@
 export type {
   AccessTokenErrorResponse,
   AccessTokenResponse,
-} from './access-token/v-access-token'
+} from './access-token/z-access-token'
 
 // Re-export some types from utils (we don't want people depending on that lib)
 export { getGlobalConfig, setGlobalConfig, type HttpMethod, type Oid4vcTsConfig } from '@openid4vc/utils'
 
+export {
+  Oauth2ErrorCodes,
+  type Oauth2ErrorResponse,
+  zOauth2ErrorResponse,
+} from './common/z-oauth2-error'
 export { calculateJwkThumbprint, type CalculateJwkThumbprintOptions } from './common/jwk/jwk-thumbprint'
-export { Oauth2ErrorCodes, vOauth2ErrorResponse, type Oauth2ErrorResponse } from './common/v-oauth2-error'
 
 // TODO: should we move this to oauth2-utils?
 export { isJwkInSet } from './common/jwk/jwks'
-
-export type { AccessTokenProfileJwtPayload } from './access-token/v-access-token-jwt'
-export { decodeJwtHeader } from './common/jwt/decode-jwt-header'
-export { vCompactJwe } from './common/jwe/v-jwe'
-export { vJwk, type Jwk, type JwkSet } from './common/jwk/v-jwk'
+export { type Jwk, type JwkSet, zJwk } from './common/jwk/z-jwk'
+export type { AccessTokenProfileJwtPayload } from './access-token/z-access-token-jwt'
 
 export {
   decodeJwt,
@@ -25,7 +26,7 @@ export {
   jwtSignerFromJwt,
 } from './common/jwt/decode-jwt'
 
-export type { JweEncryptor } from './common/jwt/v-jwt'
+export type { JweEncryptor } from './common/jwt/z-jwt'
 
 export {
   JwtSigner,
@@ -34,14 +35,12 @@ export {
   JwtSignerJwk,
   JwtSignerWithJwk,
   JwtSignerX5c,
-  vCompactJwt,
-  vJwtHeader,
-  vJwtPayload,
-} from './common/jwt/v-jwt'
-export {
-  verifyJwt,
-  type VerifyJwtOptions,
-} from './common/jwt/verify-jwt'
+  zJwtHeader,
+  zJwtPayload,
+  zCompactJwt,
+} from './common/jwt/z-jwt'
+
+export { zCompactJwe } from './common/jwt/z-jwe'
 
 export type { RequestClientAttestationOptions } from './client-attestation/client-attestation-pop'
 export type {
@@ -49,7 +48,7 @@ export type {
   ClientAttestationJwtPayload,
   ClientAttestationPopJwtHeader,
   ClientAttestationPopJwtPayload,
-} from './client-attestation/v-client-attestation'
+} from './client-attestation/z-client-attestation'
 export type { RequestDpopOptions } from './dpop/dpop'
 
 export { InvalidFetchResponseError } from '@openid4vc/utils'
@@ -68,20 +67,20 @@ export type {
   AuthorizationChallengeErrorResponse,
   AuthorizationChallengeRequest,
   AuthorizationChallengeResponse,
-} from './authorization-challenge/v-authorization-challenge'
+} from './authorization-challenge/z-authorization-challenge'
 export {
   fetchAuthorizationServerMetadata,
   getAuthorizationServerMetadataFromList,
 } from './metadata/authorization-server/authorization-server-metadata'
 export {
   AuthorizationServerMetadata,
+  zAuthorizationServerMetadata,
   // Ideally we don't export this, but it's needed in oid4vci
-  vAuthorizationServerMetadata,
-} from './metadata/authorization-server/v-authorization-server-metadata'
+} from './metadata/authorization-server/z-authorization-server-metadata'
 export { fetchJwks } from './metadata/fetch-jwks-uri'
 export { fetchWellKnownMetadata } from './metadata/fetch-well-known-metadata'
 
-export type { TokenIntrospectionResponse } from './access-token/v-token-introspection'
+export type { TokenIntrospectionResponse } from './access-token/z-token-introspection'
 
 export type {
   RetrieveAuthorizationCodeAccessTokenOptions,
@@ -127,18 +126,20 @@ export { Oauth2Client, type Oauth2ClientOptions } from './Oauth2Client'
 export { Oauth2ResourceServer, type Oauth2ResourceServerOptions } from './Oauth2ResourceServer'
 
 export { CreatePkceReturn, PkceCodeChallengeMethod } from './pkce'
+
 export {
-  authorizationCodeGrantIdentifier,
-  preAuthorizedCodeGrantIdentifier,
-  refreshTokenGrantIdentifier,
-  vAuthorizationCodeGrantIdentifier,
-  vPreAuthorizedCodeGrantIdentifier,
-  vRefreshTokenGrantIdentifier,
-  type AuthorizationCodeGrantIdentifier,
   type PreAuthorizedCodeGrantIdentifier,
+  zPreAuthorizedCodeGrantIdentifier,
+  preAuthorizedCodeGrantIdentifier,
   type RefreshTokenGrantIdentifier,
-} from './v-grant-type'
+  zRefreshTokenGrantIdentifier,
+  refreshTokenGrantIdentifier,
+  type AuthorizationCodeGrantIdentifier,
+  zAuthorizationCodeGrantIdentifier,
+  authorizationCodeGrantIdentifier,
+} from './z-grant-type'
 
-export type { JwtHeader, JwtPayload } from './common/jwt/v-jwt'
-
-export { vJwkSet } from './common/jwk/v-jwk'
+export { JwtHeader, JwtPayload } from './common/jwt/z-jwt'
+export { verifyJwt } from './common/jwt/verify-jwt'
+export { zJwkSet } from './common/jwk/z-jwk'
+export { decodeJwtHeader } from './common/jwt/decode-jwt-header'

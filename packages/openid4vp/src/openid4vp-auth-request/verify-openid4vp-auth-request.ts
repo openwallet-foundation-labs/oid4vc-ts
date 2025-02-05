@@ -1,12 +1,11 @@
 import type { CallbackContext } from '@openid4vc/oauth2'
-import * as v from 'valibot'
 import { parseClientIdentifier } from '../client-identifier-scheme/parse-client-identifier-scheme'
 import { verifyJarRequest } from '../jar/handle-jar-request/verify-jar-request'
-import { type JarAuthRequest, vJarAuthRequest } from '../jar/v-jar-auth-request'
-import type { WalletMetadata } from '../models/v-wallet-metadata'
+import { type JarAuthRequest, zJarAuthRequest } from '../jar/z-jar-auth-request'
+import type { WalletMetadata } from '../models/z-wallet-metadata'
 import { parseTransactionData } from '../transaction-data/parse-transaction-data'
-import { type Openid4vpAuthRequest, vOpenid4vpAuthRequest } from './v-openid4vp-auth-request'
 import { validateOpenid4vpAuthRequestParams } from './validate-openid4vp-auth-request'
+import { type Openid4vpAuthRequest, zOpenid4vpAuthRequest } from './z-openid4vp-auth-request'
 
 export async function verifyOpenid4vpAuthRequest(
   params: Openid4vpAuthRequest | JarAuthRequest,
@@ -23,11 +22,12 @@ export async function verifyOpenid4vpAuthRequest(
   let authRequestParams: Openid4vpAuthRequest
   let jar: Awaited<ReturnType<typeof verifyJarRequest>> | undefined
 
-  if (v.is(vJarAuthRequest, params)) {
-    jar = await verifyJarRequest({ jarRequestParams: params, callbacks, wallet })
-    authRequestParams = v.parse(vOpenid4vpAuthRequest, jar.authRequestParams)
+  const parsedJarAuthRequest = zJarAuthRequest.safeParse(params)
+  if (parsedJarAuthRequest.success) {
+    jar = await verifyJarRequest({ jarRequestParams: parsedJarAuthRequest.data, callbacks, wallet })
+    authRequestParams = zOpenid4vpAuthRequest.parse(jar.authRequestParams)
   } else {
-    authRequestParams = params
+    authRequestParams = params as Openid4vpAuthRequest
   }
 
   validateOpenid4vpAuthRequestParams(authRequestParams, { wallet: options.wallet })

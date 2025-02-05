@@ -1,9 +1,9 @@
 import { Oauth2Error } from '@openid4vc/oauth2'
 import type { CallbackContext } from '../../../oauth2/src/callbacks'
 import type { verifyJarRequest } from '../jar/handle-jar-request/verify-jar-request'
-import type { ClientMetadata } from '../models/v-client-metadata'
-import type { Openid4vpAuthRequest } from '../openid4vp-auth-request/v-openid4vp-auth-request'
-import { type ClientIdScheme, vClientIdScheme } from './v-client-id-scheme'
+import type { ClientMetadata } from '../models/z-client-metadata'
+import type { Openid4vpAuthRequest } from '../openid4vp-auth-request/z-openid4vp-auth-request'
+import { type ClientIdScheme, zClientIdScheme } from './z-client-id-scheme'
 
 /**
  * Result of parsing a client identifier
@@ -74,7 +74,8 @@ export function parseClientIdentifier(
   const parserConfigWithDefaults: Required<ClientIdentifierParserConfig> = {
     supportedSchemes:
       parserConfig?.supportedSchemes ||
-      Object.values(vClientIdScheme.options).filter((scheme) => scheme !== 'web-origin'),
+      Object.values(zClientIdScheme.options).filter((scheme) => scheme !== 'web-origin'),
+
     requireSignatureFor:
       parserConfig?.requireSignatureFor ||
       ([

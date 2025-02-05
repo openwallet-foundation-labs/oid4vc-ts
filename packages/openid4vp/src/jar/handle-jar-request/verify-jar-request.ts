@@ -1,5 +1,3 @@
-import * as v from 'valibot'
-
 import {
   type CallbackContext,
   type Jwk,
@@ -8,13 +6,13 @@ import {
   Oauth2ServerErrorResponseError,
   decodeJwt,
   jwtSignerFromJwt,
-  vCompactJwe,
-  vCompactJwt,
+  zCompactJwe,
+  zCompactJwt,
 } from '@openid4vc/oauth2'
-import type { WalletMetadata } from '../../models/v-wallet-metadata'
+import type { WalletMetadata } from '../../models/z-wallet-metadata'
 import { fetchJarRequestObject } from '../jar-request-object/fetch-jar-request-object'
-import { type JarRequestObjectPayload, vJarRequestObjectPayload } from '../jar-request-object/v-jar-request-object'
-import { type JarAuthRequest, validateJarAuthRequest } from '../v-jar-auth-request'
+import { type JarRequestObjectPayload, zJarRequestObjectPayload } from '../jar-request-object/z-jar-request-object'
+import { type JarAuthRequest, validateJarAuthRequest } from '../z-jar-auth-request'
 
 /**
  * Verifies a JAR (JWT Secured Authorization Request) request by validating, decrypting, and verifying signatures.
@@ -54,12 +52,12 @@ export async function verifyJarRequest(options: {
       wallet ?? {}
     ))
 
-  const requestObjectIsEncrypted = v.is(vCompactJwe, requestObject as string)
+  const requestObjectIsEncrypted = zCompactJwe.safeParse(requestObject).success
   const { decryptionJwk, payload: decryptedRequestObject } = requestObjectIsEncrypted
     ? await decryptJarRequest({ jwe: requestObject, callbacks })
     : { payload: requestObject, decryptionJwk: undefined }
 
-  const requestIsSigned = v.parse(vCompactJwt, decryptedRequestObject)
+  const requestIsSigned = zCompactJwt.safeParse(decryptedRequestObject).success
   if (!requestIsSigned) {
     throw new Oauth2Error('Jar Request Object is not a valid JWS.')
   }
@@ -113,7 +111,7 @@ async function verifyJarRequestObject(options: {
 }) {
   const { decryptedRequestObject, callbacks } = options
 
-  const jwt = decodeJwt({ jwt: decryptedRequestObject, payloadSchema: vJarRequestObjectPayload })
+  const jwt = decodeJwt({ jwt: decryptedRequestObject, payloadSchema: zJarRequestObjectPayload })
 
   const jwtSigner = jwtSignerFromJwt(jwt)
   const { verified, signerJwk } = await callbacks.verifyJwt(jwtSigner, {

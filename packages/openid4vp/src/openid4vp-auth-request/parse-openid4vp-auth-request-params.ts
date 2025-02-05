@@ -1,8 +1,7 @@
 import { Oauth2Error, decodeJwt } from '@openid4vc/oauth2'
 import { uriDecodeObject } from '@openid4vc/utils'
-import * as v from 'valibot'
-import { type JarAuthRequest, vJarAuthRequest } from '../jar/v-jar-auth-request'
-import { type Openid4vpAuthRequest, vOpenid4vpAuthRequest } from './v-openid4vp-auth-request'
+import { type JarAuthRequest, zJarAuthRequest } from '../jar/z-jar-auth-request'
+import { type Openid4vpAuthRequest, zOpenid4vpAuthRequest } from './z-openid4vp-auth-request'
 
 export interface ParsedJarOpenid4vpAuthRequest {
   type: 'jar'
@@ -34,19 +33,21 @@ export function parseOpenid4vpRequestParams(
     }
   }
 
-  if (v.is(vOpenid4vpAuthRequest, params)) {
+  const parsedOpenid4vpAuthRequest = zOpenid4vpAuthRequest.safeParse(params)
+  if (parsedOpenid4vpAuthRequest.success) {
     return {
       type: 'openid4vp',
       provided,
-      params: v.parse(vOpenid4vpAuthRequest, params),
+      params: parsedOpenid4vpAuthRequest.data,
     }
   }
 
-  if (v.is(vJarAuthRequest, params)) {
+  const parsedJarAuthRequest = zJarAuthRequest.safeParse(params)
+  if (parsedJarAuthRequest.success) {
     return {
       type: 'jar',
       provided,
-      params,
+      params: parsedJarAuthRequest.data,
     }
   }
 

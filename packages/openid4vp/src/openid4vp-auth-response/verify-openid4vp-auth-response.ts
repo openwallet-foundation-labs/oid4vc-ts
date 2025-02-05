@@ -1,11 +1,11 @@
 import { Oauth2Error } from '@openid4vc/oauth2'
-import type { Openid4vpAuthRequest } from '../openid4vp-auth-request/v-openid4vp-auth-request'
+import type { Openid4vpAuthRequest } from '../openid4vp-auth-request/z-openid4vp-auth-request'
 import {
   parseDcqlPresentationFromVpToken,
   parsePresentationsFromVpToken,
 } from '../vp-token/parse-presentations-from-vp-token'
-import type { Openid4vpAuthResponse } from './v-openid4vp-auth-response'
 import type { VerifyOpenid4VpAuthorizationResponseResult } from './verify-openid4vp-auth-response-result'
+import type { Openid4vpAuthResponse } from './z-openid4vp-auth-response'
 
 /**
  * The following steps need to be done manually

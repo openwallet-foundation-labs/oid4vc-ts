@@ -18,7 +18,7 @@ import {
   determineAuthorizationServerForCredentialOffer,
   resolveCredentialOffer,
 } from './credential-offer/credential-offer'
-import type { CredentialOfferObject } from './credential-offer/v-credential-offer'
+import type { CredentialOfferObject } from './credential-offer/z-credential-offer'
 import { getCredentialRequestFormatPayloadForCredentialConfigurationId } from './credential-request/format-payload'
 import {
   type RetrieveCredentialsWithFormatOptions,
@@ -32,7 +32,7 @@ import {
   createCredentialRequestJwtProof,
 } from './formats/proof-type/jwt/jwt-proof-type'
 import { extractKnownCredentialConfigurationSupportedFormats } from './metadata/credential-issuer/credential-issuer-metadata'
-import type { CredentialIssuerMetadata } from './metadata/credential-issuer/v-credential-issuer-metadata'
+import type { CredentialIssuerMetadata } from './metadata/credential-issuer/z-credential-issuer-metadata'
 import { type IssuerMetadataResult, resolveIssuerMetadata } from './metadata/fetch-issuer-metadata'
 import { type RequestNonceOptions, requestNonce } from './nonce/nonce-request'
 import { type SendNotifcationOptions, sendNotifcation } from './notification/notification'

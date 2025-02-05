@@ -1,17 +1,17 @@
 import { ValidationError } from '@openid4vc/utils'
 import { introspectToken } from '../access-token/introspect-token'
-import type { AccessTokenProfileJwtPayload } from '../access-token/v-access-token-jwt'
-import type { TokenIntrospectionResponse } from '../access-token/v-token-introspection'
 import { SupportedAuthenticationScheme, verifyJwtProfileAccessToken } from '../access-token/verify-access-token'
+import type { AccessTokenProfileJwtPayload } from '../access-token/z-access-token-jwt'
+import type { TokenIntrospectionResponse } from '../access-token/z-token-introspection'
 import type { CallbackContext } from '../callbacks'
-import type { Jwk } from '../common/jwk/v-jwk'
-import type { RequestLike } from '../common/v-common'
-import { Oauth2ErrorCodes } from '../common/v-oauth2-error'
+import type { Jwk } from '../common/jwk/z-jwk'
+import type { RequestLike } from '../common/z-common'
+import { Oauth2ErrorCodes } from '../common/z-oauth2-error'
 import { extractDpopJwtFromHeaders, verifyDpopJwt } from '../dpop/dpop'
 import { Oauth2Error } from '../error/Oauth2Error'
 import { Oauth2JwtParseError } from '../error/Oauth2JwtParseError'
 import { Oauth2ResourceUnauthorizedError } from '../error/Oauth2ResourceUnauthorizedError'
-import type { AuthorizationServerMetadata } from '../metadata/authorization-server/v-authorization-server-metadata'
+import type { AuthorizationServerMetadata } from '../metadata/authorization-server/z-authorization-server-metadata'
 
 export interface VerifyResourceRequestOptions {
   /**

@@ -1,8 +1,8 @@
 import { Oauth2Error, decodeJwt } from '@openid4vc/oauth2'
-import { vCompactJwt } from '@openid4vc/oauth2'
-import { parseIfJson } from '@openid4vc/utils'
-import * as v from 'valibot'
-import type { VpToken } from './v-vp-token'
+import { zCompactJwt } from '@openid4vc/oauth2'
+import { isObject, parseIfJson } from '@openid4vc/utils'
+import { z } from 'zod'
+import type { VpToken } from './z-vp-token'
 
 export type VpTokenPresentationParseResult =
   | {
@@ -52,7 +52,7 @@ export function parseDcqlPresentationFromVpToken(options: {
   const { vpToken: _vpToken } = options
 
   const vpToken = parseIfJson(_vpToken)
-  if (!v.is(v.looseObject({}), vpToken)) {
+  if (!isObject(vpToken)) {
     throw new Oauth2Error(`Could not parse vp_token. Expected a JSON object. Received: ${typeof vpToken}`)
   }
 
@@ -73,11 +73,17 @@ export function parseSinglePresentationsFromVpToken(options: {
 
   const vpToken = parseIfJson(_vpToken)
 
-  if (
-    v.is(v.looseObject({ proof: v.optional(v.looseObject({ challenge: v.optional(v.string()) })) }), vpToken) &&
-    (vpToken['@context'] || vpToken.verifiableCredential)
-  ) {
-    if (!vpToken.proof?.challenge) {
+  const ldpVpParseResult = z
+    .object({
+      '@context': z.string().optional(),
+      verifiableCredential: z.string().optional(),
+      proof: z.object({ challenge: z.string().optional() }).passthrough().optional(),
+    })
+    .passthrough()
+    .safeParse(vpToken)
+  if (ldpVpParseResult.success && (ldpVpParseResult.data['@context'] || ldpVpParseResult.data.verifiableCredential)) {
+    const challenge = ldpVpParseResult.data.proof?.challenge
+    if (!challenge) {
       throw new Oauth2Error(
         'Failed to parse presentation from vp_token. LDP presentation is missing the proof.challenge parameter.'
       )
@@ -85,13 +91,13 @@ export function parseSinglePresentationsFromVpToken(options: {
 
     return {
       format: 'ldp_vp',
-      presentation: vpToken,
+      presentation: ldpVpParseResult,
       path: options.path,
-      nonce: vpToken?.proof?.challenge,
+      nonce: challenge,
     }
   }
 
-  if (v.is(v.record(v.string(), v.unknown()), vpToken) && (vpToken.schema_id || vpToken.cred_def_id)) {
+  if (isObject(vpToken) && (vpToken.schema_id || vpToken.cred_def_id)) {
     // TODO: HOW TO GET THE NONCE?
     return {
       format: 'ac_vp',
@@ -124,7 +130,8 @@ export function parseSinglePresentationsFromVpToken(options: {
     }
   }
 
-  if (v.is(vCompactJwt, vpToken)) {
+  const result = zCompactJwt.safeParse(vpToken)
+  if (result.success) {
     let nonce: string | undefined
     try {
       const decoded = decodeJwt({ jwt: vpToken })

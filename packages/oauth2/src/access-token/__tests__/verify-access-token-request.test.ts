@@ -2,7 +2,7 @@ import { describe, expect, test } from 'vitest'
 import { callbacks, getSignJwtCallback } from '../../../tests/util'
 import { createDpopJwt } from '../../dpop/dpop'
 import { PkceCodeChallengeMethod } from '../../pkce'
-import { authorizationCodeGrantIdentifier, preAuthorizedCodeGrantIdentifier } from '../../v-grant-type'
+import { authorizationCodeGrantIdentifier, preAuthorizedCodeGrantIdentifier } from '../../z-grant-type'
 import {
   verifyAuthorizationCodeAccessTokenRequest,
   verifyPreAuthorizedCodeAccessTokenRequest,

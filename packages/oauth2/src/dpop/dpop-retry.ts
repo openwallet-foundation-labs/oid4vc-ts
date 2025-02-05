@@ -1,6 +1,6 @@
 import type { FetchHeaders } from '@openid4vc/utils'
 import { SupportedAuthenticationScheme } from '../access-token/verify-access-token'
-import { Oauth2ErrorCodes, type Oauth2ErrorResponse } from '../common/v-oauth2-error'
+import { Oauth2ErrorCodes, type Oauth2ErrorResponse } from '../common/z-oauth2-error'
 import { Oauth2ClientErrorResponseError } from '../error/Oauth2ClientErrorResponseError'
 import { Oauth2Error } from '../error/Oauth2Error'
 import type { Oauth2ResourceUnauthorizedError } from '../error/Oauth2ResourceUnauthorizedError'

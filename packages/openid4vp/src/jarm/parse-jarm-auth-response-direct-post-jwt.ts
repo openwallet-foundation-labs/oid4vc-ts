@@ -1,7 +1,5 @@
-import { Oauth2Error, vCompactJwe, vCompactJwt } from '@openid4vc/oauth2'
+import { Oauth2Error, zCompactJwe, zCompactJwt } from '@openid4vc/oauth2'
 import { ContentType, URLSearchParams } from '@openid4vc/utils'
-import * as v from 'valibot'
-
 export async function parseJarmAuthResponseDirectPostJwt(request: Request) {
   const contentType = request.headers.get('content-type')
 
@@ -23,11 +21,13 @@ export async function parseJarmAuthResponseDirectPostJwt(request: Request) {
     throw new Oauth2Error('Received invalid JARM request data. Response Jwt is missing.')
   }
 
-  if (v.is(vCompactJwt, requestData.response)) {
+  const isCompactJwt = zCompactJwt.safeParse(requestData.response)
+  if (isCompactJwt.success) {
     return { jarmAuthResponseJwt: requestData.response }
   }
 
-  if (v.is(vCompactJwe, requestData.response)) {
+  const isCompactJwe = zCompactJwe.safeParse(requestData.response)
+  if (isCompactJwe.success) {
     return { jarmAuthResponseJwt: requestData.response }
   }
 

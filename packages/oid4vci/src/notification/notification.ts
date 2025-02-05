@@ -1,5 +1,3 @@
-import * as v from 'valibot'
-
 import {
   type CallbackContext,
   Oauth2Error,
@@ -13,9 +11,9 @@ import type { IssuerMetadataResult } from '../metadata/fetch-issuer-metadata'
 import {
   type NotificationEvent,
   type NotificationRequest,
-  vNotificationErrorResponse,
-  vNotificationRequest,
-} from './v-notification'
+  zNotificationErrorResponse,
+  zNotificationRequest,
+} from './z-notification'
 
 export interface SendNotifcationOptions {
   notification: {
@@ -67,7 +65,7 @@ export interface SendNotificationResponseNotOk extends ResourceRequestResponseNo
    * If this is defined it means the response was JSON and we tried to parse it as
    * a notification error response. It may be successfull or it may not be.
    */
-  notificationErrorResponseResult?: v.SafeParseResult<typeof vNotificationErrorResponse>
+  notificationErrorResponseResult?: ReturnType<typeof zNotificationErrorResponse.safeParse>
 }
 
 export async function sendNotifcation(
@@ -82,7 +80,7 @@ export async function sendNotifcation(
   }
 
   const notificationRequest = parseWithErrorHandling(
-    vNotificationRequest,
+    zNotificationRequest,
     {
       event: options.notification.event,
       notification_id: options.notification.notificationId,
@@ -107,7 +105,7 @@ export async function sendNotifcation(
 
   if (!resourceResponse.ok) {
     const notificationErrorResponseResult = isResponseContentType(ContentType.Json, resourceResponse.response)
-      ? v.safeParse(vNotificationErrorResponse, await resourceResponse.response.clone().json())
+      ? zNotificationErrorResponse.safeParse(await resourceResponse.response.clone().json())
       : undefined
 
     return {

@@ -27,9 +27,9 @@ import {
 import { extractKnownCredentialConfigurationSupportedFormats } from './metadata/credential-issuer/credential-issuer-metadata'
 import {
   type CredentialIssuerMetadata,
-  vCredentialIssuerMetadata,
-  vCredentialIssuerMetadataWithDraft11,
-} from './metadata/credential-issuer/v-credential-issuer-metadata'
+  zCredentialIssuerMetadata,
+  zCredentialIssuerMetadataWithDraft11,
+} from './metadata/credential-issuer/z-credential-issuer-metadata'
 import type { IssuerMetadataResult } from './metadata/fetch-issuer-metadata'
 import { type CreateNonceResponseOptions, createNonceResponse } from './nonce/nonce-request'
 
@@ -44,7 +44,7 @@ export class Oid4vciIssuer {
   public constructor(private options: Oid4vciIssuerOptions) {}
 
   public getCredentialIssuerMetadataDraft11(credentialIssuerMetadata: CredentialIssuerMetadata) {
-    return parseWithErrorHandling(vCredentialIssuerMetadataWithDraft11, credentialIssuerMetadata)
+    return parseWithErrorHandling(zCredentialIssuerMetadataWithDraft11, credentialIssuerMetadata)
   }
 
   public getKnownCredentialConfigurationsSupported(credentialIssuerMetadata: CredentialIssuerMetadata) {
@@ -58,7 +58,7 @@ export class Oid4vciIssuer {
    */
   public createCredentialIssuerMetadata(credentialIssuerMetadata: CredentialIssuerMetadata): CredentialIssuerMetadata {
     return parseWithErrorHandling(
-      vCredentialIssuerMetadata,
+      zCredentialIssuerMetadata,
       credentialIssuerMetadata,
       'Error validating credential issuer metadata'
     )

@@ -1,21 +1,19 @@
-import * as v from 'valibot'
-
 import {
   type CallbackContext,
   Oauth2Error,
   decodeJwt,
   decodeJwtHeader,
   jwtSignerFromJwt,
-  vCompactJwe,
-  vCompactJwt,
+  zCompactJwe,
+  zCompactJwt,
 } from '@openid4vc/oauth2'
 import { jarmAuthResponseValidate } from './jarm-validate-auth-response'
 import {
   type JarmAuthResponse,
   type JarmAuthResponseEncryptedOnly,
-  vJarmAuthResponse,
-  vJarmAuthResponseEncryptedOnly,
-} from './v-jarm-auth-response'
+  zJarmAuthResponse,
+  zJarmAuthResponseEncryptedOnly,
+} from './z-jarm-auth-response'
 
 /**
  * The client decrypts the JWT using the default key for the respective issuer or,
@@ -30,7 +28,7 @@ const decryptJarmRequestData = async (options: {
 }) => {
   const { requestData, callbacks } = options
 
-  const { header } = decodeJwtHeader({ jwe: requestData })
+  const { header } = decodeJwtHeader({ jwt: requestData })
   if (!header.kid) {
     throw new Oauth2Error('Jarm JWE is missing the protected header field "kid".')
   }
@@ -57,12 +55,12 @@ export async function verifyJarmAuthResponse(options: {
 }) {
   const { jarmAuthResponseJwt } = options
 
-  const requestDataIsEncrypted = v.is(vCompactJwe, jarmAuthResponseJwt)
+  const requestDataIsEncrypted = zCompactJwe.safeParse(jarmAuthResponseJwt).success
   const decryptedRequestData = requestDataIsEncrypted
     ? await decryptJarmRequestData({ requestData: jarmAuthResponseJwt, callbacks: options.callbacks })
     : jarmAuthResponseJwt
 
-  const responseIsSigned = v.is(vCompactJwt, decryptedRequestData)
+  const responseIsSigned = zCompactJwt.safeParse(decryptedRequestData).success
   if (!requestDataIsEncrypted && !responseIsSigned) {
     throw new Oauth2Error('Jarm Auth Response must be either encrypted, signed, or signed and encrypted.')
   }
@@ -74,7 +72,7 @@ export async function verifyJarmAuthResponse(options: {
       jwt: decryptedRequestData,
     })
 
-    const response = v.parse(vJarmAuthResponse, jwsPayload)
+    const response = zJarmAuthResponse.parse(jwsPayload)
 
     if (!jwsProtectedHeader.kid) {
       throw new Oauth2Error('Jarm JWS is missing the protected header field "kid".')
@@ -94,7 +92,7 @@ export async function verifyJarmAuthResponse(options: {
     jarmAuthResponse = response
   } else {
     const jsonRequestData: unknown = JSON.parse(decryptedRequestData)
-    jarmAuthResponse = v.parse(vJarmAuthResponseEncryptedOnly, jsonRequestData)
+    jarmAuthResponse = zJarmAuthResponseEncryptedOnly.parse(jsonRequestData)
   }
 
   const { authRequest } = await options.getAuthRequest(jarmAuthResponse)

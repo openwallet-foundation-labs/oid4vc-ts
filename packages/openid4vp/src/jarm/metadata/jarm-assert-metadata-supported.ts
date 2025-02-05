@@ -1,7 +1,6 @@
 import { Oauth2Error } from '@openid4vc/oauth2'
-import * as v from 'valibot'
-import type { JarmServerMetadata } from './v-jarm-as-metadata'
-import { type JarmClientMetadata, JarmClientMetadataParsed } from './v-jarm-dcr-metadata'
+import type { JarmServerMetadata } from './z-jarm-as-metadata'
+import { type JarmClientMetadata, zJarmClientMetadataParsed } from './z-jarm-dcr-metadata'
 
 interface AssertValueSupported<T> {
   supported: T[]
@@ -25,7 +24,7 @@ export function jarmAssertMetadataSupported(input: {
   serverMetadata: JarmServerMetadata
 }) {
   const { clientMetadata, serverMetadata } = input
-  const parsedClientMetadata = v.parse(JarmClientMetadataParsed, clientMetadata)
+  const parsedClientMetadata = zJarmClientMetadataParsed.parse(clientMetadata)
 
   if (parsedClientMetadata.type === 'sign_encrypt' || parsedClientMetadata.type === 'encrypt') {
     if (serverMetadata.authorization_encryption_alg_values_supported) {

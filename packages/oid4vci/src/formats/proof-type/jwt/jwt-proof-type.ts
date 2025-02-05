@@ -2,15 +2,15 @@ import { type JwtSigner, decodeJwt, isJwkInSet, jwtHeaderFromJwtSigner } from '@
 import {
   type CredentialRequestJwtProofTypeHeader,
   type CredentialRequestJwtProofTypePayload,
-  vCredentialRequestJwtProofTypeHeader,
-  vCredentialRequestJwtProofTypePayload,
-} from './v-jwt-proof-type'
+  zCredentialRequestJwtProofTypeHeader,
+  zCredentialRequestJwtProofTypePayload,
+} from './z-jwt-proof-type'
 
 import { type CallbackContext, jwtSignerFromJwt, verifyJwt } from '@openid4vc/oauth2'
 import { dateToSeconds, parseWithErrorHandling } from '@openid4vc/utils'
 import { Oid4vciError } from '../../../error/Oid4vciError'
 import { type VerifyKeyAttestationJwtReturn, verifyKeyAttestationJwt } from '../../../key-attestation/key-attestation'
-import { vKeyAttestationJwtHeader, vKeyAttestationJwtPayload } from '../../../key-attestation/v-key-attestation'
+import { zKeyAttestationJwtHeader, zKeyAttestationJwtPayload } from '../../../key-attestation/z-key-attestation'
 
 export interface CreateCredentialRequestJwtProofOptions {
   /**
@@ -47,13 +47,13 @@ export interface CreateCredentialRequestJwtProofOptions {
 export async function createCredentialRequestJwtProof(
   options: CreateCredentialRequestJwtProofOptions
 ): Promise<string> {
-  const header = parseWithErrorHandling(vCredentialRequestJwtProofTypeHeader, {
+  const header = parseWithErrorHandling(zCredentialRequestJwtProofTypeHeader, {
     ...jwtHeaderFromJwtSigner(options.signer),
     key_attestation: options.keyAttestationJwt,
     typ: 'openid4vci-proof+jwt',
   } satisfies CredentialRequestJwtProofTypeHeader)
 
-  const payload = parseWithErrorHandling(vCredentialRequestJwtProofTypePayload, {
+  const payload = parseWithErrorHandling(zCredentialRequestJwtProofTypePayload, {
     nonce: options.nonce,
     aud: options.credentialIssuer,
     iat: dateToSeconds(options.issuedAt),
@@ -66,8 +66,8 @@ export async function createCredentialRequestJwtProof(
   if (options.keyAttestationJwt) {
     const decodedKeyAttestation = decodeJwt({
       jwt: options.keyAttestationJwt,
-      headerSchema: vKeyAttestationJwtHeader,
-      payloadSchema: vKeyAttestationJwtPayload,
+      headerSchema: zKeyAttestationJwtHeader,
+      payloadSchema: zKeyAttestationJwtPayload,
     })
 
     const isSigedWithAttestedKey = await isJwkInSet({
@@ -128,8 +128,8 @@ export interface VerifyCredentialRequestJwtProofOptions {
 export async function verifyCredentialRequestJwtProof(options: VerifyCredentialRequestJwtProofOptions) {
   const { header, payload } = decodeJwt({
     jwt: options.jwt,
-    headerSchema: vCredentialRequestJwtProofTypeHeader,
-    payloadSchema: vCredentialRequestJwtProofTypePayload,
+    headerSchema: zCredentialRequestJwtProofTypeHeader,
+    payloadSchema: zCredentialRequestJwtProofTypePayload,
   })
 
   const now = options.now?.getTime() ?? Date.now()

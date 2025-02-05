@@ -2,9 +2,9 @@ import { type CallbackContext, type JwtSigner, Oauth2Error } from '@openid4vc/oa
 import { createJarmAuthResponse } from '../jarm/jarm-auth-response-create'
 import { extractJwksFromClientMetadata } from '../jarm/jarm-extract-jwks'
 import { jarmAssertMetadataSupported } from '../jarm/metadata/jarm-assert-metadata-supported'
-import type { JarmServerMetadata } from '../jarm/metadata/v-jarm-as-metadata'
-import type { Openid4vpAuthRequest } from '../openid4vp-auth-request/v-openid4vp-auth-request'
-import type { Openid4vpAuthResponse } from './v-openid4vp-auth-response'
+import type { JarmServerMetadata } from '../jarm/metadata/z-jarm-as-metadata'
+import type { Openid4vpAuthRequest } from '../openid4vp-auth-request/z-openid4vp-auth-request'
+import type { Openid4vpAuthResponse } from './z-openid4vp-auth-response'
 
 export async function createOpenid4vpAuthorizationResponse(options: {
   requestParams: Pick<Openid4vpAuthRequest, 'state' | 'client_metadata' | 'nonce' | 'response_mode'>

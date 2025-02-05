@@ -7,17 +7,16 @@ import {
   resourceRequest,
 } from '@openid4vc/oauth2'
 import { ContentType, isResponseContentType, parseWithErrorHandling } from '@openid4vc/utils'
-import { type SafeParseResult, safeParse } from 'valibot'
 import type { IssuerMetadataResult } from '../metadata/fetch-issuer-metadata'
 import { Oid4vciDraftVersion } from '../version'
 import {
   type CredentialRequest,
   type CredentialRequestWithFormats,
-  vCredentialRequest,
-  vCredentialRequestDraft14To11,
-} from './v-credential-request'
-import type { CredentialRequestProof, CredentialRequestProofs } from './v-credential-request-common'
-import { type CredentialResponse, vCredentialErrorResponse, vCredentialResponse } from './v-credential-response'
+  zCredentialRequest,
+  zCredentialRequestDraft14To11,
+} from './z-credential-request'
+import type { CredentialRequestProof, CredentialRequestProofs } from './z-credential-request-common'
+import { type CredentialResponse, zCredentialErrorResponse, zCredentialResponse } from './z-credential-response'
 
 interface RetrieveCredentialsBaseOptions {
   /**
@@ -94,13 +93,13 @@ export interface RetrieveCredentialsResponseNotOk extends ResourceRequestRespons
    * If this is defined it means the response itself was succesfull but the validation of the
    * credential response data structure failed
    */
-  credentialResponseResult?: SafeParseResult<typeof vCredentialResponse>
+  credentialResponseResult?: ReturnType<typeof zCredentialResponse.safeParse>
 
   /**
    * If this is defined it means the response was JSON and we tried to parse it as
    * a credential error response. It may be successfull or it may not be.
    */
-  credentialErrorResponseResult?: SafeParseResult<typeof vCredentialErrorResponse>
+  credentialErrorResponseResult?: ReturnType<typeof zCredentialErrorResponse.safeParse>
 }
 
 /**
@@ -112,7 +111,7 @@ async function retrieveCredentials(
   const credentialEndpoint = options.issuerMetadata.credentialIssuer.credential_endpoint
 
   let credentialRequest = parseWithErrorHandling(
-    vCredentialRequest,
+    zCredentialRequest,
     options.credentialRequest,
     'Error validating credential request'
   )
@@ -135,7 +134,7 @@ async function retrieveCredentials(
 
   if (options.issuerMetadata.originalDraftVersion === Oid4vciDraftVersion.Draft11) {
     credentialRequest = parseWithErrorHandling(
-      vCredentialRequestDraft14To11,
+      zCredentialRequestDraft14To11,
       credentialRequest,
       `Error transforming credential request from ${Oid4vciDraftVersion.Draft14} to ${Oid4vciDraftVersion.Draft11}`
     )
@@ -157,7 +156,7 @@ async function retrieveCredentials(
 
   if (!resourceResponse.ok) {
     const credentialErrorResponseResult = isResponseContentType(ContentType.Json, resourceResponse.response)
-      ? safeParse(vCredentialErrorResponse, await resourceResponse.response.clone().json())
+      ? zCredentialErrorResponse.safeParse(await resourceResponse.response.clone().json())
       : undefined
 
     return {
@@ -168,7 +167,7 @@ async function retrieveCredentials(
 
   // Try to parse the credential response
   const credentialResponseResult = isResponseContentType(ContentType.Json, resourceResponse.response)
-    ? safeParse(vCredentialResponse, await resourceResponse.response.clone().json())
+    ? zCredentialResponse.safeParse(await resourceResponse.response.clone().json())
     : undefined
   if (!credentialResponseResult?.success) {
     return {
@@ -180,6 +179,6 @@ async function retrieveCredentials(
 
   return {
     ...resourceResponse,
-    credentialResponse: credentialResponseResult.output,
+    credentialResponse: credentialResponseResult.data,
   }
 }

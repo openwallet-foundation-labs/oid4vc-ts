@@ -1,14 +1,14 @@
-import * as v from 'valibot'
+import { zIs } from '@openid4vc/utils'
 import { Oid4vciError } from '../error/Oid4vciError'
 import {
-  vJwtVcJsonCredentialIssuerMetadata,
-  vJwtVcJsonLdCredentialIssuerMetadata,
-  vLdpVcCredentialIssuerMetadata,
-  vMsoMdocCredentialIssuerMetadata,
-  vSdJwtVcCredentialIssuerMetadata,
+  zJwtVcJsonCredentialIssuerMetadata,
+  zJwtVcJsonLdCredentialIssuerMetadata,
+  zLdpVcCredentialIssuerMetadata,
+  zMsoMdocCredentialIssuerMetadata,
+  zSdJwtVcCredentialIssuerMetadata,
 } from '../formats/credential'
 import type { IssuerMetadataResult } from '../metadata/fetch-issuer-metadata'
-import type { CredentialRequestWithFormats } from './v-credential-request'
+import type { CredentialRequestWithFormats } from './z-credential-request'
 
 export interface GetCredentialRequestFormatPayloadForCredentialConfigurationIdOptions {
   /**
@@ -34,21 +34,21 @@ export function getCredentialRequestFormatPayloadForCredentialConfigurationId(
     )
   }
 
-  if (v.is(vSdJwtVcCredentialIssuerMetadata, credentialConfiguration)) {
+  if (zIs(zSdJwtVcCredentialIssuerMetadata, credentialConfiguration)) {
     return {
       format: credentialConfiguration.format,
       vct: credentialConfiguration.vct,
     }
   }
 
-  if (v.is(vMsoMdocCredentialIssuerMetadata, credentialConfiguration)) {
+  if (zIs(zMsoMdocCredentialIssuerMetadata, credentialConfiguration)) {
     return {
       format: credentialConfiguration.format,
       doctype: credentialConfiguration.doctype,
     }
   }
 
-  if (v.is(vLdpVcCredentialIssuerMetadata, credentialConfiguration)) {
+  if (zIs(zLdpVcCredentialIssuerMetadata, credentialConfiguration)) {
     return {
       format: credentialConfiguration.format,
       credential_definition: {
@@ -58,7 +58,7 @@ export function getCredentialRequestFormatPayloadForCredentialConfigurationId(
     }
   }
 
-  if (v.is(vJwtVcJsonLdCredentialIssuerMetadata, credentialConfiguration)) {
+  if (zIs(zJwtVcJsonLdCredentialIssuerMetadata, credentialConfiguration)) {
     return {
       format: credentialConfiguration.format,
       credential_definition: {
@@ -68,7 +68,7 @@ export function getCredentialRequestFormatPayloadForCredentialConfigurationId(
     }
   }
 
-  if (v.is(vJwtVcJsonCredentialIssuerMetadata, credentialConfiguration)) {
+  if (zIs(zJwtVcJsonCredentialIssuerMetadata, credentialConfiguration)) {
     return {
       format: credentialConfiguration.format,
       credential_definition: {

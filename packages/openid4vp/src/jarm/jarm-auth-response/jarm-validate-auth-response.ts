@@ -1,6 +1,5 @@
 import { Oauth2Error } from '@openid4vc/oauth2'
-import * as v from 'valibot'
-import { type JarmAuthResponse, type JarmAuthResponseEncryptedOnly, vJarmAuthResponse } from './v-jarm-auth-response'
+import { type JarmAuthResponse, type JarmAuthResponseEncryptedOnly, zJarmAuthResponse } from './z-jarm-auth-response'
 
 export const jarmAuthResponseValidate = (input: {
   authRequest: { client_id: string }
@@ -9,7 +8,7 @@ export const jarmAuthResponseValidate = (input: {
   const { authRequest, authResponse } = input
 
   // The traditional Jarm Validation Methods do not account for the encrypted response.
-  if (!v.is(vJarmAuthResponse, authResponse)) {
+  if (!zJarmAuthResponse.safeParse(authResponse).success) {
     return
   }
 

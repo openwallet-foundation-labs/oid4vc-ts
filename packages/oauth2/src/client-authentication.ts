@@ -1,5 +1,5 @@
 import type { ContentType, FetchHeaders, HttpMethod } from '@openid4vc/utils'
-import type { AuthorizationServerMetadata } from './metadata/authorization-server/v-authorization-server-metadata'
+import type { AuthorizationServerMetadata } from './metadata/authorization-server/z-authorization-server-metadata'
 
 import { decodeUtf8String, encodeToBase64Url } from '@openid4vc/utils'
 import { Oauth2Error } from './error/Oauth2Error'

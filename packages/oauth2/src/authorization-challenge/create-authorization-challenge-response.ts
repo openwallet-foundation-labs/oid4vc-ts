@@ -1,11 +1,11 @@
 import { type StringWithAutoCompletion, parseWithErrorHandling } from '@openid4vc/utils'
-import type { Oauth2ErrorCodes } from '../common/v-oauth2-error'
+import type { Oauth2ErrorCodes } from '../common/z-oauth2-error'
 import {
   type AuthorizationChallengeErrorResponse,
   type AuthorizationChallengeResponse,
-  vAuthorizationChallengeErrorResponse,
-  vAuthorizationChallengeResponse,
-} from './v-authorization-challenge'
+  zAuthorizationChallengeErrorResponse,
+  zAuthorizationChallengeResponse,
+} from './z-authorization-challenge'
 
 export interface CreateAuthorizationChallengeResponseOptions {
   /**
@@ -25,7 +25,7 @@ export interface CreateAuthorizationChallengeResponseOptions {
  * @throws {ValidationError} if an error occured during verification of the {@link AuthorizationChallengeResponse}
  */
 export function createAuthorizationChallengeResponse(options: CreateAuthorizationChallengeResponseOptions) {
-  const authorizationChallengeResponse = parseWithErrorHandling(vAuthorizationChallengeResponse, {
+  const authorizationChallengeResponse = parseWithErrorHandling(zAuthorizationChallengeResponse, {
     ...options.additionalPayload,
     authorization_code: options.authorizationCode,
   } satisfies AuthorizationChallengeResponse)
@@ -91,7 +91,7 @@ export interface CreateAuthorizationChallengeErrorResponseOptions {
  * @throws {ValidationError} if an error occured during validation of the {@link AuthorizationChallengeErrorResponse}
  */
 export function createAuthorizationChallengeErrorResponse(options: CreateAuthorizationChallengeErrorResponseOptions) {
-  const authorizationChallengeErrorResponse = parseWithErrorHandling(vAuthorizationChallengeErrorResponse, {
+  const authorizationChallengeErrorResponse = parseWithErrorHandling(zAuthorizationChallengeErrorResponse, {
     ...options.additionalPayload,
 
     // General FiPA
