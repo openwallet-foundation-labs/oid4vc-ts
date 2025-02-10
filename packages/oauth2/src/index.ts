@@ -142,4 +142,6 @@ export {
 export { JwtHeader, JwtPayload } from './common/jwt/z-jwt'
 export { verifyJwt } from './common/jwt/verify-jwt'
 export { zJwkSet } from './common/jwk/z-jwk'
-export { decodeJwtHeader } from './common/jwt/decode-jwt-header'
+export { decodeJwtHeader, DecodeJwtHeaderResult } from './common/jwt/decode-jwt-header'
+
+export { zAlgValueNotNone } from './common/z-common'

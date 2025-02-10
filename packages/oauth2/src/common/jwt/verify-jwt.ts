@@ -75,6 +75,11 @@ export interface VerifyJwtOptions {
    * Expected value for the 'sub' claim
    */
   expectedSubject?: string
+
+  /**
+   * The claims that are required to be present in the jwt.
+   */
+  requiredClaims?: string[]
 }
 
 export interface VerifyJwtReturn {
@@ -125,6 +130,14 @@ export async function verifyJwt(options: VerifyJwtOptions): Promise<VerifyJwtRet
 
   if (options.expectedSubject && options.expectedSubject !== options.payload.sub) {
     throw new Oauth2JwtVerificationError(`${errorMessage} jwt 'sub' does not match expected value.`)
+  }
+
+  if (options.requiredClaims) {
+    for (const claim of options.requiredClaims) {
+      if (!options.payload[claim]) {
+        throw new Oauth2JwtVerificationError(`${errorMessage} jwt '${claim}' is missing.`)
+      }
+    }
   }
 
   return {

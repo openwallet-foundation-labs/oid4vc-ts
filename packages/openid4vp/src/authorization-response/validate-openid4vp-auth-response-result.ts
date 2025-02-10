@@ -1,6 +1,6 @@
 import type { VpTokenPresentationParseResult } from '../vp-token/parse-presentations-from-vp-token'
 
-export interface VerifyOpenid4VpPexAuthorizationResponseResult {
+export interface ValidateOpenid4VpPexAuthorizationResponseResult {
   type: 'pex'
   pex: {
     presentationSubmission: unknown
@@ -11,13 +11,13 @@ export interface VerifyOpenid4VpPexAuthorizationResponseResult {
   )
 }
 
-export interface VerifyOpenid4VpDcqlAuthorizationResponseResult {
+export interface ValidateOpenid4VpDcqlAuthorizationResponseResult {
   type: 'dcql'
   dcql: {
     presentation: Record<string, VpTokenPresentationParseResult>
   } & ({ scope: string; query?: never } | { scope?: never; query: unknown })
 }
 
-export type VerifyOpenid4VpAuthorizationResponseResult =
-  | VerifyOpenid4VpPexAuthorizationResponseResult
-  | VerifyOpenid4VpDcqlAuthorizationResponseResult
+export type ValidateOpenid4VpAuthorizationResponseResult =
+  | ValidateOpenid4VpPexAuthorizationResponseResult
+  | ValidateOpenid4VpDcqlAuthorizationResponseResult

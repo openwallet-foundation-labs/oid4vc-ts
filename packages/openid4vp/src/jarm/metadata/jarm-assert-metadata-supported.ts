@@ -1,29 +1,29 @@
 import { Oauth2Error } from '@openid4vc/oauth2'
-import type { JarmServerMetadata } from './z-jarm-as-metadata'
-import { type JarmClientMetadata, zJarmClientMetadataParsed } from './z-jarm-dcr-metadata'
+import type { JarmServerMetadata } from './z-jarm-authorization-server-metadata'
+import { type JarmClientMetadata, zJarmClientMetadataParsed } from './z-jarm-client-metadata'
 
 interface AssertValueSupported<T> {
   supported: T[]
   actual: T
-  error: Error
+  errorMessage: string
 }
 
-function assertValueSupported<T>(input: AssertValueSupported<T>): T {
-  const { error, supported, actual } = input
+function assertValueSupported<T>(options: AssertValueSupported<T>): T {
+  const { errorMessage, supported, actual } = options
   const intersection = supported.find((value) => value === actual)
 
   if (!intersection) {
-    throw error
+    throw new Oauth2Error(errorMessage)
   }
 
   return intersection
 }
 
-export function jarmAssertMetadataSupported(input: {
+export function jarmAssertMetadataSupported(options: {
   clientMetadata: JarmClientMetadata
   serverMetadata: JarmServerMetadata
 }) {
-  const { clientMetadata, serverMetadata } = input
+  const { clientMetadata, serverMetadata } = options
   const parsedClientMetadata = zJarmClientMetadataParsed.parse(clientMetadata)
 
   if (parsedClientMetadata.type === 'sign_encrypt' || parsedClientMetadata.type === 'encrypt') {
@@ -31,7 +31,7 @@ export function jarmAssertMetadataSupported(input: {
       assertValueSupported({
         supported: serverMetadata.authorization_encryption_alg_values_supported,
         actual: parsedClientMetadata.client_metadata.authorization_encrypted_response_alg,
-        error: new Oauth2Error('Invalid authorization_encryption_alg'),
+        errorMessage: 'Invalid authorization_encryption_alg',
       })
     }
 
@@ -39,7 +39,7 @@ export function jarmAssertMetadataSupported(input: {
       assertValueSupported({
         supported: serverMetadata.authorization_encryption_enc_values_supported,
         actual: parsedClientMetadata.client_metadata.authorization_encrypted_response_enc,
-        error: new Oauth2Error('Invalid authorization_encryption_enc'),
+        errorMessage: 'Invalid authorization_encryption_enc',
       })
     }
   }
@@ -51,7 +51,7 @@ export function jarmAssertMetadataSupported(input: {
     assertValueSupported({
       supported: serverMetadata.authorization_signing_alg_values_supported,
       actual: parsedClientMetadata.client_metadata.authorization_signed_response_alg,
-      error: new Oauth2Error('Invalid authorization_signed_response_alg'),
+      errorMessage: 'Invalid authorization_signed_response_alg',
     })
   }
 

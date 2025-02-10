@@ -16,17 +16,17 @@ export function stringToJsonWithErrorHandling(string: string, errorMessage?: str
   }
 }
 
-export function parseIfJson<T>(input: T): T | Record<string, unknown> {
-  if (typeof input !== 'string') {
-    return input
+export function parseIfJson<T>(data: T): T | Record<string, unknown> {
+  if (typeof data !== 'string') {
+    return data
   }
 
   try {
     // Try to parse the string as JSON
-    return JSON.parse(input)
+    return JSON.parse(data)
   } catch (error) {}
 
-  return input
+  return data
 }
 
 export function parseWithErrorHandling<Schema extends BaseSchema>(

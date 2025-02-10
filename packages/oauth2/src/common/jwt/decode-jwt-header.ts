@@ -6,7 +6,7 @@ import {
   stringToJsonWithErrorHandling,
 } from '@openid4vc/utils'
 import { Oauth2JwtParseError } from '../../error/Oauth2JwtParseError'
-import type { InferSchemaOutput } from './decode-jwt'
+import type { InferSchemaOrDefaultOutput } from './decode-jwt'
 import { zJwtHeader } from './z-jwt'
 
 export interface DecodeJwtHeaderOptions<HeaderSchema extends BaseSchema | undefined> {
@@ -23,7 +23,7 @@ export interface DecodeJwtHeaderOptions<HeaderSchema extends BaseSchema | undefi
 }
 
 export type DecodeJwtHeaderResult<HeaderSchema extends BaseSchema | undefined = undefined> = {
-  header: InferSchemaOutput<HeaderSchema, typeof zJwtHeader>
+  header: InferSchemaOrDefaultOutput<HeaderSchema, typeof zJwtHeader>
 }
 
 export function decodeJwtHeader<HeaderSchema extends BaseSchema | undefined = undefined>(
@@ -41,10 +41,10 @@ export function decodeJwtHeader<HeaderSchema extends BaseSchema | undefined = un
       'Unable to parse jwt header to JSON'
     )
   } catch (error) {
-    throw new Oauth2JwtParseError('Error parsing JWT')
+    throw new Oauth2JwtParseError(`Error parsing JWT. ${error instanceof Error ? error.message : ''}`)
   }
 
-  const header = parseWithErrorHandling(options.headerSchema ?? zJwtHeader, headerJson) as InferSchemaOutput<
+  const header = parseWithErrorHandling(options.headerSchema ?? zJwtHeader, headerJson) as InferSchemaOrDefaultOutput<
     HeaderSchema,
     typeof zJwtHeader
   >

@@ -1,17 +1,26 @@
 import { Oauth2Error } from '@openid4vc/oauth2'
-import type { Openid4vpAuthRequest } from './z-openid4vp-auth-request'
+import { zHttpsUrl } from '@openid4vc/utils'
+import type { WalletMetadata } from '../models/z-wallet-metadata'
+import type { Openid4vpAuthorizationRequest } from './z-authorization-request'
+
+export interface WalletVerificationOptions {
+  expectedNonce?: string
+  metadata?: WalletMetadata
+}
+
+export interface ValidateOpenid4vpAuthorizationRequestPayloadOptions {
+  params: Openid4vpAuthorizationRequest
+  walletVerificationOptions?: WalletVerificationOptions
+}
 
 /**
  * Validate the OpenId4Vp Authorization Request parameters
  */
-export const validateOpenid4vpAuthRequestParams = (
-  params: Openid4vpAuthRequest,
-  options: {
-    wallet?: {
-      nonce?: string
-    }
-  }
+export const validateOpenid4vpAuthorizationRequestPayload = (
+  options: ValidateOpenid4vpAuthorizationRequestPayloadOptions
 ) => {
+  const { params, walletVerificationOptions } = options
+
   if (!params.redirect_uri && !params.response_uri) {
     throw new Oauth2Error('OpenId4Vp Authorization Request redirect_uri or response_uri is required.')
   }
@@ -38,19 +47,19 @@ export const validateOpenid4vpAuthRequestParams = (
     )
   }
 
-  if (params.trust_chain && !params.client_id.startsWith('http://') && !params.client_id.startsWith('https://')) {
+  if (params.trust_chain && !zHttpsUrl.safeParse(params.client_id).success) {
     throw new Oauth2Error(
       'OpenId4Vp Authorization Request trust_chain parameter MUST NOT be present if the client_id is not an OpenId Federation Entity Identifier starting with http:// or https://.'
     )
   }
 
-  if (options.wallet?.nonce && !params.wallet_nonce) {
+  if (walletVerificationOptions?.expectedNonce && !params.wallet_nonce) {
     throw new Oauth2Error(
       'OpenId4Vp Authorization Request wallet_nonce parameter is required when wallet_nonce is provided.'
     )
   }
 
-  if (options.wallet?.nonce !== params.wallet_nonce) {
+  if (walletVerificationOptions?.expectedNonce !== params.wallet_nonce) {
     throw new Oauth2Error(
       'OpenId4Vp Authorization Request wallet_nonce parameter does not match the wallet_nonce value passed by the Wallet.'
     )

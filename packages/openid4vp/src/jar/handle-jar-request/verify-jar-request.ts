@@ -1,18 +1,36 @@
 import {
   type CallbackContext,
   type Jwk,
-  type JwtSigner,
+  type JwtSignerWithJwk,
   Oauth2Error,
   Oauth2ServerErrorResponseError,
   decodeJwt,
   jwtSignerFromJwt,
+  verifyJwt,
   zCompactJwe,
   zCompactJwt,
 } from '@openid4vc/oauth2'
+import { zClientIdScheme } from '../../client-identifier-scheme/z-client-id-scheme'
 import type { WalletMetadata } from '../../models/z-wallet-metadata'
 import { fetchJarRequestObject } from '../jar-request-object/fetch-jar-request-object'
 import { type JarRequestObjectPayload, zJarRequestObjectPayload } from '../jar-request-object/z-jar-request-object'
-import { type JarAuthRequest, validateJarAuthRequest } from '../z-jar-auth-request'
+import { type JarAuthRequest, validateJarRequestParams } from '../z-jar-auth-request'
+
+export interface VerifyJarRequestOptions {
+  jarRequestParams: JarAuthRequest
+  callbacks: Pick<CallbackContext, 'verifyJwt' | 'decryptJwe'>
+  wallet?: {
+    metadata?: WalletMetadata
+    nonce?: string
+  }
+}
+
+export interface VerifyJarRequestReturn {
+  authRequestParams: JarRequestObjectPayload
+  sendBy: 'value' | 'reference'
+  decryptionJwk?: Jwk
+  signer: JwtSignerWithJwk
+}
 
 /**
  * Verifies a JAR (JWT Secured Authorization Request) request by validating, decrypting, and verifying signatures.
@@ -22,35 +40,24 @@ import { type JarAuthRequest, validateJarAuthRequest } from '../z-jar-auth-reque
  * @param options.callbacks - Context containing the relevant Jose crypto operations
  * @returns The verified authorization request parameters and metadata
  */
-export async function verifyJarRequest(options: {
-  jarRequestParams: JarAuthRequest
-  callbacks: Pick<CallbackContext, 'verifyJwt' | 'decryptJwt'>
-  wallet?: {
-    metadata?: WalletMetadata
-    nonce?: string
-  }
-}): Promise<{
-  authRequestParams: JarRequestObjectPayload
-  sendBy: 'value' | 'reference'
-  decryptionJwk?: Jwk
-  signerJwk: Jwk
-  jwtSigner: JwtSigner
-}> {
-  const { jarRequestParams, callbacks, wallet } = options
+export async function verifyJarRequest(options: VerifyJarRequestOptions): Promise<VerifyJarRequestReturn> {
+  const { callbacks, wallet = {} } = options
 
-  validateJarAuthRequest({ jarAuthRequest: jarRequestParams })
+  const jarRequestParams = validateJarRequestParams(options)
 
   const sendBy = jarRequestParams.request ? 'value' : 'reference'
+  const clientIdentifierScheme = zClientIdScheme.parse(jarRequestParams.client_id.split(':')[0])
+
+  const method = jarRequestParams.request_uri_method ?? 'GET'
 
   const requestObject =
     jarRequestParams.request ??
-    (await fetchJarRequestObject(
-      // biome-ignore lint/style/noNonNullAssertion:
-      jarRequestParams.request_uri!,
-      jarRequestParams.client_id.split(':')[0],
-      jarRequestParams.request_uri_method ?? 'GET',
-      wallet ?? {}
-    ))
+    (await fetchJarRequestObject({
+      requestUri: jarRequestParams.request_uri,
+      clientIdentifierScheme,
+      method,
+      wallet,
+    }))
 
   const requestObjectIsEncrypted = zCompactJwe.safeParse(requestObject).success
   const { decryptionJwk, payload: decryptedRequestObject } = requestObjectIsEncrypted
@@ -62,12 +69,12 @@ export async function verifyJarRequest(options: {
     throw new Oauth2Error('Jar Request Object is not a valid JWS.')
   }
 
-  const { authRequestParams, signerJwk, jwtSigner } = await verifyJarRequestObject({
+  const { authRequestParams, signer } = await verifyJarRequestObject({
     decryptedRequestObject,
     callbacks,
   })
   if (!authRequestParams.client_id) {
-    throw new Oauth2Error('Jar Request Object is missing the required "client_id" field.')
+    throw new Oauth2Error(`Jar Request Object is missing the required 'client_id' field.`)
   }
 
   if (jarRequestParams.client_id !== authRequestParams.client_id) {
@@ -77,15 +84,14 @@ export async function verifyJarRequest(options: {
   return {
     sendBy,
     authRequestParams,
-    signerJwk,
+    signer,
     decryptionJwk,
-    jwtSigner,
   }
 }
 
 async function decryptJarRequest(options: {
   jwe: string
-  callbacks: Pick<CallbackContext, 'decryptJwt'>
+  callbacks: Pick<CallbackContext, 'decryptJwe'>
 }) {
   const { jwe, callbacks } = options
 
@@ -94,7 +100,7 @@ async function decryptJarRequest(options: {
     throw new Oauth2Error('Jar JWE is missing the protected header field "kid".')
   }
 
-  const decryptionResult = await callbacks.decryptJwt(jwe)
+  const decryptionResult = await callbacks.decryptJwe(jwe)
   if (!decryptionResult.decrypted) {
     throw new Oauth2ServerErrorResponseError({
       error: 'invalid_request_object',
@@ -114,14 +120,13 @@ async function verifyJarRequestObject(options: {
   const jwt = decodeJwt({ jwt: decryptedRequestObject, payloadSchema: zJarRequestObjectPayload })
 
   const jwtSigner = jwtSignerFromJwt(jwt)
-  const { verified, signerJwk } = await callbacks.verifyJwt(jwtSigner, {
-    ...jwt,
+  const { signer } = await verifyJwt({
+    verifyJwtCallback: callbacks.verifyJwt,
     compact: decryptedRequestObject,
+    header: jwt.header,
+    payload: jwt.payload,
+    signer: jwtSigner,
   })
 
-  if (!verified) {
-    throw new Oauth2Error('Jar Request Object signature verification failed.')
-  }
-
-  return { authRequestParams: jwt.payload, signerJwk, jwtSigner }
+  return { authRequestParams: jwt.payload, signer }
 }

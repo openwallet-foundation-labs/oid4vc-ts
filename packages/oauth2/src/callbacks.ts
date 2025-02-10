@@ -39,25 +39,23 @@ export type VerifyJwtCallback = (
     }
 >
 
-export interface DecryptJwtCallbackOptions {
+export interface DecryptJweCallbackOptions {
   jwk: Jwk
 }
 
-export type DecryptJwtCallback = (
+export type DecryptJweCallback = (
   jwe: string,
-  options?: DecryptJwtCallbackOptions
+  options?: DecryptJweCallbackOptions
 ) => OrPromise<
   | {
       decrypted: true
       decryptionJwk: Jwk
       payload: string
-      header: JwtHeader
     }
   | {
       decrypted: false
       decryptionJwk?: Jwk
       payload?: string
-      header?: JwtHeader
     }
 >
 
@@ -91,7 +89,7 @@ export interface CallbackContext {
   /**
    * Decrypt jwe callback for decrypting of Json Web Encryptions
    */
-  decryptJwt: DecryptJwtCallback
+  decryptJwe: DecryptJweCallback
 
   /**
    * Encrypt jwt callback for encrypting of Json Web Encryptions
@@ -125,12 +123,10 @@ export interface CallbackContext {
   clientAuthentication: ClientAuthenticationCallback
 
   /**
-   * Get the DNS names from a X.509 certificate
+   * Get the DNS names and URI names from a X.509 certificate
    */
-  getX509SanDnsNames?: (certificate: string) => string[]
-
-  /**
-   * Get the URI names from a X.509 certificate
-   */
-  getX509SanUriNames?: (certificate: string) => string[]
+  getX509CertificateMetadata?: (certificate: string) => {
+    sanDnsNames: string[]
+    sanUriNames: string[]
+  }
 }

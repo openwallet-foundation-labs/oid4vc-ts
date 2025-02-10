@@ -1,6 +1,7 @@
 import { Oauth2ServerErrorResponseError } from '@openid4vc/oauth2'
-import { type BaseSchema, ContentType, type Fetch, createZodFetcher, xWwwFormUrlEncodeObject } from '@openid4vc/utils'
+import { type BaseSchema, ContentType, type Fetch, createZodFetcher, objectToQueryParams } from '@openid4vc/utils'
 import { z } from 'zod'
+import type { ClientIdScheme } from '../../client-identifier-scheme/z-client-id-scheme'
 import type { WalletMetadata } from '../../models/z-wallet-metadata'
 
 /**
@@ -14,16 +15,17 @@ import type { WalletMetadata } from '../../models/z-wallet-metadata'
  * @throws {InvalidFetchResponseError} if no successful or 404 response
  * @throws {Error} if parsing json from response fails
  */
-export async function fetchJarRequestObject<Schema extends BaseSchema>(
-  requestUri: string,
-  clientIdentifierScheme: string,
-  method: 'GET' | 'POST',
+export async function fetchJarRequestObject<Schema extends BaseSchema>(options: {
+  requestUri: string
+  clientIdentifierScheme: ClientIdScheme
+  method: 'GET' | 'POST'
   wallet: {
     metadata?: WalletMetadata
     nonce?: string
-  },
+  }
   fetch?: Fetch
-): Promise<z.infer<Schema> | null> {
+}): Promise<z.infer<Schema> | null> {
+  const { requestUri, clientIdentifierScheme, method, wallet, fetch } = options
   const fetcher = createZodFetcher(fetch)
 
   let requestBody = wallet.metadata ? { wallet_metadata: wallet.metadata, wallet_nonce: wallet.nonce } : undefined
@@ -42,7 +44,7 @@ export async function fetchJarRequestObject<Schema extends BaseSchema>(
       Accept: `${ContentType.OAuthRequestObjectJwt}, ${ContentType.Jwt};q=0.9`,
       'Content-Type': ContentType.XWwwFormUrlencoded,
     },
-    body: method === 'POST' ? xWwwFormUrlEncodeObject(wallet.metadata ?? {}) : undefined,
+    body: method === 'POST' ? objectToQueryParams(wallet.metadata ?? {}) : undefined,
   })
 
   if (!response.ok) {

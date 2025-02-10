@@ -14,8 +14,8 @@ export interface CreateJarmAuthResponseOptions {
   callbacks: Pick<CallbackContext, 'signJwt' | 'encryptJwe'>
 }
 
-export async function createJarmAuthResponse(input: CreateJarmAuthResponseOptions) {
-  const { jarmAuthResponse, jwtEncryptor, jwtSigner, callbacks } = input
+export async function createJarmAuthResponse(options: CreateJarmAuthResponseOptions) {
+  const { jarmAuthResponse, jwtEncryptor, jwtSigner, callbacks } = options
   if (!jwtSigner && jwtEncryptor) {
     const { jwe } = await callbacks.encryptJwe(jwtEncryptor, JSON.stringify(jarmAuthResponse))
     return { jarmAuthResponseJwt: jwe }

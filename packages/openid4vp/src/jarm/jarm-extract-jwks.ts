@@ -1,5 +1,5 @@
 import type { JwkSet } from '@openid4vc/oauth2'
-import { type JarmClientMetadata, zJarmClientMetadataParsed } from './metadata/z-jarm-dcr-metadata'
+import { type JarmClientMetadata, zJarmClientMetadataParsed } from './metadata/z-jarm-client-metadata'
 
 export function extractJwksFromClientMetadata(clientMetadata: JarmClientMetadata & { jwks: JwkSet }) {
   const parsed = zJarmClientMetadataParsed.parse(clientMetadata)

@@ -1,8 +1,8 @@
 import { Oauth2Error } from '@openid4vc/oauth2'
 import type { CallbackContext } from '../../../oauth2/src/callbacks'
+import type { Openid4vpAuthorizationRequest } from '../authorization-request/z-authorization-request'
 import type { verifyJarRequest } from '../jar/handle-jar-request/verify-jar-request'
 import type { ClientMetadata } from '../models/z-client-metadata'
-import type { Openid4vpAuthRequest } from '../openid4vp-auth-request/z-openid4vp-auth-request'
 import { type ClientIdScheme, zClientIdScheme } from './z-client-id-scheme'
 
 /**
@@ -52,15 +52,17 @@ export interface ClientIdentifierParserConfig {
   requireSignatureFor?: ClientIdScheme[]
 }
 
+export interface ClientIdentifierParserOptions {
+  request: Openid4vpAuthorizationRequest
+  jar?: Awaited<ReturnType<typeof verifyJarRequest>>
+  callbacks: Partial<Pick<CallbackContext, 'getX509CertificateMetadata'>>
+}
+
 /**
  * Parse and validate a client identifier
  */
 export function parseClientIdentifier(
-  options: {
-    request: Openid4vpAuthRequest
-    jar?: Awaited<ReturnType<typeof verifyJarRequest>>
-    callbacks: Partial<Pick<CallbackContext, 'getX509SanDnsNames' | 'getX509SanUriNames'>>
-  },
+  options: ClientIdentifierParserOptions,
   parserConfig?: ClientIdentifierParserConfig
 ): ParsedClientIdentifier {
   const { request, jar } = options
@@ -139,14 +141,14 @@ export function parseClientIdentifier(
     }
 
     if (!clientId.startsWith('did:')) {
-      throw new Oauth2Error('Invalid client identifier. Client identifier must start with did:')
+      throw new Oauth2Error("Invalid client identifier. Client identifier must start with 'did:'")
     }
 
-    if (!jar.signerJwk.kid) {
-      throw new Oauth2Error('Missing required kid for client identifier scheme: did')
+    if (!jar.signer.publicJwk.kid) {
+      throw new Oauth2Error(`Missing required 'kid' for client identifier scheme: did`)
     }
 
-    if (!jar?.signerJwk.kid?.startsWith(clientId)) {
+    if (!jar.signer.publicJwk.kid?.startsWith(clientId)) {
       throw new Oauth2Error(
         'With client identifier scheme "did" the JAR request must be signed by the same DID as the client identifier.'
       )
@@ -156,7 +158,7 @@ export function parseClientIdentifier(
       scheme,
       identifier: clientId,
       originalValue: clientId,
-      kid: jar.signerJwk.kid,
+      kid: jar.signer.publicJwk.kid,
     }
   }
 
@@ -171,21 +173,32 @@ export function parseClientIdentifier(
       )
     }
 
-    if (jar.jwtSigner.method !== 'x5c') {
+    if (jar.signer.method !== 'x5c') {
       throw new Oauth2Error(
         'Something went wrong. The JWT signer method is not x5c but the client identifier scheme is x509_san_dns.'
       )
     }
 
-    if (scheme === 'x509_san_dns' && options.callbacks.getX509SanDnsNames) {
-      const dnsNames = options.callbacks.getX509SanDnsNames(jar.jwtSigner.x5c[0])
-      if (!dnsNames.includes(identifierPart)) {
+    if (scheme === 'x509_san_dns' && options.callbacks.getX509CertificateMetadata) {
+      const { sanDnsNames } = options.callbacks.getX509CertificateMetadata(jar.signer.x5c[0])
+      if (!sanDnsNames.includes(identifierPart)) {
         throw new Oauth2Error('Invalid client identifier. Client identifier must be a valid DNS name.')
       }
-    } else if (scheme === 'x509_san_uri' && options.callbacks.getX509SanUriNames) {
-      const uriNames = options.callbacks.getX509SanUriNames(jar.jwtSigner.x5c[0])
-      if (!uriNames.includes(identifierPart)) {
+
+      const requestUri = (jar.authRequestParams.request_uri ?? jar.authRequestParams.response_uri) as string
+      if (getDomainFromUrl(requestUri) !== identifierPart) {
+        throw new Oauth2Error(
+          'Invalid client identifier. The fully qualified domain name of the redirect_uri value MUST match the Client Identifier without the prefix x509_san_dns.'
+        )
+      }
+    } else if (scheme === 'x509_san_uri' && options.callbacks.getX509CertificateMetadata) {
+      const { sanUriNames } = options.callbacks.getX509CertificateMetadata(jar.signer.x5c[0])
+      if (!sanUriNames.includes(identifierPart)) {
         throw new Oauth2Error('Invalid client identifier. Client identifier must be a valid URI.')
+      }
+
+      if ((jar.authRequestParams.request_uri ?? jar.authRequestParams.response_uri) !== identifierPart) {
+        throw new Oauth2Error('The redirect_uri value MUST match the Client Identifier without the prefix x509_san_uri')
       }
     }
 
@@ -193,7 +206,7 @@ export function parseClientIdentifier(
       scheme,
       identifier: identifierPart,
       originalValue: clientId,
-      x5c: jar.jwtSigner.x5c,
+      x5c: jar.signer.x5c,
     }
   }
 
@@ -208,4 +221,10 @@ export function parseClientIdentifier(
     identifier: identifierPart,
     originalValue: clientId,
   }
+}
+
+function getDomainFromUrl(url: string): string {
+  const regex = /[#/?]/
+  const domain = url.split('://')[1].split(regex)[0]
+  return domain
 }

@@ -15,7 +15,7 @@ export const jarmAuthResponseSend = (options: JarmAuthResponseSendOptions) => {
 
   const responseEndpoint = authRequest.response_uri ?? authRequest.redirect_uri
   if (!responseEndpoint) {
-    throw new Oauth2Error('response_uri or redirect_uri is required')
+    throw new Oauth2Error(`Either 'response_uri' or 'redirect_uri' MUST  be present in the authorization request`)
   }
 
   const responseEndpointUrl = new URL(responseEndpoint)

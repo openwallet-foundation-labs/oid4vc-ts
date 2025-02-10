@@ -1,20 +1,21 @@
+import { zHttpsUrl } from '@openid4vc/utils'
 import { z } from 'zod'
 import { zClientMetadata } from '../models/z-client-metadata'
 
-export const zOpenid4vpAuthRequest = z
+export const zOpenid4vpAuthorizationRequest = z
   .object({
     response_type: z.literal('vp_token'),
     client_id: z.string(),
-    redirect_uri: z.string().optional(),
-    response_uri: z.string().optional(),
-    request_uri: z.string().optional(),
+    redirect_uri: zHttpsUrl.optional(),
+    response_uri: zHttpsUrl.optional(),
+    request_uri: zHttpsUrl.optional(),
     request_uri_method: z.enum(['post', 'get']).optional(),
-    response_mode: z.enum(['direct_post', 'direct_post.jwt', 'query', 'fragment']).optional().default('fragment'),
+    response_mode: z.enum(['direct_post', 'direct_post.jwt']).optional(),
     nonce: z.string(),
     wallet_nonce: z.string().optional(),
     scope: z.string().optional(),
     presentation_definition: z.object({}).passthrough().optional(),
-    presentation_definition_uri: z.string().optional(),
+    presentation_definition_uri: zHttpsUrl.optional(),
     dcql_query: z.object({}).passthrough().optional(),
     client_metadata: zClientMetadata.optional(),
     state: z.string().optional(),
@@ -23,4 +24,4 @@ export const zOpenid4vpAuthRequest = z
   })
   .passthrough()
 
-export type Openid4vpAuthRequest = z.infer<typeof zOpenid4vpAuthRequest>
+export type Openid4vpAuthorizationRequest = z.infer<typeof zOpenid4vpAuthorizationRequest>

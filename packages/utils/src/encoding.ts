@@ -35,16 +35,3 @@ export function encodeToBase64Url(data: Uint8Array | string) {
 function base64ToBase64Url(base64: string) {
   return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '')
 }
-
-export function uriEncodeObject(obj: Record<string, unknown>) {
-  return Object.entries(obj)
-    .map(
-      ([key, val]) =>
-        `${key}=${encodeURIComponent(
-          typeof val === 'string' || typeof val === 'boolean' || typeof val === 'number'
-            ? val
-            : encodeURIComponent(JSON.stringify(val as Record<string, unknown>))
-        )}`
-    )
-    .join('&')
-}

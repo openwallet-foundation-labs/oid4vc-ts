@@ -39,6 +39,14 @@ export enum Oauth2ErrorCodes {
   InvalidRequestObject = 'invalid_request_object',
   RequestNotSupported = 'request_not_supported',
   RequestUriNotSupported = 'request_uri_not_supported',
+
+  // OpenId4Vp
+  VpFormatsNotSupported = 'vp_formats_not_supported',
+  InvalidPresentationDefinitionUri = 'invalid_presentation_definition_uri',
+  InvalidPresentationDefinitionReference = 'invalid_presentation_definition_reference',
+  InvalidRequestUriMethod = 'invalid_request_uri_method',
+  InvalidTransactionData = 'invalid_transaction_data',
+  WalletUnavailable = 'wallet_unavailable',
 }
 
 export const zOauth2ErrorResponse = z

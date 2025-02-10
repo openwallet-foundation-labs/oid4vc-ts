@@ -1,18 +1,20 @@
 import type { CallbackContext } from '@openid4vc/oauth2'
 import { ContentType, defaultFetcher } from '@openid4vc/utils'
-import { xWwwFormUrlEncodeObject } from '@openid4vc/utils'
+import { objectToQueryParams } from '@openid4vc/utils'
+import type { Openid4vpAuthorizationRequest } from '../authorization-request/z-authorization-request'
 import { jarmAuthResponseSend } from '../jarm/jarm-auth-response-send'
-import type { Openid4vpAuthRequest } from '../openid4vp-auth-request/z-openid4vp-auth-request'
-import type { Openid4vpAuthResponse } from './z-openid4vp-auth-response'
+import type { Openid4vpAuthorizationResponse } from './z-authorization-response'
 
-export async function submitOpenid4vpAuthorizationResponse(input: {
-  request: Pick<Openid4vpAuthRequest, 'redirect_uri' | 'response_uri'>
-  response: Openid4vpAuthResponse
+export interface SubmitOpenid4vpAuthorizationResponseOptions {
+  request: Pick<Openid4vpAuthorizationRequest, 'response_uri'>
+  response: Openid4vpAuthorizationResponse
   jarm?: { responseJwt: string }
   callbacks: Pick<CallbackContext, 'fetch'>
-}) {
-  const { request, response, jarm, callbacks } = input
-  const url = request.redirect_uri ?? request.response_uri
+}
+
+export async function submitOpenid4vpAuthorizationResponse(options: SubmitOpenid4vpAuthorizationResponseOptions) {
+  const { request, response, jarm, callbacks } = options
+  const url = request.response_uri
 
   if (jarm) {
     return jarmAuthResponseSend({
@@ -27,7 +29,7 @@ export async function submitOpenid4vpAuthorizationResponse(input: {
   }
 
   const fetch = callbacks.fetch ?? defaultFetcher
-  const encodedResponse = xWwwFormUrlEncodeObject(response)
+  const encodedResponse = objectToQueryParams(response)
   const submissionResponse = await fetch(url, {
     method: 'POST',
     body: encodedResponse,

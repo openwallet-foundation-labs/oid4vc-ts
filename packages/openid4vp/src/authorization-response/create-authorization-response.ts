@@ -1,43 +1,48 @@
 import { type CallbackContext, type JwtSigner, Oauth2Error } from '@openid4vc/oauth2'
+import { dateToSeconds } from '@openid4vc/utils'
+import { addSecondsToDate } from '../../../utils/src/date'
+import type { Openid4vpAuthorizationRequest } from '../authorization-request/z-authorization-request'
 import { createJarmAuthResponse } from '../jarm/jarm-auth-response-create'
 import { extractJwksFromClientMetadata } from '../jarm/jarm-extract-jwks'
+import { isJarmResponseMode } from '../jarm/jarm-response-mode'
 import { jarmAssertMetadataSupported } from '../jarm/metadata/jarm-assert-metadata-supported'
-import type { JarmServerMetadata } from '../jarm/metadata/z-jarm-as-metadata'
-import type { Openid4vpAuthRequest } from '../openid4vp-auth-request/z-openid4vp-auth-request'
-import type { Openid4vpAuthResponse } from './z-openid4vp-auth-response'
+import type { JarmServerMetadata } from '../jarm/metadata/z-jarm-authorization-server-metadata'
+import type { Openid4vpAuthorizationResponse } from './z-authorization-response'
 
-export async function createOpenid4vpAuthorizationResponse(options: {
-  requestParams: Pick<Openid4vpAuthRequest, 'state' | 'client_metadata' | 'nonce' | 'response_mode'>
-  responseParams: Openid4vpAuthResponse & { state?: never }
+export interface CreateOpenid4vpAuthorizationResponseOptions {
+  requestParams: Pick<Openid4vpAuthorizationRequest, 'state' | 'client_metadata' | 'nonce' | 'response_mode'>
+  responseParams: Openid4vpAuthorizationResponse & { state?: never }
   jarm?: {
     jwtSigner?: JwtSigner
-    jweEncryptor?: {
-      nonce: string
-    }
+    encryption?: { nonce: string }
     serverMetadata: JarmServerMetadata
-    iss?: string // The issuer URL of the authorization server that created the response
-    aud?: string // The client_id of the client the response is intended for
-    exp?: number // The expiration time of the JWT. A maximum JWT lifetime of 10 minutes is RECOMMENDED.
+    authorizationServer?: string // The issuer URL of the authorization server that created the response
+    audience?: string // The client_id of the client the response is intended for
+    expiresInSeconds?: number // The expiration time of the JWT. A maximum JWT lifetime of 10 minutes is RECOMMENDED.
   }
   callbacks: Pick<CallbackContext, 'signJwt' | 'encryptJwe'>
-}) {
+}
+
+export async function createOpenid4vpAuthorizationResponse(options: CreateOpenid4vpAuthorizationResponseOptions) {
   const { requestParams, responseParams, jarm, callbacks } = options
 
   const openid4vpAuthResponseParams = {
     ...responseParams,
     state: requestParams.state,
-  } satisfies Openid4vpAuthResponse
+  } satisfies Openid4vpAuthorizationResponse
 
-  if (!requestParams.response_mode.includes('jwt')) {
-    return { responseParams: openid4vpAuthResponseParams }
+  if (requestParams.response_mode && isJarmResponseMode(requestParams.response_mode) && !jarm) {
+    throw new Oauth2Error(
+      `Missing jarm options for creating Jarm response with response mode '${requestParams.response_mode}'`
+    )
   }
 
   if (!jarm) {
-    throw new Oauth2Error(`JARM is required for response mode ${requestParams.response_mode}`)
+    return { responseParams: openid4vpAuthResponseParams }
   }
 
   if (!requestParams.client_metadata) {
-    throw new Oauth2Error('Missing client metadata in the request params to assert JARM metadata support.')
+    throw new Oauth2Error('Missing client metadata in the request params to assert Jarm metadata support.')
   }
 
   if (!requestParams.client_metadata.jwks) {
@@ -60,36 +65,36 @@ export async function createOpenid4vpAuthorizationResponse(options: {
 
   // When the response is NOT only encrypted, the JWT payload needs to include the iss, aud and exp.
   let additionalJwtPayload: Record<string, string | number> | undefined
-  if (jarm.jwtSigner) {
-    if (!jarm.iss) {
+  if (jarm?.jwtSigner) {
+    if (!jarm.authorizationServer) {
       throw new Oauth2Error('Missing required iss in JARM configuration for creating OpenID4VP authorization response.')
     }
 
-    if (!jarm.aud) {
+    if (!jarm.audience) {
       throw new Oauth2Error('Missing required aud in JARM configuration for creating OpenID4VP authorization response.')
     }
 
     additionalJwtPayload = {
-      iss: jarm.iss,
-      aud: jarm.aud,
-      exp: jarm.exp ?? Math.floor(Date.now() / 1000) + 60 * 10, // default: 10 minutes
+      iss: jarm.authorizationServer,
+      aud: jarm.audience,
+      exp: jarm.expiresInSeconds ?? dateToSeconds(addSecondsToDate(new Date(), 60 * 10)), // default: 10 minutes
     }
   }
 
   const jarmResponseParams = {
     ...openid4vpAuthResponseParams,
     ...additionalJwtPayload,
-  } satisfies Openid4vpAuthResponse
+  } satisfies Openid4vpAuthorizationResponse
 
   const result = await createJarmAuthResponse({
     jarmAuthResponse: jarmResponseParams,
-    jwtSigner: jarm.jwtSigner,
+    jwtSigner: jarm?.jwtSigner,
     jwtEncryptor:
-      jarm.jweEncryptor && (supportedJarmMetadata.type === 'encrypt' || supportedJarmMetadata.type === 'sign_encrypt')
+      jarm?.encryption && (supportedJarmMetadata.type === 'encrypt' || supportedJarmMetadata.type === 'sign_encrypt')
         ? {
             method: 'jwk',
             publicJwk: clientMetaJwks.encJwk,
-            apu: jarm.jweEncryptor.nonce,
+            apu: jarm.encryption?.nonce,
             apv: requestParams.nonce,
             alg: supportedJarmMetadata.client_metadata.authorization_encrypted_response_alg,
             enc: supportedJarmMetadata.client_metadata.authorization_encrypted_response_enc,

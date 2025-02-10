@@ -22,7 +22,6 @@ export {
   encodeToBase64,
   encodeToBase64Url,
   encodeToUtf8String,
-  uriEncodeObject,
 } from './encoding'
 export { mergeDeep } from './object'
 export {
@@ -48,8 +47,5 @@ export {
   parseWwwAuthenticateHeader,
   type WwwAuthenticateHeaderChallenge,
 } from './www-authenticate'
-
-export { xWwwFormUrlEncodeObject } from './x-www-form-url-encode'
-export { uriDecodeObject } from './uri-encode-object'
 
 export { isObject } from './object'

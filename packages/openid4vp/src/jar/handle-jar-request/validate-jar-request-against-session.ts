@@ -1,13 +1,13 @@
 import { Oauth2Error } from '@openid4vc/oauth2'
 
-export type JarMeta = {
+export type JarMetadata = {
   ProtectedBy: 'signature' | 'signature_encryption'
   SendBy: 'value' | 'reference'
 }
 
 export interface ValidateJarRequestAgainstSessionOptions {
-  jarMeta: JarMeta
-  jarSessionMeta: JarMeta
+  jarMetadata: JarMetadata
+  jarSessionMetadata: JarMetadata
 }
 
 /**
@@ -24,13 +24,13 @@ export interface ValidateJarRequestAgainstSessionOptions {
  * do not match the corresponding values in the session metadata.
  */
 export async function validateJarRequestAgainstSession(options: ValidateJarRequestAgainstSessionOptions) {
-  const { jarMeta, jarSessionMeta } = options
+  const { jarMetadata, jarSessionMetadata } = options
 
-  if (jarSessionMeta.ProtectedBy !== jarMeta.ProtectedBy) {
+  if (jarSessionMetadata.ProtectedBy !== jarMetadata.ProtectedBy) {
     throw new Oauth2Error(`The protected_by value does not match the session's protected_by value.`)
   }
 
-  if (jarSessionMeta.SendBy !== jarMeta.SendBy) {
+  if (jarSessionMetadata.SendBy !== jarMetadata.SendBy) {
     throw new Oauth2Error(`The send_by value does not match the session's send_by value.`)
   }
 }

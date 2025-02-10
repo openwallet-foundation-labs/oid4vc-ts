@@ -1,6 +1,6 @@
 import { Oauth2Error, decodeJwt } from '@openid4vc/oauth2'
 import { zCompactJwt } from '@openid4vc/oauth2'
-import { isObject, parseIfJson } from '@openid4vc/utils'
+import { isObject, parseIfJson, parseWithErrorHandling } from '@openid4vc/utils'
 import { z } from 'zod'
 import type { VpToken } from './z-vp-token'
 
@@ -8,20 +8,23 @@ export type VpTokenPresentationParseResult =
   | {
       format: 'dc+sd-jwt' | 'mso_mdoc' | 'jwt_vp_json'
       presentation: string
-      path: string
+      path?: string
       nonce?: string
     }
   | {
       format: 'ldp_vp' | 'ac_vp'
       presentation: Record<string, unknown>
-      path: string
+      path?: string
       nonce?: string
     }
 
-export function parsePresentationsFromVpToken(options: { vpToken: VpToken }): [
-  VpTokenPresentationParseResult,
-  ...VpTokenPresentationParseResult[],
-] {
+export interface ParsePresentationsFromVpTokenOptions {
+  vpToken: VpToken
+}
+
+export function parsePresentationsFromVpToken(
+  options: ParsePresentationsFromVpTokenOptions
+): [VpTokenPresentationParseResult, ...VpTokenPresentationParseResult[]] {
   const { vpToken: _vpToken } = options
   const vpToken = parseIfJson(_vpToken)
 
@@ -30,14 +33,14 @@ export function parsePresentationsFromVpToken(options: { vpToken: VpToken }): [
       throw new Oauth2Error('Could not parse vp_token. vp_token is an empty array.')
     }
 
-    return vpToken.map((token, idx) => parseSinglePresentationsFromVpToken({ vpToken: token, path: `$[${idx}]` })) as [
+    return vpToken.map((token, idx) => parseSinglePresentationFromVpToken({ vpToken: token, path: `$[${idx}]` })) as [
       VpTokenPresentationParseResult,
       ...VpTokenPresentationParseResult[],
     ]
   }
 
   if (typeof vpToken === 'string' || typeof vpToken === 'object') {
-    return [parseSinglePresentationsFromVpToken({ vpToken, path: '$' })]
+    return [parseSinglePresentationFromVpToken({ vpToken, path: '$' })]
   }
 
   throw new Oauth2Error(
@@ -45,44 +48,53 @@ export function parsePresentationsFromVpToken(options: { vpToken: VpToken }): [
   )
 }
 
-export function parseDcqlPresentationFromVpToken(options: {
-  vpToken: unknown
-  path: string
-}) {
+export function parseDcqlPresentationFromVpToken(options: { vpToken: unknown }) {
   const { vpToken: _vpToken } = options
 
   const vpToken = parseIfJson(_vpToken)
-  if (!isObject(vpToken)) {
-    throw new Oauth2Error(`Could not parse vp_token. Expected a JSON object. Received: ${typeof vpToken}`)
-  }
+  const parsed = parseWithErrorHandling(z.object({}).passthrough(), vpToken)
 
   const dcqlPresentationRecord = Object.fromEntries(
-    Object.entries(vpToken).map(([key, value]) => {
-      return [key, parseSinglePresentationsFromVpToken({ vpToken: value, path: '$' })]
+    Object.entries(parsed).map(([key, value]) => {
+      return [key, parseSinglePresentationFromVpToken({ vpToken: value })]
     })
   )
 
   return dcqlPresentationRecord
 }
 
-export function parseSinglePresentationsFromVpToken(options: {
+export function parseSinglePresentationFromVpToken(options: {
   vpToken: unknown
-  path: string
+  path?: string
 }): VpTokenPresentationParseResult {
-  const { vpToken: _vpToken } = options
+  const { vpToken: _vpToken, path } = options
 
   const vpToken = parseIfJson(_vpToken)
+  const zLdpVpProof = z.object({ challenge: z.string().optional() }).passthrough()
 
   const ldpVpParseResult = z
     .object({
       '@context': z.string().optional(),
       verifiableCredential: z.string().optional(),
-      proof: z.object({ challenge: z.string().optional() }).passthrough().optional(),
+      proof: z.union([zLdpVpProof, z.array(zLdpVpProof)]).optional(),
     })
     .passthrough()
     .safeParse(vpToken)
   if (ldpVpParseResult.success && (ldpVpParseResult.data['@context'] || ldpVpParseResult.data.verifiableCredential)) {
-    const challenge = ldpVpParseResult.data.proof?.challenge
+    const challenge = Array.isArray(ldpVpParseResult.data.proof)
+      ? ldpVpParseResult.data.proof.map((proof) => proof.challenge)
+      : ldpVpParseResult.data.proof?.challenge
+
+    // check if all nonces are the same
+    if (Array.isArray(challenge)) {
+      const allNoncesAreTheSame = challenge.every((nonce) => nonce === challenge[0])
+      if (!allNoncesAreTheSame) {
+        throw new Oauth2Error(
+          'Failed to parse presentation from vp_token. LDP presentation is missing the proof.challenge parameter.'
+        )
+      }
+    }
+
     if (!challenge) {
       throw new Oauth2Error(
         'Failed to parse presentation from vp_token. LDP presentation is missing the proof.challenge parameter.'
@@ -92,8 +104,8 @@ export function parseSinglePresentationsFromVpToken(options: {
     return {
       format: 'ldp_vp',
       presentation: ldpVpParseResult,
-      path: options.path,
-      nonce: challenge,
+      path,
+      nonce: Array.isArray(challenge) ? challenge[0] : challenge,
     }
   }
 
