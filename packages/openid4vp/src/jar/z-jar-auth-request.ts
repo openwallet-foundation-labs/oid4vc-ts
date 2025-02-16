@@ -1,13 +1,15 @@
 import { Oauth2ServerErrorResponseError } from '@openid4vc/oauth2'
 import { zHttpsUrl } from '@openid4vc/utils'
 import { z } from 'zod'
+import type { Openid4vpAuthorizationRequest } from '../authorization-request/z-authorization-request'
+import type { Openid4vpAuthorizationRequestDcApi } from '../authorization-request/z-authorization-request-dc-api'
 
 export const zJarAuthRequest = z
   .object({
     request: z.optional(z.string()),
     request_uri: z.optional(zHttpsUrl),
     request_uri_method: z.optional(z.union([z.literal('GET'), z.literal('POST')])),
-    client_id: z.string(),
+    client_id: z.optional(z.string()),
   })
   .passthrough()
 export type JarAuthRequest = z.infer<typeof zJarAuthRequest>
@@ -31,4 +33,10 @@ export function validateJarRequestParams(options: { jarRequestParams: JarAuthReq
 
   return jarRequestParams as JarAuthRequest &
     ({ request_uri: string; request?: never } | { request: string; request_uri?: never })
+}
+
+export function isJarAuthRequest(
+  request: Openid4vpAuthorizationRequest | JarAuthRequest | Openid4vpAuthorizationRequestDcApi
+): request is JarAuthRequest {
+  return 'request' in request || 'request_uri' in request
 }

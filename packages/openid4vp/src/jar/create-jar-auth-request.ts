@@ -9,7 +9,7 @@ import {
 import type { JarAuthRequest } from './z-jar-auth-request'
 
 export interface CreateJarAuthRequestOptions {
-  authRequestParams: JwtPayload & { client_id: string }
+  authRequestParams: JwtPayload & { client_id?: string }
   jwtSigner: JwtSigner
   jwtEncryptor?: JweEncryptor
   requestUri?: string

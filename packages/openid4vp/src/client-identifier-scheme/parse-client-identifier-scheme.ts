@@ -1,6 +1,10 @@
 import { Oauth2Error } from '@openid4vc/oauth2'
 import type { CallbackContext } from '../../../oauth2/src/callbacks'
 import type { Openid4vpAuthorizationRequest } from '../authorization-request/z-authorization-request'
+import {
+  type Openid4vpAuthorizationRequestDcApi,
+  isOpenid4vpAuthorizationRequestDcApi,
+} from '../authorization-request/z-authorization-request-dc-api'
 import type { verifyJarRequest } from '../jar/handle-jar-request/verify-jar-request'
 import type { ClientMetadata } from '../models/z-client-metadata'
 import { type ClientIdScheme, zClientIdScheme } from './z-client-id-scheme'
@@ -43,6 +47,12 @@ export type ParsedClientIdentifier =
       originalValue: string
       clientMetadata?: ClientMetadata
     }
+  | {
+      scheme: 'web-origin'
+      identifier?: string
+      originalValue?: string
+      clientMetadata?: ClientMetadata
+    }
 
 /**
  * Configuration options for the parser
@@ -53,7 +63,7 @@ export interface ClientIdentifierParserConfig {
 }
 
 export interface ClientIdentifierParserOptions {
-  request: Openid4vpAuthorizationRequest
+  request: Openid4vpAuthorizationRequest | Openid4vpAuthorizationRequestDcApi
   jar?: Awaited<ReturnType<typeof verifyJarRequest>>
   callbacks: Partial<Pick<CallbackContext, 'getX509CertificateMetadata'>>
 }
@@ -66,11 +76,7 @@ export function parseClientIdentifier(
   parserConfig?: ClientIdentifierParserConfig
 ): ParsedClientIdentifier {
   const { request, jar } = options
-  const clientId = request.client_id
-
-  if (!clientId?.length) {
-    throw new Oauth2Error('Failed to parse client identifier. Client identifier is missing or empty.')
-  }
+  let clientId = request.client_id
 
   // By default require signatures for these schemes
   const parserConfigWithDefaults: Required<ClientIdentifierParserConfig> = {
@@ -87,9 +93,23 @@ export function parseClientIdentifier(
         'x509_san_uri',
         'https',
         'pre-registered',
+        'web-origin',
       ] satisfies ClientIdScheme[]),
   }
 
+  if (isOpenid4vpAuthorizationRequestDcApi(request)) {
+    if (clientId && !jar) {
+      throw new Oauth2Error('The client_id parameter MUST be omitted in unsigned openid4vp authorization requests.')
+    }
+    return {
+      scheme: 'web-origin',
+      identifier: clientId?.slice('web-origin:'.length),
+      originalValue: clientId,
+      clientMetadata: request.client_metadata,
+    }
+  }
+
+  clientId = request.client_id
   const colonIndex = clientId.indexOf(':')
   if (colonIndex === -1) {
     return {

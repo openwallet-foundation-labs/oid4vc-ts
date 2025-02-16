@@ -10,11 +10,28 @@ import {
 import { decodeBase64, encodeToUtf8String, parseWithErrorHandling } from '@openid4vc/utils'
 import z from 'zod'
 import { parseOpenid4vpAuthorizationRequestPayload } from '../authorization-request/parse-authorization-request-params'
+import { isOpenid4vpAuthorizationRequestDcApi } from '../authorization-request/z-authorization-request-dc-api'
 import { verifyJarmAuthorizationResponse } from '../jarm/jarm-auth-response/verify-jarm-auth-response'
 import type { JarmAuthResponse, JarmAuthResponseEncryptedOnly } from '../jarm/jarm-auth-response/z-jarm-auth-response'
 import { isJarmResponseMode } from '../jarm/jarm-response-mode'
 import { validateOpenid4vpAuthorizationResponse } from './validate-authorization-response'
 import { zOpenid4vpAuthorizationResponse } from './z-authorization-response'
+import {
+  isOpenid4vpAuthorizationResponseDcApi,
+  zOpenid4vpAuthorizationResponseDcApi,
+} from './z-authorization-response-dc-api'
+
+function parseOpenid4VpAuthorizationResponsePaylaod(payload: Record<string, unknown>) {
+  if (isOpenid4vpAuthorizationRequestDcApi(payload)) {
+    return parseWithErrorHandling(
+      zOpenid4vpAuthorizationResponseDcApi,
+      payload,
+      'Invalid openid4vp authorization response.'
+    )
+  }
+
+  return parseWithErrorHandling(zOpenid4vpAuthorizationResponse, payload, 'Invalid openid4vp authorization response.')
+}
 
 export interface ParseJarmAuthorizationResponseOptions {
   jarmResponseJwt: string
@@ -49,14 +66,12 @@ export async function parseJarmAuthorizationResponse(options: ParseJarmAuthoriza
     throw new Oauth2Error('Invalid authorization request. Could not parse openid4vp authorization request.')
   }
 
-  const authResponsePayload = parseWithErrorHandling(
-    zOpenid4vpAuthorizationResponse,
-    verifiedJarmResponse.jarmAuthResponse,
-    'Invalid jarm authorization response.'
-  )
+  const authResponsePayload = parseOpenid4VpAuthorizationResponsePaylaod(verifiedJarmResponse.jarmAuthResponse)
   const validateOpenId4vpResponse = validateOpenid4vpAuthorizationResponse({
     authorizationRequest: parsedAuthorizationRequest.params,
-    authorizationResponse: authResponsePayload,
+    authorizationResponse: isOpenid4vpAuthorizationResponseDcApi(authResponsePayload)
+      ? authResponsePayload.data
+      : authResponsePayload,
   })
 
   const authRequestPayload = parsedAuthorizationRequest.params
@@ -102,13 +117,7 @@ export async function parseOpenid4vpAuthorizationResponse(options: ParseOpenid4v
     return parseJarmAuthorizationResponse({ jarmResponseJwt: responsePayload.response as string, callbacks })
   }
 
-  const authorizationResponsePayload = responsePayload
-
-  const authResponsePayload = parseWithErrorHandling(
-    zOpenid4vpAuthorizationResponse,
-    authorizationResponsePayload,
-    'Invalid authorization response.'
-  )
+  const authResponsePayload = parseOpenid4VpAuthorizationResponsePaylaod(responsePayload)
 
   const authRequest = await callbacks.getOpenid4vpAuthorizationRequest(authResponsePayload)
   const parsedAuthRequest = parseOpenid4vpAuthorizationRequestPayload({ requestPayload: authRequest.authRequest })
@@ -120,7 +129,9 @@ export async function parseOpenid4vpAuthorizationResponse(options: ParseOpenid4v
 
   const validateOpenId4vpResponse = validateOpenid4vpAuthorizationResponse({
     authorizationRequest: authRequestPayload,
-    authorizationResponse: authResponsePayload,
+    authorizationResponse: isOpenid4vpAuthorizationResponseDcApi(authResponsePayload)
+      ? authResponsePayload.data
+      : authResponsePayload,
   })
 
   if (authRequestPayload.response_mode && isJarmResponseMode(authRequestPayload.response_mode)) {

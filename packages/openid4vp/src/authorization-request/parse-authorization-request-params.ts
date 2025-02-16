@@ -1,9 +1,14 @@
-import { Oauth2Error, decodeJwt } from '@openid4vc/oauth2'
+import { decodeJwt } from '@openid4vc/oauth2'
 import { URL } from '@openid4vc/utils'
 import { parseWithErrorHandling } from '@openid4vc/utils'
 import z from 'zod'
-import { type JarAuthRequest, zJarAuthRequest } from '../jar/z-jar-auth-request'
+import { type JarAuthRequest, isJarAuthRequest, zJarAuthRequest } from '../jar/z-jar-auth-request'
 import { type Openid4vpAuthorizationRequest, zOpenid4vpAuthorizationRequest } from './z-authorization-request'
+import {
+  type Openid4vpAuthorizationRequestDcApi,
+  isOpenid4vpAuthorizationRequestDcApi,
+  zOpenid4vpAuthorizationRequestDcApi,
+} from './z-authorization-request-dc-api'
 
 export interface ParsedJarOpenid4vpAuthRequest {
   type: 'jar'
@@ -17,13 +22,19 @@ export interface ParsedOpenid4vpAuthRequest {
   params: Openid4vpAuthorizationRequest
 }
 
+export interface ParsedOpenid4vpDcApiAuthRequest {
+  type: 'openid4vp_dc_api'
+  provided: 'uri' | 'jwt' | 'params'
+  params: Openid4vpAuthorizationRequestDcApi
+}
+
 export interface ParseOpenid4vpAuthRequestPayloadOptions {
   requestPayload: string | Record<string, unknown>
 }
 
 export function parseOpenid4vpAuthorizationRequestPayload(
   options: ParseOpenid4vpAuthRequestPayloadOptions
-): ParsedOpenid4vpAuthRequest | ParsedJarOpenid4vpAuthRequest {
+): ParsedOpenid4vpAuthRequest | ParsedJarOpenid4vpAuthRequest | ParsedOpenid4vpDcApiAuthRequest {
   const { requestPayload } = options
   let provided: 'uri' | 'jwt' | 'params' = 'params'
 
@@ -42,26 +53,30 @@ export function parseOpenid4vpAuthorizationRequestPayload(
     params = requestPayload
   }
 
-  const parsedRequest = parseWithErrorHandling(z.union([zOpenid4vpAuthorizationRequest, zJarAuthRequest]), params)
-  const parsedOpenid4vpAuthRequest = zOpenid4vpAuthorizationRequest.safeParse(parsedRequest)
-  if (parsedOpenid4vpAuthRequest.success) {
+  const parsedRequest = parseWithErrorHandling(
+    z.union([zOpenid4vpAuthorizationRequest, zJarAuthRequest, zOpenid4vpAuthorizationRequestDcApi]),
+    params
+  )
+
+  if (isOpenid4vpAuthorizationRequestDcApi(parsedRequest)) {
     return {
-      type: 'openid4vp',
+      type: 'openid4vp_dc_api',
       provided,
-      params: parsedOpenid4vpAuthRequest.data,
+      params: parsedRequest,
     }
   }
 
-  const parsedJarAuthRequest = zJarAuthRequest.safeParse(parsedRequest)
-  if (parsedJarAuthRequest.success) {
+  if (isJarAuthRequest(parsedRequest)) {
     return {
       type: 'jar',
       provided,
-      params: parsedJarAuthRequest.data,
+      params: parsedRequest,
     }
   }
 
-  throw new Oauth2Error(
-    'Could not parse openid4vp auth request params. The received is neither a valid openid4vp auth request nor a valid jar auth request.'
-  )
+  return {
+    type: 'openid4vp',
+    provided,
+    params: parsedRequest,
+  }
 }

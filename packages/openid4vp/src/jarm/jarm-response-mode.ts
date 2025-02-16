@@ -1,6 +1,13 @@
 import { z } from 'zod'
 
-export const jarmResponseMode = ['jwt', 'query.jwt', 'fragment.jwt', 'form_post.jwt', 'direct_post.jwt'] as const
+export const jarmResponseMode = [
+  'jwt',
+  'query.jwt',
+  'fragment.jwt',
+  'form_post.jwt',
+  'direct_post.jwt',
+  'dc_api.jwt',
+] as const
 export const zJarmResponseMode = z.enum(jarmResponseMode)
 
 export type JarmResponseMode = (typeof jarmResponseMode)[number]

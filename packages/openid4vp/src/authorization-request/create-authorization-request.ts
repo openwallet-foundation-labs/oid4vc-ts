@@ -1,15 +1,20 @@
-import type { CallbackContext, JwtSigner } from '@openid4vc/oauth2'
-import { URL, URLSearchParams, objectToQueryParams } from '@openid4vc/utils'
+import { type CallbackContext, type JwtSigner, Oauth2Error } from '@openid4vc/oauth2'
+import { URL, URLSearchParams, objectToQueryParams, parseWithErrorHandling } from '@openid4vc/utils'
 import { createJarAuthRequest } from '../jar/create-jar-auth-request'
 import {
   type WalletVerificationOptions,
   validateOpenid4vpAuthorizationRequestPayload,
 } from './validate-authorization-request'
-import type { Openid4vpAuthorizationRequest } from './z-authorization-request'
+import { type Openid4vpAuthorizationRequest, zOpenid4vpAuthorizationRequest } from './z-authorization-request'
+import {
+  type Openid4vpAuthorizationRequestDcApi,
+  isOpenid4vpAuthorizationRequestDcApi,
+  zOpenid4vpAuthorizationRequestDcApi,
+} from './z-authorization-request-dc-api'
 
 export interface CreateOpenid4vpAuthorizationRequestOptions {
   scheme?: string
-  requestParams: Openid4vpAuthorizationRequest
+  requestParams: Openid4vpAuthorizationRequest | Openid4vpAuthorizationRequestDcApi
   jar?: {
     requestUri: string
     jwtSigner: JwtSigner
@@ -40,9 +45,30 @@ export interface CreateOpenid4vpAuthorizationRequestOptions {
 export async function createOpenid4vpAuthorizationRequest(options: CreateOpenid4vpAuthorizationRequestOptions) {
   const { jar, scheme = 'openid4vp://', requestParams, wallet, callbacks } = options
 
-  validateOpenid4vpAuthorizationRequestPayload({ params: requestParams, walletVerificationOptions: wallet })
-
   let additionalJwtPayload: Record<string, unknown> | undefined
+
+  let authRequestParams: Openid4vpAuthorizationRequest | Openid4vpAuthorizationRequestDcApi
+  if (isOpenid4vpAuthorizationRequestDcApi(requestParams)) {
+    authRequestParams = parseWithErrorHandling(
+      zOpenid4vpAuthorizationRequestDcApi,
+      requestParams,
+      'Invalid authorization request. Could not parse openid4vp dc_api authorization request.'
+    )
+
+    if (jar && !authRequestParams.expected_origins) {
+      throw new Oauth2Error(
+        `The 'expected_origins' parameter MUST be present when using the dc_api response mode in combinaction with jar.`
+      )
+    }
+  } else {
+    authRequestParams = parseWithErrorHandling(
+      zOpenid4vpAuthorizationRequest,
+      requestParams,
+      'Invalid authorization request. Could not parse openid4vp authorization request.'
+    )
+    validateOpenid4vpAuthorizationRequestPayload({ params: authRequestParams, walletVerificationOptions: wallet })
+    authRequestParams = requestParams
+  }
 
   if (jar) {
     if (!jar.additionalJwtPayload?.aud) {

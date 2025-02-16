@@ -10,7 +10,7 @@ import {
   zCompactJwe,
   zCompactJwt,
 } from '@openid4vc/oauth2'
-import { zClientIdScheme } from '../../client-identifier-scheme/z-client-id-scheme'
+import { type ClientIdScheme, zClientIdScheme } from '../../client-identifier-scheme/z-client-id-scheme'
 import type { WalletMetadata } from '../../models/z-wallet-metadata'
 import { fetchJarRequestObject } from '../jar-request-object/fetch-jar-request-object'
 import { type JarRequestObjectPayload, zJarRequestObjectPayload } from '../jar-request-object/z-jar-request-object'
@@ -46,7 +46,9 @@ export async function verifyJarRequest(options: VerifyJarRequestOptions): Promis
   const jarRequestParams = validateJarRequestParams(options)
 
   const sendBy = jarRequestParams.request ? 'value' : 'reference'
-  const clientIdentifierScheme = zClientIdScheme.parse(jarRequestParams.client_id.split(':')[0])
+  const clientIdentifierScheme: ClientIdScheme = jarRequestParams.client_id
+    ? zClientIdScheme.parse(jarRequestParams.client_id.split(':')[0])
+    : 'web-origin'
 
   const method = jarRequestParams.request_uri_method ?? 'GET'
 

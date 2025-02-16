@@ -60,4 +60,5 @@ export {
 export { Oid4vpClient } from './Oid4vpClient'
 export { Oid4vcVerifier } from './Oid4vcVerifier'
 export { zOpenid4vpAuthorizationResponse } from './authorization-response/z-authorization-response'
+export { zOpenid4vpAuthorizationResponseDcApi } from './authorization-response/z-authorization-response-dc-api'
 export { isJarmResponseMode } from './jarm/jarm-response-mode'
