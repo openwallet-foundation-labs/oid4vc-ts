@@ -35,10 +35,4 @@ export const validateOpenid4vpAuthorizationRequestDcApiPayload = (
       )
     }
   }
-
-  if (params.client_id && !params.client_id.startsWith('web-origin:')) {
-    throw new Oauth2Error(
-      `The 'client_id' parameter MUST start with 'web-origin:' when using the dc_api response mode.`
-    )
-  }
 }

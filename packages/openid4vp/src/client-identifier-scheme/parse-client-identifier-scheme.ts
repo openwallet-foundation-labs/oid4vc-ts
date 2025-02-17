@@ -65,7 +65,25 @@ export interface ClientIdentifierParserConfig {
 export interface ClientIdentifierParserOptions {
   request: Openid4vpAuthorizationRequest | Openid4vpAuthorizationRequestDcApi
   jar?: Awaited<ReturnType<typeof verifyJarRequest>>
+  origin?: string
   callbacks: Partial<Pick<CallbackContext, 'getX509CertificateMetadata'>>
+}
+
+function getClientId(request: Openid4vpAuthorizationRequest | Openid4vpAuthorizationRequestDcApi, origin?: string) {
+  const isDcApiRequest = isOpenid4vpAuthorizationRequestDcApi(request)
+  if (isDcApiRequest) {
+    if (request.client_id) {
+      return request.client_id
+    }
+
+    if (!origin) {
+      throw new Oauth2Error(`Failed to parse client identifier. Missing required 'client_id' parameter.`)
+    }
+
+    return `web-origin:${origin}`
+  }
+
+  return request.client_id
 }
 
 /**
@@ -76,7 +94,9 @@ export function parseClientIdentifier(
   parserConfig?: ClientIdentifierParserConfig
 ): ParsedClientIdentifier {
   const { request, jar } = options
-  let clientId = request.client_id
+
+  const isDcApiRequest = isOpenid4vpAuthorizationRequestDcApi(request)
+  const clientId = getClientId(request, options.origin)
 
   // By default require signatures for these schemes
   const parserConfigWithDefaults: Required<ClientIdentifierParserConfig> = {
@@ -97,20 +117,12 @@ export function parseClientIdentifier(
       ] satisfies ClientIdScheme[]),
   }
 
-  if (isOpenid4vpAuthorizationRequestDcApi(request)) {
-    if (clientId && !jar) {
-      throw new Oauth2Error('The client_id parameter MUST be omitted in unsigned openid4vp authorization requests.')
-    }
-
-    return {
-      scheme: 'web-origin',
-      identifier: clientId?.slice('web-origin:'.length),
-      originalValue: clientId,
-      clientMetadata: request.client_metadata,
-    }
+  if (isDcApiRequest && !jar && clientId) {
+    throw new Oauth2Error(
+      `The 'client_id' parameter MUST be omitted in unsigned openid4vp dc api authorization requests.`
+    )
   }
 
-  clientId = request.client_id
   const colonIndex = clientId.indexOf(':')
   if (colonIndex === -1) {
     return {
@@ -130,6 +142,12 @@ export function parseClientIdentifier(
 
   const scheme = schemePart as ClientIdScheme
   if (scheme === 'https') {
+    if (isDcApiRequest) {
+      throw new Oauth2Error(
+        `The client identifier scheme 'https' is not supported when using the dc_api response mode.`
+      )
+    }
+
     if (!clientId.startsWith('https://') && !clientId.startsWith('http://')) {
       throw new Oauth2Error(
         'Invalid client identifier. Client identifier must start with https:// or http:// if allowInsecureUrls is true.'
@@ -146,6 +164,12 @@ export function parseClientIdentifier(
   if (scheme === 'redirect_uri') {
     if (jar) {
       throw new Oauth2Error('Using client identifier scheme "redirect_uri" the request MUST NOT be signed.')
+    }
+
+    if (isDcApiRequest) {
+      throw new Oauth2Error(
+        `The client identifier scheme 'redirect_uri' is not supported when using the dc_api response mode.`
+      )
     }
 
     return {
@@ -181,10 +205,6 @@ export function parseClientIdentifier(
       originalValue: clientId,
       kid: jar.signer.publicJwk.kid,
     }
-  }
-
-  if (scheme === 'web-origin') {
-    throw new Oauth2Error('Unsupported client identifier scheme. web-origin is not supported.')
   }
 
   if (scheme === 'x509_san_dns' || scheme === 'x509_san_uri') {
@@ -228,6 +248,15 @@ export function parseClientIdentifier(
       identifier: identifierPart,
       originalValue: clientId,
       x5c: jar.signer.x5c,
+    }
+  }
+
+  if (scheme === 'web-origin') {
+    return {
+      scheme,
+      identifier: identifierPart,
+      originalValue: clientId,
+      clientMetadata: request.client_metadata,
     }
   }
 

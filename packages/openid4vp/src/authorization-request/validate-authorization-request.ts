@@ -67,7 +67,7 @@ export const validateOpenid4vpAuthorizationRequestPayload = (
 
   if (params.client_id.startsWith('web-origin:')) {
     throw new Oauth2Error(
-      `The 'client_id' parameter MUST NOT start with 'web-origin:' when not using the dc_api response mode.`
+      `The 'client_id' parameter MUST NOT use client identifier scheme 'web-origin' when not using the dc_api response mode.`
     )
   }
 }
