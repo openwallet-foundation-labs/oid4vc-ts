@@ -3,6 +3,7 @@ import { dateToSeconds } from '@openid4vc/utils'
 import { addSecondsToDate } from '../../../utils/src/date'
 import type { Openid4vpAuthorizationRequest } from '../authorization-request/z-authorization-request'
 import type { Openid4vpAuthorizationRequestDcApi } from '../authorization-request/z-authorization-request-dc-api'
+import { isOpenid4vpAuthorizationRequestDcApi } from '../authorization-request/z-authorization-request-dc-api'
 import { createJarmAuthResponse } from '../jarm/jarm-auth-response-create'
 import { extractJwksFromClientMetadata } from '../jarm/jarm-extract-jwks'
 import { isJarmResponseMode } from '../jarm/jarm-response-mode'
@@ -32,6 +33,7 @@ export async function createOpenid4vpAuthorizationResponse(
 ): Promise<{
   responseParams: Openid4vpAuthorizationResponse | Openid4vpAuthorizationResponseDcApi['data']
   jarm?: { responseJwt: string }
+  dcApiResponseParams?: Openid4vpAuthorizationResponseDcApi
 }> {
   const { requestParams, responseParams, jarm, callbacks } = options
   const openid4vpAuthResponseParams = {
@@ -46,7 +48,15 @@ export async function createOpenid4vpAuthorizationResponse(
   }
 
   if (!jarm) {
-    return { responseParams: openid4vpAuthResponseParams }
+    return {
+      responseParams: openid4vpAuthResponseParams,
+      ...(isOpenid4vpAuthorizationRequestDcApi(openid4vpAuthResponseParams) && {
+        dcApiResponseParams: {
+          protocol: 'openid4vp',
+          data: openid4vpAuthResponseParams,
+        },
+      }),
+    }
   }
 
   if (!requestParams.client_metadata) {
@@ -117,5 +127,11 @@ export async function createOpenid4vpAuthorizationResponse(
   return {
     responseParams: jarmResponseParams,
     jarm: { responseJwt: result.jarmAuthResponseJwt },
+    ...(isOpenid4vpAuthorizationRequestDcApi(openid4vpAuthResponseParams) && {
+      dcApiResponseParams: {
+        protocol: 'openid4vp',
+        data: jarmResponseParams,
+      },
+    }),
   }
 }
