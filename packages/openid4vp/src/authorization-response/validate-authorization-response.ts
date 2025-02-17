@@ -76,7 +76,7 @@ export function validateOpenid4vpAuthorizationResponse(
       )
     }
 
-    if (typeof authorizationResponse.vp_token !== 'string') {
+    if (typeof authorizationResponse.vp_token !== 'string' && typeof authorizationResponse.vp_token !== 'object') {
       throw new Oauth2Error('If DCQL was used the vp_token must be a JSON-encoded object.')
     }
 
