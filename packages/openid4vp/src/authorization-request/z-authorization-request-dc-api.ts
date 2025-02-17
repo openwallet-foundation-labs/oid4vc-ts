@@ -16,7 +16,7 @@ export const zOpenid4vpAuthorizationRequestDcApi = zOpenid4vpAuthorizationReques
   .extend({
     client_id: z.optional(z.string()),
     expected_origins: z.array(z.string()).optional(),
-    response_mode: z.enum(['dc_api', 'dc_api.jwt']).optional(),
+    response_mode: z.enum(['dc_api', 'dc_api.jwt']),
   })
   .strip()
 

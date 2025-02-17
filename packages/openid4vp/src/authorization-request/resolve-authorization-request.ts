@@ -1,10 +1,14 @@
 import { type CallbackContext, Oauth2Error } from '@openid4vc/oauth2'
 import { parseWithErrorHandling } from '@openid4vc/utils'
 import z from 'zod'
-import { parseClientIdentifier } from '../client-identifier-scheme/parse-client-identifier-scheme'
-import { verifyJarRequest } from '../jar/handle-jar-request/verify-jar-request'
+import {
+  type ParsedClientIdentifier,
+  parseClientIdentifier,
+} from '../client-identifier-scheme/parse-client-identifier-scheme'
+import { type VerifiedJarRequest, verifyJarRequest } from '../jar/handle-jar-request/verify-jar-request'
 import { type JarAuthRequest, isJarAuthRequest, zJarAuthRequest } from '../jar/z-jar-auth-request'
 import { parseTransactionData } from '../transaction-data/parse-transaction-data'
+import type { TransactionData } from '../transaction-data/z-transaction-data'
 import {
   type WalletVerificationOptions,
   validateOpenid4vpAuthorizationRequestPayload,
@@ -20,11 +24,25 @@ export interface ResolveOpenid4vpAuthorizationRequestOptions {
   request: Openid4vpAuthorizationRequest | JarAuthRequest
   wallet?: WalletVerificationOptions
   origin?: string
+  omitOriginValidation?: boolean
   callbacks: Pick<CallbackContext, 'verifyJwt' | 'decryptJwe' | 'getX509CertificateMetadata'>
 }
 
-export async function resolveOpenid4vpAuthorizationRequest(options: ResolveOpenid4vpAuthorizationRequestOptions) {
-  const { request, wallet, callbacks, origin } = options
+export type ResolvedOpenid4vpAuthRequest = {
+  transactionData?: TransactionData
+  payload: Openid4vpAuthorizationRequest | Openid4vpAuthorizationRequestDcApi
+  jar: VerifiedJarRequest | undefined
+  client: ParsedClientIdentifier
+  pex?: {
+    presentation_definition: unknown
+    presentation_definition_uri?: string
+  }
+  dcql?: { query: unknown } | undefined
+}
+export async function resolveOpenid4vpAuthorizationRequest(
+  options: ResolveOpenid4vpAuthorizationRequestOptions
+): Promise<ResolvedOpenid4vpAuthRequest> {
+  const { request, wallet, callbacks, origin, omitOriginValidation } = options
 
   let authRequestPayload:
     | Openid4vpAuthorizationRequest
@@ -49,9 +67,16 @@ export async function resolveOpenid4vpAuthorizationRequest(options: ResolveOpeni
       wallet,
       jar: true,
       origin,
+      omitOriginValidation,
     })
   } else {
-    authRequestPayload = parseOpenid4vpAuthorizationRequestPayload({ request, wallet, jar: false, origin })
+    authRequestPayload = parseOpenid4vpAuthorizationRequestPayload({
+      request,
+      wallet,
+      jar: false,
+      origin,
+      omitOriginValidation,
+    })
   }
 
   const clientMeta = parseClientIdentifier({ request: authRequestPayload, jar, callbacks })
@@ -93,15 +118,14 @@ export async function resolveOpenid4vpAuthorizationRequest(options: ResolveOpeni
   }
 }
 
-export type ResolvedOpenid4vpAuthRequest = Awaited<ReturnType<typeof resolveOpenid4vpAuthorizationRequest>>
-
 function parseOpenid4vpAuthorizationRequestPayload(options: {
   request: Record<string, unknown>
   wallet?: WalletVerificationOptions
   jar: boolean
   origin?: string
+  omitOriginValidation?: boolean
 }) {
-  const { request, wallet, jar, origin } = options
+  const { request, wallet, jar, origin, omitOriginValidation } = options
 
   if (isOpenid4vpAuthorizationRequestDcApi(request)) {
     const parsed = parseWithErrorHandling(
@@ -116,7 +140,7 @@ function parseOpenid4vpAuthorizationRequestPayload(options: {
       )
     }
 
-    if (request.expected_origins) {
+    if (request.expected_origins && !omitOriginValidation) {
       if (!origin) {
         throw new Oauth2Error(
           `The 'origin' validation parameter MUST be present when resolving an openid4vp dc_api authorization request.`

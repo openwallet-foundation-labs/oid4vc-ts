@@ -2,16 +2,20 @@ import { type CallbackContext, type JwtSigner, Oauth2Error } from '@openid4vc/oa
 import { dateToSeconds } from '@openid4vc/utils'
 import { addSecondsToDate } from '../../../utils/src/date'
 import type { Openid4vpAuthorizationRequest } from '../authorization-request/z-authorization-request'
+import type { Openid4vpAuthorizationRequestDcApi } from '../authorization-request/z-authorization-request-dc-api'
 import { createJarmAuthResponse } from '../jarm/jarm-auth-response-create'
 import { extractJwksFromClientMetadata } from '../jarm/jarm-extract-jwks'
 import { isJarmResponseMode } from '../jarm/jarm-response-mode'
 import { jarmAssertMetadataSupported } from '../jarm/metadata/jarm-assert-metadata-supported'
 import type { JarmServerMetadata } from '../jarm/metadata/z-jarm-authorization-server-metadata'
 import type { Openid4vpAuthorizationResponse } from './z-authorization-response'
+import type { Openid4vpAuthorizationResponseDcApi } from './z-authorization-response-dc-api'
 
 export interface CreateOpenid4vpAuthorizationResponseOptions {
-  requestParams: Pick<Openid4vpAuthorizationRequest, 'state' | 'client_metadata' | 'nonce' | 'response_mode'>
-  responseParams: Openid4vpAuthorizationResponse & { state?: never }
+  requestParams:
+    | Pick<Openid4vpAuthorizationRequest, 'state' | 'client_metadata' | 'nonce' | 'response_mode'>
+    | Pick<Openid4vpAuthorizationRequestDcApi, 'client_metadata' | 'response_mode' | 'nonce'>
+  responseParams: (Openid4vpAuthorizationResponse | Openid4vpAuthorizationResponseDcApi['data']) & { state?: never }
   jarm?: {
     jwtSigner?: JwtSigner
     encryption?: { nonce: string }
@@ -23,13 +27,17 @@ export interface CreateOpenid4vpAuthorizationResponseOptions {
   callbacks: Pick<CallbackContext, 'signJwt' | 'encryptJwe'>
 }
 
-export async function createOpenid4vpAuthorizationResponse(options: CreateOpenid4vpAuthorizationResponseOptions) {
+export async function createOpenid4vpAuthorizationResponse(
+  options: CreateOpenid4vpAuthorizationResponseOptions
+): Promise<{
+  responseParams: Openid4vpAuthorizationResponse | Openid4vpAuthorizationResponseDcApi['data']
+  jarm?: { responseJwt: string }
+}> {
   const { requestParams, responseParams, jarm, callbacks } = options
-
   const openid4vpAuthResponseParams = {
     ...responseParams,
-    state: requestParams.state,
-  } satisfies Openid4vpAuthorizationResponse
+    ...('state' in requestParams && { state: requestParams.state }),
+  } satisfies Openid4vpAuthorizationResponse | Openid4vpAuthorizationResponseDcApi
 
   if (requestParams.response_mode && isJarmResponseMode(requestParams.response_mode) && !jarm) {
     throw new Oauth2Error(

@@ -55,10 +55,15 @@ export {
   ValidateOpenid4VpPexAuthorizationResponseResult,
   ValidateOpenid4VpDcqlAuthorizationResponseResult,
   ValidateOpenid4VpAuthorizationResponseResult,
-} from './authorization-response/validate-openid4vp-auth-response-result'
+} from './authorization-response/validate-authorization-response-result'
 
 export { Oid4vpClient } from './Oid4vpClient'
 export { Oid4vcVerifier } from './Oid4vcVerifier'
 export { zOpenid4vpAuthorizationResponse } from './authorization-response/z-authorization-response'
 export { zOpenid4vpAuthorizationResponseDcApi } from './authorization-response/z-authorization-response-dc-api'
 export { isJarmResponseMode } from './jarm/jarm-response-mode'
+
+export { isOpenid4vpAuthorizationRequestDcApi } from './authorization-request/z-authorization-request-dc-api'
+export { isOpenid4vpAuthorizationResponseDcApi } from './authorization-response/z-authorization-response-dc-api'
+
+export { Openid4vpAuthorizationResponseDcApi } from './authorization-response/z-authorization-response-dc-api'

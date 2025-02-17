@@ -1,15 +1,17 @@
 import { Oauth2Error } from '@openid4vc/oauth2'
 import type { Openid4vpAuthorizationRequest } from '../authorization-request/z-authorization-request'
+import type { Openid4vpAuthorizationRequestDcApi } from '../authorization-request/z-authorization-request-dc-api'
 import {
   parseDcqlPresentationFromVpToken,
   parsePresentationsFromVpToken,
 } from '../vp-token/parse-presentations-from-vp-token'
-import type { ValidateOpenid4VpAuthorizationResponseResult } from './validate-openid4vp-auth-response-result'
+import type { ValidateOpenid4VpAuthorizationResponseResult } from './validate-authorization-response-result'
 import type { Openid4vpAuthorizationResponse } from './z-authorization-response'
+import type { Openid4vpAuthorizationResponseDcApi } from './z-authorization-response-dc-api'
 
 export interface ValidateOpenid4vpAuthorizationResponseOptions {
-  authorizationRequest: Openid4vpAuthorizationRequest
-  authorizationResponse: Openid4vpAuthorizationResponse
+  authorizationRequest: Openid4vpAuthorizationRequest | Openid4vpAuthorizationRequestDcApi
+  authorizationResponse: Openid4vpAuthorizationResponse | Openid4vpAuthorizationResponseDcApi['data']
 }
 
 /**
@@ -28,7 +30,7 @@ export function validateOpenid4vpAuthorizationResponse(
     throw new Oauth2Error('Failed to verify OpenId4Vp Authorization Response. vp_token is missing.')
   }
 
-  if (authorizationRequest.state !== authorizationResponse.state) {
+  if ('state' in authorizationRequest && authorizationRequest.state !== authorizationResponse.state) {
     throw new Oauth2Error('OpenId4Vp Authorization Response state mismatch.')
   }
 
@@ -52,17 +54,18 @@ export function validateOpenid4vpAuthorizationResponse(
 
     return {
       type: 'pex',
-      pex: authorizationRequest.scope
-        ? {
-            scope: authorizationRequest.scope,
-            presentationSubmission: authorizationResponse.presentation_submission,
-            presentations,
-          }
-        : {
-            presentationDefinition: authorizationRequest.presentation_definition,
-            presentationSubmission: authorizationResponse.presentation_submission,
-            presentations,
-          },
+      pex:
+        'scope' in authorizationRequest && authorizationRequest.scope
+          ? {
+              scope: authorizationRequest.scope,
+              presentationSubmission: authorizationResponse.presentation_submission,
+              presentations,
+            }
+          : {
+              presentationDefinition: authorizationRequest.presentation_definition,
+              presentationSubmission: authorizationResponse.presentation_submission,
+              presentations,
+            },
     }
   }
 
@@ -82,15 +85,16 @@ export function validateOpenid4vpAuthorizationResponse(
 
     return {
       type: 'dcql',
-      dcql: authorizationRequest.scope
-        ? {
-            scope: authorizationRequest.scope,
-            presentation,
-          }
-        : {
-            query: authorizationRequest.dcql_query,
-            presentation,
-          },
+      dcql:
+        'scope' in authorizationRequest && authorizationRequest.scope
+          ? {
+              scope: authorizationRequest.scope,
+              presentation,
+            }
+          : {
+              query: authorizationRequest.dcql_query,
+              presentation,
+            },
     }
   }
 

@@ -25,7 +25,7 @@ export interface VerifyJarRequestOptions {
   }
 }
 
-export interface VerifyJarRequestReturn {
+export interface VerifiedJarRequest {
   authRequestParams: JarRequestObjectPayload
   sendBy: 'value' | 'reference'
   decryptionJwk?: Jwk
@@ -40,7 +40,7 @@ export interface VerifyJarRequestReturn {
  * @param options.callbacks - Context containing the relevant Jose crypto operations
  * @returns The verified authorization request parameters and metadata
  */
-export async function verifyJarRequest(options: VerifyJarRequestOptions): Promise<VerifyJarRequestReturn> {
+export async function verifyJarRequest(options: VerifyJarRequestOptions): Promise<VerifiedJarRequest> {
   const { callbacks, wallet = {} } = options
 
   const jarRequestParams = validateJarRequestParams(options)
