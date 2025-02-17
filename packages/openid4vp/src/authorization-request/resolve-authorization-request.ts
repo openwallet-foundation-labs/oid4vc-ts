@@ -13,6 +13,7 @@ import {
   type WalletVerificationOptions,
   validateOpenid4vpAuthorizationRequestPayload,
 } from './validate-authorization-request'
+import { validateOpenid4vpAuthorizationRequestDcApiPayload } from './validate-authorization-request-dc-api'
 import { type Openid4vpAuthorizationRequest, zOpenid4vpAuthorizationRequest } from './z-authorization-request'
 import {
   type Openid4vpAuthorizationRequestDcApi,
@@ -134,25 +135,12 @@ function parseOpenid4vpAuthorizationRequestPayload(options: {
       'Invalid authorization request. Could not parse openid4vp dc_api authorization request.'
     )
 
-    if (jar && !request.expected_origins) {
-      throw new Oauth2Error(
-        `The 'expected_origins' parameter MUST be present when using the dc_api response mode in combinaction with jar.`
-      )
-    }
-
-    if (request.expected_origins && !omitOriginValidation) {
-      if (!origin) {
-        throw new Oauth2Error(
-          `The 'origin' validation parameter MUST be present when resolving an openid4vp dc_api authorization request.`
-        )
-      }
-
-      if (request.expected_origins && !request.expected_origins.includes(origin)) {
-        throw new Oauth2Error(
-          `The 'expected_origins' parameter MUST include the origin of the authorization request. Current: ${request.expected_origins}`
-        )
-      }
-    }
+    validateOpenid4vpAuthorizationRequestDcApiPayload({
+      params: parsed,
+      isJarRequest: jar,
+      omitOriginValidation,
+      origin,
+    })
 
     return parsed
   }

@@ -42,7 +42,7 @@ export type ParsedClientIdentifier =
       x5c: string[]
     }
   | {
-      scheme: 'verifier_attestation' | 'pre-registered' | 'web-origin'
+      scheme: 'verifier_attestation' | 'pre-registered'
       identifier: string
       originalValue: string
       clientMetadata?: ClientMetadata
@@ -101,6 +101,7 @@ export function parseClientIdentifier(
     if (clientId && !jar) {
       throw new Oauth2Error('The client_id parameter MUST be omitted in unsigned openid4vp authorization requests.')
     }
+
     return {
       scheme: 'web-origin',
       identifier: clientId?.slice('web-origin:'.length),
