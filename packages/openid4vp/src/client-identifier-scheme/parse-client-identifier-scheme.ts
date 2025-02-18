@@ -107,7 +107,7 @@ export function parseClientIdentifier(
       Object.values(zClientIdScheme.options).filter((scheme) => scheme !== 'web-origin'),
   }
 
-  if (isDcApiRequest && !jar && clientId) {
+  if (isDcApiRequest && !jar && request.client_id) {
     throw new Oauth2ServerErrorResponseError({
       error: Oauth2ErrorCodes.InvalidRequest,
       error_description: `The 'client_id' parameter MUST be omitted in unsigned openid4vp dc api authorization requests.`,

@@ -107,6 +107,9 @@ export type {
   HashCallback,
   SignJwtCallback,
   VerifyJwtCallback,
+  DecryptJweCallback,
+  DecryptJweCallbackOptions,
+  EncryptJweCallback,
 } from './callbacks'
 
 export {

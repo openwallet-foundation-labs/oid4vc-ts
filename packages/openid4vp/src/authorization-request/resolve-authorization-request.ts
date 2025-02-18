@@ -82,7 +82,7 @@ export async function resolveOpenid4vpAuthorizationRequest(
     })
   }
 
-  const clientMeta = parseClientIdentifier({ request: authRequestPayload, jar, callbacks })
+  const clientMeta = parseClientIdentifier({ request: authRequestPayload, jar, callbacks, origin })
 
   let pex: ResolvedOpenid4vpAuthRequest['pex'] | undefined
   let dcql: ResolvedOpenid4vpAuthRequest['dcql'] | undefined
