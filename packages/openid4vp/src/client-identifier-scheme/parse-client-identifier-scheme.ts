@@ -102,9 +102,7 @@ export function parseClientIdentifier(
 
   // By default require signatures for these schemes
   const parserConfigWithDefaults: Required<ClientIdentifierParserConfig> = {
-    supportedSchemes:
-      parserConfig?.supportedSchemes ||
-      Object.values(zClientIdScheme.options).filter((scheme) => scheme !== 'web-origin'),
+    supportedSchemes: parserConfig?.supportedSchemes || Object.values(zClientIdScheme.options),
   }
 
   if (isDcApiRequest && !jar && request.client_id) {
