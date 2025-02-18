@@ -117,7 +117,7 @@ export function parseClientIdentifier(
       ] satisfies ClientIdScheme[]),
   }
 
-  if (isDcApiRequest && !jar && clientId) {
+  if (isDcApiRequest && !jar && request.client_id) {
     throw new Oauth2Error(
       `The 'client_id' parameter MUST be omitted in unsigned openid4vp dc api authorization requests.`
     )
