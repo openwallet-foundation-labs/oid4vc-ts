@@ -109,8 +109,8 @@ export const zCredentialRequestDraft14To11 = zCredentialRequestDraft14
   .transform((data, ctx) => {
     const formatSpecificTransformations = {
       [zLdpVcFormatIdentifier.value]: zLdpVcCredentialRequestDraft14To11,
-      [zJwtVcJsonFormatIdentifier.value]: zJwtVcJsonLdCredentialRequestDraft14To11,
-      [zJwtVcJsonLdFormatIdentifier.value]: zJwtVcJsonCredentialRequestDraft14To11,
+      [zJwtVcJsonFormatIdentifier.value]: zJwtVcJsonCredentialRequestDraft14To11,
+      [zJwtVcJsonLdFormatIdentifier.value]: zJwtVcJsonLdCredentialRequestDraft14To11,
     } as const
 
     if (!Object.keys(formatSpecificTransformations).includes(data.format)) return data
