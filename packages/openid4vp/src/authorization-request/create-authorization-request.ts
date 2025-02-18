@@ -5,7 +5,7 @@ import {
   type WalletVerificationOptions,
   validateOpenid4vpAuthorizationRequestPayload,
 } from './validate-authorization-request'
-import { validateOpenid4vpAuthorizationRequestDcApiPayload } from './validate-authorization-request-dc-api.js'
+import { validateOpenid4vpAuthorizationRequestDcApiPayload } from './validate-authorization-request-dc-api'
 import { type Openid4vpAuthorizationRequest, zOpenid4vpAuthorizationRequest } from './z-authorization-request'
 import {
   type Openid4vpAuthorizationRequestDcApi,

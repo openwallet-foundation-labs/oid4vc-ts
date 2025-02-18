@@ -2,8 +2,8 @@ import { type CallbackContext, Oauth2Error, Oauth2ServerErrorResponseError } fro
 import { parseOpenid4vpAuthorizationRequestPayload } from '../authorization-request/parse-authorization-request-params'
 import type { JarmAuthResponse, JarmAuthResponseEncryptedOnly } from '../jarm/jarm-auth-response/z-jarm-auth-response'
 import { isJarmResponseMode } from '../jarm/jarm-response-mode'
-import { parseOpenid4VpAuthorizationResponsePaylaod } from './parse-authorization-response-payload.js'
-import { parseJarmAuthorizationResponse } from './parse-jarm-authorization-response.js'
+import { parseOpenid4VpAuthorizationResponsePaylaod } from './parse-authorization-response-payload'
+import { parseJarmAuthorizationResponse } from './parse-jarm-authorization-response'
 import { validateOpenid4vpAuthorizationResponse } from './validate-authorization-response'
 import { isOpenid4vpAuthorizationResponseDcApi } from './z-authorization-response-dc-api'
 
