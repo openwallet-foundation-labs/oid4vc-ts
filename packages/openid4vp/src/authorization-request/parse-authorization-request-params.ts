@@ -10,7 +10,7 @@ import {
   zOpenid4vpAuthorizationRequestDcApi,
 } from './z-authorization-request-dc-api'
 
-export interface ParsedJarOpenid4vpAuthRequest {
+export interface ParsedJarRequest {
   type: 'jar'
   provided: 'uri' | 'jwt' | 'params'
   params: JarAuthRequest
@@ -34,7 +34,7 @@ export interface ParseOpenid4vpAuthRequestPayloadOptions {
 
 export function parseOpenid4vpAuthorizationRequestPayload(
   options: ParseOpenid4vpAuthRequestPayloadOptions
-): ParsedOpenid4vpAuthRequest | ParsedJarOpenid4vpAuthRequest | ParsedOpenid4vpDcApiAuthRequest {
+): ParsedOpenid4vpAuthRequest | ParsedJarRequest | ParsedOpenid4vpDcApiAuthRequest {
   const { requestPayload } = options
   let provided: 'uri' | 'jwt' | 'params' = 'params'
 

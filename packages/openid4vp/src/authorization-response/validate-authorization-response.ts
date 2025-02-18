@@ -25,7 +25,6 @@ export function validateOpenid4vpAuthorizationResponse(
   options: ValidateOpenid4vpAuthorizationResponseOptions
 ): ValidateOpenid4VpAuthorizationResponseResult {
   const { authorizationRequest, authorizationResponse } = options
-  // todo i think the response prarms  should also contain a nonce
   if (!authorizationResponse.vp_token) {
     throw new Oauth2Error('Failed to verify OpenId4Vp Authorization Response. vp_token is missing.')
   }
@@ -77,11 +76,20 @@ export function validateOpenid4vpAuthorizationResponse(
     }
 
     if (typeof authorizationResponse.vp_token !== 'string' && typeof authorizationResponse.vp_token !== 'object') {
-      throw new Oauth2Error('If DCQL was used the vp_token must be a JSON-encoded object.')
+      throw new Oauth2Error('With DCQL the vp_token must be a JSON-encoded object.')
     }
 
     const presentation = parseDcqlPresentationFromVpToken({ vpToken: authorizationResponse.vp_token })
+
     // TODO: CHECK ALL THE NONCES ONCE WE KNOW HOW TO GET THE NONCE FOR MDOCS AND ANONCREDS
+    if (
+      Object.values(presentation).every((p) => p.nonce) &&
+      !Object.values(presentation).every((p) => p.nonce === authorizationRequest.nonce)
+    ) {
+      throw new Oauth2Error(
+        'Presentation nonce mismatch. The nonce of some presentations does not match the nonce of the request.'
+      )
+    }
 
     return {
       type: 'dcql',
@@ -99,6 +107,6 @@ export function validateOpenid4vpAuthorizationResponse(
   }
 
   throw new Oauth2Error(
-    'Invalid OpenId4Vp Authorization Response. Response neither contains a presentation_submission nor a dcql presentation.'
+    'Invalid OpenId4Vp Authorization Response. Response neither contains a presentation_submission nor a dcql_query.'
   )
 }

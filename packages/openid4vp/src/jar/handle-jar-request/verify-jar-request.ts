@@ -2,7 +2,7 @@ import {
   type CallbackContext,
   type Jwk,
   type JwtSignerWithJwk,
-  Oauth2Error,
+  Oauth2ErrorCodes,
   Oauth2ServerErrorResponseError,
   decodeJwt,
   jwtSignerFromJwt,
@@ -51,6 +51,12 @@ export async function verifyJarRequest(options: VerifyJarRequestOptions): Promis
     : 'web-origin'
 
   const method = jarRequestParams.request_uri_method ?? 'GET'
+  if (method !== 'GET' && method !== 'POST') {
+    throw new Oauth2ServerErrorResponseError({
+      error: Oauth2ErrorCodes.InvalidRequestUriMethod,
+      error_description: 'Invalid request_uri_method. Must be GET or POST.',
+    })
+  }
 
   const requestObject =
     jarRequestParams.request ??
@@ -68,7 +74,10 @@ export async function verifyJarRequest(options: VerifyJarRequestOptions): Promis
 
   const requestIsSigned = zCompactJwt.safeParse(decryptedRequestObject).success
   if (!requestIsSigned) {
-    throw new Oauth2Error('Jar Request Object is not a valid JWS.')
+    throw new Oauth2ServerErrorResponseError({
+      error: Oauth2ErrorCodes.InvalidRequestObject,
+      error_description: 'Jar Request Object is not a valid JWS.',
+    })
   }
 
   const { authRequestParams, signer } = await verifyJarRequestObject({
@@ -76,11 +85,17 @@ export async function verifyJarRequest(options: VerifyJarRequestOptions): Promis
     callbacks,
   })
   if (!authRequestParams.client_id) {
-    throw new Oauth2Error(`Jar Request Object is missing the required 'client_id' field.`)
+    throw new Oauth2ServerErrorResponseError({
+      error: Oauth2ErrorCodes.InvalidRequestObject,
+      error_description: 'Jar Request Object is missing the required "client_id" field.',
+    })
   }
 
   if (jarRequestParams.client_id !== authRequestParams.client_id) {
-    throw new Oauth2Error('client_id does not match the request object client_id.')
+    throw new Oauth2ServerErrorResponseError({
+      error: Oauth2ErrorCodes.InvalidRequest,
+      error_description: 'client_id does not match the request object client_id.',
+    })
   }
 
   return {
@@ -99,7 +114,10 @@ async function decryptJarRequest(options: {
 
   const { header } = decodeJwt({ jwt: jwe })
   if (!header.kid) {
-    throw new Oauth2Error('Jar JWE is missing the protected header field "kid".')
+    throw new Oauth2ServerErrorResponseError({
+      error: Oauth2ErrorCodes.InvalidRequestObject,
+      error_description: 'Jar JWE is missing the protected header field "kid".',
+    })
   }
 
   const decryptionResult = await callbacks.decryptJwe(jwe)

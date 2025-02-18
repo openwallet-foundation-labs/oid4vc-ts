@@ -9,7 +9,7 @@ export const zOpenid4vpAuthorizationRequest = z
     redirect_uri: zHttpsUrl.optional(),
     response_uri: zHttpsUrl.optional(),
     request_uri: zHttpsUrl.optional(),
-    request_uri_method: z.enum(['post', 'get']).optional(),
+    request_uri_method: z.optional(z.string()),
     response_mode: z.enum(['direct_post', 'direct_post.jwt']).optional(),
     nonce: z.string(),
     wallet_nonce: z.string().optional(),

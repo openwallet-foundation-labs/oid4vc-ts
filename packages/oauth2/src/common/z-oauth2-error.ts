@@ -42,6 +42,7 @@ export enum Oauth2ErrorCodes {
 
   // OpenId4Vp
   VpFormatsNotSupported = 'vp_formats_not_supported',
+  AccessDenied = 'access_denied',
   InvalidPresentationDefinitionUri = 'invalid_presentation_definition_uri',
   InvalidPresentationDefinitionReference = 'invalid_presentation_definition_reference',
   InvalidRequestUriMethod = 'invalid_request_uri_method',

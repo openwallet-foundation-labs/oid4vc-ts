@@ -1,4 +1,4 @@
-import { type CallbackContext, Oauth2Error } from '@openid4vc/oauth2'
+import { type CallbackContext, Oauth2ErrorCodes, Oauth2ServerErrorResponseError } from '@openid4vc/oauth2'
 import { parseWithErrorHandling } from '@openid4vc/utils'
 import z from 'zod'
 import {
@@ -48,7 +48,6 @@ export async function resolveOpenid4vpAuthorizationRequest(
   let authRequestPayload:
     | Openid4vpAuthorizationRequest
     | (Openid4vpAuthorizationRequestDcApi & { presentation_definition_uri?: never })
-  let jar: Awaited<ReturnType<typeof verifyJarRequest>> | undefined
 
   const parsed = parseWithErrorHandling(
     z.union([zOpenid4vpAuthorizationRequestDcApi, zOpenid4vpAuthorizationRequest, zJarAuthRequest]),
@@ -56,23 +55,26 @@ export async function resolveOpenid4vpAuthorizationRequest(
     'Invalid authorization request. Could not parse openid4vp authorization request as openid4vp or jar auth request.'
   )
 
-  if (isJarAuthRequest(request)) {
-    const parsedJarAuthRequest = parseWithErrorHandling(
-      zJarAuthRequest,
-      parsed,
-      'Invalid authorization request. Could not parse jar auth request.'
+  let jar: VerifiedJarRequest | undefined
+  if (isJarAuthRequest(parsed)) {
+    jar = await verifyJarRequest({ jarRequestParams: parsed, callbacks, wallet })
+
+    const parsedJarAuthRequestPayload = parseWithErrorHandling(
+      z.union([zOpenid4vpAuthorizationRequestDcApi, zOpenid4vpAuthorizationRequest]),
+      jar.authRequestParams,
+      'Invalid authorization request. Could not parse jar request payload as openid4vp auth request.'
     )
-    jar = await verifyJarRequest({ jarRequestParams: parsedJarAuthRequest, callbacks, wallet })
-    authRequestPayload = parseOpenid4vpAuthorizationRequestPayload({
-      request: jar.authRequestParams,
+
+    authRequestPayload = validateOpenId4vpPayload({
+      requestPayload: parsedJarAuthRequestPayload,
       wallet,
       jar: true,
       origin,
       omitOriginValidation,
     })
   } else {
-    authRequestPayload = parseOpenid4vpAuthorizationRequestPayload({
-      request,
+    authRequestPayload = validateOpenId4vpPayload({
+      requestPayload: parsed,
       wallet,
       jar: false,
       origin,
@@ -82,19 +84,17 @@ export async function resolveOpenid4vpAuthorizationRequest(
 
   const clientMeta = parseClientIdentifier({ request: authRequestPayload, jar, callbacks })
 
-  let pex:
-    | {
-        presentation_definition: unknown
-        presentation_definition_uri?: string
-      }
-    | undefined
-
-  let dcql: { query: unknown } | undefined
+  let pex: ResolvedOpenid4vpAuthRequest['pex'] | undefined
+  let dcql: ResolvedOpenid4vpAuthRequest['dcql'] | undefined
 
   if (authRequestPayload.presentation_definition || authRequestPayload.presentation_definition_uri) {
     if (authRequestPayload.presentation_definition_uri) {
-      throw new Oauth2Error('presentation_definition_uri is not supported')
+      throw new Oauth2ServerErrorResponseError({
+        error: Oauth2ErrorCodes.InvalidRequest,
+        error_description: 'Cannot fetch presentation definition from URI. Not supported.',
+      })
     }
+
     pex = {
       presentation_definition: authRequestPayload.presentation_definition,
       presentation_definition_uri: authRequestPayload.presentation_definition_uri,
@@ -119,38 +119,26 @@ export async function resolveOpenid4vpAuthorizationRequest(
   }
 }
 
-function parseOpenid4vpAuthorizationRequestPayload(options: {
-  request: Record<string, unknown>
+function validateOpenId4vpPayload(options: {
+  requestPayload: Openid4vpAuthorizationRequest | Openid4vpAuthorizationRequestDcApi
   wallet?: WalletVerificationOptions
   jar: boolean
   origin?: string
   omitOriginValidation?: boolean
 }) {
-  const { request, wallet, jar, origin, omitOriginValidation } = options
+  const { requestPayload, wallet, jar, origin, omitOriginValidation } = options
 
-  if (isOpenid4vpAuthorizationRequestDcApi(request)) {
-    const parsed = parseWithErrorHandling(
-      zOpenid4vpAuthorizationRequestDcApi,
-      request,
-      'Invalid authorization request. Could not parse openid4vp dc_api authorization request.'
-    )
-
+  if (isOpenid4vpAuthorizationRequestDcApi(requestPayload)) {
     validateOpenid4vpAuthorizationRequestDcApiPayload({
-      params: parsed,
+      params: requestPayload,
       isJarRequest: jar,
       omitOriginValidation,
       origin,
     })
 
-    return parsed
+    return requestPayload
   }
 
-  const authRequestPayload = parseWithErrorHandling(
-    zOpenid4vpAuthorizationRequest,
-    request,
-    'Invalid authorization request. Could not parse openid4vp authorization request.'
-  )
-  validateOpenid4vpAuthorizationRequestPayload({ params: authRequestPayload, walletVerificationOptions: wallet })
-
-  return authRequestPayload
+  validateOpenid4vpAuthorizationRequestPayload({ params: requestPayload, walletVerificationOptions: wallet })
+  return requestPayload
 }

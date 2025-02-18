@@ -5,6 +5,7 @@ import {
   type WalletVerificationOptions,
   validateOpenid4vpAuthorizationRequestPayload,
 } from './validate-authorization-request'
+import { validateOpenid4vpAuthorizationRequestDcApiPayload } from './validate-authorization-request-dc-api.js'
 import { type Openid4vpAuthorizationRequest, zOpenid4vpAuthorizationRequest } from './z-authorization-request'
 import {
   type Openid4vpAuthorizationRequestDcApi,
@@ -57,9 +58,15 @@ export async function createOpenid4vpAuthorizationRequest(options: CreateOpenid4
 
     if (jar && !authRequestParams.expected_origins) {
       throw new Oauth2Error(
-        `The 'expected_origins' parameter MUST be present when using the dc_api response mode in combinaction with jar.`
+        `The 'expected_origins' parameter MUST be present when using the dc_api response mode in combination with jar.`
       )
     }
+
+    validateOpenid4vpAuthorizationRequestDcApiPayload({
+      params: authRequestParams,
+      isJarRequest: Boolean(jar),
+      omitOriginValidation: true,
+    })
   } else {
     authRequestParams = parseWithErrorHandling(
       zOpenid4vpAuthorizationRequest,
@@ -67,7 +74,6 @@ export async function createOpenid4vpAuthorizationRequest(options: CreateOpenid4
       'Invalid authorization request. Could not parse openid4vp authorization request.'
     )
     validateOpenid4vpAuthorizationRequestPayload({ params: authRequestParams, walletVerificationOptions: wallet })
-    authRequestParams = requestParams
   }
 
   if (jar) {

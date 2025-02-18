@@ -1,4 +1,4 @@
-import type { CallbackContext } from '@openid4vc/oauth2'
+import { type CallbackContext, Oauth2Error } from '@openid4vc/oauth2'
 import { ContentType, defaultFetcher } from '@openid4vc/utils'
 import { objectToQueryParams } from '@openid4vc/utils'
 import type { Openid4vpAuthorizationRequest } from '../authorization-request/z-authorization-request'
@@ -25,7 +25,9 @@ export async function submitOpenid4vpAuthorizationResponse(options: SubmitOpenid
   }
 
   if (!url) {
-    throw new Error('No redirect_uri or response_uri provided')
+    throw new Oauth2Error(
+      'Failed to submit OpenId4Vp Authorization Response. No redirect_uri or response_uri provided.'
+    )
   }
 
   const fetch = callbacks.fetch ?? defaultFetcher

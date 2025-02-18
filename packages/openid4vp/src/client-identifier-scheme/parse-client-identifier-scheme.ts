@@ -1,4 +1,4 @@
-import { Oauth2Error } from '@openid4vc/oauth2'
+import { Oauth2ErrorCodes, Oauth2ServerErrorResponseError } from '@openid4vc/oauth2'
 import type { CallbackContext } from '../../../oauth2/src/callbacks'
 import type { Openid4vpAuthorizationRequest } from '../authorization-request/z-authorization-request'
 import {
@@ -59,7 +59,6 @@ export type ParsedClientIdentifier =
  */
 export interface ClientIdentifierParserConfig {
   supportedSchemes?: ClientIdScheme[]
-  requireSignatureFor?: ClientIdScheme[]
 }
 
 export interface ClientIdentifierParserOptions {
@@ -77,7 +76,10 @@ function getClientId(request: Openid4vpAuthorizationRequest | Openid4vpAuthoriza
     }
 
     if (!origin) {
-      throw new Oauth2Error(`Failed to parse client identifier. Missing required 'client_id' parameter.`)
+      throw new Oauth2ServerErrorResponseError({
+        error: Oauth2ErrorCodes.InvalidRequest,
+        error_description: 'Failed to parse client identifier. Missing required "client_id" parameter.',
+      })
     }
 
     return `web-origin:${origin}`
@@ -103,24 +105,13 @@ export function parseClientIdentifier(
     supportedSchemes:
       parserConfig?.supportedSchemes ||
       Object.values(zClientIdScheme.options).filter((scheme) => scheme !== 'web-origin'),
-
-    requireSignatureFor:
-      parserConfig?.requireSignatureFor ||
-      ([
-        'did',
-        'verifier_attestation',
-        'x509_san_dns',
-        'x509_san_uri',
-        'https',
-        'pre-registered',
-        'web-origin',
-      ] satisfies ClientIdScheme[]),
   }
 
   if (isDcApiRequest && !jar && clientId) {
-    throw new Oauth2Error(
-      `The 'client_id' parameter MUST be omitted in unsigned openid4vp dc api authorization requests.`
-    )
+    throw new Oauth2ServerErrorResponseError({
+      error: Oauth2ErrorCodes.InvalidRequest,
+      error_description: `The 'client_id' parameter MUST be omitted in unsigned openid4vp dc api authorization requests.`,
+    })
   }
 
   const colonIndex = clientId.indexOf(':')
@@ -137,21 +128,27 @@ export function parseClientIdentifier(
   const identifierPart = clientId.substring(colonIndex + 1)
 
   if (!parserConfigWithDefaults.supportedSchemes.includes(schemePart as ClientIdScheme)) {
-    throw new Oauth2Error(`Unsupported client identifier scheme. ${schemePart} is not supported.`)
+    throw new Oauth2ServerErrorResponseError({
+      error: Oauth2ErrorCodes.InvalidRequest,
+      error_description: `Unsupported client identifier scheme. ${schemePart} is not supported.`,
+    })
   }
 
   const scheme = schemePart as ClientIdScheme
   if (scheme === 'https') {
     if (isDcApiRequest) {
-      throw new Oauth2Error(
-        `The client identifier scheme 'https' is not supported when using the dc_api response mode.`
-      )
+      throw new Oauth2ServerErrorResponseError({
+        error: Oauth2ErrorCodes.InvalidRequest,
+        error_description: `The client identifier scheme 'https' is not supported when using the dc_api response mode.`,
+      })
     }
 
     if (!clientId.startsWith('https://') && !clientId.startsWith('http://')) {
-      throw new Oauth2Error(
-        'Invalid client identifier. Client identifier must start with https:// or http:// if allowInsecureUrls is true.'
-      )
+      throw new Oauth2ServerErrorResponseError({
+        error: Oauth2ErrorCodes.InvalidRequest,
+        error_description:
+          'Invalid client identifier. Client identifier must start with https:// or http:// if allowInsecureUrls is true.',
+      })
     }
     return {
       scheme,
@@ -163,13 +160,17 @@ export function parseClientIdentifier(
 
   if (scheme === 'redirect_uri') {
     if (jar) {
-      throw new Oauth2Error('Using client identifier scheme "redirect_uri" the request MUST NOT be signed.')
+      throw new Oauth2ServerErrorResponseError({
+        error: Oauth2ErrorCodes.InvalidRequest,
+        error_description: 'Using client identifier scheme "redirect_uri" the request MUST NOT be signed.',
+      })
     }
 
     if (isDcApiRequest) {
-      throw new Oauth2Error(
-        `The client identifier scheme 'redirect_uri' is not supported when using the dc_api response mode.`
-      )
+      throw new Oauth2ServerErrorResponseError({
+        error: Oauth2ErrorCodes.InvalidRequest,
+        error_description: `The client identifier scheme 'redirect_uri' is not supported when using the dc_api response mode.`,
+      })
     }
 
     return {
@@ -182,21 +183,32 @@ export function parseClientIdentifier(
 
   if (scheme === 'did') {
     if (!jar) {
-      throw new Oauth2Error('Using client identifier scheme "did" requires a signed JAR request.')
+      throw new Oauth2ServerErrorResponseError({
+        error: Oauth2ErrorCodes.InvalidRequest,
+        error_description: 'Using client identifier scheme "did" requires a signed JAR request.',
+      })
     }
 
     if (!clientId.startsWith('did:')) {
-      throw new Oauth2Error("Invalid client identifier. Client identifier must start with 'did:'")
+      throw new Oauth2ServerErrorResponseError({
+        error: Oauth2ErrorCodes.InvalidRequest,
+        error_description: "Invalid client identifier. Client identifier must start with 'did:'",
+      })
     }
 
     if (!jar.signer.publicJwk.kid) {
-      throw new Oauth2Error(`Missing required 'kid' for client identifier scheme: did`)
+      throw new Oauth2ServerErrorResponseError({
+        error: Oauth2ErrorCodes.InvalidRequest,
+        error_description: `Missing required 'kid' for client identifier scheme: did`,
+      })
     }
 
     if (!jar.signer.publicJwk.kid?.startsWith(clientId)) {
-      throw new Oauth2Error(
-        'With client identifier scheme "did" the JAR request must be signed by the same DID as the client identifier.'
-      )
+      throw new Oauth2ServerErrorResponseError({
+        error: Oauth2ErrorCodes.InvalidRequest,
+        error_description:
+          'With client identifier scheme "did" the JAR request must be signed by the same DID as the client identifier.',
+      })
     }
 
     return {
@@ -209,37 +221,52 @@ export function parseClientIdentifier(
 
   if (scheme === 'x509_san_dns' || scheme === 'x509_san_uri') {
     if (!jar) {
-      throw new Oauth2Error(
-        'Using client identifier scheme "x509_san_dns" or "x509_san_uri" requires a signed JAR request.'
-      )
+      throw new Oauth2ServerErrorResponseError({
+        error: Oauth2ErrorCodes.InvalidRequest,
+        error_description:
+          'Using client identifier scheme "x509_san_dns" or "x509_san_uri" requires a signed JAR request.',
+      })
     }
 
     if (jar.signer.method !== 'x5c') {
-      throw new Oauth2Error(
-        'Something went wrong. The JWT signer method is not x5c but the client identifier scheme is x509_san_dns.'
-      )
+      throw new Oauth2ServerErrorResponseError({
+        error: Oauth2ErrorCodes.InvalidRequest,
+        error_description:
+          'Something went wrong. The JWT signer method is not x5c but the client identifier scheme is x509_san_dns.',
+      })
     }
 
     if (scheme === 'x509_san_dns' && options.callbacks.getX509CertificateMetadata) {
       const { sanDnsNames } = options.callbacks.getX509CertificateMetadata(jar.signer.x5c[0])
       if (!sanDnsNames.includes(identifierPart)) {
-        throw new Oauth2Error('Invalid client identifier. Client identifier must be a valid DNS name.')
+        throw new Oauth2ServerErrorResponseError({
+          error: Oauth2ErrorCodes.InvalidRequest,
+          error_description: 'Invalid client identifier. Client identifier must be a valid DNS name.',
+        })
       }
 
       const requestUri = (jar.authRequestParams.request_uri ?? jar.authRequestParams.response_uri) as string
       if (getDomainFromUrl(requestUri) !== identifierPart) {
-        throw new Oauth2Error(
-          'Invalid client identifier. The fully qualified domain name of the redirect_uri value MUST match the Client Identifier without the prefix x509_san_dns.'
-        )
+        throw new Oauth2ServerErrorResponseError({
+          error: Oauth2ErrorCodes.InvalidRequest,
+          error_description:
+            'Invalid client identifier. The fully qualified domain name of the redirect_uri value MUST match the Client Identifier without the prefix x509_san_dns.',
+        })
       }
     } else if (scheme === 'x509_san_uri' && options.callbacks.getX509CertificateMetadata) {
       const { sanUriNames } = options.callbacks.getX509CertificateMetadata(jar.signer.x5c[0])
       if (!sanUriNames.includes(identifierPart)) {
-        throw new Oauth2Error('Invalid client identifier. Client identifier must be a valid URI.')
+        throw new Oauth2ServerErrorResponseError({
+          error: Oauth2ErrorCodes.InvalidRequest,
+          error_description: 'Invalid client identifier. Client identifier must be a valid URI.',
+        })
       }
 
       if ((jar.authRequestParams.request_uri ?? jar.authRequestParams.response_uri) !== identifierPart) {
-        throw new Oauth2Error('The redirect_uri value MUST match the Client Identifier without the prefix x509_san_uri')
+        throw new Oauth2ServerErrorResponseError({
+          error: Oauth2ErrorCodes.InvalidRequest,
+          error_description: 'The redirect_uri value MUST match the Client Identifier without the prefix x509_san_uri',
+        })
       }
     }
 
@@ -262,7 +289,10 @@ export function parseClientIdentifier(
 
   if (scheme === 'verifier_attestation') {
     if (!jar) {
-      throw new Oauth2Error('Using client identifier scheme "verifier_attestation" requires a signed JAR request.')
+      throw new Oauth2ServerErrorResponseError({
+        error: Oauth2ErrorCodes.InvalidRequest,
+        error_description: 'Using client identifier scheme "verifier_attestation" requires a signed JAR request.',
+      })
     }
   }
 

@@ -8,7 +8,7 @@ export const zJarAuthRequest = z
   .object({
     request: z.optional(z.string()),
     request_uri: z.optional(zHttpsUrl),
-    request_uri_method: z.optional(z.union([z.literal('GET'), z.literal('POST')])),
+    request_uri_method: z.optional(z.string()),
     client_id: z.optional(z.string()),
   })
   .passthrough()

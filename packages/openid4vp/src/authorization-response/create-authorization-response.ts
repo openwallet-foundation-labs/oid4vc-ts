@@ -1,4 +1,10 @@
-import { type CallbackContext, type JwtSigner, Oauth2Error } from '@openid4vc/oauth2'
+import {
+  type CallbackContext,
+  type JwtSigner,
+  Oauth2Error,
+  Oauth2ErrorCodes,
+  Oauth2ServerErrorResponseError,
+} from '@openid4vc/oauth2'
 import { dateToSeconds } from '@openid4vc/utils'
 import { addSecondsToDate } from '../../../utils/src/date'
 import type { Openid4vpAuthorizationRequest } from '../authorization-request/z-authorization-request'
@@ -28,13 +34,15 @@ export interface CreateOpenid4vpAuthorizationResponseOptions {
   callbacks: Pick<CallbackContext, 'signJwt' | 'encryptJwe'>
 }
 
-export async function createOpenid4vpAuthorizationResponse(
-  options: CreateOpenid4vpAuthorizationResponseOptions
-): Promise<{
+export interface CreateOpenid4vpAuthorizationResponseResult {
   responseParams: Openid4vpAuthorizationResponse | Openid4vpAuthorizationResponseDcApi['data']
   jarm?: { responseJwt: string }
   dcApiResponseParams?: Openid4vpAuthorizationResponseDcApi
-}> {
+}
+
+export async function createOpenid4vpAuthorizationResponse(
+  options: CreateOpenid4vpAuthorizationResponseOptions
+): Promise<CreateOpenid4vpAuthorizationResponseResult> {
   const { requestParams, responseParams, jarm, callbacks } = options
   const openid4vpAuthResponseParams = {
     ...responseParams,
@@ -64,7 +72,10 @@ export async function createOpenid4vpAuthorizationResponse(
   }
 
   if (!requestParams.client_metadata.jwks) {
-    throw new Oauth2Error('Missing JWKS in client metadata. Cannot extract encryption JWK.')
+    throw new Oauth2ServerErrorResponseError({
+      error: Oauth2ErrorCodes.InvalidRequest,
+      error_description: 'Missing JWKS in client metadata. Cannot extract encryption JWK.',
+    })
   }
 
   const supportedJarmMetadata = jarmAssertMetadataSupported({
@@ -78,18 +89,27 @@ export async function createOpenid4vpAuthorizationResponse(
   })
 
   if (!clientMetaJwks?.encJwk) {
-    throw new Oauth2Error('Could not extract encryption JWK from client metadata. Failed to create JARM response.')
+    throw new Oauth2ServerErrorResponseError({
+      error: Oauth2ErrorCodes.InvalidRequest,
+      error_description: 'Could not extract encryption JWK from client metadata. Failed to create JARM response.',
+    })
   }
 
   // When the response is NOT only encrypted, the JWT payload needs to include the iss, aud and exp.
   let additionalJwtPayload: Record<string, string | number> | undefined
   if (jarm?.jwtSigner) {
     if (!jarm.authorizationServer) {
-      throw new Oauth2Error('Missing required iss in JARM configuration for creating OpenID4VP authorization response.')
+      throw new Oauth2ServerErrorResponseError({
+        error: Oauth2ErrorCodes.InvalidRequest,
+        error_description: 'Missing required iss in JARM configuration for creating OpenID4VP authorization response.',
+      })
     }
 
     if (!jarm.audience) {
-      throw new Oauth2Error('Missing required aud in JARM configuration for creating OpenID4VP authorization response.')
+      throw new Oauth2ServerErrorResponseError({
+        error: Oauth2ErrorCodes.InvalidRequest,
+        error_description: 'Missing required aud in JARM configuration for creating OpenID4VP authorization response.',
+      })
     }
 
     additionalJwtPayload = {

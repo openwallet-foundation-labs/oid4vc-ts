@@ -1,4 +1,4 @@
-import { Oauth2ServerErrorResponseError } from '@openid4vc/oauth2'
+import { Oauth2ErrorCodes, Oauth2ServerErrorResponseError } from '@openid4vc/oauth2'
 import { type BaseSchema, ContentType, type Fetch, createZodFetcher, objectToQueryParams } from '@openid4vc/utils'
 import { z } from 'zod'
 import type { ClientIdScheme } from '../../client-identifier-scheme/z-client-id-scheme'
@@ -50,14 +50,14 @@ export async function fetchJarRequestObject<Schema extends BaseSchema>(options: 
   if (!response.ok) {
     throw new Oauth2ServerErrorResponseError({
       error_description: `Fetching request_object from request_uri '${requestUri}' failed with status code '${response.status}'.`,
-      error: 'invalid_request_uri',
+      error: Oauth2ErrorCodes.InvalidRequestUri,
     })
   }
 
   if (!result || !result.success) {
     throw new Oauth2ServerErrorResponseError({
       error_description: `Parsing request_object from request_uri '${requestUri}' failed.`,
-      error: 'invalid_request_object',
+      error: Oauth2ErrorCodes.InvalidRequestObject,
     })
   }
 
