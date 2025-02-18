@@ -79,7 +79,10 @@ export {
 
 export { isJarmResponseMode } from './jarm/jarm-response-mode'
 
-export { isOpenid4vpAuthorizationRequestDcApi } from './authorization-request/z-authorization-request-dc-api'
+export {
+  isOpenid4vpAuthorizationRequestDcApi,
+  type Openid4vpAuthorizationRequestDcApi,
+} from './authorization-request/z-authorization-request-dc-api'
 
 export {
   zClientMetadata,
