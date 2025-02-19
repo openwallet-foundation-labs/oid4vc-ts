@@ -19,7 +19,10 @@ const wellKnownCredentialIssuerSuffix = '.well-known/openid-credential-issuer'
 export async function fetchCredentialIssuerMetadata(
   credentialIssuer: string,
   fetch?: Fetch
-): Promise<{ credentialIssuerMetadata: CredentialIssuerMetadata; originalDraftVersion: Openid4vciDraftVersion } | null> {
+): Promise<{
+  credentialIssuerMetadata: CredentialIssuerMetadata
+  originalDraftVersion: Openid4vciDraftVersion
+} | null> {
   const wellKnownMetadataUrl = joinUriParts(credentialIssuer, [wellKnownCredentialIssuerSuffix])
   const result = await fetchWellKnownMetadata(wellKnownMetadataUrl, zCredentialIssuerMetadataWithDraftVersion, fetch)
 
