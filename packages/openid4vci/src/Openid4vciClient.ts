@@ -153,7 +153,7 @@ export class Openid4vciClient {
     // TODO: cleanup these types
     | {
         authorizationFlow: AuthorizationFlow.PresentationDuringIssuance
-        oid4vpRequestUrl: string
+        openid4vpRequestUrl: string
         authSession: string
         authorizationServer: string
       }
@@ -216,7 +216,7 @@ export class Openid4vciClient {
         }
         return {
           authorizationFlow: AuthorizationFlow.PresentationDuringIssuance,
-          oid4vpRequestUrl: error.errorResponse.presentation,
+          openid4vpRequestUrl: error.errorResponse.presentation,
           authSession: error.errorResponse.auth_session,
           authorizationServer: authorizationServerMetadata.issuer,
         }

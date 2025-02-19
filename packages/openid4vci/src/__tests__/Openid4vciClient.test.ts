@@ -596,7 +596,7 @@ describe('Openid4vciClient', () => {
     if (authorization.authorizationFlow !== AuthorizationFlow.PresentationDuringIssuance) {
       throw new Error('Expected presentation during issuance')
     }
-    expect(authorization.oid4vpRequestUrl).toEqual(
+    expect(authorization.openid4vpRequestUrl).toEqual(
       presentationDuringIssuance.authorizationChallengeErrorResponse.presentation
     )
     expect(authorization.authSession).toEqual(
