@@ -75,7 +75,7 @@ export {
 export {
   AuthorizationServerMetadata,
   zAuthorizationServerMetadata,
-  // Ideally we don't export this, but it's needed in oid4vci
+  // Ideally we don't export this, but it's needed in openid4vci
 } from './metadata/authorization-server/z-authorization-server-metadata'
 export { fetchJwks } from './metadata/fetch-jwks-uri'
 export { fetchWellKnownMetadata } from './metadata/fetch-well-known-metadata'

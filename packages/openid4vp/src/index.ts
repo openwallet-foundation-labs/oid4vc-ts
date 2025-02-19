@@ -64,8 +64,8 @@ export {
   ValidateOpenid4VpAuthorizationResponseResult,
 } from './authorization-response/validate-authorization-response-result'
 
-export { Oid4vpClient } from './Oid4vpClient'
-export { Oid4vcVerifier } from './Oid4vcVerifier'
+export { Openid4vpClient } from './Openid4vpClient'
+export { Openid4vpVerifier } from './Openid4vpVerifier'
 export {
   zOpenid4vpAuthorizationResponse,
   Openid4vpAuthorizationResponse,

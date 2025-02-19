@@ -36,7 +36,7 @@ export const zAccessTokenRequest = z.intersection(
   z
     .object({
       tx_code: z.optional(z.string()),
-      // user_pin is from OID4VCI draft 11
+      // user_pin is from OpenID4VCI draft 11
       user_pin: z.optional(z.string()),
     })
     .passthrough()
@@ -63,7 +63,7 @@ export const zAccessTokenResponse = z
 
     refresh_token: z.optional(z.string()),
 
-    // Oid4vci specific parameters
+    // OpenID4VCI specific parameters
     c_nonce: z.optional(z.string()),
     c_nonce_expires_in: z.optional(z.number().int()),
 

@@ -41,7 +41,7 @@ jobs:
 
       - name: Get current package version
         id: get_version
-        run: echo "CURRENT_PACKAGE_VERSION=$(node -p "require('./packages/oid4vci/package.json').version")" >> $GITHUB_ENV
+        run: echo "CURRENT_PACKAGE_VERSION=$(node -p "require('./packages/openid4vci/package.json').version")" >> $GITHUB_ENV
 
       - name: Create Github Release
         if: steps.changesets.outputs.published == 'true'
@@ -84,7 +84,7 @@ jobs:
           # this ensures there's always a patch release created
           cat << 'EOF' > .changeset/snapshot-template-changeset.md
           ---
-          '@openid4vc/oid4vci': patch
+          '@openid4vc/openid4vci': patch
           ---
 
           snapshot release
@@ -95,7 +95,7 @@ jobs:
           pnpm build
           pnpm changeset publish --tag alpha
 
-          CURRENT_PACKAGE_VERSION=$(node -p "require('./packages/oid4vci/package.json').version")
+          CURRENT_PACKAGE_VERSION=$(node -p "require('./packages/openid4vci/package.json').version")
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git tag v$CURRENT_PACKAGE_VERSION

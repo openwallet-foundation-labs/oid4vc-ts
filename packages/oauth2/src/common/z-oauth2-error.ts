@@ -25,7 +25,7 @@ export enum Oauth2ErrorCodes {
   InvalidSession = 'invalid_session',
   InsufficientAuthorization = 'insufficient_authorization',
 
-  // Oid4vci
+  // OpenID4VCI
   InvalidCredentialRequest = 'invalid_credential_request',
   CredentialRequestDenied = 'credential_request_denied',
   UnsupportedCredentialType = 'unsupported_credential_type',
@@ -40,7 +40,7 @@ export enum Oauth2ErrorCodes {
   RequestNotSupported = 'request_not_supported',
   RequestUriNotSupported = 'request_uri_not_supported',
 
-  // OpenId4Vp
+  // OpenID4VP
   VpFormatsNotSupported = 'vp_formats_not_supported',
   AccessDenied = 'access_denied',
   InvalidPresentationDefinitionUri = 'invalid_presentation_definition_uri',

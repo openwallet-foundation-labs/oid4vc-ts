@@ -68,7 +68,7 @@ export type EncryptJweCallback = (
 }>
 
 /**
- * Callback context provides the callbacks that are required for the oid4vc library
+ * Callback context provides the callbacks that are required for the openid4vc library
  */
 export interface CallbackContext {
   /**
