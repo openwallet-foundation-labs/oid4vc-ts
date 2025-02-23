@@ -5,7 +5,7 @@ import type {} from '../jarm/jarm-auth-response/z-jarm-auth-response'
 import { zOpenid4vpAuthorizationResponse } from './z-authorization-response'
 import { zOpenid4vpAuthorizationResponseDcApi } from './z-authorization-response-dc-api'
 
-export function parseOpenid4VpAuthorizationResponsePaylaod(payload: Record<string, unknown>) {
+export function parseOpenid4VpAuthorizationResponsePayload(payload: Record<string, unknown>) {
   if (isOpenid4vpAuthorizationRequestDcApi(payload)) {
     return parseWithErrorHandling(
       zOpenid4vpAuthorizationResponseDcApi,

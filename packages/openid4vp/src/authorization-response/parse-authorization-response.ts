@@ -2,7 +2,7 @@ import { type CallbackContext, Oauth2Error, Oauth2ServerErrorResponseError } fro
 import { parseOpenid4vpAuthorizationRequestPayload } from '../authorization-request/parse-authorization-request-params'
 import type { JarmAuthResponse, JarmAuthResponseEncryptedOnly } from '../jarm/jarm-auth-response/z-jarm-auth-response'
 import { isJarmResponseMode } from '../jarm/jarm-response-mode'
-import { parseOpenid4VpAuthorizationResponsePaylaod } from './parse-authorization-response-payload'
+import { parseOpenid4VpAuthorizationResponsePayload } from './parse-authorization-response-payload'
 import { parseJarmAuthorizationResponse } from './parse-jarm-authorization-response'
 import { validateOpenid4vpAuthorizationResponse } from './validate-authorization-response'
 import { isOpenid4vpAuthorizationResponseDcApi } from './z-authorization-response-dc-api'
@@ -19,15 +19,19 @@ export interface ParseOpenid4vpAuthorizationResponseOptions {
 export async function parseOpenid4vpAuthorizationResponse(options: ParseOpenid4vpAuthorizationResponseOptions) {
   const { responsePayload, callbacks } = options
 
+  // FIXME: if using DC API, the response will be under response.data. However I think we should not use the
+  // DigitalCredentials API structure with protocol and data, and instead just use the data value everywhere.
+  // The interface between server and browser is not defined anyway, and it will make the processing easier.
   if (responsePayload.response) {
     return parseJarmAuthorizationResponse({ jarmResponseJwt: responsePayload.response as string, callbacks })
   }
 
-  const authResponsePayload = parseOpenid4VpAuthorizationResponsePaylaod(responsePayload)
+  const authResponsePayload = parseOpenid4VpAuthorizationResponsePayload(responsePayload)
 
   const authRequest = await callbacks.getOpenid4vpAuthorizationRequest(authResponsePayload)
   const parsedAuthRequest = parseOpenid4vpAuthorizationRequestPayload({ requestPayload: authRequest.authRequest })
-  if (parsedAuthRequest.type !== 'openid4vp') {
+  // TODO: We should probably update this error message to say we don't support JAR when parsing the response.
+  if (parsedAuthRequest.type !== 'openid4vp' && parsedAuthRequest.type !== 'openid4vp_dc_api') {
     throw new Oauth2Error('Invalid authorization request. Could not parse openid4vp authorization request.')
   }
 
