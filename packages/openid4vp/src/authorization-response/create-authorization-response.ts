@@ -118,7 +118,7 @@ export async function createOpenid4vpAuthorizationResponse(
   const result = await createJarmAuthResponse({
     jarmAuthResponse: jarmResponseParams,
     jwtSigner: jarm?.jwtSigner,
-    jwtEncryptor:
+    jweEncryptor:
       jarm?.encryption && (supportedJarmMetadata.type === 'encrypt' || supportedJarmMetadata.type === 'sign_encrypt')
         ? {
             method: 'jwk',
