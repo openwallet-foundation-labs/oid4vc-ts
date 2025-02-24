@@ -14,7 +14,6 @@ import type { JarmAuthResponse, JarmAuthResponseEncryptedOnly } from '../jarm/ja
 import { isJarmResponseMode } from '../jarm/jarm-response-mode'
 import { parseOpenid4VpAuthorizationResponsePayload } from './parse-authorization-response-payload'
 import { validateOpenid4vpAuthorizationResponse } from './validate-authorization-response'
-import { isOpenid4vpAuthorizationResponseDcApi } from './z-authorization-response-dc-api'
 
 export interface ParseJarmAuthorizationResponseOptions {
   jarmResponseJwt: string
@@ -52,9 +51,7 @@ export async function parseJarmAuthorizationResponse(options: ParseJarmAuthoriza
   const authResponsePayload = parseOpenid4VpAuthorizationResponsePayload(verifiedJarmResponse.jarmAuthResponse)
   const validateOpenId4vpResponse = validateOpenid4vpAuthorizationResponse({
     authorizationRequest: parsedAuthorizationRequest.params,
-    authorizationResponse: isOpenid4vpAuthorizationResponseDcApi(authResponsePayload)
-      ? authResponsePayload.data
-      : authResponsePayload,
+    authorizationResponse: authResponsePayload,
   })
 
   const authRequestPayload = parsedAuthorizationRequest.params

@@ -1,11 +1,11 @@
-import { Oauth2ErrorCodes, Oauth2ServerErrorResponseError } from '@openid4vc/oauth2'
+import { Oauth2ErrorCodes, Oauth2ServerErrorResponseError, getGlobalConfig } from '@openid4vc/oauth2'
 import type { CallbackContext } from '../../../oauth2/src/callbacks'
 import type { Openid4vpAuthorizationRequest } from '../authorization-request/z-authorization-request'
 import {
   type Openid4vpAuthorizationRequestDcApi,
   isOpenid4vpAuthorizationRequestDcApi,
 } from '../authorization-request/z-authorization-request-dc-api'
-import type { verifyJarRequest } from '../jar/handle-jar-request/verify-jar-request'
+import type { VerifiedJarRequest } from '../jar/handle-jar-request/verify-jar-request'
 import type { ClientMetadata } from '../models/z-client-metadata'
 import { type ClientIdScheme, zClientIdScheme } from './z-client-id-scheme'
 
@@ -31,26 +31,20 @@ export type ParsedClientIdentifier =
       scheme: 'did'
       identifier: string
       originalValue: string
-      kid: string
+      didUrl: string
       clientMetadata?: ClientMetadata
     }
   | {
-      scheme: 'x509_san_dns' | 'x509_san_uri'
+      scheme: 'x509_san_uri' | 'x509_san_dns'
       identifier: string
       originalValue: string
       clientMetadata?: ClientMetadata
       x5c: string[]
     }
   | {
-      scheme: 'verifier_attestation' | 'pre-registered'
+      scheme: 'verifier_attestation' | 'pre-registered' | 'web-origin'
       identifier: string
       originalValue: string
-      clientMetadata?: ClientMetadata
-    }
-  | {
-      scheme: 'web-origin'
-      identifier?: string
-      originalValue?: string
       clientMetadata?: ClientMetadata
     }
 
@@ -63,29 +57,27 @@ export interface ClientIdentifierParserConfig {
 
 export interface ClientIdentifierParserOptions {
   request: Openid4vpAuthorizationRequest | Openid4vpAuthorizationRequestDcApi
-  jar?: Awaited<ReturnType<typeof verifyJarRequest>>
+  jar?: VerifiedJarRequest
   origin?: string
   callbacks: Partial<Pick<CallbackContext, 'getX509CertificateMetadata'>>
 }
 
-function getClientId(request: Openid4vpAuthorizationRequest | Openid4vpAuthorizationRequestDcApi, origin?: string) {
-  const isDcApiRequest = isOpenid4vpAuthorizationRequestDcApi(request)
-  if (isDcApiRequest) {
-    if (request.client_id) {
-      return request.client_id
-    }
-
-    if (!origin) {
+function getClientId(options: ClientIdentifierParserOptions) {
+  if (isOpenid4vpAuthorizationRequestDcApi(options.request)) {
+    if (!options.origin) {
       throw new Oauth2ServerErrorResponseError({
         error: Oauth2ErrorCodes.InvalidRequest,
-        error_description: 'Failed to parse client identifier. Missing required "client_id" parameter.',
+        error_description:
+          "Failed to parse client identifier. 'origin' is required for requests with response_mode 'dc_api' and 'dc_api.jwt'",
       })
     }
 
-    return `web-origin:${origin}`
+    if (!options.jar || !options.request.client_id) return `web-origin:${options.origin}`
+
+    return options.request.client_id
   }
 
-  return request.client_id
+  return options.request.client_id
 }
 
 /**
@@ -98,18 +90,11 @@ export function parseClientIdentifier(
   const { request, jar } = options
 
   const isDcApiRequest = isOpenid4vpAuthorizationRequestDcApi(request)
-  const clientId = getClientId(request, options.origin)
+  const clientId = getClientId(options)
 
   // By default require signatures for these schemes
-  const parserConfigWithDefaults: Required<ClientIdentifierParserConfig> = {
+  const parserConfigWithDefaults = {
     supportedSchemes: parserConfig?.supportedSchemes || Object.values(zClientIdScheme.options),
-  }
-
-  if (isDcApiRequest && !jar && request.client_id) {
-    throw new Oauth2ServerErrorResponseError({
-      error: Oauth2ErrorCodes.InvalidRequest,
-      error_description: `The 'client_id' parameter MUST be omitted in unsigned openid4vp dc api authorization requests.`,
-    })
   }
 
   const colonIndex = clientId.indexOf(':')
@@ -134,6 +119,7 @@ export function parseClientIdentifier(
 
   const scheme = schemePart as ClientIdScheme
   if (scheme === 'https') {
+    // https://github.com/openid/OpenID4VP/issues/436
     if (isDcApiRequest) {
       throw new Oauth2ServerErrorResponseError({
         error: Oauth2ErrorCodes.InvalidRequest,
@@ -141,13 +127,14 @@ export function parseClientIdentifier(
       })
     }
 
-    if (!clientId.startsWith('https://') && !clientId.startsWith('http://')) {
+    if (!clientId.startsWith('https://') && !(getGlobalConfig().allowInsecureUrls && clientId.startsWith('http://'))) {
       throw new Oauth2ServerErrorResponseError({
         error: Oauth2ErrorCodes.InvalidRequest,
         error_description:
           'Invalid client identifier. Client identifier must start with https:// or http:// if allowInsecureUrls is true.',
       })
     }
+
     return {
       scheme,
       identifier: clientId,
@@ -213,7 +200,7 @@ export function parseClientIdentifier(
       scheme,
       identifier: clientId,
       originalValue: clientId,
-      kid: jar.signer.publicJwk.kid,
+      didUrl: jar.signer.publicJwk.kid,
     }
   }
 
@@ -234,7 +221,19 @@ export function parseClientIdentifier(
       })
     }
 
-    if (scheme === 'x509_san_dns' && options.callbacks.getX509CertificateMetadata) {
+    if (scheme === 'x509_san_dns') {
+      if (!options.callbacks.getX509CertificateMetadata) {
+        throw new Oauth2ServerErrorResponseError(
+          {
+            error: Oauth2ErrorCodes.ServerError,
+          },
+          {
+            internalMessage:
+              "Missing required 'getX509CertificateMetadata' callback for verification of 'x509_san_dns' client id scheme",
+          }
+        )
+      }
+
       const { sanDnsNames } = options.callbacks.getX509CertificateMetadata(jar.signer.x5c[0])
       if (!sanDnsNames.includes(identifierPart)) {
         throw new Oauth2ServerErrorResponseError({
@@ -251,7 +250,19 @@ export function parseClientIdentifier(
             'Invalid client identifier. The fully qualified domain name of the redirect_uri value MUST match the Client Identifier without the prefix x509_san_dns.',
         })
       }
-    } else if (scheme === 'x509_san_uri' && options.callbacks.getX509CertificateMetadata) {
+    } else if (scheme === 'x509_san_uri') {
+      if (!options.callbacks.getX509CertificateMetadata) {
+        throw new Oauth2ServerErrorResponseError(
+          {
+            error: Oauth2ErrorCodes.ServerError,
+          },
+          {
+            internalMessage:
+              "Missing required 'getX509CertificateMetadata' callback for verification of 'x509_san_uri' client id scheme",
+          }
+        )
+      }
+
       const { sanUriNames } = options.callbacks.getX509CertificateMetadata(jar.signer.x5c[0])
       if (!sanUriNames.includes(identifierPart)) {
         throw new Oauth2ServerErrorResponseError({

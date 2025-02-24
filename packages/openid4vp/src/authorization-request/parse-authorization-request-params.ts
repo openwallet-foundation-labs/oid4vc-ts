@@ -58,17 +58,17 @@ export function parseOpenid4vpAuthorizationRequestPayload(
     params
   )
 
-  if (isOpenid4vpAuthorizationRequestDcApi(parsedRequest)) {
+  if (isJarAuthRequest(parsedRequest)) {
     return {
-      type: 'openid4vp_dc_api',
+      type: 'jar',
       provided,
       params: parsedRequest,
     }
   }
 
-  if (isJarAuthRequest(parsedRequest)) {
+  if (isOpenid4vpAuthorizationRequestDcApi(parsedRequest)) {
     return {
-      type: 'jar',
+      type: 'openid4vp_dc_api',
       provided,
       params: parsedRequest,
     }

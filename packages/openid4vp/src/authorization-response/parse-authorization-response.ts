@@ -5,7 +5,6 @@ import { isJarmResponseMode } from '../jarm/jarm-response-mode'
 import { parseOpenid4VpAuthorizationResponsePayload } from './parse-authorization-response-payload'
 import { parseJarmAuthorizationResponse } from './parse-jarm-authorization-response'
 import { validateOpenid4vpAuthorizationResponse } from './validate-authorization-response'
-import { isOpenid4vpAuthorizationResponseDcApi } from './z-authorization-response-dc-api'
 
 export interface ParseOpenid4vpAuthorizationResponseOptions {
   responsePayload: Record<string, unknown>
@@ -39,9 +38,7 @@ export async function parseOpenid4vpAuthorizationResponse(options: ParseOpenid4v
 
   const validateOpenId4vpResponse = validateOpenid4vpAuthorizationResponse({
     authorizationRequest: authRequestPayload,
-    authorizationResponse: isOpenid4vpAuthorizationResponseDcApi(authResponsePayload)
-      ? authResponsePayload.data
-      : authResponsePayload,
+    authorizationResponse: authResponsePayload,
   })
 
   if (authRequestPayload.response_mode && isJarmResponseMode(authRequestPayload.response_mode)) {
