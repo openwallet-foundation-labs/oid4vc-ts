@@ -1,5 +1,5 @@
 ---
-"@openid4vc/oid4vci": minor
+"@openid4vc/openid4vci": minor
 "@openid4vc/oauth2": minor
 "@openid4vc/utils": minor
 ---

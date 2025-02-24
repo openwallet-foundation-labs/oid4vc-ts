@@ -38,6 +38,12 @@ export type JwtSigner = JwtSignerDid | JwtSignerJwk | JwtSignerX5c | JwtSignerTr
 
 export type JwtSignerWithJwk = JwtSigner & { publicJwk: Jwk }
 
+export type JweEncryptor = JwtSignerJwk & {
+  enc: string
+  apu?: string
+  apv?: string
+}
+
 export const zCompactJwt = z.string().regex(/^([a-zA-Z0-9_=]+)\.([a-zA-Z0-9_=]+)\.([a-zA-Z0-9_\-\+\/=]*)$/, {
   message: 'Not a valid compact jwt',
 })

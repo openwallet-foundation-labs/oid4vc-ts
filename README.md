@@ -9,7 +9,9 @@
 <p align="center">
   <a href="#oauth-20---openid4vcoauth2">OAuth 2.0</a> 
   &nbsp;|&nbsp;
-  <a href="#openid-for-verifiable-credential-issuance---openid4vcoid4vc">OpenID for Verifiable Credential Issuance</a> 
+  <a href="#openid-for-verifiable-credential-issuance---openid4vcopenid4vci">OpenID for Verifiable Credential Issuance</a> 
+  &nbsp;|&nbsp;
+  <a href="#openid-for-verifiable-preentations---openid4vcopenid4vp">OpenID for Verifiable Presentations</a> 
   &nbsp;|&nbsp;
   <a href="#supported-environments">Supported Environments</a>
   &nbsp;|&nbsp;
@@ -44,9 +46,9 @@ import {
 } from "@openid4vc/oauth2";
 ```
 
-## OpenID for Verifiable Credential Issuance - [`@openid4vc/oid4vc`](./packages/oid4vci)
+## OpenID for Verifiable Credential Issuance - [`@openid4vc/openid4vci`](./packages/openid4vci)
 
-[![@openid4vc/oid4vci version](https://img.shields.io/npm/v/@openid4vc/oid4vci)](https://npmjs.com/package/@openid4vc/oid4vci)
+[![@openid4vc/openid4vci version](https://img.shields.io/npm/v/@openid4vc/openid4vci)](https://npmjs.com/package/@openid4vc/openid4vci)
 
 An implementation of the [OpenID for Verifiable Credential Issuance](https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html) specification.
 
@@ -58,9 +60,28 @@ An implementation of the [OpenID for Verifiable Credential Issuance](https://ope
 
 ```ts
 import {
-  Oid4vciIssuer
-  Oid4vciClient,
-} from "@openid4vc/oid4vci";
+  Openid4vciIssuer
+  Openid4vciClient,
+} from "@openid4vc/openid4vci";
+```
+
+## OpenID for Verifiable Presentations - [`@openid4vc/openid4vp`](./packages/openid4vp)
+
+[![@openid4vc/openid4vp version](https://img.shields.io/npm/v/@openid4vc/openid4vp)](https://npmjs.com/package/@openid4vc/openid4vp)
+
+An implementation of the [OpenID for Verifiable Presentations](https://openid.net/specs/openid-4-verifiable-presentations-1_0.html) specification.
+
+- Signed and unsigned requests
+- Support for respone mode `direct_post`, `direct_post.jwt`, `dc_api` and `dc_api.jwt`
+- No out of the box support for Presentation Exchange or DCQL, this needs to be provided using e.g. [dcql-ts](https://github.com/openwallet-foundation-labs/dcql-ts) or [PEX](https://github.com/Sphereon-Opensource/PEX).
+- Transaction D
+- Supports Draft 24
+
+```ts
+import {
+  Openid4vpVerifier
+  Openid4vpClient,
+} from "@openid4vc/openid4vp";
 ```
 
 ## Supported Environments

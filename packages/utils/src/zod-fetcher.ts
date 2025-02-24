@@ -1,5 +1,5 @@
 import type z from 'zod'
-import { type ContentType, isResponseContentType } from './content-type'
+import { ContentType, isResponseContentType } from './content-type'
 import { InvalidFetchResponseError } from './error/InvalidFetchResponseError'
 import type { Fetch } from './globals'
 
@@ -49,6 +49,13 @@ export function createZodFetcher(fetcher = defaultFetcher): ZodFetcher {
         await response.clone().text(),
         response
       )
+    }
+
+    if (expectedContentType === ContentType.OAuthRequestObjectJwt) {
+      return {
+        response,
+        result: response.ok ? schema.safeParse(await response.text()) : undefined,
+      }
     }
 
     return {

@@ -7,8 +7,8 @@ import {
 } from '@openid4vc/utils'
 import type z from 'zod'
 import { Oauth2JwtParseError } from '../../error/Oauth2JwtParseError'
-import { type JwtSigner, zJwtHeader, zJwtPayload } from './z-jwt'
-
+import { decodeJwtHeader } from './decode-jwt-header'
+import { type JwtSigner, type zJwtHeader, zJwtPayload } from './z-jwt'
 export interface DecodeJwtOptions<
   HeaderSchema extends BaseSchema | undefined,
   PayloadSchema extends BaseSchema | undefined,
@@ -35,8 +35,8 @@ export type DecodeJwtResult<
   HeaderSchema extends BaseSchema | undefined = undefined,
   PayloadSchema extends BaseSchema | undefined = undefined,
 > = {
-  header: InferSchemaOutput<HeaderSchema, typeof zJwtHeader>
-  payload: InferSchemaOutput<PayloadSchema, typeof zJwtPayload>
+  header: InferSchemaOrDefaultOutput<HeaderSchema, typeof zJwtHeader>
+  payload: InferSchemaOrDefaultOutput<PayloadSchema, typeof zJwtPayload>
   signature: string
 }
 
@@ -49,27 +49,22 @@ export function decodeJwt<
     throw new Oauth2JwtParseError('Jwt is not a valid jwt, unable to decode')
   }
 
-  let headerJson: Record<string, unknown>
   let payloadJson: Record<string, unknown>
   try {
-    headerJson = stringToJsonWithErrorHandling(
-      encodeToUtf8String(decodeBase64(jwtParts[0])),
-      'Unable to parse jwt header to JSON'
-    )
     payloadJson = stringToJsonWithErrorHandling(
       encodeToUtf8String(decodeBase64(jwtParts[1])),
       'Unable to parse jwt payload to JSON'
     )
   } catch (error) {
-    throw new Oauth2JwtParseError('Error parsing JWT')
+    throw new Oauth2JwtParseError(`Error parsing JWT. ${error instanceof Error ? error.message : ''}`)
   }
 
-  const header = parseWithErrorHandling(options.headerSchema ?? zJwtHeader, headerJson)
+  const { header } = decodeJwtHeader({ jwt: options.jwt, headerSchema: options.headerSchema })
   const payload = parseWithErrorHandling(options.payloadSchema ?? zJwtPayload, payloadJson)
 
   return {
-    header: header as InferSchemaOutput<HeaderSchema, typeof zJwtHeader>,
-    payload: payload as InferSchemaOutput<PayloadSchema, typeof zJwtPayload>,
+    header: header as InferSchemaOrDefaultOutput<HeaderSchema, typeof zJwtHeader>,
+    payload: payload as InferSchemaOrDefaultOutput<PayloadSchema, typeof zJwtPayload>,
     signature: jwtParts[2],
   }
 }
@@ -174,7 +169,7 @@ export function jwtSignerFromJwt({ header, payload }: Pick<DecodeJwtResult, 'hea
 type IsSchemaProvided<T> = T extends undefined ? false : true
 
 // Helper type to infer the output type based on whether a schema is provided
-type InferSchemaOutput<
+export type InferSchemaOrDefaultOutput<
   ProvidedSchema extends BaseSchema | undefined,
   DefaultSchema extends BaseSchema,
 > = IsSchemaProvided<ProvidedSchema> extends true

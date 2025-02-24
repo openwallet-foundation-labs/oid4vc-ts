@@ -31,7 +31,7 @@ export const zJwk = z
     q: z.optional(z.string()),
     qi: z.optional(z.string()),
     use: z.optional(z.string()),
-    x5c: z.optional(z.string()),
+    x5c: z.optional(z.array(z.string())),
     x5t: z.optional(z.string()),
     'x5t#S256': z.optional(z.string()),
     x5u: z.optional(z.string()),

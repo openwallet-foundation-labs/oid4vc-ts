@@ -30,7 +30,7 @@ export const zAuthorizationServerMetadata = z
     // FiPA (no RFC yet)
     authorization_challenge_endpoint: z.optional(zHttpsUrl),
 
-    // From OID4VCI specification
+    // From OpenID4VCI specification
     pre_authorized_grant_anonymous_access_supported: z.optional(z.boolean()),
   })
   .passthrough()

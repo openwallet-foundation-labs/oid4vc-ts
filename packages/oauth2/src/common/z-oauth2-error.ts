@@ -25,7 +25,7 @@ export enum Oauth2ErrorCodes {
   InvalidSession = 'invalid_session',
   InsufficientAuthorization = 'insufficient_authorization',
 
-  // Oid4vci
+  // OpenID4VCI
   InvalidCredentialRequest = 'invalid_credential_request',
   CredentialRequestDenied = 'credential_request_denied',
   UnsupportedCredentialType = 'unsupported_credential_type',
@@ -33,6 +33,21 @@ export enum Oauth2ErrorCodes {
   InvalidProof = 'invalid_proof',
   InvalidNonce = 'invalid_nonce',
   InvalidEncryptionParameters = 'invalid_encryption_parameters',
+
+  // Jar
+  InvalidRequestUri = 'invalid_request_uri',
+  InvalidRequestObject = 'invalid_request_object',
+  RequestNotSupported = 'request_not_supported',
+  RequestUriNotSupported = 'request_uri_not_supported',
+
+  // OpenID4VP
+  VpFormatsNotSupported = 'vp_formats_not_supported',
+  AccessDenied = 'access_denied',
+  InvalidPresentationDefinitionUri = 'invalid_presentation_definition_uri',
+  InvalidPresentationDefinitionReference = 'invalid_presentation_definition_reference',
+  InvalidRequestUriMethod = 'invalid_request_uri_method',
+  InvalidTransactionData = 'invalid_transaction_data',
+  WalletUnavailable = 'wallet_unavailable',
 }
 
 export const zOauth2ErrorResponse = z
