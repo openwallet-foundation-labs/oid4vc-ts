@@ -19,7 +19,6 @@ export interface CreateOpenid4vpAuthorizationRequestOptions {
   jar?: {
     requestUri: string
     jwtSigner: JwtSigner
-    jweEncryptor?: JwtSigner
     additionalJwtPayload?: Record<string, unknown>
   }
   wallet?: WalletVerificationOptions

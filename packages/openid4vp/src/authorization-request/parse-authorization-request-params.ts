@@ -29,28 +29,28 @@ export interface ParsedOpenid4vpDcApiAuthRequest {
 }
 
 export interface ParseOpenid4vpAuthRequestPayloadOptions {
-  requestPayload: string | Record<string, unknown>
+  authorizationRequest: string | Record<string, unknown>
 }
 
 export function parseOpenid4vpAuthorizationRequestPayload(
   options: ParseOpenid4vpAuthRequestPayloadOptions
 ): ParsedOpenid4vpAuthRequest | ParsedJarRequest | ParsedOpenid4vpDcApiAuthRequest {
-  const { requestPayload } = options
+  const { authorizationRequest } = options
   let provided: 'uri' | 'jwt' | 'params' = 'params'
 
   let params: Record<string, unknown>
-  if (typeof requestPayload === 'string') {
-    if (requestPayload.includes('://')) {
-      const url = new URL(requestPayload)
+  if (typeof authorizationRequest === 'string') {
+    if (authorizationRequest.includes('://')) {
+      const url = new URL(authorizationRequest)
       params = Object.fromEntries(url.searchParams)
       provided = 'uri'
     } else {
-      const decoded = decodeJwt({ jwt: requestPayload })
+      const decoded = decodeJwt({ jwt: authorizationRequest })
       params = decoded.payload
       provided = 'jwt'
     }
   } else {
-    params = requestPayload
+    params = authorizationRequest
   }
 
   const parsedRequest = parseWithErrorHandling(
