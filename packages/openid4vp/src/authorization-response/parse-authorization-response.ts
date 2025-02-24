@@ -1,10 +1,10 @@
 import { type CallbackContext, Oauth2Error, Oauth2ServerErrorResponseError } from '@openid4vc/oauth2'
 import { parseOpenid4vpAuthorizationRequestPayload } from '../authorization-request/parse-authorization-request-params'
+import type { GetOpenid4vpAuthorizationRequestCallback } from '../jarm/jarm-auth-response/verify-jarm-auth-response'
 import { isJarmResponseMode } from '../jarm/jarm-response-mode'
 import { parseOpenid4VpAuthorizationResponsePayload } from './parse-authorization-response-payload'
 import { parseJarmAuthorizationResponse } from './parse-jarm-authorization-response'
 import { validateOpenid4vpAuthorizationResponse } from './validate-authorization-response'
-import type { GetOpenid4vpAuthorizationRequestCallback } from '../jarm/jarm-auth-response/verify-jarm-auth-response'
 
 export interface ParseOpenid4vpAuthorizationResponseOptions {
   responsePayload: Record<string, unknown>
