@@ -17,7 +17,7 @@ export interface CreateOpenid4vpAuthorizationRequestOptions {
   scheme?: string
   requestParams: Openid4vpAuthorizationRequest | Openid4vpAuthorizationRequestDcApi
   jar?: {
-    requestUri: string
+    requestUri?: string
     jwtSigner: JwtSigner
     additionalJwtPayload?: Record<string, unknown>
   }

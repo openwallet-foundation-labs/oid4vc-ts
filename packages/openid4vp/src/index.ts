@@ -2,6 +2,7 @@ export { zClientIdScheme, ClientIdScheme } from './client-identifier-scheme/z-cl
 export {
   verifyJarmAuthorizationResponse,
   type VerifyJarmAuthorizationResponseOptions,
+  type JarmMode,
 } from './jarm/jarm-auth-response/verify-jarm-auth-response'
 export { zJarmClientMetadata, JarmClientMetadata } from './jarm/metadata/z-jarm-client-metadata'
 export {
