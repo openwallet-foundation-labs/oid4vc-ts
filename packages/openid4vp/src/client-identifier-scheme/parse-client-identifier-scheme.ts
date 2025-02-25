@@ -151,7 +151,7 @@ export function parseClientIdentifier(
       })
     }
 
-    if (isDcApiRequest) {
+    if (isOpenid4vpAuthorizationRequestDcApi(request)) {
       throw new Oauth2ServerErrorResponseError({
         error: Oauth2ErrorCodes.InvalidRequest,
         error_description: `The client identifier scheme 'redirect_uri' is not supported when using the dc_api response mode.`,
@@ -242,13 +242,15 @@ export function parseClientIdentifier(
         })
       }
 
-      const requestUri = (jar.authRequestParams.request_uri ?? jar.authRequestParams.response_uri) as string
-      if (getDomainFromUrl(requestUri) !== identifierPart) {
-        throw new Oauth2ServerErrorResponseError({
-          error: Oauth2ErrorCodes.InvalidRequest,
-          error_description:
-            'Invalid client identifier. The fully qualified domain name of the redirect_uri value MUST match the Client Identifier without the prefix x509_san_dns.',
-        })
+      if (!isOpenid4vpAuthorizationRequestDcApi(request)) {
+        const uri = request.redirect_uri ?? request.response_uri
+        if (!uri || getDomainFromUrl(uri) !== identifierPart) {
+          throw new Oauth2ServerErrorResponseError({
+            error: Oauth2ErrorCodes.InvalidRequest,
+            error_description:
+              'Invalid client identifier. The fully qualified domain name of the redirect_uri value MUST match the Client Identifier without the prefix x509_san_dns.',
+          })
+        }
       }
     } else if (scheme === 'x509_san_uri') {
       if (!options.callbacks.getX509CertificateMetadata) {
@@ -271,11 +273,15 @@ export function parseClientIdentifier(
         })
       }
 
-      if ((jar.authRequestParams.request_uri ?? jar.authRequestParams.response_uri) !== identifierPart) {
-        throw new Oauth2ServerErrorResponseError({
-          error: Oauth2ErrorCodes.InvalidRequest,
-          error_description: 'The redirect_uri value MUST match the Client Identifier without the prefix x509_san_uri',
-        })
+      if (!isOpenid4vpAuthorizationRequestDcApi(request)) {
+        const uri = request.redirect_uri || request.response_uri
+        if (!uri || uri !== identifierPart) {
+          throw new Oauth2ServerErrorResponseError({
+            error: Oauth2ErrorCodes.InvalidRequest,
+            error_description:
+              'The redirect_uri value MUST match the Client Identifier without the prefix x509_san_uri',
+          })
+        }
       }
     }
 
@@ -313,7 +319,14 @@ export function parseClientIdentifier(
 }
 
 function getDomainFromUrl(url: string): string {
-  const regex = /[#/?]/
-  const domain = url.split('://')[1].split(regex)[0]
-  return domain
+  try {
+    const regex = /[#/?]/
+    const domain = url.split('://')[1].split(regex)[0]
+    return domain
+  } catch (error) {
+    throw new Oauth2ServerErrorResponseError({
+      error: Oauth2ErrorCodes.ServerError,
+      error_description: `Url '${url}' is not a valid URL`,
+    })
+  }
 }
