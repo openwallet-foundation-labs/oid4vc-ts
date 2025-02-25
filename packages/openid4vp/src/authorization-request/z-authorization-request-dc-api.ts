@@ -1,6 +1,6 @@
 import { z } from 'zod'
-import { type Openid4vpAuthorizationRequest, zOpenid4vpAuthorizationRequest } from './z-authorization-request'
 import type { JarAuthRequest } from '../jar/z-jar-auth-request'
+import { type Openid4vpAuthorizationRequest, zOpenid4vpAuthorizationRequest } from './z-authorization-request'
 
 export const zOpenid4vpAuthorizationRequestDcApi = zOpenid4vpAuthorizationRequest
   .pick({
