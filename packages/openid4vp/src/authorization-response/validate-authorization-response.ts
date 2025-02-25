@@ -7,11 +7,10 @@ import {
 } from '../vp-token/parse-presentations-from-vp-token'
 import type { ValidateOpenid4VpAuthorizationResponseResult } from './validate-authorization-response-result'
 import type { Openid4vpAuthorizationResponse } from './z-authorization-response'
-import type { Openid4vpAuthorizationResponseDcApi } from './z-authorization-response-dc-api'
 
 export interface ValidateOpenid4vpAuthorizationResponseOptions {
   authorizationRequest: Openid4vpAuthorizationRequest | Openid4vpAuthorizationRequestDcApi
-  authorizationResponse: Openid4vpAuthorizationResponse | Openid4vpAuthorizationResponseDcApi['data']
+  authorizationResponse: Openid4vpAuthorizationResponse
 }
 
 /**

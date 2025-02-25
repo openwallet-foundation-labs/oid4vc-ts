@@ -71,12 +71,6 @@ export {
   Openid4vpAuthorizationResponse,
 } from './authorization-response/z-authorization-response'
 
-export {
-  isOpenid4vpAuthorizationResponseDcApi,
-  zOpenid4vpAuthorizationResponseDcApi,
-  type Openid4vpAuthorizationResponseDcApi,
-} from './authorization-response/z-authorization-response-dc-api'
-
 export { isJarmResponseMode } from './jarm/jarm-response-mode'
 
 export {

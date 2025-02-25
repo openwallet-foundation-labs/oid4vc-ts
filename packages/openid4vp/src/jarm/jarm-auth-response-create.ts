@@ -10,18 +10,18 @@ import type { JarmAuthResponse, JarmAuthResponseEncryptedOnly } from './jarm-aut
 export interface CreateJarmAuthResponseOptions {
   jarmAuthResponse: JarmAuthResponse | JarmAuthResponseEncryptedOnly
   jwtSigner?: JwtSigner
-  jwtEncryptor?: JweEncryptor
+  jweEncryptor?: JweEncryptor
   callbacks: Pick<CallbackContext, 'signJwt' | 'encryptJwe'>
 }
 
 export async function createJarmAuthResponse(options: CreateJarmAuthResponseOptions) {
-  const { jarmAuthResponse, jwtEncryptor, jwtSigner, callbacks } = options
-  if (!jwtSigner && jwtEncryptor) {
-    const { jwe } = await callbacks.encryptJwe(jwtEncryptor, JSON.stringify(jarmAuthResponse))
+  const { jarmAuthResponse, jweEncryptor, jwtSigner, callbacks } = options
+  if (!jwtSigner && jweEncryptor) {
+    const { jwe } = await callbacks.encryptJwe(jweEncryptor, JSON.stringify(jarmAuthResponse))
     return { jarmAuthResponseJwt: jwe }
   }
 
-  if (jwtSigner && !jwtEncryptor) {
+  if (jwtSigner && !jweEncryptor) {
     const signed = await callbacks.signJwt(jwtSigner, {
       header: jwtHeaderFromJwtSigner(jwtSigner),
       payload: jarmAuthResponse,
@@ -29,7 +29,7 @@ export async function createJarmAuthResponse(options: CreateJarmAuthResponseOpti
     return { jarmAuthResponseJwt: signed.jwt }
   }
 
-  if (!jwtSigner || !jwtEncryptor) {
+  if (!jwtSigner || !jweEncryptor) {
     throw new Oauth2Error('JWT signer and/or encryptor are required to create a JARM auth response.')
   }
   const signed = await callbacks.signJwt(jwtSigner, {
@@ -37,7 +37,7 @@ export async function createJarmAuthResponse(options: CreateJarmAuthResponseOpti
     payload: jarmAuthResponse,
   })
 
-  const encrypted = await callbacks.encryptJwe(jwtEncryptor, signed.jwt)
+  const encrypted = await callbacks.encryptJwe(jweEncryptor, signed.jwt)
 
   return { jarmAuthResponseJwt: encrypted.jwe }
 }

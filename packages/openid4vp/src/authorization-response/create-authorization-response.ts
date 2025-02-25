@@ -9,20 +9,18 @@ import { dateToSeconds } from '@openid4vc/utils'
 import { addSecondsToDate } from '../../../utils/src/date'
 import type { Openid4vpAuthorizationRequest } from '../authorization-request/z-authorization-request'
 import type { Openid4vpAuthorizationRequestDcApi } from '../authorization-request/z-authorization-request-dc-api'
-import { isOpenid4vpAuthorizationRequestDcApi } from '../authorization-request/z-authorization-request-dc-api'
 import { createJarmAuthResponse } from '../jarm/jarm-auth-response-create'
 import { extractJwksFromClientMetadata } from '../jarm/jarm-extract-jwks'
 import { isJarmResponseMode } from '../jarm/jarm-response-mode'
 import { jarmAssertMetadataSupported } from '../jarm/metadata/jarm-assert-metadata-supported'
 import type { JarmServerMetadata } from '../jarm/metadata/z-jarm-authorization-server-metadata'
 import type { Openid4vpAuthorizationResponse } from './z-authorization-response'
-import type { Openid4vpAuthorizationResponseDcApi } from './z-authorization-response-dc-api'
 
 export interface CreateOpenid4vpAuthorizationResponseOptions {
   requestParams:
     | Pick<Openid4vpAuthorizationRequest, 'state' | 'client_metadata' | 'nonce' | 'response_mode'>
     | Pick<Openid4vpAuthorizationRequestDcApi, 'client_metadata' | 'response_mode' | 'nonce'>
-  responseParams: (Openid4vpAuthorizationResponse | Openid4vpAuthorizationResponseDcApi['data']) & { state?: never }
+  responseParams: Openid4vpAuthorizationResponse & { state?: never }
   jarm?: {
     jwtSigner?: JwtSigner
     encryption?: { nonce: string }
@@ -35,9 +33,8 @@ export interface CreateOpenid4vpAuthorizationResponseOptions {
 }
 
 export interface CreateOpenid4vpAuthorizationResponseResult {
-  responseParams: Openid4vpAuthorizationResponse | Openid4vpAuthorizationResponseDcApi['data']
+  responseParams: Openid4vpAuthorizationResponse
   jarm?: { responseJwt: string }
-  dcApiResponseParams?: Openid4vpAuthorizationResponseDcApi
 }
 
 export async function createOpenid4vpAuthorizationResponse(
@@ -47,7 +44,7 @@ export async function createOpenid4vpAuthorizationResponse(
   const openid4vpAuthResponseParams = {
     ...responseParams,
     ...('state' in requestParams && { state: requestParams.state }),
-  } satisfies Openid4vpAuthorizationResponse | Openid4vpAuthorizationResponseDcApi
+  } satisfies Openid4vpAuthorizationResponse
 
   if (requestParams.response_mode && isJarmResponseMode(requestParams.response_mode) && !jarm) {
     throw new Oauth2Error(
@@ -58,12 +55,6 @@ export async function createOpenid4vpAuthorizationResponse(
   if (!jarm) {
     return {
       responseParams: openid4vpAuthResponseParams,
-      ...(isOpenid4vpAuthorizationRequestDcApi(openid4vpAuthResponseParams) && {
-        dcApiResponseParams: {
-          protocol: 'openid4vp',
-          data: openid4vpAuthResponseParams,
-        },
-      }),
     }
   }
 
@@ -127,7 +118,7 @@ export async function createOpenid4vpAuthorizationResponse(
   const result = await createJarmAuthResponse({
     jarmAuthResponse: jarmResponseParams,
     jwtSigner: jarm?.jwtSigner,
-    jwtEncryptor:
+    jweEncryptor:
       jarm?.encryption && (supportedJarmMetadata.type === 'encrypt' || supportedJarmMetadata.type === 'sign_encrypt')
         ? {
             method: 'jwk',
@@ -147,11 +138,5 @@ export async function createOpenid4vpAuthorizationResponse(
   return {
     responseParams: jarmResponseParams,
     jarm: { responseJwt: result.jarmAuthResponseJwt },
-    ...(isOpenid4vpAuthorizationRequestDcApi(openid4vpAuthResponseParams) && {
-      dcApiResponseParams: {
-        protocol: 'openid4vp',
-        data: jarmResponseParams,
-      },
-    }),
   }
 }

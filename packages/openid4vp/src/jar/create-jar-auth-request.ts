@@ -11,7 +11,7 @@ import type { JarAuthRequest } from './z-jar-auth-request'
 export interface CreateJarAuthRequestOptions {
   authRequestParams: JwtPayload & { client_id?: string }
   jwtSigner: JwtSigner
-  jwtEncryptor?: JweEncryptor
+  jweEncryptor?: JweEncryptor
   requestUri?: string
   additionalJwtPayload?: Record<string, unknown>
   callbacks: Pick<CallbackContext, 'signJwt' | 'encryptJwe'>
@@ -23,13 +23,13 @@ export interface CreateJarAuthRequestOptions {
  * @param options - The input parameters
  * @param options.authRequestParams - The authorization request parameters
  * @param options.jwtSigner - The JWT signer
- * @param options.jwtEncryptor - The JWT encryptor (optional) if provided, the request object will be encrypted
+ * @param options.jweEncryptor - The JWE encryptor (optional) if provided, the request object will be encrypted
  * @param options.requestUri - The request URI (optional) if provided, the request object needs to be fetched from the URI
  * @param options.callbacks - The callback context
  * @returns the requestParams, signerJwk, encryptionJwk, and requestObjectJwt
  */
 export async function createJarAuthRequest(options: CreateJarAuthRequestOptions) {
-  const { jwtSigner, jwtEncryptor, authRequestParams, requestUri, callbacks } = options
+  const { jwtSigner, jweEncryptor, authRequestParams, requestUri, callbacks } = options
 
   let requestObjectJwt: string | undefined
   let encryptionJwk: Jwk | undefined
@@ -40,8 +40,8 @@ export async function createJarAuthRequest(options: CreateJarAuthRequestOptions)
   })
   requestObjectJwt = jwt
 
-  if (jwtEncryptor) {
-    const encryptionResult = await callbacks.encryptJwe(jwtEncryptor, requestObjectJwt)
+  if (jweEncryptor) {
+    const encryptionResult = await callbacks.encryptJwe(jweEncryptor, requestObjectJwt)
     requestObjectJwt = encryptionResult.jwe
     encryptionJwk = encryptionResult.encryptionJwk
   }

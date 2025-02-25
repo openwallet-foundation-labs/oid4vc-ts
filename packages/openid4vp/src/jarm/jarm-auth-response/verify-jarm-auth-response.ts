@@ -17,6 +17,16 @@ import {
   zJarmAuthResponseEncryptedOnly,
 } from './z-jarm-auth-response'
 
+export enum JarmMode {
+  Signed = 'Signed',
+  Encrypted = 'Encrypted',
+  SignedEncrypted = 'SignedEncrypted',
+}
+
+export type GetOpenid4vpAuthorizationRequestCallback = (
+  authResponse: JarmAuthResponse | JarmAuthResponseEncryptedOnly
+) => Promise<{ authorizationRequest: { client_id: string; nonce: string; state?: string } }>
+
 /**
  * The client decrypts the JWT using the default key for the respective issuer or,
  * if applicable, determined by the kid JWT header parameter.
@@ -46,9 +56,7 @@ const decryptJarmRequestData = async (options: {
 export interface VerifyJarmAuthorizationResponseOptions {
   jarmAuthorizationResponseJwt: string
   callbacks: Pick<CallbackContext, 'decryptJwe' | 'verifyJwt'> & {
-    getOpenid4vpAuthorizationRequest: (
-      authResponse: JarmAuthResponse | JarmAuthResponseEncryptedOnly
-    ) => Promise<{ authRequest: { client_id: string; nonce: string; state?: string } }>
+    getOpenid4vpAuthorizationRequest: GetOpenid4vpAuthorizationRequestCallback
   }
 }
 
@@ -97,19 +105,19 @@ export async function verifyJarmAuthorizationResponse(options: VerifyJarmAuthori
     jarmAuthResponse = zJarmAuthResponseEncryptedOnly.parse(jsonRequestData)
   }
 
-  const { authRequest } = await callbacks.getOpenid4vpAuthorizationRequest(jarmAuthResponse)
+  const { authorizationRequest } = await callbacks.getOpenid4vpAuthorizationRequest(jarmAuthResponse)
 
-  jarmAuthResponseValidate({ authRequest, authResponse: jarmAuthResponse })
-
-  let type: 'signed encrypted' | 'encrypted' | 'signed'
-  if (responseIsSigned && requestDataIsEncrypted) {
-    type = 'signed encrypted'
-  } else if (requestDataIsEncrypted) {
-    type = 'encrypted'
-  } else {
-    type = 'signed'
-  }
+  jarmAuthResponseValidate({
+    clientId: authorizationRequest.client_id,
+    authorizationResponse: jarmAuthResponse,
+  })
+  const type: JarmMode =
+    requestDataIsEncrypted && responseIsSigned
+      ? JarmMode.SignedEncrypted
+      : requestDataIsEncrypted
+        ? JarmMode.Encrypted
+        : JarmMode.Signed
 
   const issuer = jarmAuthResponse.iss
-  return { authRequest, jarmAuthResponse, type, issuer }
+  return { authorizationRequest, jarmAuthResponse, type, issuer }
 }
