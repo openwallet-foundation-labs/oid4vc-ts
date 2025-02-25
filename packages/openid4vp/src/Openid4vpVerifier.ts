@@ -7,7 +7,6 @@ import {
   type ParseOpenid4vpAuthRequestPayloadOptions,
   parseOpenid4vpAuthorizationRequestPayload,
 } from './authorization-request/parse-authorization-request-params'
-import {} from './authorization-request/resolve-authorization-request'
 import {
   type ParseOpenid4vpAuthorizationResponseOptions,
   parseOpenid4vpAuthorizationResponse,
