@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { type Openid4vpAuthorizationRequest, zOpenid4vpAuthorizationRequest } from './z-authorization-request'
+import type { JarAuthRequest } from '../jar/z-jar-auth-request'
 
 export const zOpenid4vpAuthorizationRequestDcApi = zOpenid4vpAuthorizationRequest
   .pick({
@@ -22,7 +23,7 @@ export const zOpenid4vpAuthorizationRequestDcApi = zOpenid4vpAuthorizationReques
 export type Openid4vpAuthorizationRequestDcApi = z.infer<typeof zOpenid4vpAuthorizationRequestDcApi>
 
 export function isOpenid4vpAuthorizationRequestDcApi(
-  request: Openid4vpAuthorizationRequest | Openid4vpAuthorizationRequestDcApi
+  request: Openid4vpAuthorizationRequest | Openid4vpAuthorizationRequestDcApi | JarAuthRequest
 ): request is Openid4vpAuthorizationRequestDcApi {
   return request.response_mode === 'dc_api' || request.response_mode === 'dc_api.jwt'
 }

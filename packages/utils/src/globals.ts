@@ -2,6 +2,7 @@
 
 // biome-ignore lint/style/noRestrictedGlobals: <explanation>
 const _URL = URL
+
 // biome-ignore lint/style/noRestrictedGlobals: <explanation>
 const _URLSearchParams = URLSearchParams
 
