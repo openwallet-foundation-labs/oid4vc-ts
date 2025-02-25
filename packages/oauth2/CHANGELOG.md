@@ -1,5 +1,17 @@
 # @openid4vc/oauth2
 
+## 0.3.0
+
+### Minor Changes
+
+- 26451d7: Before this PR, all packages used Valibot for data validation.
+  We have now fully transitioned to Zod. This introduces obvious breaking changes for some packages that re-exported Valibot types or schemas for example.
+
+### Patch Changes
+
+- Updated dependencies [26451d7]
+  - @openid4vc/utils@0.3.0
+
 ## 0.2.0
 
 ### Minor Changes
