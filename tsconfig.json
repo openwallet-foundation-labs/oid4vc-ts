@@ -7,7 +7,7 @@
     "strict": true,
     "skipLibCheck": true,
     "noEmitOnError": true,
-    "lib": ["ES2020", "DOM"],
+    "lib": ["ES2020"],
     "types": [],
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true
