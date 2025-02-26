@@ -12,6 +12,7 @@ import {
 } from '@openid4vc/oauth2'
 import { type ClientIdScheme, zClientIdScheme } from '../../client-identifier-scheme/z-client-id-scheme'
 import type { WalletMetadata } from '../../models/z-wallet-metadata'
+import { parseAuthorizationRequestVersion } from '../../version'
 import { fetchJarRequestObject } from '../jar-request-object/fetch-jar-request-object'
 import { type JarRequestObjectPayload, zJarRequestObjectPayload } from '../jar-request-object/z-jar-request-object'
 import { type JarAuthRequest, validateJarRequestParams } from '../z-jar-auth-request'
@@ -147,6 +148,15 @@ async function verifyJarRequestObject(options: {
     payload: jwt.payload,
     signer: jwtSigner,
   })
+
+  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+  const version = parseAuthorizationRequestVersion(jwt.payload as any)
+  if (jwt.header.typ !== 'oauth-authz-req+jwt' && version >= 24) {
+    throw new Oauth2ServerErrorResponseError({
+      error: Oauth2ErrorCodes.InvalidRequestObject,
+      error_description: `Invalid Jar Request Object typ header. Expected "oauth-authz-req+jwt", received "${jwt.header.typ}".`,
+    })
+  }
 
   return { authRequestParams: jwt.payload, signer }
 }
