@@ -9,11 +9,15 @@ export function extractJwksFromClientMetadata(clientMetadata: JarmClientMetadata
 
   const encJwk =
     clientMetadata.jwks.keys.find((key) => key.use === 'enc' && key.alg === encryptionAlg) ??
-    clientMetadata.jwks.keys.find((key) => key.use === 'enc')
+    clientMetadata.jwks.keys.find((key) => key.use === 'enc') ??
+    // fallback, take first key. HAIP does not specify requirement on enc
+    clientMetadata.jwks.keys?.[0]
 
   const sigJwk =
     clientMetadata.jwks.keys.find((key) => key.use === 'sig' && key.alg === signingAlg) ??
-    clientMetadata.jwks.keys.find((key) => key.use === 'sig')
+    clientMetadata.jwks.keys.find((key) => key.use === 'sig') ??
+    // falback, take first key
+    clientMetadata.jwks.keys?.[0]
 
   return { encJwk, sigJwk }
 }
