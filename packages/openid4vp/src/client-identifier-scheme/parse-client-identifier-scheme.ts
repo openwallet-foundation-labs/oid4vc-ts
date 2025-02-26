@@ -7,6 +7,7 @@ import {
 } from '../authorization-request/z-authorization-request-dc-api'
 import type { VerifiedJarRequest } from '../jar/handle-jar-request/verify-jar-request'
 import type { ClientMetadata } from '../models/z-client-metadata'
+import { parseAuthorizationRequestVersion } from '../version'
 import { type ClientIdScheme, zClientIdScheme } from './z-client-id-scheme'
 
 /**
@@ -80,6 +81,41 @@ function getClientId(options: ClientIdentifierParserOptions) {
   return options.request.client_id
 }
 
+function getLegacyClientId(options: ClientIdentifierParserOptions) {
+  const legacyClientIdScheme = options.request.client_id_scheme ?? 'pre-registered'
+
+  let clientIdScheme: ClientIdScheme
+  if (legacyClientIdScheme === 'entity_id') {
+    clientIdScheme = 'https'
+  } else {
+    clientIdScheme = legacyClientIdScheme
+  }
+
+  if (isOpenid4vpAuthorizationRequestDcApi(options.request)) {
+    if (!options.origin) {
+      throw new Oauth2ServerErrorResponseError({
+        error: Oauth2ErrorCodes.InvalidRequest,
+        error_description:
+          "Failed to parse client identifier. 'origin' is required for requests with response_mode 'dc_api' and 'dc_api.jwt'",
+      })
+    }
+
+    if (!options.jar || !options.request.client_id) return `web-origin:${options.origin}`
+
+    return `${clientIdScheme}:${options.request.client_id}`
+  }
+
+  if (clientIdScheme === 'https' || clientIdScheme === 'did') {
+    return options.request.client_id
+  }
+
+  if (clientIdScheme === 'pre-registered') {
+    return options.request.client_id
+  }
+
+  return `${clientIdScheme}:${options.request.client_id}`
+}
+
 /**
  * Parse and validate a client identifier
  */
@@ -89,8 +125,23 @@ export function parseClientIdentifier(
 ): ParsedClientIdentifier {
   const { request, jar } = options
 
+  const version = parseAuthorizationRequestVersion(request)
+  // this means that client_id_scheme is used
+  if (version < 22) {
+    const legacyClientIdScheme = request.client_id_scheme ?? 'pre-registered'
+
+    let clientIdSchem: ClientIdScheme
+    if (legacyClientIdScheme) {
+      if (legacyClientIdScheme === 'entity_id') {
+        clientIdSchem = 'https'
+      } else {
+        clientIdSchem = legacyClientIdScheme
+      }
+    }
+  }
+
   const isDcApiRequest = isOpenid4vpAuthorizationRequestDcApi(request)
-  const clientId = getClientId(options)
+  const clientId = version < 22 ? getLegacyClientId(options) : getClientId(options)
 
   // By default require signatures for these schemes
   const parserConfigWithDefaults = {
@@ -238,7 +289,7 @@ export function parseClientIdentifier(
       if (!sanDnsNames.includes(identifierPart)) {
         throw new Oauth2ServerErrorResponseError({
           error: Oauth2ErrorCodes.InvalidRequest,
-          error_description: 'Invalid client identifier. Client identifier must be a valid DNS name.',
+          error_description: `Invalid client identifier. One of the leaf certificates san dns names [${sanDnsNames.join(', ')}] must match the client identifier '${identifierPart}'. `,
         })
       }
 
@@ -269,7 +320,7 @@ export function parseClientIdentifier(
       if (!sanUriNames.includes(identifierPart)) {
         throw new Oauth2ServerErrorResponseError({
           error: Oauth2ErrorCodes.InvalidRequest,
-          error_description: 'Invalid client identifier. Client identifier must be a valid URI.',
+          error_description: `Invalid client identifier. One of the leaf certificates san uri names [${sanUriNames.join(', ')}] must match the client identifier '${identifierPart}'.`,
         })
       }
 
