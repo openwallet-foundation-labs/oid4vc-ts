@@ -5,8 +5,10 @@ import {
   type ParsedClientIdentifier,
   parseClientIdentifier,
 } from '../client-identifier-scheme/parse-client-identifier-scheme'
+import { fetchClientMetadata } from '../fetch-client-metadata'
 import { type VerifiedJarRequest, verifyJarRequest } from '../jar/handle-jar-request/verify-jar-request'
 import { type JarAuthRequest, isJarAuthRequest, zJarAuthRequest } from '../jar/z-jar-auth-request'
+import type { WalletMetadata } from '../models/z-wallet-metadata'
 import { parseTransactionData } from '../transaction-data/parse-transaction-data'
 import type { TransactionData } from '../transaction-data/z-transaction-data'
 import {
@@ -22,7 +24,7 @@ import {
 } from './z-authorization-request-dc-api'
 
 export interface ResolveOpenid4vpAuthorizationRequestOptions {
-  request: Openid4vpAuthorizationRequest | JarAuthRequest
+  requestPayload: Openid4vpAuthorizationRequest | JarAuthRequest
   wallet?: WalletVerificationOptions
   origin?: string
   omitOriginValidation?: boolean
@@ -31,7 +33,7 @@ export interface ResolveOpenid4vpAuthorizationRequestOptions {
 
 export type ResolvedOpenid4vpAuthRequest = {
   transactionData?: TransactionData
-  payload: Openid4vpAuthorizationRequest | Openid4vpAuthorizationRequestDcApi
+  requestPayload: Openid4vpAuthorizationRequest | Openid4vpAuthorizationRequestDcApi
   jar: VerifiedJarRequest | undefined
   client: ParsedClientIdentifier
   pex?: {
@@ -43,7 +45,7 @@ export type ResolvedOpenid4vpAuthRequest = {
 export async function resolveOpenid4vpAuthorizationRequest(
   options: ResolveOpenid4vpAuthorizationRequestOptions
 ): Promise<ResolvedOpenid4vpAuthRequest> {
-  const { request, wallet, callbacks, origin, omitOriginValidation } = options
+  const { requestPayload, wallet, callbacks, origin, omitOriginValidation } = options
 
   let authRequestPayload:
     | Openid4vpAuthorizationRequest
@@ -51,7 +53,7 @@ export async function resolveOpenid4vpAuthorizationRequest(
 
   const parsed = parseWithErrorHandling(
     z.union([zOpenid4vpAuthorizationRequestDcApi, zOpenid4vpAuthorizationRequest, zJarAuthRequest]),
-    request,
+    requestPayload,
     'Invalid authorization request. Could not parse openid4vp authorization request as openid4vp or jar auth request.'
   )
 
@@ -82,7 +84,17 @@ export async function resolveOpenid4vpAuthorizationRequest(
     })
   }
 
-  const clientMeta = parseClientIdentifier({ request: authRequestPayload, jar, callbacks, origin })
+  let clientMetadata: WalletMetadata | undefined
+  if (!isOpenid4vpAuthorizationRequestDcApi(authRequestPayload) && authRequestPayload.client_metadata_uri) {
+    clientMetadata = await fetchClientMetadata({ clientMetadataUri: authRequestPayload.client_metadata_uri })
+  }
+
+  const clientMeta = parseClientIdentifier({
+    request: { ...authRequestPayload, client_metadata: clientMetadata ?? authRequestPayload.client_metadata },
+    jar,
+    callbacks,
+    origin,
+  })
 
   let pex: ResolvedOpenid4vpAuthRequest['pex'] | undefined
   let dcql: ResolvedOpenid4vpAuthRequest['dcql'] | undefined
@@ -111,7 +123,7 @@ export async function resolveOpenid4vpAuthorizationRequest(
 
   return {
     transactionData,
-    payload: authRequestPayload,
+    requestPayload: authRequestPayload,
     jar,
     client: { ...clientMeta },
     pex,

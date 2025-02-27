@@ -18,9 +18,21 @@ export const zOpenid4vpAuthorizationRequest = z
     presentation_definition_uri: zHttpsUrl.optional(),
     dcql_query: z.record(z.any()).optional(),
     client_metadata: zClientMetadata.optional(),
+    client_metadata_uri: zHttpsUrl.optional(),
     state: z.string().optional(),
     transaction_data: z.array(z.string()).optional(),
     trust_chain: z.unknown().optional(),
+    client_id_scheme: z
+      .enum([
+        'pre-registered',
+        'redirect_uri',
+        'entity_id',
+        'did',
+        'verifier_attestation',
+        'x509_san_dns',
+        'x509_san_uri',
+      ])
+      .optional(),
   })
   .passthrough()
 
