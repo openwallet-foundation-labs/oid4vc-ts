@@ -6,19 +6,19 @@ import { jarmAuthResponseSend } from '../jarm/jarm-auth-response-send'
 import type { Openid4vpAuthorizationResponse } from './z-authorization-response'
 
 export interface SubmitOpenid4vpAuthorizationResponseOptions {
-  request: Pick<Openid4vpAuthorizationRequest, 'response_uri'>
-  response: Openid4vpAuthorizationResponse
+  requestPayload: Pick<Openid4vpAuthorizationRequest, 'response_uri'>
+  responsePayload: Openid4vpAuthorizationResponse
   jarm?: { responseJwt: string }
   callbacks: Pick<CallbackContext, 'fetch'>
 }
 
 export async function submitOpenid4vpAuthorizationResponse(options: SubmitOpenid4vpAuthorizationResponseOptions) {
-  const { request, response, jarm, callbacks } = options
-  const url = request.response_uri
+  const { requestPayload, responsePayload, jarm, callbacks } = options
+  const url = requestPayload.response_uri
 
   if (jarm) {
     return jarmAuthResponseSend({
-      authRequest: request,
+      authRequest: requestPayload,
       jarmAuthResponseJwt: jarm.responseJwt,
       callbacks,
     })
@@ -31,7 +31,7 @@ export async function submitOpenid4vpAuthorizationResponse(options: SubmitOpenid
   }
 
   const fetch = callbacks.fetch ?? defaultFetcher
-  const encodedResponse = objectToQueryParams(response)
+  const encodedResponse = objectToQueryParams(responsePayload)
   const submissionResponse = await fetch(url, {
     method: 'POST',
     body: encodedResponse,

@@ -15,7 +15,7 @@ import {
 
 export interface CreateOpenid4vpAuthorizationRequestOptions {
   scheme?: string
-  requestParams: Openid4vpAuthorizationRequest | Openid4vpAuthorizationRequestDcApi
+  requestPayload: Openid4vpAuthorizationRequest | Openid4vpAuthorizationRequestDcApi
   jar?: {
     requestUri?: string
     jwtSigner: JwtSigner
@@ -43,15 +43,15 @@ export interface CreateOpenid4vpAuthorizationRequestOptions {
  * @returns Object containing the authorization request parameters, URI and optional JAR details
  */
 export async function createOpenid4vpAuthorizationRequest(options: CreateOpenid4vpAuthorizationRequestOptions) {
-  const { jar, scheme = 'openid4vp://', requestParams, wallet, callbacks } = options
+  const { jar, scheme = 'openid4vp://', requestPayload, wallet, callbacks } = options
 
   let additionalJwtPayload: Record<string, unknown> | undefined
 
   let authRequestParams: Openid4vpAuthorizationRequest | Openid4vpAuthorizationRequestDcApi
-  if (isOpenid4vpAuthorizationRequestDcApi(requestParams)) {
+  if (isOpenid4vpAuthorizationRequestDcApi(requestPayload)) {
     authRequestParams = parseWithErrorHandling(
       zOpenid4vpAuthorizationRequestDcApi,
-      requestParams,
+      requestPayload,
       'Invalid authorization request. Could not parse openid4vp dc_api authorization request.'
     )
 
@@ -69,7 +69,7 @@ export async function createOpenid4vpAuthorizationRequest(options: CreateOpenid4
   } else {
     authRequestParams = parseWithErrorHandling(
       zOpenid4vpAuthorizationRequest,
-      requestParams,
+      requestPayload,
       'Invalid authorization request. Could not parse openid4vp authorization request.'
     )
     validateOpenid4vpAuthorizationRequestPayload({ params: authRequestParams, walletVerificationOptions: wallet })
@@ -84,7 +84,7 @@ export async function createOpenid4vpAuthorizationRequest(options: CreateOpenid4
   if (jar) {
     const jarResult = await createJarAuthRequest({
       ...jar,
-      authRequestParams: requestParams,
+      authRequestParams: requestPayload,
       additionalJwtPayload,
       callbacks,
     })
@@ -105,11 +105,11 @@ export async function createOpenid4vpAuthorizationRequest(options: CreateOpenid4
   const url = new URL(scheme)
   url.search = `?${new URLSearchParams([
     ...url.searchParams.entries(),
-    ...objectToQueryParams(requestParams).entries(),
+    ...objectToQueryParams(requestPayload).entries(),
   ]).toString()}`
 
   return {
-    authRequestObject: requestParams,
+    authRequestObject: requestPayload,
     authRequest: url.toString(),
     jar: undefined,
   }

@@ -9,8 +9,8 @@ import type { ValidateOpenid4VpAuthorizationResponseResult } from './validate-au
 import type { Openid4vpAuthorizationResponse } from './z-authorization-response'
 
 export interface ValidateOpenid4vpAuthorizationResponseOptions {
-  authorizationRequest: Openid4vpAuthorizationRequest | Openid4vpAuthorizationRequestDcApi
-  authorizationResponse: Openid4vpAuthorizationResponse
+  requestPayload: Openid4vpAuthorizationRequest | Openid4vpAuthorizationRequestDcApi
+  responsePayload: Openid4vpAuthorizationResponse
 }
 
 /**
@@ -23,28 +23,28 @@ export interface ValidateOpenid4vpAuthorizationResponseOptions {
 export function validateOpenid4vpAuthorizationResponse(
   options: ValidateOpenid4vpAuthorizationResponseOptions
 ): ValidateOpenid4VpAuthorizationResponseResult {
-  const { authorizationRequest, authorizationResponse } = options
-  if (!authorizationResponse.vp_token) {
+  const { requestPayload, responsePayload } = options
+  if (!responsePayload.vp_token) {
     throw new Oauth2Error('Failed to verify OpenId4Vp Authorization Response. vp_token is missing.')
   }
 
-  if ('state' in authorizationRequest && authorizationRequest.state !== authorizationResponse.state) {
+  if ('state' in requestPayload && requestPayload.state !== responsePayload.state) {
     throw new Oauth2Error('OpenId4Vp Authorization Response state mismatch.')
   }
 
   // TODO: implement id_token handling
-  if (authorizationResponse.id_token) {
+  if (responsePayload.id_token) {
     throw new Oauth2Error('OpenId4Vp Authorization Response id_token is not supported.')
   }
 
-  if (authorizationResponse.presentation_submission) {
-    if (!authorizationRequest.presentation_definition) {
+  if (responsePayload.presentation_submission) {
+    if (!requestPayload.presentation_definition) {
       throw new Oauth2Error('OpenId4Vp Authorization Request is missing the required presentation_definition.')
     }
 
     // TODO: ENABLE THIS CHECK ALL THE TIME ONCE WE KNOW HOW TO GET THE NONCE FOR MDOCS AND ANONCREDS
-    const presentations = parsePresentationsFromVpToken({ vpToken: authorizationResponse.vp_token })
-    if (presentations.every((p) => p.nonce) && !presentations.every((p) => p.nonce === authorizationRequest.nonce)) {
+    const presentations = parsePresentationsFromVpToken({ vpToken: responsePayload.vp_token })
+    if (presentations.every((p) => p.nonce) && !presentations.every((p) => p.nonce === requestPayload.nonce)) {
       throw new Oauth2Error(
         'Presentation nonce mismatch. The nonce of some presentations does not match the nonce of the request.'
       )
@@ -53,37 +53,37 @@ export function validateOpenid4vpAuthorizationResponse(
     return {
       type: 'pex',
       pex:
-        'scope' in authorizationRequest && authorizationRequest.scope
+        'scope' in requestPayload && requestPayload.scope
           ? {
-              scope: authorizationRequest.scope,
-              presentationSubmission: authorizationResponse.presentation_submission,
+              scope: requestPayload.scope,
+              presentationSubmission: responsePayload.presentation_submission,
               presentations,
             }
           : {
-              presentationDefinition: authorizationRequest.presentation_definition,
-              presentationSubmission: authorizationResponse.presentation_submission,
+              presentationDefinition: requestPayload.presentation_definition,
+              presentationSubmission: responsePayload.presentation_submission,
               presentations,
             },
     }
   }
 
-  if (authorizationRequest.dcql_query) {
-    if (Array.isArray(authorizationResponse.vp_token)) {
+  if (requestPayload.dcql_query) {
+    if (Array.isArray(responsePayload.vp_token)) {
       throw new Oauth2Error(
         'The OpenId4Vp Authorization Response contains multiple vp_token values. In combination with dcql this is not possible.'
       )
     }
 
-    if (typeof authorizationResponse.vp_token !== 'string' && typeof authorizationResponse.vp_token !== 'object') {
+    if (typeof responsePayload.vp_token !== 'string' && typeof responsePayload.vp_token !== 'object') {
       throw new Oauth2Error('With DCQL the vp_token must be a JSON-encoded object.')
     }
 
-    const presentation = parseDcqlPresentationFromVpToken({ vpToken: authorizationResponse.vp_token })
+    const presentation = parseDcqlPresentationFromVpToken({ vpToken: responsePayload.vp_token })
 
     // TODO: CHECK ALL THE NONCES ONCE WE KNOW HOW TO GET THE NONCE FOR MDOCS AND ANONCREDS
     if (
       Object.values(presentation).every((p) => p.nonce) &&
-      !Object.values(presentation).every((p) => p.nonce === authorizationRequest.nonce)
+      !Object.values(presentation).every((p) => p.nonce === requestPayload.nonce)
     ) {
       throw new Oauth2Error(
         'Presentation nonce mismatch. The nonce of some presentations does not match the nonce of the request.'
@@ -93,13 +93,13 @@ export function validateOpenid4vpAuthorizationResponse(
     return {
       type: 'dcql',
       dcql:
-        'scope' in authorizationRequest && authorizationRequest.scope
+        'scope' in requestPayload && requestPayload.scope
           ? {
-              scope: authorizationRequest.scope,
+              scope: requestPayload.scope,
               presentation,
             }
           : {
-              query: authorizationRequest.dcql_query,
+              query: requestPayload.dcql_query,
               presentation,
             },
     }

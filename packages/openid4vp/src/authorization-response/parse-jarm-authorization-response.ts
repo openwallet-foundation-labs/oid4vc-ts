@@ -50,8 +50,8 @@ export async function parseJarmAuthorizationResponse(options: ParseJarmAuthoriza
 
   const authResponsePayload = parseOpenid4VpAuthorizationResponsePayload(verifiedJarmResponse.jarmAuthResponse)
   const validateOpenId4vpResponse = validateOpenid4vpAuthorizationResponse({
-    authorizationRequest: parsedAuthorizationRequest.params,
-    authorizationResponse: authResponsePayload,
+    requestPayload: parsedAuthorizationRequest.params,
+    responsePayload: authResponsePayload,
   })
 
   const authRequestPayload = parsedAuthorizationRequest.params

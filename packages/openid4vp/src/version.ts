@@ -5,7 +5,6 @@ import {
   isOpenid4vpAuthorizationRequestDcApi,
 } from './authorization-request/z-authorization-request-dc-api'
 import { zClientIdScheme } from './client-identifier-scheme/z-client-id-scheme'
-import type { CredentialFormat } from './models/z-credential-formats'
 
 export const Openid4vpVersion = [18, 19, 20, 21, 22, 23, 24] as const
 export type OpenId4VpVersion = (typeof Openid4vpVersion)[number]
@@ -18,28 +17,27 @@ export function parseAuthorizationRequestVersion(
   // 23
 
   const vp_formats = request.client_metadata?.vp_formats
-  if (vp_formats) {
-    if (Object.keys(vp_formats).includes('vc+sd-jwt' satisfies CredentialFormat)) {
-      requirements.push(['<', 23])
-    }
+  // There might be some time we'd like to include both, as the update of the identifier can be somewhat tricky.
+  //if (vp_formats) {
+  //if (Object.keys(vp_formats).includes('vc+sd-jwt' satisfies CredentialFormat)) {
+  //requirements.push(['<', 23])
+  //}
 
-    if (Object.keys(vp_formats).includes('dc+sd-jwt' satisfies CredentialFormat)) {
-      requirements.push(['>=', 23])
-    }
+  //if (Object.keys(vp_formats).includes('dc+sd-jwt' satisfies CredentialFormat)) {
+  //requirements.push(['>=', 23])
+  //}
 
+  //if (Object.keys(vp_formats).includes('vc+sd-jwt' satisfies CredentialFormat)) {
+  //requirements.push(['>=', 21])
+  //}
+  //}
 
-    if (Object.keys(vp_formats).includes('vc+sd-jwt' satisfies CredentialFormat)) {
-      requirements.push(['>=', 21])
-    }
-  }
-
-
-  if (
-    request.client_metadata?.vp_formats &&
-    Object.keys(request.client_metadata?.vp_formats).some(val => val === 'vc+sd-jwt')
-  ) {
-    requirements.push(['>=', 21])
-  }
+  //if (
+  //request.client_metadata?.vp_formats &&
+  //Object.keys(request.client_metadata?.vp_formats).some(val => val === 'vc+sd-jwt')
+  //) {
+  //requirements.push(['>=', 21])
+  //}
 
   if (
     isOpenid4vpAuthorizationRequestDcApi(request) &&

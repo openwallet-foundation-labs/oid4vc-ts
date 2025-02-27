@@ -31,8 +31,8 @@ export async function parseOpenid4vpAuthorizationResponse(options: ParseOpenid4v
   const authRequestPayload = parsedAuthRequest.params
 
   const validateOpenId4vpResponse = validateOpenid4vpAuthorizationResponse({
-    authorizationRequest: authRequestPayload,
-    authorizationResponse: authResponsePayload,
+    requestPayload: authRequestPayload,
+    responsePayload: authResponsePayload,
   })
 
   if (authRequestPayload.response_mode && isJarmResponseMode(authRequestPayload.response_mode)) {
