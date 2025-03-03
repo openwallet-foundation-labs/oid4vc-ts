@@ -1,12 +1,13 @@
 import { z } from 'zod'
 import { zVpToken } from '../vp-token/z-vp-token'
+import { zPexPresentationSubmission } from '../models/z-pex'
 
 export const zOpenid4vpAuthorizationResponse = z
   .object({
     state: z.string().optional(),
     id_token: z.string().optional(),
     vp_token: zVpToken,
-    presentation_submission: z.unknown().optional(),
+    presentation_submission: zPexPresentationSubmission.optional(),
     refresh_token: z.string().optional(),
     token_type: z.string().optional(),
     access_token: z.string().optional(),
