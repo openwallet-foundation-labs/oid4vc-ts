@@ -1,10 +1,12 @@
-import type { VpTokenPresentationParseResult } from '../vp-token/parse-presentations-from-vp-token'
+import type { PexPresentationSubmission } from '../models/z-pex'
+import type { VpTokenDcql, VpTokenPexEntry } from '../vp-token/z-vp-token'
 
 export interface ValidateOpenid4VpPexAuthorizationResponseResult {
   type: 'pex'
+
   pex: {
-    presentationSubmission: unknown
-    presentations: [VpTokenPresentationParseResult, ...VpTokenPresentationParseResult[]]
+    presentationSubmission: PexPresentationSubmission
+    presentations: [VpTokenPexEntry, ...VpTokenPexEntry[]]
   } & (
     | { scope: string; presentationDefinition?: never }
     | { scope?: never; presentationDefinition: Record<string, unknown> | string }
@@ -14,7 +16,7 @@ export interface ValidateOpenid4VpPexAuthorizationResponseResult {
 export interface ValidateOpenid4VpDcqlAuthorizationResponseResult {
   type: 'dcql'
   dcql: {
-    presentation: Record<string, VpTokenPresentationParseResult>
+    presentations: VpTokenDcql
   } & ({ scope: string; query?: never } | { scope?: never; query: unknown })
 }
 

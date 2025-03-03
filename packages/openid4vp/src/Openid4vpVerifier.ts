@@ -13,14 +13,11 @@ import {
 } from './authorization-response/parse-authorization-response'
 import {
   type ValidateOpenid4vpAuthorizationResponseOptions,
-  validateOpenid4vpAuthorizationResponse,
+  validateOpenid4vpAuthorizationResponsePayload,
 } from './authorization-response/validate-authorization-response'
 import type { ParseTransactionDataOptions } from './transaction-data/parse-transaction-data'
 import { parseTransactionData } from './transaction-data/parse-transaction-data'
-import {
-  type ParsePresentationsFromVpTokenOptions,
-  parsePresentationsFromVpToken,
-} from './vp-token/parse-presentations-from-vp-token'
+import { parseDcqlVpToken, parsePexVpToken } from './vp-token/parse-vp-token'
 
 export interface Openid4vpVerifierOptions {
   /**
@@ -46,12 +43,16 @@ export class Openid4vpVerifier {
     return parseOpenid4vpAuthorizationResponse(options)
   }
 
-  public validateOpenid4vpAuthorizationResponse(options: ValidateOpenid4vpAuthorizationResponseOptions) {
-    return validateOpenid4vpAuthorizationResponse(options)
+  public validateOpenid4vpAuthorizationResponsePayload(options: ValidateOpenid4vpAuthorizationResponseOptions) {
+    return validateOpenid4vpAuthorizationResponsePayload(options)
   }
 
-  public parsePresentationsFromVpToken(options: ParsePresentationsFromVpTokenOptions) {
-    return parsePresentationsFromVpToken(options)
+  public parsePexVpToken(vpToken: unknown) {
+    return parsePexVpToken(vpToken)
+  }
+
+  public parseDcqlVpToken(vpToken: unknown) {
+    return parseDcqlVpToken(vpToken)
   }
 
   public parseTransactionData(options: ParseTransactionDataOptions) {

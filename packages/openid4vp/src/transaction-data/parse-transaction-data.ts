@@ -9,7 +9,7 @@ export interface ParseTransactionDataOptions {
 export function parseTransactionData(options: ParseTransactionDataOptions): TransactionData {
   const { transactionData } = options
 
-  const decoded = transactionData.map((tdEntry) => parseIfJson(encodeToUtf8String(decodeBase64(tdEntry as string))))
+  const decoded = transactionData.map((tdEntry) => parseIfJson(encodeToUtf8String(decodeBase64(tdEntry))))
 
   const parsedResult = zTransactionData.safeParse(decoded)
   if (!parsedResult.success) {
