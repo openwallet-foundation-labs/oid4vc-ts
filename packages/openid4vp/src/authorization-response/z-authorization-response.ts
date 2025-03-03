@@ -1,6 +1,6 @@
 import { z } from 'zod'
-import { zVpToken } from '../vp-token/z-vp-token'
 import { zPexPresentationSubmission } from '../models/z-pex'
+import { zVpToken } from '../vp-token/z-vp-token'
 
 export const zOpenid4vpAuthorizationResponse = z
   .object({

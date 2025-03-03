@@ -6,11 +6,11 @@ import {
   type GetOpenid4vpAuthorizationRequestCallback,
   verifyJarmAuthorizationResponse,
 } from '../jarm/jarm-auth-response/verify-jarm-auth-response'
+import { zJarmHeader } from '../jarm/jarm-auth-response/z-jarm-auth-response'
 import { isJarmResponseMode } from '../jarm/jarm-response-mode'
+import type { ParsedOpenid4vpAuthorizationResponse } from './parse-authorization-response'
 import { parseOpenid4VpAuthorizationResponsePayload } from './parse-authorization-response-payload'
 import { validateOpenid4vpAuthorizationResponsePayload } from './validate-authorization-response'
-import { zJarmHeader } from '../jarm/jarm-auth-response/z-jarm-auth-response'
-import type { ParsedOpenid4vpAuthorizationResponse } from './parse-authorization-response'
 
 export interface ParseJarmAuthorizationResponseOptions {
   jarmResponseJwt: string

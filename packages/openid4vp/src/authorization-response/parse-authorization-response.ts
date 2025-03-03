@@ -1,18 +1,18 @@
 import { type CallbackContext, Oauth2Error, Oauth2ServerErrorResponseError } from '@openid4vc/oauth2'
 import { parseOpenid4vpAuthorizationRequestPayload } from '../authorization-request/parse-authorization-request-params'
+import type { Openid4vpAuthorizationRequest } from '../authorization-request/z-authorization-request'
+import type { Openid4vpAuthorizationRequestDcApi } from '../authorization-request/z-authorization-request-dc-api'
 import type {
   GetOpenid4vpAuthorizationRequestCallback,
   VerifiedJarmAuthorizationResponse,
 } from '../jarm/jarm-auth-response/verify-jarm-auth-response'
+import type { JarmHeader } from '../jarm/jarm-auth-response/z-jarm-auth-response'
 import { isJarmResponseMode } from '../jarm/jarm-response-mode'
 import { parseOpenid4VpAuthorizationResponsePayload } from './parse-authorization-response-payload'
 import { parseJarmAuthorizationResponse } from './parse-jarm-authorization-response'
 import { validateOpenid4vpAuthorizationResponsePayload } from './validate-authorization-response'
-import type { Openid4vpAuthorizationResponse } from './z-authorization-response'
-import type { Openid4vpAuthorizationRequest } from '../authorization-request/z-authorization-request'
-import type { Openid4vpAuthorizationRequestDcApi } from '../authorization-request/z-authorization-request-dc-api'
 import type { ValidateOpenid4VpAuthorizationResponseResult } from './validate-authorization-response-result'
-import type { JarmHeader } from '../jarm/jarm-auth-response/z-jarm-auth-response'
+import type { Openid4vpAuthorizationResponse } from './z-authorization-response'
 
 export interface ParseOpenid4vpAuthorizationResponseOptions {
   responsePayload: Record<string, unknown>

@@ -1,5 +1,5 @@
 import { parseIfJson, parseWithErrorHandling } from '@openid4vc/utils'
-import { type VpTokenPexEntry, zVpTokenPex, zVpTokenDcql, type VpTokenDcql } from './z-vp-token'
+import { type VpTokenDcql, type VpTokenPexEntry, zVpTokenDcql, zVpTokenPex } from './z-vp-token'
 
 export function parsePexVpToken(vpToken: unknown): [VpTokenPexEntry, ...VpTokenPexEntry[]] {
   const parsedVpToken = parseWithErrorHandling(
