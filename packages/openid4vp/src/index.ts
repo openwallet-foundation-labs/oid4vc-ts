@@ -34,7 +34,7 @@ export {
   SubmitOpenid4vpAuthorizationResponseOptions,
 } from './authorization-response/submit-authorization-response'
 export {
-  validateOpenid4vpAuthorizationResponse,
+  validateOpenid4vpAuthorizationResponsePayload,
   ValidateOpenid4vpAuthorizationResponseOptions,
 } from './authorization-response/validate-authorization-response'
 export {
@@ -43,10 +43,9 @@ export {
 } from './transaction-data/parse-transaction-data'
 export type { TransactionDataEntry } from './transaction-data/z-transaction-data'
 export {
-  parsePresentationsFromVpToken,
-  ParsePresentationsFromVpTokenOptions,
-  VpTokenPresentationParseResult,
-} from './vp-token/parse-presentations-from-vp-token'
+  parsePexVpToken,
+  parseDcqlVpToken,
+} from './vp-token/parse-vp-token'
 
 export {
   parseOpenid4vpAuthorizationResponse,

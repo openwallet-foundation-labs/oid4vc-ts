@@ -60,6 +60,8 @@ export interface VerifyJarmAuthorizationResponseOptions {
   }
 }
 
+export type VerifiedJarmAuthorizationResponse = Awaited<ReturnType<typeof verifyJarmAuthorizationResponse>>
+
 /**
  * Validate a JARM direct_post.jwt compliant authentication response
  * * The decryption key should be resolvable using the the protected header's 'kid' field
