@@ -9,8 +9,7 @@ import { fetchClientMetadata } from '../fetch-client-metadata'
 import { type VerifiedJarRequest, verifyJarRequest } from '../jar/handle-jar-request/verify-jar-request'
 import { type JarAuthRequest, isJarAuthRequest, zJarAuthRequest } from '../jar/z-jar-auth-request'
 import type { WalletMetadata } from '../models/z-wallet-metadata'
-import { parseTransactionData } from '../transaction-data/parse-transaction-data'
-import type { TransactionData } from '../transaction-data/z-transaction-data'
+import { type ParsedTransactionDataEntry, parseTransactionData } from '../transaction-data/parse-transaction-data'
 import {
   type WalletVerificationOptions,
   validateOpenid4vpAuthorizationRequestPayload,
@@ -32,7 +31,7 @@ export interface ResolveOpenid4vpAuthorizationRequestOptions {
 }
 
 export type ResolvedOpenid4vpAuthRequest = {
-  transactionData?: TransactionData
+  transactionData?: ParsedTransactionDataEntry[]
   requestPayload: Openid4vpAuthorizationRequest | Openid4vpAuthorizationRequestDcApi
   jar: VerifiedJarRequest | undefined
   client: ParsedClientIdentifier

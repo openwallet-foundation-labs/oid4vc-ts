@@ -17,6 +17,7 @@ import {
 } from './authorization-response/validate-authorization-response'
 import type { ParseTransactionDataOptions } from './transaction-data/parse-transaction-data'
 import { parseTransactionData } from './transaction-data/parse-transaction-data'
+import { type VerifyTransactionDataOptions, verifyTransactionData } from './transaction-data/verify-transaction-data'
 import { parseDcqlVpToken, parsePexVpToken } from './vp-token/parse-vp-token'
 
 export interface Openid4vpVerifierOptions {
@@ -57,5 +58,9 @@ export class Openid4vpVerifier {
 
   public parseTransactionData(options: ParseTransactionDataOptions) {
     return parseTransactionData(options)
+  }
+
+  public verifyTransactionData(options: VerifyTransactionDataOptions) {
+    return verifyTransactionData(options)
   }
 }
