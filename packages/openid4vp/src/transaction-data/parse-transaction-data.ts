@@ -1,12 +1,18 @@
 import { Oauth2ErrorCodes, Oauth2ServerErrorResponseError } from '@openid4vc/oauth2'
 import { decodeBase64, encodeToUtf8String, parseIfJson } from '@openid4vc/utils'
-import { type TransactionData, zTransactionData } from './z-transaction-data'
+import { type TransactionDataEntry, zTransactionData } from './z-transaction-data'
 
 export interface ParseTransactionDataOptions {
   transactionData: string[]
 }
 
-export function parseTransactionData(options: ParseTransactionDataOptions): TransactionData {
+export interface ParsedTransactionDataEntry {
+  transactionData: TransactionDataEntry
+  transactionDataIndex: number
+  encoded: string
+}
+
+export function parseTransactionData(options: ParseTransactionDataOptions): ParsedTransactionDataEntry[] {
   const { transactionData } = options
 
   const decoded = transactionData.map((tdEntry) => parseIfJson(encodeToUtf8String(decodeBase64(tdEntry))))
@@ -19,5 +25,9 @@ export function parseTransactionData(options: ParseTransactionDataOptions): Tran
     })
   }
 
-  return parsedResult.data
+  return parsedResult.data.map((decoded, index) => ({
+    transactionData: decoded,
+    encoded: transactionData[index],
+    transactionDataIndex: index,
+  }))
 }
