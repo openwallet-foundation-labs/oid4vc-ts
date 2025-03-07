@@ -2,7 +2,7 @@ import { z } from 'zod'
 
 export const zTransactionEntry = z.object({
   type: z.string(),
-  credential_ids: z.array(z.string()).min(1),
+  credential_ids: z.array(z.string()).nonempty(),
   transaction_data_hashes_alg: z.array(z.string()).optional(),
 })
 export type TransactionDataEntry = z.infer<typeof zTransactionEntry>

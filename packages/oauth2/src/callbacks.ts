@@ -5,9 +5,13 @@ import type { JweEncryptor, JwtHeader, JwtPayload, JwtSigner } from './common/jw
 
 /**
  * Supported hashing algorithms
+ *
+ * Based on https://www.iana.org/assignments/named-information/named-information.xhtml
  */
 export enum HashAlgorithm {
-  Sha256 = 'SHA-256',
+  Sha256 = 'sha-256',
+  Sha384 = 'sha-384',
+  Sha512 = 'sha-512',
 }
 
 /**
