@@ -10,8 +10,8 @@ export {
   CreateOpenid4vpAuthorizationRequestOptions,
 } from './authorization-request/create-authorization-request'
 export {
-  parseOpenid4vpAuthorizationRequestPayload,
-  ParseOpenid4vpAuthorizationRequestPayloadOptions,
+  parseOpenid4vpAuthorizationRequest,
+  ParseOpenid4vpAuthorizationRequestOptions,
 } from './authorization-request/parse-authorization-request-params'
 export {
   resolveOpenid4vpAuthorizationRequest,

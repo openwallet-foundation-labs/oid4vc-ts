@@ -27,7 +27,10 @@ import {
 } from './z-authorization-request-dc-api'
 
 export interface ResolveOpenid4vpAuthorizationRequestOptions {
-  authorizationRequestPayload: Openid4vpAuthorizationRequest | JarAuthorizationRequest
+  authorizationRequestPayload:
+    | Openid4vpAuthorizationRequest
+    | Openid4vpAuthorizationRequestDcApi
+    | JarAuthorizationRequest
   wallet?: WalletVerificationOptions
   origin?: string
   disableOriginValidation?: boolean

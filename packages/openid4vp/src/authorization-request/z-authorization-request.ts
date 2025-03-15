@@ -1,4 +1,4 @@
-import { zHttpsUrl } from '@openid4vc/utils'
+import { URL, zHttpsUrl } from '@openid4vc/utils'
 import { z } from 'zod'
 import { zClientMetadata } from '../models/z-client-metadata'
 
@@ -20,7 +20,7 @@ export const zOpenid4vpAuthorizationRequest = z
     client_metadata: zClientMetadata.optional(),
     client_metadata_uri: zHttpsUrl.optional(),
     state: z.string().optional(),
-    transaction_data: z.array(z.string()).optional(),
+    transaction_data: z.array(z.string().base64url()).optional(),
     trust_chain: z.unknown().optional(),
     client_id_scheme: z
       .enum([
@@ -35,5 +35,33 @@ export const zOpenid4vpAuthorizationRequest = z
       .optional(),
   })
   .passthrough()
+
+const zStringToJson = z.string().transform((string, ctx) => {
+  try {
+    return JSON.parse(string)
+  } catch (error) {
+    ctx.addIssue({
+      code: 'custom',
+      message: 'Expected a JSON string, but could not parse the string to JSON',
+    })
+    return z.NEVER
+  }
+})
+
+// Helps with parsing from an URI to a valid authorization request object
+export const zOpenid4vpAuthorizationRequestFromUriParams = z
+  .string()
+  .url()
+  .transform((url) => Object.fromEntries(new URL(url).searchParams))
+  .pipe(
+    z
+      .object({
+        presentation_definition: zStringToJson.optional(),
+        client_metadata: zStringToJson.optional(),
+        dcql_query: zStringToJson.optional(),
+        transaction_data: zStringToJson.optional(),
+      })
+      .passthrough()
+  )
 
 export type Openid4vpAuthorizationRequest = z.infer<typeof zOpenid4vpAuthorizationRequest>
