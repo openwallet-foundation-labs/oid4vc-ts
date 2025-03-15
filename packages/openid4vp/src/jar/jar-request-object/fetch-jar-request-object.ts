@@ -38,10 +38,10 @@ export async function fetchJarRequestObject<Schema extends BaseSchema>(options: 
     requestBody = { ...requestBody, wallet_metadata: { ...rest } }
   }
 
-  const { result, response } = await fetcher(z.string(), ContentType.OAuthorizationRequestObjectJwt, requestUri, {
+  const { result, response } = await fetcher(z.string(), ContentType.OAuthAuthorizationRequestJwt, requestUri, {
     method,
     headers: {
-      Accept: `${ContentType.OAuthorizationRequestObjectJwt}, ${ContentType.Jwt};q=0.9`,
+      Accept: `${ContentType.OAuthAuthorizationRequestJwt}, ${ContentType.Jwt};q=0.9`,
       'Content-Type': ContentType.XWwwFormUrlencoded,
     },
     body: method === 'POST' ? objectToQueryParams(wallet.metadata ?? {}) : undefined,
