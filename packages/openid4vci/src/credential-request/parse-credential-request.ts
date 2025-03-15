@@ -4,6 +4,12 @@ import type { CredentialFormatIdentifier } from '../formats/credential'
 import { attestationProofTypeIdentifier } from '../formats/proof-type/attestation/z-attestation-proof-type'
 import { jwtProofTypeIdentifier } from '../formats/proof-type/jwt/z-jwt-proof-type'
 import {
+  extractKnownCredentialConfigurationSupportedFormats,
+  getCredentialConfigurationSupportedById,
+} from '../metadata/credential-issuer/credential-issuer-metadata'
+import type { CredentialConfigurationSupportedWithFormats } from '../metadata/credential-issuer/z-credential-issuer-metadata'
+import type { IssuerMetadataResult } from '../metadata/fetch-issuer-metadata'
+import {
   type CredentialRequest,
   type CredentialRequestFormatSpecific,
   allCredentialRequestFormatIdentifiers,
@@ -17,6 +23,7 @@ import {
 } from './z-credential-request-common'
 
 export interface ParseCredentialRequestOptions {
+  issuerMetadata: IssuerMetadataResult
   credentialRequest: Record<string, unknown>
 }
 
@@ -49,6 +56,22 @@ export interface ParseCredentialRequestReturn {
   credentialIdentifier?: string
 
   /**
+   * Starting from OID4VCI draft 15 the credential request can include a `credential_configuration_id`.
+   * This will only be defined if the request included the credential configuration id.
+   *
+   * An error will be thrown if a credential configuration id was included in the request that is not
+   * present in the credential configurations supported of the issuer metadata
+   */
+  credentialConfigurationId?: string
+
+  /**
+   * If the request included a `credential_configuration_id` with a known format, it will
+   * be included here. It's still possible `credential_configuration_id` was defined, but
+   * it's not a known format.
+   */
+  credentialConfiguration?: CredentialConfigurationSupportedWithFormats
+
+  /**
    * The validated credential request. If both `format` and `credentialIdentifier` are
    * undefined you can still handle the request by using this object directly.
    */
@@ -77,9 +100,28 @@ export function parseCredentialRequest(options: ParseCredentialRequestOptions): 
     proofs = { [attestationProofTypeIdentifier]: [knownProof.data.attestation] }
   }
 
+  if (credentialRequest.credential_configuration_id) {
+    // This will throw an error if the credential configuration does not exist
+    getCredentialConfigurationSupportedById(
+      options.issuerMetadata.credentialIssuer.credential_configurations_supported,
+      credentialRequest.credential_configuration_id
+    )
+
+    const credentialConfigurations = extractKnownCredentialConfigurationSupportedFormats(
+      options.issuerMetadata.credentialIssuer.credential_configurations_supported
+    )
+
+    return {
+      credentialConfiguration: credentialConfigurations[credentialRequest.credential_configuration_id],
+      credentialConfigurationId: credentialRequest.credential_configuration_id,
+      credentialRequest,
+      proofs,
+    }
+  }
+
   if (credentialRequest.credential_identifier) {
     return {
-      credentialIdentifier: credentialRequest.credential_identifier as string,
+      credentialIdentifier: credentialRequest.credential_identifier,
       credentialRequest,
       proofs,
     }

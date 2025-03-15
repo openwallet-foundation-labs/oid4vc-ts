@@ -119,9 +119,11 @@ export {
   clientAuthenticationClientSecretPost,
   clientAuthenticationDynamic,
   clientAuthenticationNone,
+  clientAuthenticationClientAttestationJwt,
   type ClientAuthenticationClientSecretBasicOptions,
   type ClientAuthenticationClientSecretPostOptions,
   type ClientAuthenticationDynamicOptions,
+  type ClientAuthenticationClientAttestationJwtOptions,
 } from './client-authentication'
 
 export { Oauth2AuthorizationServer, type Oauth2AuthorizationServerOptions } from './Oauth2AuthorizationServer'

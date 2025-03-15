@@ -3,7 +3,9 @@ import { type Fetch, joinUriParts } from '@openid4vc/utils'
 import type { CredentialFormatIdentifier } from '../../formats/credential'
 import type { Openid4vciDraftVersion } from '../../version'
 import {
+  type CredentialConfigurationSupported,
   type CredentialConfigurationSupportedFormatSpecific,
+  type CredentialConfigurationSupportedWithFormats,
   type CredentialConfigurationsSupported,
   type CredentialConfigurationsSupportedWithFormats,
   type CredentialIssuerMetadata,
@@ -52,4 +54,20 @@ export function extractKnownCredentialConfigurationSupportedFormats(
         allCredentialIssuerMetadataFormatIdentifiers.includes(entry[1].format as CredentialFormatIdentifier)
     )
   )
+}
+
+export function getCredentialConfigurationSupportedById<
+  Configurations extends CredentialConfigurationsSupported | CredentialConfigurationsSupportedWithFormats,
+>(credentialConfigurations: Configurations, credentialConfigurationId: string) {
+  const configuration = credentialConfigurations[credentialConfigurationId]
+
+  if (!configuration) {
+    throw new Oauth2Error(
+      `Credential configuration with id '${credentialConfigurationId}' not found in credential configurations supported.`
+    )
+  }
+
+  return configuration as Configurations extends CredentialConfigurationsSupportedWithFormats
+    ? CredentialConfigurationSupportedWithFormats
+    : CredentialConfigurationSupported
 }

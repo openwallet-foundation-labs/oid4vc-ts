@@ -130,7 +130,6 @@ export async function sendAuthorizationChallengeRequest(options: SendAuthorizati
     code_challenge: pkce?.codeChallenge,
     code_challenge_method: pkce?.codeChallengeMethod,
     presentation_during_issuance_session: options.presentationDuringIssuanceSession,
-    ...clientAttestation?.body,
   } satisfies AuthorizationChallengeRequest)
 
   return authorizationServerRequestWithDpopRetry({
@@ -156,6 +155,7 @@ export async function sendAuthorizationChallengeRequest(options: SendAuthorizati
           method: 'POST',
           body: objectToQueryParams(authorizationChallengeRequest).toString(),
           headers: {
+            // TODO: use client authentication for this
             ...clientAttestation?.headers,
             ...dpopHeaders,
             'Content-Type': ContentType.XWwwFormUrlencoded,

@@ -218,10 +218,7 @@ async function retrieveAccessToken(options: RetrieveAccessTokenOptions): Promise
           })
         : undefined
 
-      const requestQueryParams = objectToQueryParams({
-        ...accessTokenRequest,
-        ...clientAttestation?.body,
-      })
+      const requestQueryParams = objectToQueryParams(accessTokenRequest)
       const { response, result } = await fetchWithZod(
         zAccessTokenResponse,
         ContentType.Json,
@@ -231,6 +228,7 @@ async function retrieveAccessToken(options: RetrieveAccessTokenOptions): Promise
           method: 'POST',
           headers: {
             'Content-Type': ContentType.XWwwFormUrlencoded,
+            // TODO: use client authentication for this
             ...clientAttestation?.headers,
             ...dpopHeaders,
           },

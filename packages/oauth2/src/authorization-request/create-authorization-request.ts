@@ -149,13 +149,11 @@ export async function createAuthorizationRequestUrl(options: CreateAuthorization
           : undefined
 
         return await pushAuthorizationRequest({
-          authorizationRequest: {
-            ...authorizationRequest,
-            ...clientAttestation?.headers,
-          },
+          authorizationRequest,
           pushedAuthorizationRequestEndpoint,
           fetch: options.callbacks.fetch,
           headers: {
+            // TODO: use client authentication for this
             ...clientAttestation?.headers,
             ...dpopHeaders,
           },

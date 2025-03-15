@@ -1,20 +1,6 @@
 import z from 'zod'
 import { zIso18045OrStringArray } from '../../key-attestation/z-key-attestation'
 
-export const zCredentialConfigurationSupportedClaims = z
-  .object({
-    mandatory: z.boolean().optional(),
-    value_type: z.string().optional(),
-    display: z
-      .object({
-        name: z.string().optional(),
-        locale: z.string().optional(),
-      })
-      .passthrough()
-      .optional(),
-  })
-  .passthrough()
-
 export const zCredentialConfigurationSupportedCommon = z
   .object({
     format: z.string(),

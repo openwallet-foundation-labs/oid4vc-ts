@@ -2,12 +2,19 @@ import type { ContentType, FetchHeaders, HttpMethod } from '@openid4vc/utils'
 import type { AuthorizationServerMetadata } from './metadata/authorization-server/z-authorization-server-metadata'
 
 import { decodeUtf8String, encodeToBase64Url } from '@openid4vc/utils'
+import type { CallbackContext } from './callbacks'
+import { createClientAttestationPopJwt } from './client-attestation/client-attestation-pop'
+import {
+  oauthClientAttestationHeader,
+  oauthClientAttestationPopHeader,
+} from './client-attestation/z-client-attestation'
 import { Oauth2Error } from './error/Oauth2Error'
 
 // These two are well-supported and easy to implement
 export enum SupportedClientAuthenticationMethod {
   ClientSecretBasic = 'client_secret_basic',
   ClientSecretPost = 'client_secret_post',
+  ClientAttestationJwt = 'attest_jwt_client_auth',
 }
 
 type ClientAuthenticationEndpointType = 'endpoint' | 'introspection'
@@ -177,4 +184,33 @@ export function clientAuthenticationClientSecretBasic(
  */
 export function clientAuthenticationNone() {
   return () => {}
+}
+
+export interface ClientAuthenticationClientAttestationJwtOptions {
+  clientAttestationJwt: string
+  callbacks: Pick<CallbackContext, 'signJwt' | 'generateRandom'>
+}
+
+/**
+ * Client authentication using `attest_jwt_client_auth` option.
+ */
+export function clientAuthenticationClientAttestationJwt(
+  options: ClientAuthenticationClientAttestationJwtOptions
+): ClientAuthenticationCallback {
+  return async ({ headers, authorizationServerMetata }) => {
+    const clientAttestationPop = await createClientAttestationPopJwt({
+      authorizationServer: authorizationServerMetata.issuer,
+      callbacks: options.callbacks,
+      clientAttestation: options.clientAttestationJwt,
+
+      // TODO: support client attestation nonce
+      // We can fetch it before making the request if we don't have a nonce
+      // https://www.ietf.org/archive/id/draft-ietf-oauth-attestation-based-client-auth-05.html
+      // https://github.com/oauth-wg/draft-ietf-oauth-attestation-based-client-auth/issues/101
+      // nonce:
+    })
+
+    headers.set(oauthClientAttestationHeader, options.clientAttestationJwt)
+    headers.set(oauthClientAttestationPopHeader, clientAttestationPop)
+  }
 }

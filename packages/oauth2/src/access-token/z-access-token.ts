@@ -72,7 +72,7 @@ export const zAccessTokenResponse = z
       .array(
         z
           .object({
-            // requried when type is openid_credential (so we probably need a discriminator)
+            // required when type is openid_credential (so we probably need a discriminator)
             // credential_identifiers: z.array(z.string()),
           })
           .passthrough()
