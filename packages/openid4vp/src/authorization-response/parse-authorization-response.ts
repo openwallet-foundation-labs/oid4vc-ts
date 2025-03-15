@@ -1,12 +1,9 @@
-import { type CallbackContext, Oauth2Error, Oauth2ServerErrorResponseError } from '@openid4vc/oauth2'
-import { parseOpenid4vpAuthorizationRequestPayload } from '../authorization-request/parse-authorization-request-params'
+import { type CallbackContext, Oauth2ServerErrorResponseError } from '@openid4vc/oauth2'
 import type { Openid4vpAuthorizationRequest } from '../authorization-request/z-authorization-request'
 import type { Openid4vpAuthorizationRequestDcApi } from '../authorization-request/z-authorization-request-dc-api'
-import type {
-  GetOpenid4vpAuthorizationRequestCallback,
-  VerifiedJarmAuthorizationResponse,
-} from '../jarm/jarm-auth-response/verify-jarm-auth-response'
-import type { JarmHeader } from '../jarm/jarm-auth-response/z-jarm-auth-response'
+import { getClientId } from '../client-identifier-scheme/parse-client-identifier-scheme'
+import type { VerifiedJarmAuthorizationResponse } from '../jarm/jarm-authorization-response/verify-jarm-authorization-response'
+import type { JarmHeader } from '../jarm/jarm-authorization-response/z-jarm-authorization-response'
 import { isJarmResponseMode } from '../jarm/jarm-response-mode'
 import { parseOpenid4VpAuthorizationResponsePayload } from './parse-authorization-response-payload'
 import { parseJarmAuthorizationResponse } from './parse-jarm-authorization-response'
@@ -15,49 +12,45 @@ import type { ValidateOpenid4VpAuthorizationResponseResult } from './validate-au
 import type { Openid4vpAuthorizationResponse } from './z-authorization-response'
 
 export interface ParseOpenid4vpAuthorizationResponseOptions {
-  responsePayload: Record<string, unknown>
-  callbacks: Pick<CallbackContext, 'decryptJwe' | 'verifyJwt'> & {
-    getOpenid4vpAuthorizationRequest: GetOpenid4vpAuthorizationRequestCallback
-  }
+  /**
+   * The authorization response as received from the wallet, and can optionally still be encrypted.
+   */
+  authorizationResponse: Record<string, unknown>
+
+  authorizationRequestPayload: Openid4vpAuthorizationRequest | Openid4vpAuthorizationRequestDcApi
+  callbacks: Pick<CallbackContext, 'decryptJwe' | 'verifyJwt'>
+
+  origin?: string
 }
 
 export type ParsedOpenid4vpAuthorizationResponse = ValidateOpenid4VpAuthorizationResponseResult & {
   authorizationResponsePayload: Openid4vpAuthorizationResponse
-  authorizationRequestPayload: Openid4vpAuthorizationRequest | Openid4vpAuthorizationRequestDcApi
-
   expectedNonce: string
-
-  // TODO: return this
-  // expectedTransactionDataHashes?: []
-
   jarm?: VerifiedJarmAuthorizationResponse & {
     jarmHeader: JarmHeader
-    mdocGeneratedNonce?: string
   }
 }
 
 export async function parseOpenid4vpAuthorizationResponse(
   options: ParseOpenid4vpAuthorizationResponseOptions
 ): Promise<ParsedOpenid4vpAuthorizationResponse> {
-  const { responsePayload, callbacks } = options
+  const { authorizationResponse, callbacks, authorizationRequestPayload, origin } = options
 
-  if (responsePayload.response) {
-    return parseJarmAuthorizationResponse({ jarmResponseJwt: responsePayload.response as string, callbacks })
+  const expectedClientId = getClientId({ authorizationRequestPayload, origin })
+  if (authorizationResponse.response) {
+    return parseJarmAuthorizationResponse({
+      jarmResponseJwt: authorizationResponse.response as string,
+      callbacks,
+      authorizationRequestPayload,
+      expectedClientId,
+    })
   }
 
-  const authorizationResponsePayload = parseOpenid4VpAuthorizationResponsePayload(responsePayload)
+  const authorizationResponsePayload = parseOpenid4VpAuthorizationResponsePayload(authorizationResponse)
 
-  const { authorizationRequest } = await callbacks.getOpenid4vpAuthorizationRequest(authorizationResponsePayload)
-  const parsedAuthRequest = parseOpenid4vpAuthorizationRequestPayload({ authorizationRequest: authorizationRequest })
-  if (parsedAuthRequest.type !== 'openid4vp' && parsedAuthRequest.type !== 'openid4vp_dc_api') {
-    throw new Oauth2Error('Invalid authorization request. Could not parse openid4vp authorization request.')
-  }
-
-  const authorizationRequestPayload = parsedAuthRequest.params
-
-  const validateOpenId4vpResponse = validateOpenid4vpAuthorizationResponsePayload({
-    requestPayload: authorizationRequestPayload,
-    responsePayload: authorizationResponsePayload,
+  const validatedOpenId4vpResponse = validateOpenid4vpAuthorizationResponsePayload({
+    authorizationRequestPayload: authorizationRequestPayload,
+    authorizationResponsePayload: authorizationResponsePayload,
   })
 
   if (authorizationRequestPayload.response_mode && isJarmResponseMode(authorizationRequestPayload.response_mode)) {
@@ -73,11 +66,10 @@ export async function parseOpenid4vpAuthorizationResponse(
   }
 
   return {
-    ...validateOpenId4vpResponse,
+    ...validatedOpenId4vpResponse,
     expectedNonce: authorizationRequestPayload.nonce,
 
     authorizationResponsePayload,
-    authorizationRequestPayload,
     jarm: undefined,
   }
 }

@@ -1,7 +1,8 @@
 import { Oauth2Error, zCompactJwe, zCompactJwt } from '@openid4vc/oauth2'
 import { ContentType, URLSearchParams } from '@openid4vc/utils'
 import z from 'zod'
-export async function parseJarmAuthResponseDirectPostJwt(request: Request) {
+
+export async function parseJarmAuthorizationResponseDirectPostJwt(request: Request) {
   const contentType = request.headers.get('content-type')
 
   if (!contentType) {
@@ -24,7 +25,7 @@ export async function parseJarmAuthResponseDirectPostJwt(request: Request) {
 
   const isJweOrJws = z.union([zCompactJwt, zCompactJwe]).safeParse(requestData.response)
   if (isJweOrJws.success) {
-    return { jarmAuthResponseJwt: requestData.response }
+    return { jarmAuthorizationResponseJwt: requestData.response }
   }
 
   throw new Oauth2Error('Received invalid JARM auth response. Expected JWE or JWT.', {

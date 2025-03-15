@@ -1,23 +1,27 @@
 import { Oauth2Error } from '@openid4vc/oauth2'
 import { dateToSeconds } from '@openid4vc/utils'
-import { type JarmAuthResponse, type JarmAuthResponseEncryptedOnly, zJarmAuthResponse } from './z-jarm-auth-response'
+import {
+  type JarmAuthorizationResponse,
+  type JarmAuthorizationResponseEncryptedOnly,
+  zJarmAuthorizationResponse,
+} from './z-jarm-authorization-response'
 
-export const jarmAuthResponseValidate = (options: {
-  clientId: string
-  authorizationResponse: JarmAuthResponse | JarmAuthResponseEncryptedOnly
+export const jarmAuthorizationResponseValidate = (options: {
+  expectedClientId: string
+  authorizationResponse: JarmAuthorizationResponse | JarmAuthorizationResponseEncryptedOnly
 }) => {
-  const { clientId, authorizationResponse } = options
+  const { expectedClientId, authorizationResponse } = options
 
   // The traditional Jarm Validation Methods do not account for the encrypted response.
-  if (!zJarmAuthResponse.safeParse(authorizationResponse).success) {
+  if (!zJarmAuthorizationResponse.safeParse(authorizationResponse).success) {
     return
   }
 
   // 3. The client obtains the aud element from the JWT and checks whether it matches the client id the client used to identify itself in the corresponding authorization request. If the check fails, the client MUST abort processing and refuse the response.
-  if (clientId !== authorizationResponse.aud) {
+  if (expectedClientId !== authorizationResponse.aud) {
     throw new Oauth2Error(
       `Invalid 'aud' claim in JARM authorization response. Expected '${
-        clientId
+        expectedClientId
       }' received '${JSON.stringify(authorizationResponse.aud)}'.`
     )
   }

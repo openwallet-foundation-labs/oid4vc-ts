@@ -4,7 +4,7 @@ import { z } from 'zod'
 export const zJarmHeader = z.object({ ...zJwtHeader.shape, apu: z.string().optional(), apv: z.string().optional() })
 export type JarmHeader = z.infer<typeof zJarmHeader>
 
-export const zJarmAuthResponse = z
+export const zJarmAuthorizationResponse = z
   .object({
     /**
      * iss: The issuer URL of the authorization server that created the response
@@ -17,12 +17,12 @@ export const zJarmAuthResponse = z
   })
   .passthrough()
 
-export type JarmAuthResponse = z.infer<typeof zJarmAuthResponse>
+export type JarmAuthorizationResponse = z.infer<typeof zJarmAuthorizationResponse>
 
-export const zJarmAuthResponseEncryptedOnly = z
+export const zJarmAuthorizationResponseEncryptedOnly = z
   .object({
     ...zJwtPayload.shape,
     state: z.optional(z.string()),
   })
   .passthrough()
-export type JarmAuthResponseEncryptedOnly = z.infer<typeof zJarmAuthResponseEncryptedOnly>
+export type JarmAuthorizationResponseEncryptedOnly = z.infer<typeof zJarmAuthorizationResponseEncryptedOnly>

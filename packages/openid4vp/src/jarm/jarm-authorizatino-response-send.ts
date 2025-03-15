@@ -1,25 +1,25 @@
 import { type CallbackContext, Oauth2Error } from '@openid4vc/oauth2'
 import { ContentType, URL, defaultFetcher } from '@openid4vc/utils'
 
-interface JarmAuthResponseSendOptions {
-  authRequest: {
+interface JarmAuthorizationResponseSendOptions {
+  authorizationRequestPayload: {
     response_uri?: string
     redirect_uri?: string
   }
-  jarmAuthResponseJwt: string
+  jarmAuthorizationResponseJwt: string
   callbacks: Pick<CallbackContext, 'fetch'>
 }
 
-export const jarmAuthResponseSend = (options: JarmAuthResponseSendOptions) => {
-  const { authRequest, jarmAuthResponseJwt, callbacks } = options
+export const jarmAuthorizationResponseSend = (options: JarmAuthorizationResponseSendOptions) => {
+  const { authorizationRequestPayload, jarmAuthorizationResponseJwt, callbacks } = options
 
-  const responseEndpoint = authRequest.response_uri ?? authRequest.redirect_uri
+  const responseEndpoint = authorizationRequestPayload.response_uri ?? authorizationRequestPayload.redirect_uri
   if (!responseEndpoint) {
     throw new Oauth2Error(`Either 'response_uri' or 'redirect_uri' MUST  be present in the authorization request`)
   }
 
   const responseEndpointUrl = new URL(responseEndpoint)
-  return handleDirectPostJwt(responseEndpointUrl, jarmAuthResponseJwt, callbacks)
+  return handleDirectPostJwt(responseEndpointUrl, jarmAuthorizationResponseJwt, callbacks)
 }
 
 async function handleDirectPostJwt(

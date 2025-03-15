@@ -4,7 +4,7 @@ export enum ContentType {
   XWwwFormUrlencoded = 'application/x-www-form-urlencoded',
   Json = 'application/json',
   JwkSet = 'application/jwk-set+json',
-  OAuthRequestObjectJwt = 'application/oauth-authz-req+jwt',
+  OAuthAuthorizationRequestJwt = 'application/oauth-authz-req+jwt',
   Jwt = 'application/jwt',
 }
 

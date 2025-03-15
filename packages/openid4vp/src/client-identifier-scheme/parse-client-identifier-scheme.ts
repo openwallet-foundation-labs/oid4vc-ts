@@ -1,4 +1,5 @@
 import { Oauth2ErrorCodes, Oauth2ServerErrorResponseError, getGlobalConfig } from '@openid4vc/oauth2'
+import { URL } from '@openid4vc/utils'
 import type { CallbackContext } from '../../../oauth2/src/callbacks'
 import type { Openid4vpAuthorizationRequest } from '../authorization-request/z-authorization-request'
 import {
@@ -49,6 +50,66 @@ export type ParsedClientIdentifier =
       clientMetadata?: ClientMetadata
     }
 
+export interface GetClientIdOptions {
+  authorizationRequestPayload: Openid4vpAuthorizationRequest | Openid4vpAuthorizationRequestDcApi
+  jar?: VerifiedJarRequest
+  origin?: string
+}
+
+export function getClientId(options: GetClientIdOptions) {
+  const version = parseAuthorizationRequestVersion(options.authorizationRequestPayload)
+
+  if (version < 22) {
+    return getLegacyClientId(options)
+  }
+
+  if (isOpenid4vpAuthorizationRequestDcApi(options.authorizationRequestPayload)) {
+    if (!options.origin) {
+      throw new Oauth2ServerErrorResponseError({
+        error: Oauth2ErrorCodes.InvalidRequest,
+        error_description:
+          "Failed to parse client identifier. 'origin' is required for requests with response_mode 'dc_api' and 'dc_api.jwt'",
+      })
+    }
+
+    if (!options.jar || !options.authorizationRequestPayload.client_id) return `web-origin:${options.origin}`
+
+    return options.authorizationRequestPayload.client_id
+  }
+
+  return options.authorizationRequestPayload.client_id
+}
+
+function getLegacyClientId(options: GetClientIdOptions) {
+  const legacyClientIdScheme = options.authorizationRequestPayload.client_id_scheme ?? 'pre-registered'
+
+  const clientIdScheme: ClientIdScheme = legacyClientIdScheme === 'entity_id' ? 'https' : legacyClientIdScheme
+
+  if (isOpenid4vpAuthorizationRequestDcApi(options.authorizationRequestPayload)) {
+    if (!options.origin) {
+      throw new Oauth2ServerErrorResponseError({
+        error: Oauth2ErrorCodes.InvalidRequest,
+        error_description:
+          "Failed to parse client identifier. 'origin' is required for requests with response_mode 'dc_api' and 'dc_api.jwt'",
+      })
+    }
+
+    if (!options.jar || !options.authorizationRequestPayload.client_id) return `web-origin:${options.origin}`
+
+    return `${clientIdScheme}:${options.authorizationRequestPayload.client_id}`
+  }
+
+  if (clientIdScheme === 'https' || clientIdScheme === 'did') {
+    return options.authorizationRequestPayload.client_id
+  }
+
+  if (clientIdScheme === 'pre-registered') {
+    return options.authorizationRequestPayload.client_id
+  }
+
+  return `${clientIdScheme}:${options.authorizationRequestPayload.client_id}`
+}
+
 /**
  * Configuration options for the parser
  */
@@ -57,63 +118,10 @@ export interface ClientIdentifierParserConfig {
 }
 
 export interface ClientIdentifierParserOptions {
-  request: Openid4vpAuthorizationRequest | Openid4vpAuthorizationRequestDcApi
+  authorizationRequestPayload: Openid4vpAuthorizationRequest | Openid4vpAuthorizationRequestDcApi
   jar?: VerifiedJarRequest
   origin?: string
   callbacks: Partial<Pick<CallbackContext, 'getX509CertificateMetadata'>>
-}
-
-function getClientId(options: ClientIdentifierParserOptions) {
-  if (isOpenid4vpAuthorizationRequestDcApi(options.request)) {
-    if (!options.origin) {
-      throw new Oauth2ServerErrorResponseError({
-        error: Oauth2ErrorCodes.InvalidRequest,
-        error_description:
-          "Failed to parse client identifier. 'origin' is required for requests with response_mode 'dc_api' and 'dc_api.jwt'",
-      })
-    }
-
-    if (!options.jar || !options.request.client_id) return `web-origin:${options.origin}`
-
-    return options.request.client_id
-  }
-
-  return options.request.client_id
-}
-
-function getLegacyClientId(options: ClientIdentifierParserOptions) {
-  const legacyClientIdScheme = options.request.client_id_scheme ?? 'pre-registered'
-
-  let clientIdScheme: ClientIdScheme
-  if (legacyClientIdScheme === 'entity_id') {
-    clientIdScheme = 'https'
-  } else {
-    clientIdScheme = legacyClientIdScheme
-  }
-
-  if (isOpenid4vpAuthorizationRequestDcApi(options.request)) {
-    if (!options.origin) {
-      throw new Oauth2ServerErrorResponseError({
-        error: Oauth2ErrorCodes.InvalidRequest,
-        error_description:
-          "Failed to parse client identifier. 'origin' is required for requests with response_mode 'dc_api' and 'dc_api.jwt'",
-      })
-    }
-
-    if (!options.jar || !options.request.client_id) return `web-origin:${options.origin}`
-
-    return `${clientIdScheme}:${options.request.client_id}`
-  }
-
-  if (clientIdScheme === 'https' || clientIdScheme === 'did') {
-    return options.request.client_id
-  }
-
-  if (clientIdScheme === 'pre-registered') {
-    return options.request.client_id
-  }
-
-  return `${clientIdScheme}:${options.request.client_id}`
 }
 
 /**
@@ -123,30 +131,14 @@ export function parseClientIdentifier(
   options: ClientIdentifierParserOptions,
   parserConfig?: ClientIdentifierParserConfig
 ): ParsedClientIdentifier {
-  const { request, jar } = options
-
-  const version = parseAuthorizationRequestVersion(request)
-  // this means that client_id_scheme is used
-  if (version < 22) {
-    const legacyClientIdScheme = request.client_id_scheme ?? 'pre-registered'
-
-    let clientIdSchem: ClientIdScheme
-    if (legacyClientIdScheme) {
-      if (legacyClientIdScheme === 'entity_id') {
-        clientIdSchem = 'https'
-      } else {
-        clientIdSchem = legacyClientIdScheme
-      }
-    }
-  }
-
-  const isDcApiRequest = isOpenid4vpAuthorizationRequestDcApi(request)
-  const clientId = version < 22 ? getLegacyClientId(options) : getClientId(options)
+  const { authorizationRequestPayload, jar } = options
 
   // By default require signatures for these schemes
   const parserConfigWithDefaults = {
     supportedSchemes: parserConfig?.supportedSchemes || Object.values(zClientIdScheme.options),
   }
+
+  const clientId = getClientId(options)
 
   const colonIndex = clientId.indexOf(':')
   if (colonIndex === -1) {
@@ -154,7 +146,7 @@ export function parseClientIdentifier(
       scheme: 'pre-registered',
       identifier: clientId,
       originalValue: clientId,
-      clientMetadata: request.client_metadata,
+      clientMetadata: authorizationRequestPayload.client_metadata,
     }
   }
 
@@ -170,14 +162,6 @@ export function parseClientIdentifier(
 
   const scheme = schemePart as ClientIdScheme
   if (scheme === 'https') {
-    // https://github.com/openid/OpenID4VP/issues/436
-    if (isDcApiRequest) {
-      throw new Oauth2ServerErrorResponseError({
-        error: Oauth2ErrorCodes.InvalidRequest,
-        error_description: `The client identifier scheme 'https' is not supported when using the dc_api response mode.`,
-      })
-    }
-
     if (!clientId.startsWith('https://') && !(getGlobalConfig().allowInsecureUrls && clientId.startsWith('http://'))) {
       throw new Oauth2ServerErrorResponseError({
         error: Oauth2ErrorCodes.InvalidRequest,
@@ -190,7 +174,7 @@ export function parseClientIdentifier(
       scheme,
       identifier: clientId,
       originalValue: clientId,
-      trustChain: request.trust_chain,
+      trustChain: authorizationRequestPayload.trust_chain,
     }
   }
 
@@ -202,7 +186,7 @@ export function parseClientIdentifier(
       })
     }
 
-    if (isOpenid4vpAuthorizationRequestDcApi(request)) {
+    if (isOpenid4vpAuthorizationRequestDcApi(authorizationRequestPayload)) {
       throw new Oauth2ServerErrorResponseError({
         error: Oauth2ErrorCodes.InvalidRequest,
         error_description: `The client identifier scheme 'redirect_uri' is not supported when using the dc_api response mode.`,
@@ -213,7 +197,7 @@ export function parseClientIdentifier(
       scheme,
       identifier: identifierPart,
       originalValue: clientId,
-      redirectUri: (request.redirect_uri ?? request.response_uri) as string,
+      redirectUri: (authorizationRequestPayload.redirect_uri ?? authorizationRequestPayload.response_uri) as string,
     }
   }
 
@@ -293,9 +277,9 @@ export function parseClientIdentifier(
         })
       }
 
-      if (!isOpenid4vpAuthorizationRequestDcApi(request)) {
-        const uri = request.redirect_uri ?? request.response_uri
-        if (!uri || getDomainFromUrl(uri) !== identifierPart) {
+      if (!isOpenid4vpAuthorizationRequestDcApi(authorizationRequestPayload)) {
+        const uri = authorizationRequestPayload.redirect_uri ?? authorizationRequestPayload.response_uri
+        if (!uri || new URL(uri).hostname !== identifierPart) {
           throw new Oauth2ServerErrorResponseError({
             error: Oauth2ErrorCodes.InvalidRequest,
             error_description:
@@ -324,8 +308,8 @@ export function parseClientIdentifier(
         })
       }
 
-      if (!isOpenid4vpAuthorizationRequestDcApi(request)) {
-        const uri = request.redirect_uri || request.response_uri
+      if (!isOpenid4vpAuthorizationRequestDcApi(authorizationRequestPayload)) {
+        const uri = authorizationRequestPayload.redirect_uri || authorizationRequestPayload.response_uri
         if (!uri || uri !== identifierPart) {
           throw new Oauth2ServerErrorResponseError({
             error: Oauth2ErrorCodes.InvalidRequest,
@@ -349,7 +333,7 @@ export function parseClientIdentifier(
       scheme,
       identifier: identifierPart,
       originalValue: clientId,
-      clientMetadata: request.client_metadata,
+      clientMetadata: authorizationRequestPayload.client_metadata,
     }
   }
 
@@ -366,18 +350,5 @@ export function parseClientIdentifier(
     scheme,
     identifier: identifierPart,
     originalValue: clientId,
-  }
-}
-
-function getDomainFromUrl(url: string): string {
-  try {
-    const regex = /[#/?]/
-    const domain = url.split('://')[1].split(regex)[0]
-    return domain
-  } catch (error) {
-    throw new Oauth2ServerErrorResponseError({
-      error: Oauth2ErrorCodes.ServerError,
-      error_description: `Url '${url}' is not a valid URL`,
-    })
   }
 }

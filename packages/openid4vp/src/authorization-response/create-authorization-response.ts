@@ -9,7 +9,7 @@ import { dateToSeconds } from '@openid4vc/utils'
 import { addSecondsToDate } from '../../../utils/src/date'
 import type { Openid4vpAuthorizationRequest } from '../authorization-request/z-authorization-request'
 import type { Openid4vpAuthorizationRequestDcApi } from '../authorization-request/z-authorization-request-dc-api'
-import { createJarmAuthResponse } from '../jarm/jarm-auth-response-create'
+import { createJarmAuthorizationResponse } from '../jarm/jarm-authorization-response-create'
 import { extractJwksFromClientMetadata } from '../jarm/jarm-extract-jwks'
 import { isJarmResponseMode } from '../jarm/jarm-response-mode'
 import { jarmAssertMetadataSupported } from '../jarm/metadata/jarm-assert-metadata-supported'
@@ -17,10 +17,10 @@ import type { JarmServerMetadata } from '../jarm/metadata/z-jarm-authorization-s
 import type { Openid4vpAuthorizationResponse } from './z-authorization-response'
 
 export interface CreateOpenid4vpAuthorizationResponseOptions {
-  requestPayload:
+  authorizationRequestPayload:
     | Pick<Openid4vpAuthorizationRequest, 'state' | 'client_metadata' | 'nonce' | 'response_mode'>
     | Pick<Openid4vpAuthorizationRequestDcApi, 'client_metadata' | 'response_mode' | 'nonce'>
-  responsePayload: Openid4vpAuthorizationResponse & { state?: never }
+  authorizationResponsePayload: Openid4vpAuthorizationResponse & { state?: never }
   jarm?: {
     jwtSigner?: JwtSigner
     encryption?: { nonce: string }
@@ -33,36 +33,41 @@ export interface CreateOpenid4vpAuthorizationResponseOptions {
 }
 
 export interface CreateOpenid4vpAuthorizationResponseResult {
-  responsePayload: Openid4vpAuthorizationResponse
+  authorizationResponsePayload: Openid4vpAuthorizationResponse
   jarm?: { responseJwt: string }
 }
 
 export async function createOpenid4vpAuthorizationResponse(
   options: CreateOpenid4vpAuthorizationResponseOptions
 ): Promise<CreateOpenid4vpAuthorizationResponseResult> {
-  const { requestPayload, jarm, callbacks } = options
-  const responsePayload = {
-    ...options.responsePayload,
-    ...('state' in requestPayload && { state: requestPayload.state }),
+  const { authorizationRequestPayload, jarm, callbacks } = options
+
+  const authorizationResponsePayload = {
+    ...options.authorizationResponsePayload,
+    ...('state' in authorizationRequestPayload && { state: authorizationRequestPayload.state }),
   } satisfies Openid4vpAuthorizationResponse
 
-  if (requestPayload.response_mode && isJarmResponseMode(requestPayload.response_mode) && !jarm) {
+  if (
+    authorizationRequestPayload.response_mode &&
+    isJarmResponseMode(authorizationRequestPayload.response_mode) &&
+    !jarm
+  ) {
     throw new Oauth2Error(
-      `Missing jarm options for creating Jarm response with response mode '${requestPayload.response_mode}'`
+      `Missing jarm options for creating Jarm response with response mode '${authorizationRequestPayload.response_mode}'`
     )
   }
 
   if (!jarm) {
     return {
-      responsePayload,
+      authorizationResponsePayload,
     }
   }
 
-  if (!requestPayload.client_metadata) {
+  if (!authorizationRequestPayload.client_metadata) {
     throw new Oauth2Error('Missing client metadata in the request params to assert Jarm metadata support.')
   }
 
-  if (!requestPayload.client_metadata.jwks) {
+  if (!authorizationRequestPayload.client_metadata.jwks) {
     throw new Oauth2ServerErrorResponseError({
       error: Oauth2ErrorCodes.InvalidRequest,
       error_description: 'Missing JWKS in client metadata. Cannot extract encryption JWK.',
@@ -70,13 +75,13 @@ export async function createOpenid4vpAuthorizationResponse(
   }
 
   const supportedJarmMetadata = jarmAssertMetadataSupported({
-    clientMetadata: requestPayload.client_metadata,
+    clientMetadata: authorizationRequestPayload.client_metadata,
     serverMetadata: jarm.serverMetadata,
   })
 
   const clientMetaJwks = extractJwksFromClientMetadata({
-    ...requestPayload.client_metadata,
-    jwks: requestPayload.client_metadata.jwks,
+    ...authorizationRequestPayload.client_metadata,
+    jwks: authorizationRequestPayload.client_metadata.jwks,
   })
 
   if (!clientMetaJwks?.encJwk) {
@@ -111,12 +116,12 @@ export async function createOpenid4vpAuthorizationResponse(
   }
 
   const jarmResponsePayload = {
-    ...responsePayload,
+    ...authorizationResponsePayload,
     ...additionalJwtPayload,
   } satisfies Openid4vpAuthorizationResponse
 
-  const result = await createJarmAuthResponse({
-    jarmAuthResponse: jarmResponsePayload,
+  const result = await createJarmAuthorizationResponse({
+    jarmAuthorizationResponse: jarmResponsePayload,
     jwtSigner: jarm?.jwtSigner,
     jweEncryptor:
       jarm?.encryption && (supportedJarmMetadata.type === 'encrypt' || supportedJarmMetadata.type === 'sign_encrypt')
@@ -124,7 +129,7 @@ export async function createOpenid4vpAuthorizationResponse(
             method: 'jwk',
             publicJwk: clientMetaJwks.encJwk,
             apu: jarm.encryption?.nonce,
-            apv: requestPayload.nonce,
+            apv: authorizationRequestPayload.nonce,
             alg: supportedJarmMetadata.client_metadata.authorization_encrypted_response_alg,
             enc: supportedJarmMetadata.client_metadata.authorization_encrypted_response_enc,
           }
@@ -136,7 +141,7 @@ export async function createOpenid4vpAuthorizationResponse(
   })
 
   return {
-    responsePayload: jarmResponsePayload,
-    jarm: { responseJwt: result.jarmAuthResponseJwt },
+    authorizationResponsePayload: jarmResponsePayload,
+    jarm: { responseJwt: result.jarmAuthorizationResponseJwt },
   }
 }

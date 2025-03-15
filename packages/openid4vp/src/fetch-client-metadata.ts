@@ -1,16 +1,15 @@
 import { Oauth2ErrorCodes, Oauth2ServerErrorResponseError } from '@openid4vc/oauth2'
-import { type BaseSchema, ContentType, type Fetch, createZodFetcher } from '@openid4vc/utils'
-import type { z } from 'zod'
-import { zWalletMetadata } from './models/z-wallet-metadata'
+import { ContentType, type Fetch, createZodFetcher } from '@openid4vc/utils'
+import { type ClientMetadata, zClientMetadata } from './models/z-client-metadata'
 
-export async function fetchClientMetadata<Schema extends BaseSchema>(options: {
+export async function fetchClientMetadata(options: {
   clientMetadataUri: string
   fetch?: Fetch
-}): Promise<z.infer<Schema> | null> {
+}): Promise<ClientMetadata> {
   const { fetch, clientMetadataUri } = options
   const fetcher = createZodFetcher(fetch)
 
-  const { result, response } = await fetcher(zWalletMetadata, ContentType.Json, clientMetadataUri, {
+  const { result, response } = await fetcher(zClientMetadata, ContentType.Json, clientMetadataUri, {
     method: 'GET',
     headers: {
       Accept: ContentType.Json,

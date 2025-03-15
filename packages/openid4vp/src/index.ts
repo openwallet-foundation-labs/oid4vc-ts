@@ -3,7 +3,7 @@ export {
   verifyJarmAuthorizationResponse,
   type VerifyJarmAuthorizationResponseOptions,
   type JarmMode,
-} from './jarm/jarm-auth-response/verify-jarm-auth-response'
+} from './jarm/jarm-authorization-response/verify-jarm-authorization-response'
 export { zJarmClientMetadata, JarmClientMetadata } from './jarm/metadata/z-jarm-client-metadata'
 export {
   createOpenid4vpAuthorizationRequest,
@@ -11,12 +11,12 @@ export {
 } from './authorization-request/create-authorization-request'
 export {
   parseOpenid4vpAuthorizationRequestPayload,
-  ParseOpenid4vpAuthRequestPayloadOptions,
+  ParseOpenid4vpAuthorizationRequestPayloadOptions,
 } from './authorization-request/parse-authorization-request-params'
 export {
   resolveOpenid4vpAuthorizationRequest,
   ResolveOpenid4vpAuthorizationRequestOptions,
-  ResolvedOpenid4vpAuthRequest,
+  ResolvedOpenid4vpAuthorizationRequest,
 } from './authorization-request/resolve-authorization-request'
 export type { Openid4vpAuthorizationRequest } from './authorization-request/z-authorization-request'
 export {

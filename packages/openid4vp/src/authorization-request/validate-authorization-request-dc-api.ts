@@ -4,7 +4,7 @@ import type { Openid4vpAuthorizationRequestDcApi } from './z-authorization-reque
 export interface ValidateOpenid4vpAuthorizationRequestDcApiPayloadOptions {
   params: Openid4vpAuthorizationRequestDcApi
   isJarRequest: boolean
-  omitOriginValidation?: boolean
+  disableOriginValidation?: boolean
   origin?: string
 }
 
@@ -14,7 +14,7 @@ export interface ValidateOpenid4vpAuthorizationRequestDcApiPayloadOptions {
 export const validateOpenid4vpAuthorizationRequestDcApiPayload = (
   options: ValidateOpenid4vpAuthorizationRequestDcApiPayloadOptions
 ) => {
-  const { params, isJarRequest, omitOriginValidation, origin } = options
+  const { params, isJarRequest, disableOriginValidation, origin } = options
 
   if (isJarRequest && !params.expected_origins) {
     throw new Oauth2ServerErrorResponseError({
@@ -23,15 +23,15 @@ export const validateOpenid4vpAuthorizationRequestDcApiPayload = (
     })
   }
 
-  if ([params.presentation_definition, params.dcql_query].filter(Boolean).length > 1) {
+  if ([params.presentation_definition, params.dcql_query].filter(Boolean).length !== 1) {
     throw new Oauth2ServerErrorResponseError({
       error: Oauth2ErrorCodes.InvalidRequest,
       error_description:
-        'Exactly one of the following parameters MUST be present in the Authorization Request: dcql_query, presentation_definition, presentation_definition_uri, or a scope value representing a Presentation Definition.',
+        'Exactly one of the following parameters MUST be present in the Authorization Request: dcql_query or presentation_definition',
     })
   }
 
-  if (params.expected_origins && !omitOriginValidation) {
+  if (params.expected_origins && !disableOriginValidation) {
     if (!origin) {
       throw new Oauth2ServerErrorResponseError({
         error: Oauth2ErrorCodes.InvalidRequest,

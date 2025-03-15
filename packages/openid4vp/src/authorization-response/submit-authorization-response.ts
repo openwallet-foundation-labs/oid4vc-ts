@@ -2,24 +2,24 @@ import { type CallbackContext, Oauth2Error } from '@openid4vc/oauth2'
 import { ContentType, defaultFetcher } from '@openid4vc/utils'
 import { objectToQueryParams } from '@openid4vc/utils'
 import type { Openid4vpAuthorizationRequest } from '../authorization-request/z-authorization-request'
-import { jarmAuthResponseSend } from '../jarm/jarm-auth-response-send'
+import { jarmAuthorizationResponseSend } from '../jarm/jarm-authorizatino-response-send'
 import type { Openid4vpAuthorizationResponse } from './z-authorization-response'
 
 export interface SubmitOpenid4vpAuthorizationResponseOptions {
-  requestPayload: Pick<Openid4vpAuthorizationRequest, 'response_uri'>
-  responsePayload: Openid4vpAuthorizationResponse
+  authorizationRequestPayload: Pick<Openid4vpAuthorizationRequest, 'response_uri'>
+  authorizationResponsePayload: Openid4vpAuthorizationResponse
   jarm?: { responseJwt: string }
   callbacks: Pick<CallbackContext, 'fetch'>
 }
 
 export async function submitOpenid4vpAuthorizationResponse(options: SubmitOpenid4vpAuthorizationResponseOptions) {
-  const { requestPayload, responsePayload, jarm, callbacks } = options
-  const url = requestPayload.response_uri
+  const { authorizationRequestPayload, authorizationResponsePayload, jarm, callbacks } = options
+  const url = authorizationRequestPayload.response_uri
 
   if (jarm) {
-    return jarmAuthResponseSend({
-      authRequest: requestPayload,
-      jarmAuthResponseJwt: jarm.responseJwt,
+    return jarmAuthorizationResponseSend({
+      authorizationRequestPayload,
+      jarmAuthorizationResponseJwt: jarm.responseJwt,
       callbacks,
     })
   }
@@ -31,7 +31,7 @@ export async function submitOpenid4vpAuthorizationResponse(options: SubmitOpenid
   }
 
   const fetch = callbacks.fetch ?? defaultFetcher
-  const encodedResponse = objectToQueryParams(responsePayload)
+  const encodedResponse = objectToQueryParams(authorizationResponsePayload)
   const submissionResponse = await fetch(url, {
     method: 'POST',
     body: encodedResponse,

@@ -7,8 +7,12 @@ import {
 } from '../client-identifier-scheme/parse-client-identifier-scheme'
 import { fetchClientMetadata } from '../fetch-client-metadata'
 import { type VerifiedJarRequest, verifyJarRequest } from '../jar/handle-jar-request/verify-jar-request'
-import { type JarAuthRequest, isJarAuthRequest, zJarAuthRequest } from '../jar/z-jar-auth-request'
-import type { WalletMetadata } from '../models/z-wallet-metadata'
+import {
+  type JarAuthorizationRequest,
+  isJarAuthorizationRequest,
+  zJarAuthorizationRequest,
+} from '../jar/z-jar-authorization-request'
+import type { PexPresentationDefinition } from '../models/z-pex'
 import { type ParsedTransactionDataEntry, parseTransactionData } from '../transaction-data/parse-transaction-data'
 import {
   type WalletVerificationOptions,
@@ -23,83 +27,90 @@ import {
 } from './z-authorization-request-dc-api'
 
 export interface ResolveOpenid4vpAuthorizationRequestOptions {
-  requestPayload: Openid4vpAuthorizationRequest | JarAuthRequest
+  authorizationRequestPayload: Openid4vpAuthorizationRequest | JarAuthorizationRequest
   wallet?: WalletVerificationOptions
   origin?: string
-  omitOriginValidation?: boolean
+  disableOriginValidation?: boolean
   callbacks: Pick<CallbackContext, 'verifyJwt' | 'decryptJwe' | 'getX509CertificateMetadata'>
 }
 
-export type ResolvedOpenid4vpAuthRequest = {
+export type ResolvedOpenid4vpAuthorizationRequest = {
   transactionData?: ParsedTransactionDataEntry[]
-  requestPayload: Openid4vpAuthorizationRequest | Openid4vpAuthorizationRequestDcApi
+  authorizationRequestPayload: Openid4vpAuthorizationRequest | Openid4vpAuthorizationRequestDcApi
   jar: VerifiedJarRequest | undefined
   client: ParsedClientIdentifier
   pex?: {
-    presentation_definition: unknown
+    presentation_definition?: PexPresentationDefinition
     presentation_definition_uri?: string
   }
   dcql?: { query: unknown } | undefined
 }
 export async function resolveOpenid4vpAuthorizationRequest(
   options: ResolveOpenid4vpAuthorizationRequestOptions
-): Promise<ResolvedOpenid4vpAuthRequest> {
-  const { requestPayload, wallet, callbacks, origin, omitOriginValidation } = options
+): Promise<ResolvedOpenid4vpAuthorizationRequest> {
+  const { wallet, callbacks, origin, disableOriginValidation } = options
 
-  let authRequestPayload:
+  let authorizationRequestPayload:
     | Openid4vpAuthorizationRequest
     | (Openid4vpAuthorizationRequestDcApi & { presentation_definition_uri?: never })
 
   const parsed = parseWithErrorHandling(
-    z.union([zOpenid4vpAuthorizationRequestDcApi, zOpenid4vpAuthorizationRequest, zJarAuthRequest]),
-    requestPayload,
+    z.union([zOpenid4vpAuthorizationRequestDcApi, zOpenid4vpAuthorizationRequest, zJarAuthorizationRequest]),
+    options.authorizationRequestPayload,
     'Invalid authorization request. Could not parse openid4vp authorization request as openid4vp or jar auth request.'
   )
 
   let jar: VerifiedJarRequest | undefined
-  if (isJarAuthRequest(parsed)) {
+  if (isJarAuthorizationRequest(parsed)) {
     jar = await verifyJarRequest({ jarRequestParams: parsed, callbacks, wallet })
 
-    const parsedJarAuthRequestPayload = parseWithErrorHandling(
+    const parsedJarAuthorizationRequestPayload = parseWithErrorHandling(
       z.union([zOpenid4vpAuthorizationRequestDcApi, zOpenid4vpAuthorizationRequest]),
-      jar.authRequestParams,
+      jar.authorizationRequestParams,
       'Invalid authorization request. Could not parse jar request payload as openid4vp auth request.'
     )
 
-    authRequestPayload = validateOpenId4vpPayload({
-      requestPayload: parsedJarAuthRequestPayload,
+    authorizationRequestPayload = validateOpenId4vpAuthorizationRequestPayload({
+      authorizationRequestPayload: parsedJarAuthorizationRequestPayload,
       wallet,
       jar: true,
       origin,
-      omitOriginValidation,
+      disableOriginValidation,
     })
   } else {
-    authRequestPayload = validateOpenId4vpPayload({
-      requestPayload: parsed,
+    authorizationRequestPayload = validateOpenId4vpAuthorizationRequestPayload({
+      authorizationRequestPayload: parsed,
       wallet,
       jar: false,
       origin,
-      omitOriginValidation,
+      disableOriginValidation,
     })
   }
 
-  let clientMetadata: WalletMetadata | undefined
-  if (!isOpenid4vpAuthorizationRequestDcApi(authRequestPayload) && authRequestPayload.client_metadata_uri) {
-    clientMetadata = await fetchClientMetadata({ clientMetadataUri: authRequestPayload.client_metadata_uri })
+  let clientMetadata = authorizationRequestPayload.client_metadata
+  if (
+    !isOpenid4vpAuthorizationRequestDcApi(authorizationRequestPayload) &&
+    !clientMetadata &&
+    authorizationRequestPayload.client_metadata_uri
+  ) {
+    clientMetadata = await fetchClientMetadata({ clientMetadataUri: authorizationRequestPayload.client_metadata_uri })
   }
 
   const clientMeta = parseClientIdentifier({
-    request: { ...authRequestPayload, client_metadata: clientMetadata ?? authRequestPayload.client_metadata },
+    authorizationRequestPayload: {
+      ...authorizationRequestPayload,
+      client_metadata: clientMetadata,
+    },
     jar,
     callbacks,
     origin,
   })
 
-  let pex: ResolvedOpenid4vpAuthRequest['pex'] | undefined
-  let dcql: ResolvedOpenid4vpAuthRequest['dcql'] | undefined
+  let pex: ResolvedOpenid4vpAuthorizationRequest['pex'] | undefined
+  let dcql: ResolvedOpenid4vpAuthorizationRequest['dcql'] | undefined
 
-  if (authRequestPayload.presentation_definition || authRequestPayload.presentation_definition_uri) {
-    if (authRequestPayload.presentation_definition_uri) {
+  if (authorizationRequestPayload.presentation_definition || authorizationRequestPayload.presentation_definition_uri) {
+    if (authorizationRequestPayload.presentation_definition_uri) {
       throw new Oauth2ServerErrorResponseError({
         error: Oauth2ErrorCodes.InvalidRequest,
         error_description: 'Cannot fetch presentation definition from URI. Not supported.',
@@ -107,49 +118,52 @@ export async function resolveOpenid4vpAuthorizationRequest(
     }
 
     pex = {
-      presentation_definition: authRequestPayload.presentation_definition,
-      presentation_definition_uri: authRequestPayload.presentation_definition_uri,
+      presentation_definition: authorizationRequestPayload.presentation_definition,
+      presentation_definition_uri: authorizationRequestPayload.presentation_definition_uri,
     }
   }
 
-  if (authRequestPayload.dcql_query) {
-    dcql = { query: authRequestPayload.dcql_query }
+  if (authorizationRequestPayload.dcql_query) {
+    dcql = { query: authorizationRequestPayload.dcql_query }
   }
 
-  const transactionData = authRequestPayload.transaction_data
-    ? parseTransactionData({ transactionData: authRequestPayload.transaction_data })
+  const transactionData = authorizationRequestPayload.transaction_data
+    ? parseTransactionData({ transactionData: authorizationRequestPayload.transaction_data })
     : undefined
 
   return {
     transactionData,
-    requestPayload: authRequestPayload,
+    authorizationRequestPayload,
     jar,
-    client: { ...clientMeta },
+    client: clientMeta,
     pex,
     dcql,
   }
 }
 
-function validateOpenId4vpPayload(options: {
-  requestPayload: Openid4vpAuthorizationRequest | Openid4vpAuthorizationRequestDcApi
+function validateOpenId4vpAuthorizationRequestPayload(options: {
+  authorizationRequestPayload: Openid4vpAuthorizationRequest | Openid4vpAuthorizationRequestDcApi
   wallet?: WalletVerificationOptions
   jar: boolean
   origin?: string
-  omitOriginValidation?: boolean
+  disableOriginValidation?: boolean
 }) {
-  const { requestPayload, wallet, jar, origin, omitOriginValidation } = options
+  const { authorizationRequestPayload, wallet, jar, origin, disableOriginValidation } = options
 
-  if (isOpenid4vpAuthorizationRequestDcApi(requestPayload)) {
+  if (isOpenid4vpAuthorizationRequestDcApi(authorizationRequestPayload)) {
     validateOpenid4vpAuthorizationRequestDcApiPayload({
-      params: requestPayload,
+      params: authorizationRequestPayload,
       isJarRequest: jar,
-      omitOriginValidation,
+      disableOriginValidation,
       origin,
     })
 
-    return requestPayload
+    return authorizationRequestPayload
   }
 
-  validateOpenid4vpAuthorizationRequestPayload({ params: requestPayload, walletVerificationOptions: wallet })
-  return requestPayload
+  validateOpenid4vpAuthorizationRequestPayload({
+    params: authorizationRequestPayload,
+    walletVerificationOptions: wallet,
+  })
+  return authorizationRequestPayload
 }

@@ -44,7 +44,7 @@ export type VerifyJwtCallback = (
 >
 
 export interface DecryptJweCallbackOptions {
-  jwk: Jwk
+  jwk?: Jwk
 }
 
 export type DecryptJweCallback = (

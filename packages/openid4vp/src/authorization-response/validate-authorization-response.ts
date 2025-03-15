@@ -6,8 +6,8 @@ import type { ValidateOpenid4VpAuthorizationResponseResult } from './validate-au
 import type { Openid4vpAuthorizationResponse } from './z-authorization-response'
 
 export interface ValidateOpenid4vpAuthorizationResponseOptions {
-  requestPayload: Openid4vpAuthorizationRequest | Openid4vpAuthorizationRequestDcApi
-  responsePayload: Openid4vpAuthorizationResponse
+  authorizationRequestPayload: Openid4vpAuthorizationRequest | Openid4vpAuthorizationRequestDcApi
+  authorizationResponsePayload: Openid4vpAuthorizationResponse
 }
 
 /**
@@ -20,52 +20,55 @@ export interface ValidateOpenid4vpAuthorizationResponseOptions {
 export function validateOpenid4vpAuthorizationResponsePayload(
   options: ValidateOpenid4vpAuthorizationResponseOptions
 ): ValidateOpenid4VpAuthorizationResponseResult {
-  const { requestPayload, responsePayload } = options
+  const { authorizationRequestPayload, authorizationResponsePayload } = options
 
-  if ('state' in requestPayload && requestPayload.state !== responsePayload.state) {
+  if (
+    'state' in authorizationRequestPayload &&
+    authorizationRequestPayload.state !== authorizationResponsePayload.state
+  ) {
     throw new Oauth2Error('OpenId4Vp Authorization Response state mismatch.')
   }
 
   // TODO: implement id_token handling
-  if (responsePayload.id_token) {
+  if (authorizationResponsePayload.id_token) {
     throw new Oauth2Error('OpenId4Vp Authorization Response id_token is not supported.')
   }
 
-  if (responsePayload.presentation_submission) {
-    if (!requestPayload.presentation_definition) {
+  if (authorizationResponsePayload.presentation_submission) {
+    if (!authorizationRequestPayload.presentation_definition) {
       throw new Oauth2Error('OpenId4Vp Authorization Request is missing the required presentation_definition.')
     }
 
     return {
       type: 'pex',
       pex:
-        'scope' in requestPayload && requestPayload.scope
+        'scope' in authorizationRequestPayload && authorizationRequestPayload.scope
           ? {
-              scope: requestPayload.scope,
-              presentationSubmission: responsePayload.presentation_submission,
-              presentations: parsePexVpToken(responsePayload.vp_token),
+              scope: authorizationRequestPayload.scope,
+              presentationSubmission: authorizationResponsePayload.presentation_submission,
+              presentations: parsePexVpToken(authorizationResponsePayload.vp_token),
             }
           : {
-              presentationDefinition: requestPayload.presentation_definition,
-              presentationSubmission: responsePayload.presentation_submission,
-              presentations: parsePexVpToken(responsePayload.vp_token),
+              presentationDefinition: authorizationRequestPayload.presentation_definition,
+              presentationSubmission: authorizationResponsePayload.presentation_submission,
+              presentations: parsePexVpToken(authorizationResponsePayload.vp_token),
             },
     }
   }
 
-  if (requestPayload.dcql_query) {
-    const presentations = parseDcqlVpToken(responsePayload.vp_token)
+  if (authorizationRequestPayload.dcql_query) {
+    const presentations = parseDcqlVpToken(authorizationResponsePayload.vp_token)
 
     return {
       type: 'dcql',
       dcql:
-        'scope' in requestPayload && requestPayload.scope
+        'scope' in authorizationRequestPayload && authorizationRequestPayload.scope
           ? {
-              scope: requestPayload.scope,
+              scope: authorizationRequestPayload.scope,
               presentations,
             }
           : {
-              query: requestPayload.dcql_query,
+              query: authorizationRequestPayload.dcql_query,
               presentations,
             },
     }

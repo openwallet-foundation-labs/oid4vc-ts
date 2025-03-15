@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import type { JarAuthRequest } from '../jar/z-jar-auth-request'
+import type { JarAuthorizationRequest } from '../jar/z-jar-authorization-request'
 import { type Openid4vpAuthorizationRequest, zOpenid4vpAuthorizationRequest } from './z-authorization-request'
 
 export const zOpenid4vpAuthorizationRequestDcApi = zOpenid4vpAuthorizationRequest
@@ -12,6 +12,7 @@ export const zOpenid4vpAuthorizationRequestDcApi = zOpenid4vpAuthorizationReques
     client_metadata: true,
     transaction_data: true,
     dcql_query: true,
+    trust_chain: true,
   })
   .extend({
     client_id: z.optional(z.string()),
@@ -34,7 +35,7 @@ export const zOpenid4vpAuthorizationRequestDcApi = zOpenid4vpAuthorizationReques
 export type Openid4vpAuthorizationRequestDcApi = z.infer<typeof zOpenid4vpAuthorizationRequestDcApi>
 
 export function isOpenid4vpAuthorizationRequestDcApi(
-  request: Openid4vpAuthorizationRequest | Openid4vpAuthorizationRequestDcApi | JarAuthRequest
+  request: Openid4vpAuthorizationRequest | Openid4vpAuthorizationRequestDcApi | JarAuthorizationRequest
 ): request is Openid4vpAuthorizationRequestDcApi {
   return (
     request.response_mode === 'dc_api' ||

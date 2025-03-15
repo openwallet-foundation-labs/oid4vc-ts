@@ -2,7 +2,11 @@ import { decodeJwt } from '@openid4vc/oauth2'
 import { URL } from '@openid4vc/utils'
 import { parseWithErrorHandling } from '@openid4vc/utils'
 import z from 'zod'
-import { type JarAuthRequest, isJarAuthRequest, zJarAuthRequest } from '../jar/z-jar-auth-request'
+import {
+  type JarAuthorizationRequest,
+  isJarAuthorizationRequest,
+  zJarAuthorizationRequest,
+} from '../jar/z-jar-authorization-request'
 import { type Openid4vpAuthorizationRequest, zOpenid4vpAuthorizationRequest } from './z-authorization-request'
 import {
   type Openid4vpAuthorizationRequestDcApi,
@@ -13,28 +17,28 @@ import {
 export interface ParsedJarRequest {
   type: 'jar'
   provided: 'uri' | 'jwt' | 'params'
-  params: JarAuthRequest
+  params: JarAuthorizationRequest
 }
 
-export interface ParsedOpenid4vpAuthRequest {
+export interface ParsedOpenid4vpAuthorizationRequest {
   type: 'openid4vp'
   provided: 'uri' | 'jwt' | 'params'
   params: Openid4vpAuthorizationRequest
 }
 
-export interface ParsedOpenid4vpDcApiAuthRequest {
+export interface ParsedOpenid4vpDcApiAuthorizationRequest {
   type: 'openid4vp_dc_api'
   provided: 'uri' | 'jwt' | 'params'
   params: Openid4vpAuthorizationRequestDcApi
 }
 
-export interface ParseOpenid4vpAuthRequestPayloadOptions {
+export interface ParseOpenid4vpAuthorizationRequestPayloadOptions {
   authorizationRequest: string | Record<string, unknown>
 }
 
 export function parseOpenid4vpAuthorizationRequestPayload(
-  options: ParseOpenid4vpAuthRequestPayloadOptions
-): ParsedOpenid4vpAuthRequest | ParsedJarRequest | ParsedOpenid4vpDcApiAuthRequest {
+  options: ParseOpenid4vpAuthorizationRequestPayloadOptions
+): ParsedOpenid4vpAuthorizationRequest | ParsedJarRequest | ParsedOpenid4vpDcApiAuthorizationRequest {
   const { authorizationRequest } = options
   let provided: 'uri' | 'jwt' | 'params' = 'params'
 
@@ -54,11 +58,11 @@ export function parseOpenid4vpAuthorizationRequestPayload(
   }
 
   const parsedRequest = parseWithErrorHandling(
-    z.union([zOpenid4vpAuthorizationRequest, zJarAuthRequest, zOpenid4vpAuthorizationRequestDcApi]),
+    z.union([zOpenid4vpAuthorizationRequest, zJarAuthorizationRequest, zOpenid4vpAuthorizationRequestDcApi]),
     params
   )
 
-  if (isJarAuthRequest(parsedRequest)) {
+  if (isJarAuthorizationRequest(parsedRequest)) {
     return {
       type: 'jar',
       provided,

@@ -1,7 +1,7 @@
 import type { CallbackContext } from '@openid4vc/oauth2'
 import {} from './authorization-request/create-authorization-request'
 import { parseOpenid4vpAuthorizationRequestPayload } from './authorization-request/parse-authorization-request-params'
-import type { ParseOpenid4vpAuthRequestPayloadOptions } from './authorization-request/parse-authorization-request-params'
+import type { ParseOpenid4vpAuthorizationRequestPayloadOptions } from './authorization-request/parse-authorization-request-params'
 import {
   type ResolveOpenid4vpAuthorizationRequestOptions,
   resolveOpenid4vpAuthorizationRequest,
@@ -25,7 +25,7 @@ export interface Openid4vpClientOptions {
 export class Openid4vpClient {
   public constructor(private options: Openid4vpClientOptions) {}
 
-  public parseOpenid4vpAuthorizationRequestPayload(options: ParseOpenid4vpAuthRequestPayloadOptions) {
+  public parseOpenid4vpAuthorizationRequestPayload(options: ParseOpenid4vpAuthorizationRequestPayloadOptions) {
     return parseOpenid4vpAuthorizationRequestPayload(options)
   }
 
