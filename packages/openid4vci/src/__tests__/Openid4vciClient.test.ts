@@ -40,6 +40,9 @@ describe('Openid4vciClient', () => {
       http.get(`${paradymDraft13.credentialOfferObject.credential_issuer}/.well-known/oauth-authorization-server`, () =>
         HttpResponse.text(undefined, { status: 404 })
       ),
+      http.get('https://agent.paradym.id/.well-known/oauth-authorization-server/oid4vci/draft-13-issuer', () =>
+        HttpResponse.text(undefined, { status: 404 })
+      ),
       http.post(paradymDraft13.credentialIssuerMetadata.token_endpoint, async ({ request }) => {
         expect(parseXwwwFormUrlEncoded(await request.text())).toEqual({
           'pre-authorized_code': '1130293840889780123292078',
@@ -139,6 +142,9 @@ describe('Openid4vciClient', () => {
         HttpResponse.text(undefined, { status: 404 })
       ),
       http.get(`${paradymDraft11.credentialOfferObject.credential_issuer}/.well-known/oauth-authorization-server`, () =>
+        HttpResponse.text(undefined, { status: 404 })
+      ),
+      http.get('https://agent.paradym.id/.well-known/oauth-authorization-server/oid4vci/draft-11-issuer', () =>
         HttpResponse.text(undefined, { status: 404 })
       ),
       http.post(paradymDraft11.credentialIssuerMetadata.token_endpoint, async ({ request }) => {

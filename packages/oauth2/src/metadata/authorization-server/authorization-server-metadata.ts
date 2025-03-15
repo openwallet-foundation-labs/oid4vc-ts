@@ -1,4 +1,4 @@
-import { type Fetch, joinUriParts } from '@openid4vc/utils'
+import { type Fetch, URL, joinUriParts } from '@openid4vc/utils'
 import { Oauth2Error } from '../../error/Oauth2Error'
 import { fetchWellKnownMetadata } from '../fetch-well-known-metadata'
 import { type AuthorizationServerMetadata, zAuthorizationServerMetadata } from './z-authorization-server-metadata'
@@ -15,7 +15,19 @@ export async function fetchAuthorizationServerMetadata(
   fetch?: Fetch
 ): Promise<AuthorizationServerMetadata | null> {
   const openIdConfigurationWellKnownMetadataUrl = joinUriParts(issuer, [wellKnownOpenIdConfigurationServerSuffix])
-  const authorizationServerWellKnownMetadataUrl = joinUriParts(issuer, [wellKnownAuthorizationServerSuffix])
+
+  const parsedIssuerUrl = new URL(issuer)
+
+  const authorizationServerWellKnownMetadataUrl = joinUriParts(parsedIssuerUrl.origin, [
+    wellKnownAuthorizationServerSuffix,
+    parsedIssuerUrl.pathname,
+  ])
+
+  // NOTE: there is a difference in how to construct well-known OAuth2 and well-known openid
+  // url. For OAuth you place `.well-known/oauth-autohrization-server` between the origin and
+  // the path. Historically we used the same method as OpenID (which a lot of servers seems to
+  // host as well), and thus we use this as a last fallback (at least for now).
+  const nonCompliantAuthorizationServerWellKnownMetadataUrl = joinUriParts(issuer, [wellKnownAuthorizationServerSuffix])
 
   // First try oauth-authorization-server
   const authorizationServerResult = await fetchWellKnownMetadata(
@@ -33,6 +45,23 @@ export async function fetchAuthorizationServerMetadata(
     }
 
     return authorizationServerResult
+  }
+
+  const alternativeAuthorizationServerResult = await fetchWellKnownMetadata(
+    nonCompliantAuthorizationServerWellKnownMetadataUrl,
+    zAuthorizationServerMetadata,
+    fetch
+  )
+
+  if (alternativeAuthorizationServerResult) {
+    if (alternativeAuthorizationServerResult.issuer !== issuer) {
+      // issuer param MUST match
+      throw new Oauth2Error(
+        `The 'issuer' parameter '${alternativeAuthorizationServerResult.issuer}' in the well known authorization server metadata at '${nonCompliantAuthorizationServerWellKnownMetadataUrl}' does not match the provided issuer '${issuer}'.`
+      )
+    }
+
+    return alternativeAuthorizationServerResult
   }
 
   const openIdConfigurationResult = await fetchWellKnownMetadata(
