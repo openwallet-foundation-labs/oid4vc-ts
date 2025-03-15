@@ -4,7 +4,7 @@ import { z } from 'zod'
 import type { Openid4vpAuthorizationRequest } from '../authorization-request/z-authorization-request'
 import type { Openid4vpAuthorizationRequestDcApi } from '../authorization-request/z-authorization-request-dc-api'
 
-export const zJarAuthRequest = z
+export const zJarAuthorizationRequest = z
   .object({
     request: z.optional(z.string()),
     request_uri: z.optional(zHttpsUrl),
@@ -12,9 +12,9 @@ export const zJarAuthRequest = z
     client_id: z.optional(z.string()),
   })
   .passthrough()
-export type JarAuthRequest = z.infer<typeof zJarAuthRequest>
+export type JarAuthorizationRequest = z.infer<typeof zJarAuthorizationRequest>
 
-export function validateJarRequestParams(options: { jarRequestParams: JarAuthRequest }) {
+export function validateJarRequestParams(options: { jarRequestParams: JarAuthorizationRequest }) {
   const { jarRequestParams } = options
 
   if (jarRequestParams.request && jarRequestParams.request_uri) {
@@ -31,12 +31,12 @@ export function validateJarRequestParams(options: { jarRequestParams: JarAuthReq
     })
   }
 
-  return jarRequestParams as JarAuthRequest &
+  return jarRequestParams as JarAuthorizationRequest &
     ({ request_uri: string; request?: never } | { request: string; request_uri?: never })
 }
 
-export function isJarAuthRequest(
-  request: Openid4vpAuthorizationRequest | JarAuthRequest | Openid4vpAuthorizationRequestDcApi
-): request is JarAuthRequest {
+export function isJarAuthorizationRequest(
+  request: Openid4vpAuthorizationRequest | JarAuthorizationRequest | Openid4vpAuthorizationRequestDcApi
+): request is JarAuthorizationRequest {
   return 'request' in request || 'request_uri' in request
 }

@@ -5,7 +5,7 @@ describe('Correctly parses the client identifier', () => {
   describe('legacy client_id_scheme', () => {
     test(`correctly handles legacy client_id_schme 'entity_id'`, () => {
       const client = parseClientIdentifier({
-        request: {
+        authorizationRequestPayload: {
           response_mode: 'direct_post',
           client_id: 'https://example.com',
           nonce: 'nonce',
@@ -27,7 +27,7 @@ describe('Correctly parses the client identifier', () => {
       const client = parseClientIdentifier({
         // @ts-expect-error
         jar: { signer: { publicJwk: { kid: 'did:example:123#key-1' } } },
-        request: {
+        authorizationRequestPayload: {
           response_mode: 'direct_post',
           client_id: 'did:example:123#key-1',
           nonce: 'nonce',
@@ -48,7 +48,7 @@ describe('Correctly parses the client identifier', () => {
       const client = parseClientIdentifier({
         // @ts-expect-error
         jar: { signer: { method: 'x5c', x5c: ['certificate'] } },
-        request: {
+        authorizationRequestPayload: {
           response_mode: 'direct_post',
           client_id: 'example.com',
           redirect_uri: 'https://example.com',
@@ -72,7 +72,7 @@ describe('Correctly parses the client identifier', () => {
       const client = parseClientIdentifier({
         // @ts-expect-error
         jar: { signer: { method: 'x5c', x5c: ['certificate'] } },
-        request: {
+        authorizationRequestPayload: {
           response_mode: 'direct_post',
           client_id: 'https://example.com',
           redirect_uri: 'https://example.com',
@@ -94,7 +94,7 @@ describe('Correctly parses the client identifier', () => {
 
     test('correctly assumes no client_id_scheme as pre-registered', () => {
       const client = parseClientIdentifier({
-        request: {
+        authorizationRequestPayload: {
           response_mode: 'direct_post',
           client_id: 'pre-registered client',
           nonce: 'nonce',
@@ -112,7 +112,7 @@ describe('Correctly parses the client identifier', () => {
 
     test('correctly applies pre-registered', () => {
       const client = parseClientIdentifier({
-        request: {
+        authorizationRequestPayload: {
           response_mode: 'direct_post',
           client_id: 'pre-registered client',
           nonce: 'nonce',
@@ -133,7 +133,7 @@ describe('Correctly parses the client identifier', () => {
   describe('client_id_scheme', () => {
     test(`correctly handles client_id_schme 'entity_id'`, () => {
       const client = parseClientIdentifier({
-        request: {
+        authorizationRequestPayload: {
           response_mode: 'direct_post',
           client_id: 'https://example.com',
           nonce: 'nonce',
@@ -154,7 +154,7 @@ describe('Correctly parses the client identifier', () => {
       const client = parseClientIdentifier({
         // @ts-expect-error
         jar: { signer: { publicJwk: { kid: 'did:example:123#key-1' } } },
-        request: {
+        authorizationRequestPayload: {
           response_mode: 'direct_post',
           client_id: 'did:example:123#key-1',
           nonce: 'nonce',
@@ -174,7 +174,7 @@ describe('Correctly parses the client identifier', () => {
       const client = parseClientIdentifier({
         // @ts-expect-error
         jar: { signer: { method: 'x5c', x5c: ['certificate'] } },
-        request: {
+        authorizationRequestPayload: {
           response_mode: 'direct_post',
           client_id: 'x509_san_dns:example.com',
           redirect_uri: 'https://example.com',
@@ -197,7 +197,7 @@ describe('Correctly parses the client identifier', () => {
       const client = parseClientIdentifier({
         // @ts-expect-error
         jar: { signer: { method: 'x5c', x5c: ['certificate'] } },
-        request: {
+        authorizationRequestPayload: {
           response_mode: 'direct_post',
           client_id: 'x509_san_uri:https://example.com',
           redirect_uri: 'https://example.com',
@@ -218,7 +218,7 @@ describe('Correctly parses the client identifier', () => {
 
     test('correctly assumes no client_id_scheme as pre-registered', () => {
       const client = parseClientIdentifier({
-        request: {
+        authorizationRequestPayload: {
           response_mode: 'direct_post',
           client_id: 'pre-registered client',
           nonce: 'nonce',
@@ -236,7 +236,7 @@ describe('Correctly parses the client identifier', () => {
 
     test('correctly applies pre-registered', () => {
       const client = parseClientIdentifier({
-        request: {
+        authorizationRequestPayload: {
           response_mode: 'direct_post',
           client_id: 'pre-registered:pre-registered client',
           nonce: 'nonce',

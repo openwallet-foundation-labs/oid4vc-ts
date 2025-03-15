@@ -15,10 +15,10 @@ import type { WalletMetadata } from '../../models/z-wallet-metadata'
 import { parseAuthorizationRequestVersion } from '../../version'
 import { fetchJarRequestObject } from '../jar-request-object/fetch-jar-request-object'
 import { type JarRequestObjectPayload, zJarRequestObjectPayload } from '../jar-request-object/z-jar-request-object'
-import { type JarAuthRequest, validateJarRequestParams } from '../z-jar-auth-request'
+import { type JarAuthorizationRequest, validateJarRequestParams } from '../z-jar-authorization-request'
 
 export interface VerifyJarRequestOptions {
-  jarRequestParams: JarAuthRequest
+  jarRequestParams: JarAuthorizationRequest
   callbacks: Pick<CallbackContext, 'verifyJwt' | 'decryptJwe'>
   wallet?: {
     metadata?: WalletMetadata
@@ -27,7 +27,7 @@ export interface VerifyJarRequestOptions {
 }
 
 export interface VerifiedJarRequest {
-  authRequestParams: JarRequestObjectPayload
+  authorizationRequestParams: JarRequestObjectPayload
   sendBy: 'value' | 'reference'
   decryptionJwk?: Jwk
   signer: JwtSignerWithJwk
@@ -81,18 +81,18 @@ export async function verifyJarRequest(options: VerifyJarRequestOptions): Promis
     })
   }
 
-  const { authRequestParams, signer } = await verifyJarRequestObject({
+  const { authorizationRequestParams, signer } = await verifyJarRequestObject({
     decryptedRequestObject,
     callbacks,
   })
-  if (!authRequestParams.client_id) {
+  if (!authorizationRequestParams.client_id) {
     throw new Oauth2ServerErrorResponseError({
       error: Oauth2ErrorCodes.InvalidRequestObject,
       error_description: 'Jar Request Object is missing the required "client_id" field.',
     })
   }
 
-  if (jarRequestParams.client_id !== authRequestParams.client_id) {
+  if (jarRequestParams.client_id !== authorizationRequestParams.client_id) {
     throw new Oauth2ServerErrorResponseError({
       error: Oauth2ErrorCodes.InvalidRequest,
       error_description: 'client_id does not match the request object client_id.',
@@ -101,7 +101,7 @@ export async function verifyJarRequest(options: VerifyJarRequestOptions): Promis
 
   return {
     sendBy,
-    authRequestParams,
+    authorizationRequestParams,
     signer,
     decryptionJwk,
   }
@@ -158,5 +158,5 @@ async function verifyJarRequestObject(options: {
     })
   }
 
-  return { authRequestParams: jwt.payload, signer }
+  return { authorizationRequestParams: jwt.payload, signer }
 }

@@ -4,7 +4,7 @@ import {
   createOpenid4vpAuthorizationRequest,
 } from './authorization-request/create-authorization-request'
 import {
-  type ParseOpenid4vpAuthRequestPayloadOptions,
+  type ParseOpenid4vpAuthorizationRequestPayloadOptions,
   parseOpenid4vpAuthorizationRequestPayload,
 } from './authorization-request/parse-authorization-request-params'
 import {
@@ -36,7 +36,7 @@ export class Openid4vpVerifier {
     return createOpenid4vpAuthorizationRequest({ ...options, callbacks: this.options.callbacks })
   }
 
-  public parseOpenid4vpAuthorizationRequestPayload(options: ParseOpenid4vpAuthRequestPayloadOptions) {
+  public parseOpenid4vpAuthorizationRequestPayload(options: ParseOpenid4vpAuthorizationRequestPayloadOptions) {
     return parseOpenid4vpAuthorizationRequestPayload(options)
   }
 

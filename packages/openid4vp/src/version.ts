@@ -14,31 +14,6 @@ export function parseAuthorizationRequestVersion(
 ): OpenId4VpVersion {
   const requirements: ['<' | '>=', OpenId4VpVersion][] = []
 
-  // 23
-
-  const vp_formats = request.client_metadata?.vp_formats
-  // There might be some time we'd like to include both, as the update of the identifier can be somewhat tricky.
-  //if (vp_formats) {
-  //if (Object.keys(vp_formats).includes('vc+sd-jwt' satisfies CredentialFormat)) {
-  //requirements.push(['<', 23])
-  //}
-
-  //if (Object.keys(vp_formats).includes('dc+sd-jwt' satisfies CredentialFormat)) {
-  //requirements.push(['>=', 23])
-  //}
-
-  //if (Object.keys(vp_formats).includes('vc+sd-jwt' satisfies CredentialFormat)) {
-  //requirements.push(['>=', 21])
-  //}
-  //}
-
-  //if (
-  //request.client_metadata?.vp_formats &&
-  //Object.keys(request.client_metadata?.vp_formats).some(val => val === 'vc+sd-jwt')
-  //) {
-  //requirements.push(['>=', 21])
-  //}
-
   if (
     isOpenid4vpAuthorizationRequestDcApi(request) &&
     (request.response_mode === 'w3c_dc_api' || request.response_mode === 'w3c_dc_api.jwt')
