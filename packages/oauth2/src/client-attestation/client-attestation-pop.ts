@@ -36,9 +36,11 @@ export interface RequestClientAttestationOptions {
   jwt: string
 
   /**
-   * The signer of the client attestation pop jwt
+   * The signer of the client attestation pop jwt.
+   *
+   * Will be extracted from the client attestation if not provided.
    */
-  signer: JwtSignerJwk
+  signer?: JwtSignerJwk
 }
 
 export async function createClientAttestationForRequest(
@@ -53,6 +55,7 @@ export async function createClientAttestationForRequest(
     callbacks: options.callbacks,
     expiresAt: options.clientAttestation.expiresAt,
     signer: options.clientAttestation.signer,
+    // TODO: support dynamic fetching of the nonce
     nonce: options.clientAttestation.nonce,
   })
 

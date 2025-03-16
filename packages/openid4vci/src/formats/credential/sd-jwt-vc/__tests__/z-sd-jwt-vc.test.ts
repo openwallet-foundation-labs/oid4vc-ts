@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest'
-import { zSdJwtVcCredentialIssuerMetadata, zSdJwtVcFormatIdentifier } from '../z-sd-jwt-vc'
+import { zSdJwtVcCredentialIssuerMetadataDraft14, zSdJwtVcFormatIdentifier } from '../z-sd-jwt-vc'
 
 test('should parse sd-jwt-vc format identifier', () => {
   expect(zSdJwtVcFormatIdentifier.safeParse('vc+sd-jwt')).toStrictEqual({
@@ -15,7 +15,7 @@ test('should parse sd-jwt-vc format identifier', () => {
 
 test('should parse sd-jwt-vc credential issuer metadata', () => {
   expect(
-    zSdJwtVcCredentialIssuerMetadata.safeParse({
+    zSdJwtVcCredentialIssuerMetadataDraft14.safeParse({
       format: 'vc+sd-jwt',
       scope: 'SD_JWT_VC_example_in_OpenID4VCI',
       cryptographic_binding_methods_supported: ['jwk'],

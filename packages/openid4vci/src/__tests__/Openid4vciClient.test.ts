@@ -300,8 +300,9 @@ describe('Openid4vciClient', () => {
       http.get(`${bdrDraft13.credentialOfferObject.credential_issuer}/.well-known/openid-configuration`, () =>
         HttpResponse.text(undefined, { status: 404 })
       ),
-      http.get(`${bdrDraft13.credentialOfferObject.credential_issuer}/.well-known/oauth-authorization-server`, () =>
-        HttpResponse.json(bdrDraft13.authorizationServerMetadata)
+      http.get(
+        `${bdrDraft13.credentialOfferObject.credential_issuer.replace('/c', '')}/.well-known/oauth-authorization-server/c`,
+        () => HttpResponse.json(bdrDraft13.authorizationServerMetadata)
       ),
       http.post(bdrDraft13.authorizationServerMetadata.pushed_authorization_request_endpoint, async ({ request }) => {
         const parsed = parseXwwwFormUrlEncoded(await request.text())

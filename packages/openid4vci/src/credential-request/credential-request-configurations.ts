@@ -36,7 +36,7 @@ export function getCredentialConfigurationsMatchingRequestFormat({
         return arrayEqualsIgnoreOrder(r.credential_definition.type, c.credential_definition.type)
       }
 
-      if ((c.format === 'vc+sd-jwt' || c.format === 'dc+sd-jwt') && r.format === c.format) {
+      if (c.format === 'vc+sd-jwt' && r.format === c.format) {
         return r.vct === c.vct
       }
 

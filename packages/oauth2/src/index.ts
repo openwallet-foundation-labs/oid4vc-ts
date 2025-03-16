@@ -43,6 +43,10 @@ export {
 export { zCompactJwe } from './common/jwt/z-jwe'
 
 export type { RequestClientAttestationOptions } from './client-attestation/client-attestation-pop'
+export {
+  createClientAttestationJwt,
+  type CreateClientAttestationJwtOptions,
+} from './client-attestation/clent-attestation'
 export type {
   ClientAttestationJwtHeader,
   ClientAttestationJwtPayload,

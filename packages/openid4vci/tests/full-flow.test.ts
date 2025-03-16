@@ -19,6 +19,7 @@ import { getSignJwtCallback, parseXwwwFormUrlEncoded, callbacks as partialCallba
 import {
   type CredentialConfigurationSupportedWithFormats,
   Openid4vciClient,
+  Openid4vciDraftVersion,
   Openid4vciIssuer,
   extractScopesForCredentialConfigurationIds,
 } from '../src'
@@ -278,6 +279,11 @@ describe('Full E2E test', () => {
         })
 
         const parsedCredentialRequest = issuer.parseCredentialRequest({
+          issuerMetadata: {
+            authorizationServers: [],
+            credentialIssuer: credentialIssuerMetadata,
+            originalDraftVersion: Openid4vciDraftVersion.Draft14,
+          },
           credentialRequest: credentialRequest as Record<string, unknown>,
         })
 
@@ -597,6 +603,11 @@ describe('Full E2E test', () => {
         })
 
         const parsedCredentialRequest = issuer.parseCredentialRequest({
+          issuerMetadata: {
+            authorizationServers: [],
+            credentialIssuer: credentialIssuerMetadata,
+            originalDraftVersion: Openid4vciDraftVersion.Draft14,
+          },
           credentialRequest: credentialRequest as Record<string, unknown>,
         })
 

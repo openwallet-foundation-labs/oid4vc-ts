@@ -76,7 +76,7 @@ export interface SendAuthorizationChallengeRequestOptions {
   /**
    * If client attestation needs to be included in the request.
    */
-  clientAttestation?: RequestClientAttestationOptions
+  walletAttestation?: RequestClientAttestationOptions
 
   /**
    * DPoP options
@@ -113,10 +113,10 @@ export async function sendAuthorizationChallengeRequest(options: SendAuthorizati
         })
       : undefined
 
-  const clientAttestation = options.clientAttestation
+  const walletAttestation = options.walletAttestation
     ? await createClientAttestationForRequest({
         authorizationServer: options.authorizationServerMetadata.issuer,
-        clientAttestation: options.clientAttestation,
+        clientAttestation: options.walletAttestation,
         callbacks: options.callbacks,
       })
     : undefined
@@ -155,8 +155,7 @@ export async function sendAuthorizationChallengeRequest(options: SendAuthorizati
           method: 'POST',
           body: objectToQueryParams(authorizationChallengeRequest).toString(),
           headers: {
-            // TODO: use client authentication for this
-            ...clientAttestation?.headers,
+            ...walletAttestation?.headers,
             ...dpopHeaders,
             'Content-Type': ContentType.XWwwFormUrlencoded,
           },

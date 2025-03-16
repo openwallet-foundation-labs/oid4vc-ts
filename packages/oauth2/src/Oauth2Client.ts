@@ -16,10 +16,6 @@ import {
   createAuthorizationRequestUrl,
 } from './authorization-request/create-authorization-request'
 import type { CallbackContext } from './callbacks'
-import {
-  type CreateClientAttestationJwtOptions,
-  createClientAttestationJwt,
-} from './client-attestation/clent-attestation'
 import { Oauth2ErrorCodes } from './common/z-oauth2-error'
 import { extractDpopNonceFromHeaders } from './dpop/dpop'
 import { Oauth2ClientAuthorizationChallengeError } from './error/Oauth2ClientAuthorizationChallengeError'
@@ -89,7 +85,7 @@ export class Oauth2Client {
           pkceCodeVerifier: pkce?.codeVerifier,
           scope: options.scope,
           resource: options.resource,
-          clientAttestation: options.clientAttestation,
+          walletAttestation: options.walletAttestation,
           dpop: options.dpop,
         })
       } catch (error) {
@@ -132,7 +128,7 @@ export class Oauth2Client {
       scope: options.scope,
       pkceCodeVerifier: pkce?.codeVerifier,
       resource: options.resource,
-      clientAttestation: options.clientAttestation,
+      walletAttestation: options.walletAttestation,
       dpop: options.dpop,
     })
   }
@@ -154,7 +150,7 @@ export class Oauth2Client {
       scope: options.scope,
       callbacks: this.options.callbacks,
       pkceCodeVerifier: options.pkceCodeVerifier,
-      clientAttestation: options.clientAttestation,
+      walletAttestation: options.walletAttestation,
       dpop: options.dpop,
     })
   }
@@ -166,7 +162,7 @@ export class Oauth2Client {
     txCode,
     dpop,
     resource,
-    clientAttestation,
+    walletAttestation,
   }: Omit<RetrievePreAuthorizedCodeAccessTokenOptions, 'callbacks'>) {
     const result = await retrievePreAuthorizedCodeAccessToken({
       authorizationServerMetadata,
@@ -179,7 +175,7 @@ export class Oauth2Client {
       },
       callbacks: this.options.callbacks,
       dpop,
-      clientAttestation,
+      walletAttestation,
     })
 
     return result
@@ -193,7 +189,7 @@ export class Oauth2Client {
     redirectUri,
     resource,
     dpop,
-    clientAttestation,
+    walletAttestation,
   }: Omit<RetrieveAuthorizationCodeAccessTokenOptions, 'callbacks'>) {
     const result = await retrieveAuthorizationCodeAccessToken({
       authorizationServerMetadata,
@@ -204,7 +200,7 @@ export class Oauth2Client {
       callbacks: this.options.callbacks,
       dpop,
       redirectUri,
-      clientAttestation,
+      walletAttestation,
     })
 
     return result
@@ -216,7 +212,7 @@ export class Oauth2Client {
     refreshToken,
     resource,
     dpop,
-    clientAttestation,
+    walletAttestation,
   }: Omit<RetrieveRefreshTokenAccessTokenOptions, 'callbacks'>) {
     const result = await retrieveRefreshTokenAccessToken({
       authorizationServerMetadata,
@@ -225,7 +221,7 @@ export class Oauth2Client {
       resource,
       callbacks: this.options.callbacks,
       dpop,
-      clientAttestation,
+      walletAttestation,
     })
 
     return result
@@ -233,15 +229,5 @@ export class Oauth2Client {
 
   public async resourceRequest(options: ResourceRequestOptions) {
     return resourceRequest(options)
-  }
-
-  /**
-   * @todo move this to another class?
-   */
-  public async createClientAttestationJwt(options: Omit<CreateClientAttestationJwtOptions, 'callbacks'>) {
-    return await createClientAttestationJwt({
-      callbacks: this.options.callbacks,
-      ...options,
-    })
   }
 }

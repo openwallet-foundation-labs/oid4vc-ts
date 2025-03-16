@@ -1,6 +1,5 @@
 import { parseWithErrorHandling } from '@openid4vc/utils'
 import z from 'zod'
-import type { CredentialFormatIdentifier } from '../formats/credential'
 import { attestationProofTypeIdentifier } from '../formats/proof-type/attestation/z-attestation-proof-type'
 import { jwtProofTypeIdentifier } from '../formats/proof-type/jwt/z-jwt-proof-type'
 import {
@@ -129,7 +128,9 @@ export function parseCredentialRequest(options: ParseCredentialRequestOptions): 
 
   if (
     credentialRequest.format &&
-    allCredentialRequestFormatIdentifiers.includes(credentialRequest.format as CredentialFormatIdentifier)
+    allCredentialRequestFormatIdentifiers.includes(
+      credentialRequest.format as (typeof allCredentialRequestFormatIdentifiers)[number]
+    )
   ) {
     return {
       // Removes all claims that are not specific to this format

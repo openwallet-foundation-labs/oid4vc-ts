@@ -119,6 +119,7 @@ export interface CallbackContext {
    * There are three default client authentication methods provided:
    * - `clientAuthenticationClientSecretPost`
    * - `clientAuthenticationClientSecretBasic`
+   * - `clientAuthenticationClientAttestationJwt`
    * - `clientAuthenticationNone`
    *
    * A custom implementation can be made for other methods, or allowing complex

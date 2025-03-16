@@ -55,9 +55,9 @@ interface RetrieveAccessTokenBaseOptions {
   dpop?: RequestDpopOptions
 
   /**
-   * If client attestation needs to be included in the request.
+   * If wallet attestation needs to be included in the request.
    */
-  clientAttestation?: RequestClientAttestationOptions
+  walletAttestation?: RequestClientAttestationOptions
 }
 
 export interface RetrievePreAuthorizedCodeAccessTokenOptions extends RetrieveAccessTokenBaseOptions {
@@ -88,7 +88,7 @@ export async function retrievePreAuthorizedCodeAccessToken(
     dpop: options.dpop,
     callbacks: options.callbacks,
     resource: options.resource,
-    clientAttestation: options.clientAttestation,
+    walletAttestation: options.walletAttestation,
   })
 }
 
@@ -134,7 +134,7 @@ export async function retrieveAuthorizationCodeAccessToken(
     dpop: options.dpop,
     resource: options.resource,
     callbacks: options.callbacks,
-    clientAttestation: options.clientAttestation,
+    walletAttestation: options.walletAttestation,
   })
 }
 
@@ -167,7 +167,7 @@ export async function retrieveRefreshTokenAccessToken(
     dpop: options.dpop,
     callbacks: options.callbacks,
     resource: options.resource,
-    clientAttestation: options.clientAttestation,
+    walletAttestation: options.walletAttestation,
   })
 }
 
@@ -195,10 +195,10 @@ async function retrieveAccessToken(options: RetrieveAccessTokenOptions): Promise
     accessTokenRequest.user_pin = accessTokenRequest.tx_code
   }
 
-  const clientAttestation = options.clientAttestation
+  const walletAttestation = options.walletAttestation
     ? await createClientAttestationForRequest({
         authorizationServer: options.authorizationServerMetadata.issuer,
-        clientAttestation: options.clientAttestation,
+        clientAttestation: options.walletAttestation,
         callbacks: options.callbacks,
       })
     : undefined
@@ -228,8 +228,7 @@ async function retrieveAccessToken(options: RetrieveAccessTokenOptions): Promise
           method: 'POST',
           headers: {
             'Content-Type': ContentType.XWwwFormUrlencoded,
-            // TODO: use client authentication for this
-            ...clientAttestation?.headers,
+            ...walletAttestation?.headers,
             ...dpopHeaders,
           },
         }

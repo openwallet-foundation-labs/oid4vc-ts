@@ -64,11 +64,11 @@ export interface CreateAuthorizationRequestUrlOptions {
   pkceCodeVerifier?: string
 
   /**
-   * If client attestation needs to be included in the request.
+   * If wallet attestation needs to be included in the request.
    *
    * Will ONLY be used if PAR is used.
    */
-  clientAttestation?: RequestClientAttestationOptions
+  walletAttestation?: RequestClientAttestationOptions
 
   /**
    * DPoP options
@@ -125,10 +125,10 @@ export async function createAuthorizationRequestUrl(options: CreateAuthorization
       )
     }
 
-    const clientAttestation = options.clientAttestation
+    const walletAttestation = options.walletAttestation
       ? await createClientAttestationForRequest({
           authorizationServer: options.authorizationServerMetadata.issuer,
-          clientAttestation: options.clientAttestation,
+          clientAttestation: options.walletAttestation,
           callbacks: options.callbacks,
         })
       : undefined
@@ -153,8 +153,7 @@ export async function createAuthorizationRequestUrl(options: CreateAuthorization
           pushedAuthorizationRequestEndpoint,
           fetch: options.callbacks.fetch,
           headers: {
-            // TODO: use client authentication for this
-            ...clientAttestation?.headers,
+            ...walletAttestation?.headers,
             ...dpopHeaders,
           },
         })

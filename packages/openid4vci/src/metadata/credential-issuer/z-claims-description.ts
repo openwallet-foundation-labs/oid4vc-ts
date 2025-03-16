@@ -27,7 +27,7 @@ export type MsoMdocClaimsDescriptionPath = z.infer<typeof zMsoMdocClaimsDescript
 export const zIssuerMetadataClaimsDescription = z
   .object({
     path: zClaimsDescriptionPath,
-    mandatory: z.boolean(),
+    mandatory: z.boolean().optional(),
     display: z
       .array(
         z

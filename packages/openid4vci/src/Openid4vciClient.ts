@@ -21,7 +21,10 @@ import {
 import type { CredentialOfferObject } from './credential-offer/z-credential-offer'
 import { getCredentialRequestFormatPayloadForCredentialConfigurationId } from './credential-request/format-payload'
 import {
+  type RetrieveCredentialsResponseNotOk,
+  type RetrieveCredentialsResponseOk,
   type RetrieveCredentialsWithFormatOptions,
+  retrieveCredentialsWithCredentialConfigurationId,
   retrieveCredentialsWithFormat,
 } from './credential-request/retrieve-credentials'
 import { Openid4vciError } from './error/Openid4vciError'
@@ -36,6 +39,7 @@ import type { CredentialIssuerMetadata } from './metadata/credential-issuer/z-cr
 import { type IssuerMetadataResult, resolveIssuerMetadata } from './metadata/fetch-issuer-metadata'
 import { type RequestNonceOptions, requestNonce } from './nonce/nonce-request'
 import { type SendNotifcationOptions, sendNotifcation } from './notification/notification'
+import { Openid4vciDraftVersion } from './version'
 
 export enum AuthorizationFlow {
   Oauth2Redirect = 'Oauth2Redirect',
@@ -192,7 +196,7 @@ export class Openid4vciClient {
           issuer_state: options.credentialOffer?.grants?.authorization_code?.issuer_state,
         },
         dpop: options.dpop,
-        clientAttestation: options.clientAttestation,
+        walletAttestation: options.walletAttestation,
         resource: options.issuerMetadata.credentialIssuer.credential_issuer,
         authorizationServerMetadata,
       })
@@ -262,7 +266,7 @@ export class Openid4vciClient {
       redirectUri: options.redirectUri,
       scope: options.scope,
       pkceCodeVerifier: options.pkceCodeVerifier,
-      clientAttestation: options.clientAttestation,
+      walletAttestation: options.walletAttestation,
       dpop: options.dpop,
     })
 
@@ -284,7 +288,7 @@ export class Openid4vciClient {
     additionalRequestPayload,
     txCode,
     dpop,
-    clientAttestation,
+    walletAttestation,
   }: Omit<
     RetrievePreAuthorizedCodeAccessTokenOptions,
     'callbacks' | 'authorizationServerMetadata' | 'preAuthorizedCode' | 'resource'
@@ -322,7 +326,7 @@ export class Openid4vciClient {
       resource: issuerMetadata.credentialIssuer.credential_issuer,
       additionalRequestPayload,
       dpop,
-      clientAttestation,
+      walletAttestation,
     })
 
     return {
@@ -343,7 +347,7 @@ export class Openid4vciClient {
     pkceCodeVerifier,
     redirectUri,
     dpop,
-    clientAttestation,
+    walletAttestation,
   }: Omit<RetrieveAuthorizationCodeAccessTokenOptions, 'authorizationServerMetadata' | 'callbacks'> & {
     credentialOffer: CredentialOfferObject
     issuerMetadata: IssuerMetadataResult
@@ -368,7 +372,7 @@ export class Openid4vciClient {
       pkceCodeVerifier,
       additionalRequestPayload,
       dpop,
-      clientAttestation,
+      walletAttestation,
       redirectUri,
       resource: issuerMetadata.credentialIssuer.credential_issuer,
     })
@@ -467,21 +471,36 @@ export class Openid4vciClient {
     RetrieveCredentialsWithFormatOptions,
     'accessToken' | 'additionalRequestPayload' | 'issuerMetadata' | 'proof' | 'proofs' | 'dpop'
   > & { credentialConfigurationId: string }) {
-    const formatPayload = getCredentialRequestFormatPayloadForCredentialConfigurationId({
-      credentialConfigurationId,
-      issuerMetadata,
-    })
+    let credentialResponse: RetrieveCredentialsResponseNotOk | RetrieveCredentialsResponseOk
 
-    const credentialResponse = await retrieveCredentialsWithFormat({
-      accessToken,
-      formatPayload,
-      issuerMetadata,
-      additionalRequestPayload,
-      proof,
-      proofs,
-      callbacks: this.options.callbacks,
-      dpop,
-    })
+    if (issuerMetadata.originalDraftVersion === Openid4vciDraftVersion.Draft15) {
+      credentialResponse = await retrieveCredentialsWithCredentialConfigurationId({
+        accessToken,
+        credentialConfigurationId,
+        issuerMetadata,
+        additionalRequestPayload,
+        proof,
+        proofs,
+        callbacks: this.options.callbacks,
+        dpop,
+      })
+    } else {
+      const formatPayload = getCredentialRequestFormatPayloadForCredentialConfigurationId({
+        credentialConfigurationId,
+        issuerMetadata,
+      })
+
+      credentialResponse = await retrieveCredentialsWithFormat({
+        accessToken,
+        formatPayload,
+        issuerMetadata,
+        additionalRequestPayload,
+        proof,
+        proofs,
+        callbacks: this.options.callbacks,
+        dpop,
+      })
+    }
 
     if (!credentialResponse.ok) {
       throw new Openid4vciRetrieveCredentialsError(

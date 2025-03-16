@@ -39,6 +39,7 @@ const allCredentialIssuerMetadataFormats = [
   zLdpVcCredentialIssuerMetadataDraft14,
   zJwtVcJsonCredentialIssuerMetadataDraft14,
 ] as const
+type CredentialIssuerMetadataFromatValidator = (typeof allCredentialIssuerMetadataFormats)[number]
 export const allCredentialIssuerMetadataFormatIdentifiers = allCredentialIssuerMetadataFormats.map(
   (format) => format.shape.format.value
 )
@@ -48,12 +49,29 @@ export const zCredentialConfigurationSupportedWithFormats = zCredentialConfigura
     // No additional validation for unknown formats
     if (!allCredentialIssuerMetadataFormatIdentifiers.includes(data.format as CredentialFormatIdentifier)) return data
 
+    const validators = allCredentialIssuerMetadataFormats.reduce(
+      (validators, formatValidator) => {
+        const format = formatValidator.shape.format.value
+
+        if (!validators[format]) {
+          validators[format] = []
+        }
+
+        validators[format].push(formatValidator)
+        return validators
+      },
+      {} as Record<CredentialFormatIdentifier, CredentialIssuerMetadataFromatValidator[]>
+    )[data.format as CredentialFormatIdentifier]
+
     const result = z
       // We use object and passthrough as otherwise the non-format specific properties will be stripped
       .object({})
       .passthrough()
-      // FIXME: using union over discriminated union really makes the error handling suck
-      .and(z.union(allCredentialIssuerMetadataFormats))
+      .and(
+        validators.length > 1
+          ? z.union(validators as [CredentialIssuerMetadataFromatValidator, CredentialIssuerMetadataFromatValidator])
+          : validators[0]
+      )
       .safeParse(data)
     if (result.success) {
       return result.data as Simplify<typeof result.data & typeof data>
@@ -327,7 +345,7 @@ export const zCredentialIssuerMetadata = z.union([
 
 export const zCredentialIssuerMetadataWithDraftVersion = z.union([
   zCredentialIssuerMetadataDraft14Draft15.transform((credentialIssuerMetadata) => {
-    const isDraft15 = Object.values(credentialIssuerMetadata.credential_configurations_supported).map(
+    const isDraft15 = Object.values(credentialIssuerMetadata.credential_configurations_supported).some(
       (configuration) => {
         const knownConfiguration = configuration as CredentialConfigurationSupportedWithFormats
 
@@ -339,6 +357,7 @@ export const zCredentialIssuerMetadataWithDraftVersion = z.union([
         return false
       }
     )
+
     return {
       credentialIssuerMetadata,
       originalDraftVersion: isDraft15 ? Openid4vciDraftVersion.Draft15 : Openid4vciDraftVersion.Draft14,
