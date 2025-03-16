@@ -68,7 +68,7 @@ export interface CreateAuthorizationRequestUrlOptions {
    *
    * Will ONLY be used if PAR is used.
    */
-  walletAttestation?: RequestClientAttestationOptions
+  clientAttestation?: RequestClientAttestationOptions
 
   /**
    * DPoP options
@@ -125,10 +125,10 @@ export async function createAuthorizationRequestUrl(options: CreateAuthorization
       )
     }
 
-    const walletAttestation = options.walletAttestation
+    const clientAttestation = options.clientAttestation
       ? await createClientAttestationForRequest({
           authorizationServer: options.authorizationServerMetadata.issuer,
-          clientAttestation: options.walletAttestation,
+          clientAttestation: options.clientAttestation,
           callbacks: options.callbacks,
         })
       : undefined
@@ -153,7 +153,7 @@ export async function createAuthorizationRequestUrl(options: CreateAuthorization
           pushedAuthorizationRequestEndpoint,
           fetch: options.callbacks.fetch,
           headers: {
-            ...walletAttestation?.headers,
+            ...clientAttestation?.headers,
             ...dpopHeaders,
           },
         })

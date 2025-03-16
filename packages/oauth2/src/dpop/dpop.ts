@@ -1,7 +1,7 @@
 import { type CallbackContext, HashAlgorithm } from '../callbacks'
 import { calculateJwkThumbprint } from '../common/jwk/jwk-thumbprint'
 import { decodeJwt } from '../common/jwt/decode-jwt'
-import type { JwtSignerJwk } from '../common/jwt/z-jwt'
+import { type JwtSignerJwk, zCompactJwt } from '../common/jwt/z-jwt'
 import { Oauth2Error } from '../error/Oauth2Error'
 
 import {
@@ -14,6 +14,8 @@ import {
 } from '@openid4vc/utils'
 import { verifyJwt } from '../common/jwt/verify-jwt'
 import type { RequestLike } from '../common/z-common'
+import { Oauth2ErrorCodes } from '../common/z-oauth2-error'
+import { Oauth2ServerErrorResponseError } from '../error/Oauth2ServerErrorResponseError'
 import { type DpopJwtHeader, type DpopJwtPayload, zDpopJwtHeader, zDpopJwtPayload } from './z-dpop'
 
 export interface RequestDpopOptions {
@@ -151,86 +153,98 @@ export interface VerifyDpopJwtOptions {
 }
 
 export async function verifyDpopJwt(options: VerifyDpopJwtOptions) {
-  const { header, payload } = decodeJwt({
-    jwt: options.dpopJwt,
-    headerSchema: zDpopJwtHeader,
-    payloadSchema: zDpopJwtPayload,
-  })
+  try {
+    const { header, payload } = decodeJwt({
+      jwt: options.dpopJwt,
+      headerSchema: zDpopJwtHeader,
+      payloadSchema: zDpopJwtPayload,
+    })
 
-  if (options.allowedSigningAlgs && !options.allowedSigningAlgs.includes(header.alg)) {
-    throw new Oauth2Error(
-      `dpop jwt uses alg value '${header.alg}' but allowed dpop signging alg values are ${options.allowedSigningAlgs.join(', ')}.`
-    )
-  }
-
-  if (options.expectedNonce) {
-    if (!payload.nonce) {
-      throw new Oauth2Error(`Dpop jwt does not have a nonce value, but expected nonce value '${options.expectedNonce}'`)
-    }
-
-    if (payload.nonce !== options.expectedNonce) {
+    if (options.allowedSigningAlgs && !options.allowedSigningAlgs.includes(header.alg)) {
       throw new Oauth2Error(
-        `Dpop jwt contains nonce value '${payload.nonce}', but expected nonce value '${options.expectedNonce}'`
+        `dpop jwt uses alg value '${header.alg}' but allowed dpop signging alg values are ${options.allowedSigningAlgs.join(', ')}.`
       )
     }
-  }
 
-  if (options.request.method !== payload.htm) {
-    throw new Oauth2Error(
-      `Dpop jwt contains htm value '${payload.htm}', but expected htm value '${options.request.method}'`
-    )
-  }
+    if (options.expectedNonce) {
+      if (!payload.nonce) {
+        throw new Oauth2Error(
+          `Dpop jwt does not have a nonce value, but expected nonce value '${options.expectedNonce}'`
+        )
+      }
 
-  const expectedHtu = htuFromRequestUrl(options.request.url)
-  if (expectedHtu !== payload.htu) {
-    throw new Oauth2Error(`Dpop jwt contains htu value '${payload.htu}', but expected htu value '${expectedHtu}'.`)
-  }
-
-  if (options.accessToken) {
-    const expectedAth = encodeToBase64Url(
-      await options.callbacks.hash(decodeUtf8String(options.accessToken), HashAlgorithm.Sha256)
-    )
-
-    if (!payload.ath) {
-      throw new Oauth2Error(`Dpop jwt does not have a ath value, but expected ath value '${expectedAth}'.`)
+      if (payload.nonce !== options.expectedNonce) {
+        throw new Oauth2Error(
+          `Dpop jwt contains nonce value '${payload.nonce}', but expected nonce value '${options.expectedNonce}'`
+        )
+      }
     }
 
-    if (payload.ath !== expectedAth) {
-      throw new Oauth2Error(`Dpop jwt contains ath value '${payload.ath}', but expected ath value '${expectedAth}'.`)
+    if (options.request.method !== payload.htm) {
+      throw new Oauth2Error(
+        `Dpop jwt contains htm value '${payload.htm}', but expected htm value '${options.request.method}'`
+      )
     }
-  }
 
-  if (options.expectedJwkThumbprint) {
-    const jwkThumprint = await calculateJwkThumbprint({
+    const expectedHtu = htuFromRequestUrl(options.request.url)
+    if (expectedHtu !== payload.htu) {
+      throw new Oauth2Error(`Dpop jwt contains htu value '${payload.htu}', but expected htu value '${expectedHtu}'.`)
+    }
+
+    if (options.accessToken) {
+      const expectedAth = encodeToBase64Url(
+        await options.callbacks.hash(decodeUtf8String(options.accessToken), HashAlgorithm.Sha256)
+      )
+
+      if (!payload.ath) {
+        throw new Oauth2Error(`Dpop jwt does not have a ath value, but expected ath value '${expectedAth}'.`)
+      }
+
+      if (payload.ath !== expectedAth) {
+        throw new Oauth2Error(`Dpop jwt contains ath value '${payload.ath}', but expected ath value '${expectedAth}'.`)
+      }
+    }
+
+    const jwkThumbprint = await calculateJwkThumbprint({
       hashAlgorithm: HashAlgorithm.Sha256,
       hashCallback: options.callbacks.hash,
       jwk: header.jwk,
     })
 
-    if (options.expectedJwkThumbprint !== jwkThumprint) {
+    if (options.expectedJwkThumbprint && options.expectedJwkThumbprint !== jwkThumbprint) {
       throw new Oauth2Error(
-        `Dpop is signed with jwk with thumbprint value '${jwkThumprint}', but expect jwk thumbprint value '${options.expectedJwkThumbprint}'`
+        `Dpop is signed with jwk with thumbprint value '${jwkThumbprint}', but expect jwk thumbprint value '${options.expectedJwkThumbprint}'`
       )
     }
-  }
 
-  await verifyJwt({
-    signer: {
-      alg: header.alg,
-      method: 'jwk',
-      publicJwk: header.jwk,
-    },
-    now: options.now,
-    header,
-    payload,
-    compact: options.dpopJwt,
-    verifyJwtCallback: options.callbacks.verifyJwt,
-    errorMessage: 'dpop jwt verification failed',
-  })
+    await verifyJwt({
+      signer: {
+        alg: header.alg,
+        method: 'jwk',
+        publicJwk: header.jwk,
+      },
+      now: options.now,
+      header,
+      payload,
+      compact: options.dpopJwt,
+      verifyJwtCallback: options.callbacks.verifyJwt,
+      errorMessage: 'dpop jwt verification failed',
+    })
 
-  return {
-    header,
-    payload,
+    return {
+      header,
+      payload,
+      jwkThumbprint,
+    }
+  } catch (error) {
+    if (error instanceof Oauth2Error) {
+      throw new Oauth2ServerErrorResponseError({
+        error: Oauth2ErrorCodes.InvalidDpopProof,
+        error_description: error.message,
+      })
+    }
+
+    throw error
   }
 }
 
@@ -249,9 +263,13 @@ export function extractDpopNonceFromHeaders(headers: FetchHeaders) {
 export function extractDpopJwtFromHeaders(headers: FetchHeaders): { valid: true; dpopJwt?: string } | { valid: false } {
   const dpopJwt = headers.get('DPoP')
 
-  if (dpopJwt && (typeof dpopJwt !== 'string' || dpopJwt.includes(','))) {
+  if (!dpopJwt) {
+    return { valid: true }
+  }
+
+  if (!zCompactJwt.safeParse(dpopJwt).success) {
     return { valid: false }
   }
 
-  return { valid: true, dpopJwt: dpopJwt ?? undefined }
+  return { valid: true, dpopJwt }
 }

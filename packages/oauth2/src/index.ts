@@ -93,6 +93,14 @@ export type {
 export { SupportedAuthenticationScheme } from './access-token/verify-access-token'
 export type { VerifyAccessTokenRequestReturn } from './access-token/verify-access-token-request'
 export type { CreateAuthorizationRequestUrlOptions } from './authorization-request/create-authorization-request'
+export type {
+  CreatePushedAuthorizationErrorResponseOptions,
+  CreatePushedAuthorizationResponseOptions,
+} from './authorization-request/create-pushed-authorization-response'
+export type {
+  ParsePushedAuthorizationRequestOptions,
+  ParsePushedAuthorizationRequestResult,
+} from './authorization-request/parse-pushed-authorization-request'
 export {
   resourceRequest,
   type ResourceRequestOptions,

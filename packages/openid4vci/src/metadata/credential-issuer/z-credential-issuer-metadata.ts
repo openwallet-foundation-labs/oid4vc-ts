@@ -349,9 +349,15 @@ export const zCredentialIssuerMetadataWithDraftVersion = z.union([
       (configuration) => {
         const knownConfiguration = configuration as CredentialConfigurationSupportedWithFormats
 
-        // Added in draft 15
+        // Added in draft 15, it's not possible to detect with 100% guarantee
         if (knownConfiguration.format === zSdJwtDcFormatIdentifier.value) return true
         if (Array.isArray(knownConfiguration.claims)) return true
+        if (
+          Object.values(knownConfiguration.proof_types_supported ?? {}).some(
+            (proofType) => proofType.key_attestations_required !== undefined
+          )
+        )
+          return true
 
         // For now we assume draft 14 if we don't have any evidence it's draft 15
         return false

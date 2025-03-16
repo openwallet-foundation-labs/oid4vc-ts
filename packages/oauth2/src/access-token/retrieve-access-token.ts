@@ -57,7 +57,7 @@ interface RetrieveAccessTokenBaseOptions {
   /**
    * If wallet attestation needs to be included in the request.
    */
-  walletAttestation?: RequestClientAttestationOptions
+  clientAttestation?: RequestClientAttestationOptions
 }
 
 export interface RetrievePreAuthorizedCodeAccessTokenOptions extends RetrieveAccessTokenBaseOptions {
@@ -88,7 +88,7 @@ export async function retrievePreAuthorizedCodeAccessToken(
     dpop: options.dpop,
     callbacks: options.callbacks,
     resource: options.resource,
-    walletAttestation: options.walletAttestation,
+    clientAttestation: options.clientAttestation,
   })
 }
 
@@ -134,7 +134,7 @@ export async function retrieveAuthorizationCodeAccessToken(
     dpop: options.dpop,
     resource: options.resource,
     callbacks: options.callbacks,
-    walletAttestation: options.walletAttestation,
+    clientAttestation: options.clientAttestation,
   })
 }
 
@@ -167,7 +167,7 @@ export async function retrieveRefreshTokenAccessToken(
     dpop: options.dpop,
     callbacks: options.callbacks,
     resource: options.resource,
-    walletAttestation: options.walletAttestation,
+    clientAttestation: options.clientAttestation,
   })
 }
 
@@ -195,10 +195,10 @@ async function retrieveAccessToken(options: RetrieveAccessTokenOptions): Promise
     accessTokenRequest.user_pin = accessTokenRequest.tx_code
   }
 
-  const walletAttestation = options.walletAttestation
+  const clientAttestation = options.clientAttestation
     ? await createClientAttestationForRequest({
         authorizationServer: options.authorizationServerMetadata.issuer,
-        clientAttestation: options.walletAttestation,
+        clientAttestation: options.clientAttestation,
         callbacks: options.callbacks,
       })
     : undefined
@@ -228,7 +228,7 @@ async function retrieveAccessToken(options: RetrieveAccessTokenOptions): Promise
           method: 'POST',
           headers: {
             'Content-Type': ContentType.XWwwFormUrlencoded,
-            ...walletAttestation?.headers,
+            ...clientAttestation?.headers,
             ...dpopHeaders,
           },
         }

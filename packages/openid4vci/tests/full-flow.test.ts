@@ -11,7 +11,7 @@ import {
   calculateJwkThumbprint,
   preAuthorizedCodeGrantIdentifier,
 } from '@openid4vc/oauth2'
-import { ContentType, type HttpMethod, decodeUtf8String, encodeToBase64Url } from '@openid4vc/utils'
+import { ContentType, type HttpMethod, addSecondsToDate, decodeUtf8String, encodeToBase64Url } from '@openid4vc/utils'
 import { http, HttpResponse } from 'msw'
 import { setupServer } from 'msw/node'
 import { afterAll, afterEach, beforeAll, describe, expect, test } from 'vitest'
@@ -21,6 +21,7 @@ import {
   Openid4vciClient,
   Openid4vciDraftVersion,
   Openid4vciIssuer,
+  Openid4vciWalletProvider,
   extractScopesForCredentialConfigurationIds,
 } from '../src'
 
@@ -51,12 +52,36 @@ const accessTokenJwk = {
 }
 const { d: __3, ...accessTokenJwkPublic } = accessTokenJwk
 
+const walletProviderJwk = {
+  kty: 'EC',
+  d: 'oXYK_EmjSLauIIkWF53DuRhZTx9SHg5lC5eWZmtWPxE',
+  crv: 'P-256',
+  x: '2l7WpVHYQoWWjHcB9MpfEylT7w-bhRbG3i-38Cel7EI',
+  y: 'm5c_gqV2sbLmGh4p1bhEANwyt0xtfacrc554SyomrX0',
+}
+const { d: __4, ...walletProviderJwkPublic } = walletProviderJwk
+
+const walletConfirmationJwk = {
+  kty: 'EC',
+  d: 'mGQM_sFuOw-kUvB8oUU0iQSr6AuOG0hCLyvGRHdfK-s',
+  crv: 'P-256',
+  x: 'mYgFqhj2fISu1V4UhrIwg5VJ1fdVzaGRsneZR7hsgkk',
+  y: 'wOZREecqelO_--lBV9_eQB9NAlhzw0urY5ZEDAoh1e4',
+}
+const { d: __5, ...walletConfirmationJwkPublic } = walletConfirmationJwk
+
 const server = setupServer()
 
 const callbacks = {
   ...partialCallbacks,
   fetch,
-  signJwt: getSignJwtCallback([credentialRequestProofJwk, dpopJwk, accessTokenJwk]),
+  signJwt: getSignJwtCallback([
+    credentialRequestProofJwk,
+    dpopJwk,
+    accessTokenJwk,
+    walletConfirmationJwk,
+    walletProviderJwk,
+  ]),
 }
 
 const issuer = new Openid4vciIssuer({
@@ -68,6 +93,7 @@ const client = new Openid4vciClient({
 const authorizationServer = new Oauth2AuthorizationServer({ callbacks })
 const resourceServer = new Oauth2ResourceServer({ callbacks })
 const oauth2Client = new Oauth2Client({ callbacks })
+const walletProvider = new Openid4vciWalletProvider({ callbacks })
 
 const authorizationServerMetadata = authorizationServer.createAuthorizationServerMetadata({
   issuer: 'https://oauth2-auth-server.com',
@@ -202,7 +228,7 @@ describe('Full E2E test', () => {
           })
         }
 
-        const { dpopJwk } = await authorizationServer.verifyPreAuthorizedCodeAccessTokenRequest({
+        const { dpop } = await authorizationServer.verifyPreAuthorizedCodeAccessTokenRequest({
           grant: parsedAccessTokenRequest.grant,
           accessTokenRequest: parsedAccessTokenRequest.accessTokenRequest,
           expectedPreAuthorizedCode: preAuthorizedCode,
@@ -229,7 +255,7 @@ describe('Full E2E test', () => {
           authorizationServer: authorizationServerMetadata.issuer,
           cNonce: 'cd59b02c-c199-4a31-903a-920a2830d2a4',
           cNonceExpiresIn: 100,
-          dpopJwk,
+          dpopJwk: dpop?.jwk,
           scope: extractScopesForCredentialConfigurationIds({
             issuerMetadata,
             credentialConfigurationIds: createdCredentialOffer.credentialOfferObject.credential_configuration_ids,
@@ -420,6 +446,23 @@ describe('Full E2E test', () => {
   })
 
   test('full flow of issuance using authorization code flow', async () => {
+    const walletAttestation = await walletProvider.createWalletAttestationJwt({
+      clientId: 'wallet',
+      confirmation: {
+        jwk: walletConfirmationJwkPublic,
+      },
+      // Valid one hour
+      expiresAt: addSecondsToDate(new Date(), 3600),
+      issuer: 'https://wallet-provider.com',
+      signer: {
+        method: 'jwk',
+        publicJwk: walletProviderJwkPublic,
+        alg: 'ES256',
+      },
+      walletLink: 'https://wallet-provider.com/wallet',
+      walletName: 'Wallet',
+    })
+
     const createdCredentialOffer = await issuer.createCredentialOffer({
       credentialConfigurationIds: Object.keys(credentialConfigurationsSupported),
       grants: {
@@ -460,11 +503,91 @@ describe('Full E2E test', () => {
       ),
       http.post(`${authorizationServerMetadata.pushed_authorization_request_endpoint}`, async ({ request }) => {
         const parRequest = parseXwwwFormUrlEncoded(await request.text())
-        expect(parRequest).toEqual({
+
+        // TODO: (should we make a method verify PAR request to make it easier to handle all these things?)
+        // - verify the client attestation sub against the request client_id
+        // - need to match dpop key and client attestation key??
+        // - add verify pushed authorization request method
+
+        const { authorizationRequest, clientAttestation, dpop } = authorizationServer.parsePushedAuthorizationRequest({
+          authorizationRequest: parRequest,
+          request: {
+            headers: request.headers,
+            method: request.method as HttpMethod,
+            url: request.url,
+          },
+        })
+
+        // TODO: add verifyAuthorizationChallengeRequest method that also verifies DPoP and client attestation
+        const verifiedParRequest = await authorizationServer.verifyPushedAuthorizationRequest({
+          authorizationRequest,
+          authorizationServerMetadata,
+          request: {
+            headers: request.headers,
+            method: request.method as HttpMethod,
+            url: request.url,
+          },
+          clientAttestation,
+          dpop,
+        })
+
+        expect(verifiedParRequest.dpop?.jwkThumbprint).toEqual(
+          await calculateJwkThumbprint({
+            hashAlgorithm: HashAlgorithm.Sha256,
+            hashCallback: callbacks.hash,
+            jwk: dpopJwkPublic,
+          })
+        )
+
+        expect(verifiedParRequest.clientAttestation).toEqual({
+          clientAttestation: {
+            header: {
+              alg: 'ES256',
+              typ: 'oauth-client-attestation+jwt',
+              jwk: walletProviderJwkPublic,
+            },
+            payload: {
+              iss: 'https://wallet-provider.com',
+              iat: expect.any(Number),
+              exp: expect.any(Number),
+              cnf: {
+                jwk: walletConfirmationJwkPublic,
+              },
+              sub: 'wallet',
+              wallet_name: 'Wallet',
+              wallet_link: 'https://wallet-provider.com/wallet',
+            },
+            signer: {
+              alg: 'ES256',
+              method: 'jwk',
+              publicJwk: walletProviderJwkPublic,
+            },
+          },
+          clientAttestationPop: {
+            header: {
+              alg: 'ES256',
+              typ: 'oauth-client-attestation-pop+jwt',
+            },
+            payload: {
+              iss: 'wallet',
+              aud: 'https://oauth2-auth-server.com',
+              iat: expect.any(Number),
+              exp: expect.any(Number),
+              jti: expect.any(String),
+            },
+            signer: {
+              alg: 'ES256',
+              method: 'jwk',
+              publicJwk: walletConfirmationJwkPublic,
+            },
+          },
+        })
+
+        expect(authorizationRequest).toEqual({
           issuer_state: 'something',
           resource: credentialIssuerMetadata.credential_issuer,
           response_type: 'code',
-          client_id: 'some-client-id',
+          client_id: 'wallet',
           redirect_uri: 'https://redirect.com',
           scope: 'PidSdJwt',
           code_challenge: expect.any(String),
@@ -507,8 +630,21 @@ describe('Full E2E test', () => {
             code: 'some-authorization-code',
           },
           dpopJwt: expect.any(String),
+          clientAttestation: {
+            clientAttestationJwt: expect.any(String),
+            clientAttestationPopJwt: expect.any(String),
+          },
           pkceCodeVerifier: expect.any(String),
         })
+
+        // TODO:
+        // - verify dpop matches with dpop from request
+        //  - add expectedJwkThumprint
+        // - verify client attestation matches with client attestation from auth request
+        //   - is this needed? if so we can match the jwk thumbprint uri?
+        //   - add client attestation to the verify access token request method
+        // - verify dpop and wallet attestation key matches?
+        //   - do we add a parameter to require this?
 
         if (parsedAccessTokenRequest.grant.grantType !== authorizationCodeGrantIdentifier) {
           return HttpResponse.json({
@@ -517,7 +653,7 @@ describe('Full E2E test', () => {
           })
         }
 
-        const { dpopJwk } = await authorizationServer.verifyAuthorizationCodeAccessTokenRequest({
+        const { dpop } = await authorizationServer.verifyAuthorizationCodeAccessTokenRequest({
           grant: parsedAccessTokenRequest.grant,
           accessTokenRequest: parsedAccessTokenRequest.accessTokenRequest,
           pkce: {
@@ -536,6 +672,11 @@ describe('Full E2E test', () => {
           dpop: {
             required: true,
             jwt: parsedAccessTokenRequest.dpopJwt,
+            expectedJwkThumbprint: await calculateJwkThumbprint({
+              hashAlgorithm: HashAlgorithm.Sha256,
+              hashCallback: callbacks.hash,
+              jwk: dpopJwk as Jwk,
+            }),
           },
         })
 
@@ -551,8 +692,8 @@ describe('Full E2E test', () => {
           authorizationServer: authorizationServerMetadata.issuer,
           cNonce: 'cd59b02c-c199-4a31-903a-920a2830d2a4',
           cNonceExpiresIn: 100,
-          clientId: 'some-client-id',
-          dpopJwk,
+          clientId: 'wallet', // must be same as the client attestation
+          dpopJwk: dpop?.jwk,
           scope: extractScopesForCredentialConfigurationIds({
             issuerMetadata,
             credentialConfigurationIds: createdCredentialOffer.credentialOfferObject.credential_configuration_ids,
@@ -587,7 +728,7 @@ describe('Full E2E test', () => {
               jwk: dpopJwk as Jwk,
             }),
           },
-          client_id: 'some-client-id',
+          client_id: 'wallet',
           sub: 'some-authorization-code',
           scope: 'PidSdJwt',
         })
@@ -676,7 +817,6 @@ describe('Full E2E test', () => {
       credentialIssuerMetadata.credential_issuer
     )
 
-    // TODO: move this to ??
     const isDpopSupported = oauth2Client.isDpopSupported({
       authorizationServerMetadata,
     })
@@ -685,8 +825,16 @@ describe('Full E2E test', () => {
       dpopSigningAlgValuesSupported: ['ES256'],
     })
 
-    const { authorizationRequestUrl, pkce } = await client.createAuthorizationRequestUrlFromOffer({
-      clientId: 'some-client-id',
+    const {
+      authorizationRequestUrl,
+      pkce,
+      dpop: dpopRequest,
+    } = await client.createAuthorizationRequestUrlFromOffer({
+      // TODO: how to deal with client here:
+      // - add client authentication, can be none, clientAttestation, etc..
+      // - extract client_id from client attestation?
+      // - ...?
+      clientId: 'wallet',
       credentialOffer: resolvedCredentialOffer,
       issuerMetadata,
       scope: extractScopesForCredentialConfigurationIds({
@@ -696,6 +844,19 @@ describe('Full E2E test', () => {
       })?.join(' '),
       redirectUri: 'https://redirect.com',
       pkceCodeVerifier: 'some-code-verifier',
+      // TODO: method to check if client attesattion is supported
+      clientAttestation: {
+        jwt: walletAttestation,
+      },
+      dpop: isDpopSupported.supported
+        ? {
+            signer: {
+              method: 'jwk',
+              alg: 'ES256',
+              publicJwk: dpopJwkPublic,
+            },
+          }
+        : undefined,
     })
     expect(pkce).toStrictEqual({
       codeChallenge: encodeToBase64Url(
@@ -704,8 +865,15 @@ describe('Full E2E test', () => {
       codeChallengeMethod: 'S256',
       codeVerifier: expect.any(String),
     })
+    expect(dpopRequest).toEqual({
+      signer: {
+        method: 'jwk',
+        alg: 'ES256',
+        publicJwk: dpopJwkPublic,
+      },
+    })
     expect(authorizationRequestUrl).toStrictEqual(
-      'https://oauth2-auth-server.com/authorize?request_uri=https%3A%2F%2Foauth2-auth-server.com%2Fauthorize%3Frequest_uri%3Durn%3Asomething&client_id=some-client-id'
+      'https://oauth2-auth-server.com/authorize?request_uri=https%3A%2F%2Foauth2-auth-server.com%2Fauthorize%3Frequest_uri%3Durn%3Asomething&client_id=wallet'
     )
 
     const {
@@ -728,6 +896,9 @@ describe('Full E2E test', () => {
             },
           }
         : undefined,
+      clientAttestation: {
+        jwt: walletAttestation,
+      },
     })
     expect(accessTokenResponse).toStrictEqual({
       access_token: expect.any(String),

@@ -196,7 +196,7 @@ export class Openid4vciClient {
           issuer_state: options.credentialOffer?.grants?.authorization_code?.issuer_state,
         },
         dpop: options.dpop,
-        walletAttestation: options.walletAttestation,
+        clientAttestation: options.clientAttestation,
         resource: options.issuerMetadata.credentialIssuer.credential_issuer,
         authorizationServerMetadata,
       })
@@ -266,7 +266,7 @@ export class Openid4vciClient {
       redirectUri: options.redirectUri,
       scope: options.scope,
       pkceCodeVerifier: options.pkceCodeVerifier,
-      walletAttestation: options.walletAttestation,
+      clientAttestation: options.clientAttestation,
       dpop: options.dpop,
     })
 
@@ -288,7 +288,7 @@ export class Openid4vciClient {
     additionalRequestPayload,
     txCode,
     dpop,
-    walletAttestation,
+    clientAttestation,
   }: Omit<
     RetrievePreAuthorizedCodeAccessTokenOptions,
     'callbacks' | 'authorizationServerMetadata' | 'preAuthorizedCode' | 'resource'
@@ -326,7 +326,7 @@ export class Openid4vciClient {
       resource: issuerMetadata.credentialIssuer.credential_issuer,
       additionalRequestPayload,
       dpop,
-      walletAttestation,
+      clientAttestation,
     })
 
     return {
@@ -347,7 +347,7 @@ export class Openid4vciClient {
     pkceCodeVerifier,
     redirectUri,
     dpop,
-    walletAttestation,
+    clientAttestation,
   }: Omit<RetrieveAuthorizationCodeAccessTokenOptions, 'authorizationServerMetadata' | 'callbacks'> & {
     credentialOffer: CredentialOfferObject
     issuerMetadata: IssuerMetadataResult
@@ -372,7 +372,7 @@ export class Openid4vciClient {
       pkceCodeVerifier,
       additionalRequestPayload,
       dpop,
-      walletAttestation,
+      clientAttestation,
       redirectUri,
       resource: issuerMetadata.credentialIssuer.credential_issuer,
     })

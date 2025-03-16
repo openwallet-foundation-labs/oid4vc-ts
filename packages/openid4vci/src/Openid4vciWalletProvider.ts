@@ -15,10 +15,24 @@ export interface Openid4vciWalletProviderOptions {
 export class Openid4vciWalletProvider {
   public constructor(private options: Openid4vciWalletProviderOptions) {}
 
-  public async createClientAttestationJwt(options: Omit<CreateClientAttestationJwtOptions, 'callbacks'>) {
+  public async createWalletAttestationJwt(
+    options: Omit<CreateClientAttestationJwtOptions, 'callbacks'> & { walletName?: string; walletLink?: string }
+  ) {
+    const additionalPayload = options.additionalPayload
+      ? {
+          wallet_name: options.walletName,
+          wallet_link: options.walletLink,
+          ...options.additionalPayload,
+        }
+      : {
+          wallet_name: options.walletName,
+          wallet_link: options.walletLink,
+        }
+
     return await createClientAttestationJwt({
-      callbacks: this.options.callbacks,
       ...options,
+      callbacks: this.options.callbacks,
+      additionalPayload,
     })
   }
 

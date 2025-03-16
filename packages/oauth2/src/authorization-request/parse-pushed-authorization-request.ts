@@ -1,22 +1,25 @@
 import { formatZodError } from '@openid4vc/utils'
+
 import { extractClientAttestationJwtsFromHeaders } from '../client-attestation/clent-attestation'
 import type { RequestLike } from '../common/z-common'
 import { Oauth2ErrorCodes } from '../common/z-oauth2-error'
 import { extractDpopJwtFromHeaders } from '../dpop/dpop'
 import { Oauth2ServerErrorResponseError } from '../error/Oauth2ServerErrorResponseError'
-import { type AuthorizationChallengeRequest, zAuthorizationChallengeRequest } from './z-authorization-challenge'
+import { type AuthorizationRequest, zAuthorizationRequest } from './z-authorization-request'
 
-export interface ParseAuthorizationChallengeRequestOptions {
+export interface ParsePushedAuthorizationRequestOptions {
   request: RequestLike
 
-  authorizationChallengeRequest: unknown
+  authorizationRequest: unknown
 }
 
-export interface ParseAuthorizationChallengeRequestResult {
-  authorizationChallengeRequest: AuthorizationChallengeRequest
+// NOTE: can we do something to reduce duplication between
+// PAR and authorization challenge request?
+export interface ParsePushedAuthorizationRequestResult {
+  authorizationRequest: AuthorizationRequest
 
   /**
-   * The dpop params from the authorization challenge request.
+   * The dpop params from the pushed authorization request.
    *
    * Both `dpop_jkt` and DPoP header can be included in the request.
    *
@@ -34,7 +37,7 @@ export interface ParseAuthorizationChallengeRequestResult {
       }
 
   /**
-   * The client attestation jwts from the authorization challenge request headers.
+   * The client attestation jwts from the pushed authorization request headers.
    * These have not been verified yet.
    */
   clientAttestation?: {
@@ -44,27 +47,24 @@ export interface ParseAuthorizationChallengeRequestResult {
 }
 
 /**
- * Parse an authorization challenge request.
+ * Parse an pushed authorization request.
  *
  * @throws {Oauth2ServerErrorResponseError}
  */
-export function parseAuthorizationChallengeRequest(
-  options: ParseAuthorizationChallengeRequestOptions
-): ParseAuthorizationChallengeRequestResult {
-  // TODO: we should probably only verify/parse the auth challenge request AFTER we have verified the auth?
+export function parsePushedAuthorizationRequest(
+  options: ParsePushedAuthorizationRequestOptions
+): ParsePushedAuthorizationRequestResult {
+  // TODO: we should probably only verify/parse the pushed authorization request AFTER we have verified the auth?
   // So we need to split this up into two methods
-  // - parse authorization request authentication
-  const parsedAuthorizationChallengeRequest = zAuthorizationChallengeRequest.safeParse(
-    options.authorizationChallengeRequest
-  )
-  if (!parsedAuthorizationChallengeRequest.success) {
+  const parsedAuthorizationRequest = zAuthorizationRequest.safeParse(options.authorizationRequest)
+  if (!parsedAuthorizationRequest.success) {
     throw new Oauth2ServerErrorResponseError({
       error: Oauth2ErrorCodes.InvalidRequest,
-      error_description: `Error occured during validation of authorization challenge request.\n${formatZodError(parsedAuthorizationChallengeRequest.error)}`,
+      error_description: `Error occured during validation of pushed authorization request.\n${formatZodError(parsedAuthorizationRequest.error)}`,
     })
   }
 
-  const authorizationChallengeRequest = parsedAuthorizationChallengeRequest.data
+  const authorizationRequest = parsedAuthorizationRequest.data
 
   // We only parse the dpop, we don't verify it yet
   const extractedDpopJwt = extractDpopJwtFromHeaders(options.request.headers)
@@ -86,18 +86,18 @@ export function parseAuthorizationChallengeRequest(
   }
 
   return {
-    authorizationChallengeRequest,
+    authorizationRequest,
 
     dpop: extractedDpopJwt.dpopJwt
       ? {
           jwt: extractedDpopJwt.dpopJwt,
-          jwkThumbprint: authorizationChallengeRequest.dpop_jkt,
+          jwkThumbprint: authorizationRequest.dpop_jkt,
         }
       : // Basically the same as above, but with correct TS type hinting
-        authorizationChallengeRequest.dpop_jkt
+        authorizationRequest.dpop_jkt
         ? {
             jwt: extractedDpopJwt.dpopJwt,
-            jwkThumbprint: authorizationChallengeRequest.dpop_jkt,
+            jwkThumbprint: authorizationRequest.dpop_jkt,
           }
         : undefined,
     clientAttestation: extractedClientAttestationJwts.clientAttestationHeader

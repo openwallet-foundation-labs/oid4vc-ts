@@ -29,6 +29,12 @@ export interface VerifyAccessTokenRequestDpop {
    * to handle the alg.
    */
   allowedSigningAlgs?: string[]
+
+  /**
+   * The expected jwk thumbprint, and can be used to match a dpop provided in the authorization
+   * request to the dpop key used for the access token request.
+   */
+  expectedJwkThumbprint?: string
 }
 
 export interface VerifyAccessTokenRequestPkce {
@@ -39,7 +45,15 @@ export interface VerifyAccessTokenRequestPkce {
 }
 
 export interface VerifyAccessTokenRequestReturn {
-  dpopJwk?: Jwk
+  dpop?: {
+    /**
+     * base64url encoding of the JWK SHA-256 Thumbprint (according to [RFC7638])
+     * of the DPoP public key (in JWK format)
+     */
+    jwkThumbprint: string
+
+    jwk: Jwk
+  }
 }
 
 export interface VerifyPreAuthorizedCodeAccessTokenRequestOptions {
@@ -117,9 +131,9 @@ export async function verifyPreAuthorizedCodeAccessTokenRequest(
 
   const dpopResult = options.dpop
     ? await verifyAccessTokenRequestDpop(options.dpop, options.request, options.callbacks)
-    : null
+    : undefined
 
-  return { dpopJwk: dpopResult?.dpopJwk }
+  return { dpop: dpopResult ?? undefined }
 }
 
 export interface VerifyAuthorizationCodeAccessTokenRequestOptions {
@@ -170,9 +184,9 @@ export async function verifyAuthorizationCodeAccessTokenRequest(
 
   const dpopResult = options.dpop
     ? await verifyAccessTokenRequestDpop(options.dpop, options.request, options.callbacks)
-    : null
+    : undefined
 
-  return { dpopJwk: dpopResult?.dpopJwk }
+  return { dpop: dpopResult ?? undefined }
 }
 
 async function verifyAccessTokenRequestDpop(
@@ -189,25 +203,17 @@ async function verifyAccessTokenRequestDpop(
 
   if (!options.jwt) return null
 
-  try {
-    const { header } = await verifyDpopJwt({
-      callbacks,
-      dpopJwt: options.jwt,
-      request,
-      allowedSigningAlgs: options.allowedSigningAlgs,
-    })
+  const { header, jwkThumbprint } = await verifyDpopJwt({
+    callbacks,
+    dpopJwt: options.jwt,
+    request,
+    allowedSigningAlgs: options.allowedSigningAlgs,
+    expectedJwkThumbprint: options.expectedJwkThumbprint,
+  })
 
-    return {
-      dpopJwk: header.jwk,
-    }
-  } catch (error) {
-    if (error instanceof Oauth2Error) {
-      throw new Oauth2ServerErrorResponseError({
-        error: Oauth2ErrorCodes.InvalidDpopProof,
-        error_description: error.message,
-      })
-    }
-    throw error
+  return {
+    jwk: header.jwk,
+    jwkThumbprint,
   }
 }
 

@@ -255,7 +255,7 @@ describe('Verify Pre Auhthorized Code Access Token Request', () => {
     })
     const now = new Date()
 
-    const { dpopJwk } = await verifyPreAuthorizedCodeAccessTokenRequest({
+    const { dpop } = await verifyPreAuthorizedCodeAccessTokenRequest({
       accessTokenRequest: {
         grant_type: preAuthorizedCodeGrantIdentifier,
         code: 'hello2',
@@ -291,7 +291,10 @@ describe('Verify Pre Auhthorized Code Access Token Request', () => {
       },
     })
 
-    expect(dpopJwk).toEqual(dpopPublicJwk)
+    expect(dpop).toEqual({
+      jwk: dpopPublicJwk,
+      jwkThumbprint: 'VyMJnrA8aEQPnpDn0kCkNIkjfQgt94xDbK0N1O9Os_4',
+    })
   })
 })
 
@@ -477,7 +480,7 @@ describe('Verify Authorization Code Access Token Request', () => {
 
     const now = new Date()
 
-    const { dpopJwk } = await verifyAuthorizationCodeAccessTokenRequest({
+    const { dpop } = await verifyAuthorizationCodeAccessTokenRequest({
       accessTokenRequest: {
         grant_type: authorizationCodeGrantIdentifier,
         code: 'hello2',
@@ -510,6 +513,6 @@ describe('Verify Authorization Code Access Token Request', () => {
       },
     })
 
-    expect(dpopJwk).toEqual(dpopPublicJwk)
+    expect(dpop).toEqual({ jwk: dpopPublicJwk, jwkThumbprint: 'VyMJnrA8aEQPnpDn0kCkNIkjfQgt94xDbK0N1O9Os_4' })
   })
 })

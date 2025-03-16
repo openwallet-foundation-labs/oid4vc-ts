@@ -102,6 +102,7 @@ export interface VerifyClientAttestationPopJwtOptions {
   }
 }
 
+export type VerifiedClientAttestationPopJwt = Awaited<ReturnType<typeof verifyClientAttestationPopJwt>>
 export async function verifyClientAttestationPopJwt(options: VerifyClientAttestationPopJwtOptions) {
   const { header, payload } = decodeJwt({
     jwt: options.clientAttestationPopJwt,

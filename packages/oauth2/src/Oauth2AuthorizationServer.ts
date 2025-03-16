@@ -1,4 +1,4 @@
-import { type FetchHeaders, parseWithErrorHandling } from '@openid4vc/utils'
+import { parseWithErrorHandling } from '@openid4vc/utils'
 import { type CreateAccessTokenOptions, createAccessTokenJwt } from './access-token/create-access-token'
 import {
   type CreateAccessTokenResponseOptions,
@@ -21,13 +21,24 @@ import {
   type ParseAuthorizationChallengeRequestOptions,
   parseAuthorizationChallengeRequest,
 } from './authorization-challenge/parse-authorization-challenge-request'
-import type { CallbackContext } from './callbacks'
 import {
-  extractClientAttestationJwtsFromHeaders,
-  verifyClientAttestationJwt,
-} from './client-attestation/clent-attestation'
-import { verifyClientAttestationPopJwt } from './client-attestation/client-attestation-pop'
+  type CreatePushedAuthorizationErrorResponseOptions,
+  type CreatePushedAuthorizationResponseOptions,
+  createPushedAuthorizationErrorResponse,
+  createPushedAuthorizationResponse,
+} from './authorization-request/create-pushed-authorization-response'
+import {
+  type ParsePushedAuthorizationRequestOptions,
+  parsePushedAuthorizationRequest,
+} from './authorization-request/parse-pushed-authorization-request'
+import {
+  type VerifyPushedAuthorizationRequestOptions,
+  verifyPushedAuthorizationRequest,
+} from './authorization-request/verify-pushed-authorization-request'
+import type { CallbackContext } from './callbacks'
+import { type VerifyClientAttestationOptions, verifyClientAttestation } from './client-attestation/clent-attestation'
 import { Oauth2ErrorCodes } from './common/z-oauth2-error'
+import { type VerifyDpopJwtOptions, verifyDpopJwt } from './dpop/dpop'
 import {
   type AuthorizationServerMetadata,
   zAuthorizationServerMetadata,
@@ -131,6 +142,28 @@ export class Oauth2AuthorizationServer {
   }
 
   /**
+   * Parse a pushed authorization request
+   */
+  public parsePushedAuthorizationRequest(options: ParsePushedAuthorizationRequestOptions) {
+    return parsePushedAuthorizationRequest(options)
+  }
+
+  public verifyPushedAuthorizationRequest(options: Omit<VerifyPushedAuthorizationRequestOptions, 'callbacks'>) {
+    return verifyPushedAuthorizationRequest({
+      ...options,
+      callbacks: this.options.callbacks,
+    })
+  }
+
+  public createPushedAuthorizationResponse(options: CreatePushedAuthorizationResponseOptions) {
+    return createPushedAuthorizationResponse(options)
+  }
+
+  public createPushedAuthorizationErrorResponse(options: CreatePushedAuthorizationErrorResponseOptions) {
+    return createPushedAuthorizationErrorResponse(options)
+  }
+
+  /**
    * Parse an authorization challenge request
    */
   public parseAuthorizationChallengeRequest(options: ParseAuthorizationChallengeRequestOptions) {
@@ -142,7 +175,7 @@ export class Oauth2AuthorizationServer {
   }
 
   /**
-   * Create an authorization challenge error response indicating presentation of credenitals
+   * Create an authorization challenge error response indicating presentation of credentials
    * using OpenID4VP is required before authorization can be granted.
    *
    * The `presentation` parameter should be an OpenID4VP authorization request url.
@@ -165,27 +198,17 @@ export class Oauth2AuthorizationServer {
     return createAuthorizationChallengeErrorResponse(options)
   }
 
-  public async verifyClientAttestation({
-    authorizationServer,
-    headers,
-  }: { authorizationServer: string; headers: FetchHeaders }) {
-    const { clientAttestationHeader, clientAttestationPopHeader } = extractClientAttestationJwtsFromHeaders(headers)
-
-    const clientAttestation = await verifyClientAttestationJwt({
+  public async verifyDpopJwt(options: Omit<VerifyDpopJwtOptions, 'callbacks'>) {
+    return verifyDpopJwt({
       callbacks: this.options.callbacks,
-      clientAttestationJwt: clientAttestationHeader,
+      ...options,
     })
+  }
 
-    const clientAttestationPop = await verifyClientAttestationPopJwt({
+  public async verifyClientAttestation(options: Omit<VerifyClientAttestationOptions, 'callbacks'>) {
+    return verifyClientAttestation({
+      ...options,
       callbacks: this.options.callbacks,
-      authorizationServer,
-      clientAttestation,
-      clientAttestationPopJwt: clientAttestationPopHeader,
     })
-
-    return {
-      clientAttestation,
-      clientAttestationPop,
-    }
   }
 }

@@ -84,7 +84,7 @@ describe('Oauth2AuthorizationServer', () => {
       throw new Error('expected grant to be pre-auth')
     }
 
-    const { dpopJwk } = await authorizationServer.verifyPreAuthorizedCodeAccessTokenRequest({
+    const { dpop } = await authorizationServer.verifyPreAuthorizedCodeAccessTokenRequest({
       grant,
       accessTokenRequest,
       request,
@@ -99,7 +99,7 @@ describe('Oauth2AuthorizationServer', () => {
       preAuthorizedCodeExpiresAt: new Date('2024-01-02'),
     })
 
-    expect(dpopJwk).toEqual(dpopSignerJwkPublic)
+    expect(dpop?.jwk).toEqual(dpopSignerJwkPublic)
 
     const accessTokenResponse = await authorizationServer.createAccessTokenResponse({
       audience: 'https://credential-issuer.com',
@@ -114,7 +114,8 @@ describe('Oauth2AuthorizationServer', () => {
       },
       cNonce: '0f1c8dec-26d5-4014-a570-19225a3e00ae',
       cNonceExpiresIn: 300,
-      dpopJwk,
+      // TODO: Should we make everything with dpop just an object, as it's a bit inconsistent now.
+      dpopJwk: dpop?.jwk,
     })
 
     expect(accessTokenResponse).toEqual({
@@ -216,7 +217,7 @@ describe('Oauth2AuthorizationServer', () => {
       throw new Error('expected grant to be auth')
     }
 
-    const { dpopJwk } = await authorizationServer.verifyAuthorizationCodeAccessTokenRequest({
+    const { dpop } = await authorizationServer.verifyAuthorizationCodeAccessTokenRequest({
       grant,
       accessTokenRequest,
       request,
@@ -235,7 +236,7 @@ describe('Oauth2AuthorizationServer', () => {
       codeExpiresAt: new Date('2024-01-02'),
     })
 
-    expect(dpopJwk).toEqual(dpopSignerJwkPublic)
+    expect(dpop?.jwk).toEqual(dpopSignerJwkPublic)
 
     const accessTokenResponse = await authorizationServer.createAccessTokenResponse({
       audience: 'https://credential-issuer.com',
@@ -249,7 +250,7 @@ describe('Oauth2AuthorizationServer', () => {
       },
       cNonce: '0f1c8dec-26d5-4014-a570-19225a3e00ae',
       cNonceExpiresIn: 300,
-      dpopJwk,
+      dpopJwk: dpop?.jwk,
     })
 
     expect(accessTokenResponse).toEqual({
