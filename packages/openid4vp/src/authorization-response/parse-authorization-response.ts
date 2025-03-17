@@ -1,7 +1,7 @@
 import { type CallbackContext, Oauth2ServerErrorResponseError } from '@openid4vc/oauth2'
 import type { Openid4vpAuthorizationRequest } from '../authorization-request/z-authorization-request'
 import type { Openid4vpAuthorizationRequestDcApi } from '../authorization-request/z-authorization-request-dc-api'
-import { getClientId } from '../client-identifier-scheme/parse-client-identifier-scheme'
+import { getOpenid4vpClientId } from '../client-identifier-scheme/parse-client-identifier-scheme'
 import type { VerifiedJarmAuthorizationResponse } from '../jarm/jarm-authorization-response/verify-jarm-authorization-response'
 import type { JarmHeader } from '../jarm/jarm-authorization-response/z-jarm-authorization-response'
 import { isJarmResponseMode } from '../jarm/jarm-response-mode'
@@ -36,7 +36,7 @@ export async function parseOpenid4vpAuthorizationResponse(
 ): Promise<ParsedOpenid4vpAuthorizationResponse> {
   const { authorizationResponse, callbacks, authorizationRequestPayload, origin } = options
 
-  const expectedClientId = getClientId({ authorizationRequestPayload, origin })
+  const expectedClientId = getOpenid4vpClientId({ authorizationRequestPayload, origin })
   if (authorizationResponse.response) {
     return parseJarmAuthorizationResponse({
       jarmResponseJwt: authorizationResponse.response as string,
