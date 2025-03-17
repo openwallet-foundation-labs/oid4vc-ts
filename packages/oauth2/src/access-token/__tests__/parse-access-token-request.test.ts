@@ -85,7 +85,7 @@ describe('Parse Access Token Request', () => {
         },
         request: {
           headers: new Headers({
-            DPoP: ['ey.ey.S', 'ey.ey.S'],
+            DPoP: ['ey.ey.S', 'ey.ey.S'] as unknown as string,
           }),
           method: 'POST',
           url: 'https://request.com/token',
