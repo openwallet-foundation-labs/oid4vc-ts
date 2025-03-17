@@ -144,6 +144,8 @@ export {
   clientAuthenticationDynamic,
   clientAuthenticationNone,
   clientAuthenticationClientAttestationJwt,
+  SupportedClientAuthenticationMethod,
+  type ClientAuthenticationNoneOptions,
   type ClientAuthenticationClientSecretBasicOptions,
   type ClientAuthenticationClientSecretPostOptions,
   type ClientAuthenticationDynamicOptions,

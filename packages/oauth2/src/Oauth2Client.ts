@@ -23,12 +23,13 @@ import { fetchAuthorizationServerMetadata } from './metadata/authorization-serve
 import type { AuthorizationServerMetadata } from './metadata/authorization-server/z-authorization-server-metadata'
 import { createPkce } from './pkce'
 import { type ResourceRequestOptions, resourceRequest } from './resource-request/make-resource-request'
+import { SupportedClientAuthenticationMethod } from './client-authentication'
 
 export interface Oauth2ClientOptions {
   /**
    * Callbacks required for the oauth2 client
    */
-  callbacks: Omit<CallbackContext, 'verifyJwt' | 'clientAuthentication' | 'decryptJwe' | 'encryptJwe'>
+  callbacks: Omit<CallbackContext, 'verifyJwt' | 'decryptJwe' | 'encryptJwe'>
 }
 
 export class Oauth2Client {
@@ -49,6 +50,23 @@ export class Oauth2Client {
     return {
       supported: true,
       dpopSigningAlgValuesSupported: options.authorizationServerMetadata.dpop_signing_alg_values_supported,
+    } as const
+  }
+
+  public isClientAttestationSupported(options: { authorizationServerMetadata: AuthorizationServerMetadata }) {
+    if (
+      !options.authorizationServerMetadata.token_endpoint_auth_methods_supported ||
+      !options.authorizationServerMetadata.token_endpoint_auth_methods_supported.includes(
+        SupportedClientAuthenticationMethod.ClientAttestationJwt
+      )
+    ) {
+      return {
+        supported: false,
+      } as const
+    }
+
+    return {
+      supported: true,
     } as const
   }
 

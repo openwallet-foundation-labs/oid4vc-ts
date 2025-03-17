@@ -247,7 +247,7 @@ describe('Full E2E test', () => {
           authorizationServer: authorizationServerMetadata.issuer,
           cNonce: 'cd59b02c-c199-4a31-903a-920a2830d2a4',
           cNonceExpiresIn: 100,
-          dpopJwk: dpop?.jwk,
+          dpop,
           scope: extractScopesForCredentialConfigurationIds({
             issuerMetadata,
             credentialConfigurationIds: createdCredentialOffer.credentialOfferObject.credential_configuration_ids,
@@ -257,7 +257,7 @@ describe('Full E2E test', () => {
         return HttpResponse.json(accessTokenResponse)
       }),
       http.post(credentialIssuerMetadata.credential_endpoint, async ({ request }) => {
-        const { dpopJwk, tokenPayload } = await resourceServer.verifyResourceRequest({
+        const { dpop, tokenPayload } = await resourceServer.verifyResourceRequest({
           authorizationServers: issuerMetadata.authorizationServers,
           request: {
             url: request.url,
@@ -268,7 +268,7 @@ describe('Full E2E test', () => {
           allowedAuthenticationSchemes: [SupportedAuthenticationScheme.DPoP],
         })
 
-        expect(dpopJwk).toEqual(dpopJwkPublic)
+        expect(dpop?.jwk).toEqual(dpopJwkPublic)
         expect(tokenPayload).toEqual({
           iss: authorizationServerMetadata.issuer,
           aud: credentialIssuerMetadata.credential_issuer,
@@ -279,7 +279,7 @@ describe('Full E2E test', () => {
             jkt: await calculateJwkThumbprint({
               hashAlgorithm: HashAlgorithm.Sha256,
               hashCallback: callbacks.hash,
-              jwk: dpopJwk as Jwk,
+              jwk: dpopJwkPublic as Jwk,
             }),
           },
           sub: preAuthorizedCode,
@@ -370,7 +370,6 @@ describe('Full E2E test', () => {
       credentialIssuerMetadata.credential_issuer
     )
 
-    // TODO: move this to ??
     const isDpopSupported = oauth2Client.isDpopSupported({
       authorizationServerMetadata,
     })
@@ -635,13 +634,6 @@ describe('Full E2E test', () => {
           pkceCodeVerifier: expect.any(String),
         })
 
-        // TODO:
-        // - verify client attestation matches with client attestation from auth request
-        //   - is this needed? if so we can match the jwk thumbprint uri?
-        //   - add client attestation to the verify access token request method
-        // - verify dpop and wallet attestation key matches?
-        //   - do we add a parameter to require this?
-
         if (parsedAccessTokenRequest.grant.grantType !== authorizationCodeGrantIdentifier) {
           return HttpResponse.json({
             error: 'invalid_grant',
@@ -691,7 +683,7 @@ describe('Full E2E test', () => {
           cNonce: 'cd59b02c-c199-4a31-903a-920a2830d2a4',
           cNonceExpiresIn: 100,
           clientId: 'wallet', // must be same as the client attestation
-          dpopJwk: dpop?.jwk,
+          dpop,
           scope: extractScopesForCredentialConfigurationIds({
             issuerMetadata,
             credentialConfigurationIds: createdCredentialOffer.credentialOfferObject.credential_configuration_ids,
@@ -701,7 +693,7 @@ describe('Full E2E test', () => {
         return HttpResponse.json(accessTokenResponse)
       }),
       http.post(credentialIssuerMetadata.credential_endpoint, async ({ request }) => {
-        const { dpopJwk, tokenPayload } = await resourceServer.verifyResourceRequest({
+        const { dpop, tokenPayload } = await resourceServer.verifyResourceRequest({
           authorizationServers: issuerMetadata.authorizationServers,
           request: {
             url: request.url,
@@ -712,7 +704,7 @@ describe('Full E2E test', () => {
           allowedAuthenticationSchemes: [SupportedAuthenticationScheme.DPoP],
         })
 
-        expect(dpopJwk).toEqual(dpopJwkPublic)
+        expect(dpop?.jwk).toEqual(dpopJwkPublic)
         expect(tokenPayload).toEqual({
           iss: authorizationServerMetadata.issuer,
           aud: credentialIssuerMetadata.credential_issuer,
@@ -723,7 +715,7 @@ describe('Full E2E test', () => {
             jkt: await calculateJwkThumbprint({
               hashAlgorithm: HashAlgorithm.Sha256,
               hashCallback: callbacks.hash,
-              jwk: dpopJwk as Jwk,
+              jwk: dpop?.jwk as Jwk,
             }),
           },
           client_id: 'wallet',
@@ -843,6 +835,7 @@ describe('Full E2E test', () => {
       redirectUri: 'https://redirect.com',
       pkceCodeVerifier: 'some-code-verifier',
       // TODO: method to check if client attesattion is supported
+      // based on auth_methods_supported
       clientAttestation: {
         jwt: walletAttestation,
       },

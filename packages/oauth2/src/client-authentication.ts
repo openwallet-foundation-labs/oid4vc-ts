@@ -84,10 +84,10 @@ export interface ClientAuthenticationDynamicOptions {
  */
 export function clientAuthenticationDynamic(options: ClientAuthenticationDynamicOptions): ClientAuthenticationCallback {
   return (callbackOptions) => {
-    const { url, authorizationServerMetata } = callbackOptions
+    const { url, authorizationServerMetadata } = callbackOptions
     const endpointType: ClientAuthenticationEndpointType =
-      url === authorizationServerMetata.introspection_endpoint ? 'introspection' : 'endpoint'
-    const method = getSupportedClientAuthenticationMethod(authorizationServerMetata, endpointType)
+      url === authorizationServerMetadata.introspection_endpoint ? 'introspection' : 'endpoint'
+    const method = getSupportedClientAuthenticationMethod(authorizationServerMetadata, endpointType)
 
     if (method === SupportedClientAuthenticationMethod.ClientSecretBasic) {
       return clientAuthenticationClientSecretBasic(options)(callbackOptions)
@@ -116,7 +116,7 @@ export interface ClientAuthenticationCallbackOptions {
   /**
    * Metadata of the authorization server
    */
-  authorizationServerMetata: AuthorizationServerMetadata
+  authorizationServerMetadata: AuthorizationServerMetadata
 
   /**
    * URL to which the request will be made
@@ -207,9 +207,9 @@ export interface ClientAuthenticationClientAttestationJwtOptions {
 export function clientAuthenticationClientAttestationJwt(
   options: ClientAuthenticationClientAttestationJwtOptions
 ): ClientAuthenticationCallback {
-  return async ({ headers, authorizationServerMetata }) => {
+  return async ({ headers, authorizationServerMetadata }) => {
     const clientAttestationPop = await createClientAttestationPopJwt({
-      authorizationServer: authorizationServerMetata.issuer,
+      authorizationServer: authorizationServerMetadata.issuer,
       callbacks: options.callbacks,
       clientAttestation: options.clientAttestationJwt,
 

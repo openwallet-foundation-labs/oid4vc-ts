@@ -127,8 +127,7 @@ describe('Oauth2AuthorizationServer', () => {
       },
       cNonce: '0f1c8dec-26d5-4014-a570-19225a3e00ae',
       cNonceExpiresIn: 300,
-      // TODO: Should we make everything with dpop just an object, as it's a bit inconsistent now.
-      dpopJwk: dpop?.jwk,
+      dpop,
     })
 
     expect(accessTokenResponse).toEqual({
@@ -269,7 +268,7 @@ describe('Oauth2AuthorizationServer', () => {
       },
       cNonce: '0f1c8dec-26d5-4014-a570-19225a3e00ae',
       cNonceExpiresIn: 300,
-      dpopJwk: dpop?.jwk,
+      dpop,
     })
 
     expect(accessTokenResponse).toEqual({

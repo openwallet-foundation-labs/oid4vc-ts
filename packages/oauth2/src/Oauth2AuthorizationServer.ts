@@ -110,7 +110,7 @@ export class Oauth2AuthorizationServer {
       | 'clientId'
       | 'audience'
       | 'signer'
-      | 'dpopJwk'
+      | 'dpop'
       | 'authorizationServer'
       | 'now'
       | 'subject'
@@ -129,7 +129,7 @@ export class Oauth2AuthorizationServer {
       scope: options.scope,
       clientId: options.clientId,
       signer: options.signer,
-      dpopJwk: options.dpopJwk,
+      dpop: options.dpop,
       now: options.now,
       additionalPayload: options.additionalAccessTokenPayload,
     })
@@ -138,7 +138,7 @@ export class Oauth2AuthorizationServer {
       accessToken,
       callbacks: this.options.callbacks,
       expiresInSeconds: options.expiresInSeconds,
-      tokenType: options.dpopJwk ? 'DPoP' : 'Bearer',
+      tokenType: options.dpop ? 'DPoP' : 'Bearer',
       cNonce: options.cNonce,
       cNonceExpiresIn: options.cNonceExpiresIn,
       additionalPayload: options.additionalAccessTokenResponsePayload,
