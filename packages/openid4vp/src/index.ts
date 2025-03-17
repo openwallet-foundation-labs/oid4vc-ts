@@ -9,6 +9,7 @@ export {
   type JarmMode,
 } from './jarm/jarm-authorization-response/verify-jarm-authorization-response'
 export { zJarmClientMetadata, JarmClientMetadata } from './jarm/metadata/z-jarm-client-metadata'
+
 export {
   createOpenid4vpAuthorizationRequest,
   CreateOpenid4vpAuthorizationRequestOptions,
@@ -46,6 +47,11 @@ export {
   ParseTransactionDataOptions,
 } from './transaction-data/parse-transaction-data'
 export type { TransactionDataEntry } from './transaction-data/z-transaction-data'
+export type {
+  TransactionDataHashesCredentials,
+  VerifiedTransactionDataEntry,
+  VerifyTransactionDataOptions,
+} from './transaction-data/verify-transaction-data'
 export {
   parsePexVpToken,
   parseDcqlVpToken,
