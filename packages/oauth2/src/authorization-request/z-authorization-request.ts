@@ -1,6 +1,6 @@
 import { zHttpsUrl } from '@openid4vc/utils'
 import z from 'zod'
-import { zOauth2ErrorResponse } from '../../dist'
+import { zOauth2ErrorResponse } from '../common/z-oauth2-error'
 
 // TODO: should create different request validations for different
 // response types. Currently we basically only support `code`
