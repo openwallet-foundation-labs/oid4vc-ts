@@ -9,8 +9,10 @@ import {
   SupportedAuthenticationScheme,
   authorizationCodeGrantIdentifier,
   calculateJwkThumbprint,
+  clientAuthenticationClientAttestationJwt,
   preAuthorizedCodeGrantIdentifier,
 } from '@openid4vc/oauth2'
+import { SupportedClientAuthenticationMethod } from '@openid4vc/oauth2'
 import { ContentType, type HttpMethod, addSecondsToDate, decodeUtf8String, encodeToBase64Url } from '@openid4vc/utils'
 import { http, HttpResponse } from 'msw'
 import { setupServer } from 'msw/node'
@@ -90,6 +92,7 @@ const authorizationServerMetadata = authorizationServer.createAuthorizationServe
   require_pushed_authorization_requests: true,
   pushed_authorization_request_endpoint: 'https://oauth2-auth-server.com/par',
   code_challenge_methods_supported: [PkceCodeChallengeMethod.S256],
+  token_endpoint_auth_methods_supported: [SupportedClientAuthenticationMethod.ClientAttestationJwt],
 })
 
 const credentialConfigurationsSupported = {
@@ -178,6 +181,7 @@ describe('Full E2E test', () => {
       http.post(authorizationServerMetadata.token_endpoint, async ({ request }) => {
         const accessTokenRequest = parseXwwwFormUrlEncoded(await request.text())
         expect(accessTokenRequest).toEqual({
+          client_id: 'some-random-client-id',
           'pre-authorized_code': expect.any(String),
           grant_type: 'urn:ietf:params:oauth:grant-type:pre-authorized_code',
           resource: createdCredentialOffer.credentialOfferObject.credential_issuer,
@@ -193,6 +197,7 @@ describe('Full E2E test', () => {
         })
         expect(parsedAccessTokenRequest).toEqual({
           accessTokenRequest: {
+            client_id: 'some-random-client-id',
             'pre-authorized_code': preAuthorizedCode,
             grant_type: 'urn:ietf:params:oauth:grant-type:pre-authorized_code',
             resource: createdCredentialOffer.credentialOfferObject.credential_issuer,
@@ -454,6 +459,11 @@ describe('Full E2E test', () => {
       },
       walletLink: 'https://wallet-provider.com/wallet',
       walletName: 'Wallet',
+    })
+
+    callbacks.clientAuthentication = clientAuthenticationClientAttestationJwt({
+      callbacks,
+      clientAttestationJwt: walletAttestation,
     })
 
     const createdCredentialOffer = await issuer.createCredentialOffer({
@@ -815,6 +825,13 @@ describe('Full E2E test', () => {
       dpopSigningAlgValuesSupported: ['ES256'],
     })
 
+    const isClientAttestationSupported = oauth2Client.isClientAttestationSupported({
+      authorizationServerMetadata,
+    })
+    expect(isClientAttestationSupported).toEqual({
+      supported: true,
+    })
+
     const {
       authorizationRequestUrl,
       pkce,
@@ -834,11 +851,6 @@ describe('Full E2E test', () => {
       })?.join(' '),
       redirectUri: 'https://redirect.com',
       pkceCodeVerifier: 'some-code-verifier',
-      // TODO: method to check if client attesattion is supported
-      // based on auth_methods_supported
-      clientAttestation: {
-        jwt: walletAttestation,
-      },
       dpop: isDpopSupported.supported
         ? {
             signer: {
@@ -887,9 +899,6 @@ describe('Full E2E test', () => {
             },
           }
         : undefined,
-      clientAttestation: {
-        jwt: walletAttestation,
-      },
     })
     expect(accessTokenResponse).toStrictEqual({
       access_token: expect.any(String),

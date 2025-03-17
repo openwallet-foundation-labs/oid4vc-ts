@@ -4,9 +4,9 @@ import { Oauth2AuthorizationServer } from '../Oauth2AuthorizationServer'
 import type { Jwk } from '../common/jwk/z-jwk'
 import { decodeJwt } from '../common/jwt/decode-jwt'
 import { createDpopJwt } from '../dpop/dpop'
+import type { AuthorizationServerMetadata } from '../metadata/authorization-server/z-authorization-server-metadata'
 import { PkceCodeChallengeMethod, createPkce } from '../pkce'
 import { authorizationCodeGrantIdentifier, preAuthorizedCodeGrantIdentifier } from '../z-grant-type'
-import type { AuthorizationServerMetadata } from '../metadata/authorization-server/z-authorization-server-metadata'
 
 const dpopSignerJwk = {
   kty: 'EC',

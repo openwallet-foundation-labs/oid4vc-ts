@@ -1,5 +1,6 @@
 import {
   ContentType,
+  Headers,
   ValidationError,
   createZodFetcher,
   objectToQueryParams,
@@ -7,10 +8,6 @@ import {
 } from '@openid4vc/utils'
 import { InvalidFetchResponseError } from '@openid4vc/utils'
 import type { CallbackContext } from '../callbacks'
-import {
-  type RequestClientAttestationOptions,
-  createClientAttestationForRequest,
-} from '../client-attestation/client-attestation-pop'
 import { type RequestDpopOptions, createDpopHeadersForRequest, extractDpopNonceFromHeaders } from '../dpop/dpop'
 import { authorizationServerRequestWithDpopRetry } from '../dpop/dpop-retry'
 import { Oauth2ClientAuthorizationChallengeError } from '../error/Oauth2ClientAuthorizationChallengeError'
@@ -28,7 +25,7 @@ export interface SendAuthorizationChallengeRequestOptions {
   /**
    * Callback context
    */
-  callbacks: Pick<CallbackContext, 'fetch' | 'hash' | 'generateRandom' | 'signJwt'>
+  callbacks: Pick<CallbackContext, 'fetch' | 'hash' | 'generateRandom' | 'signJwt' | 'clientAuthentication'>
 
   /**
    * Metadata of the authorization server where to perform the authorization challenge
@@ -39,11 +36,6 @@ export interface SendAuthorizationChallengeRequestOptions {
    * Previously established auth session
    */
   authSession?: string
-
-  /**
-   * The client id to use for the authorization challenge request
-   */
-  clientId?: string
 
   /**
    * Scope to request for the authorization challenge request
@@ -72,11 +64,6 @@ export interface SendAuthorizationChallengeRequestOptions {
    * Code verifier to use for pkce. If not provided a value will generated when pkce is supported
    */
   pkceCodeVerifier?: string
-
-  /**
-   * If client attestation needs to be included in the request.
-   */
-  clientAttestation?: RequestClientAttestationOptions
 
   /**
    * DPoP options
@@ -113,18 +100,9 @@ export async function sendAuthorizationChallengeRequest(options: SendAuthorizati
         })
       : undefined
 
-  const clientAttestation = options.clientAttestation
-    ? await createClientAttestationForRequest({
-        authorizationServer: options.authorizationServerMetadata.issuer,
-        clientAttestation: options.clientAttestation,
-        callbacks: options.callbacks,
-      })
-    : undefined
-
   const authorizationChallengeRequest = parseWithErrorHandling(zAuthorizationChallengeRequest, {
     ...options.additionalRequestPayload,
     auth_session: options.authSession,
-    client_id: options.clientId,
     scope: options.scope,
     resource: options.resource,
     code_challenge: pkce?.codeChallenge,
@@ -147,6 +125,21 @@ export async function sendAuthorizationChallengeRequest(options: SendAuthorizati
           })
         : undefined
 
+      const headers = new Headers({
+        ...dpopHeaders,
+        'Content-Type': ContentType.XWwwFormUrlencoded,
+      })
+
+      // Apply client authentication
+      await options.callbacks.clientAuthentication({
+        url: authorizationChallengeEndpoint,
+        method: 'POST',
+        authorizationServerMetadata: options.authorizationServerMetadata,
+        body: authorizationChallengeRequest,
+        contentType: ContentType.XWwwFormUrlencoded,
+        headers,
+      })
+
       const { response, result } = await fetchWithZod(
         zAuthorizationChallengeResponse,
         ContentType.Json,
@@ -154,11 +147,7 @@ export async function sendAuthorizationChallengeRequest(options: SendAuthorizati
         {
           method: 'POST',
           body: objectToQueryParams(authorizationChallengeRequest).toString(),
-          headers: {
-            ...clientAttestation?.headers,
-            ...dpopHeaders,
-            'Content-Type': ContentType.XWwwFormUrlencoded,
-          },
+          headers,
         }
       )
 

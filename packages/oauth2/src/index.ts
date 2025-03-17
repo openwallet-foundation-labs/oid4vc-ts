@@ -143,6 +143,7 @@ export {
   clientAuthenticationClientSecretPost,
   clientAuthenticationDynamic,
   clientAuthenticationNone,
+  clientAuthenticationAnonymous,
   clientAuthenticationClientAttestationJwt,
   SupportedClientAuthenticationMethod,
   type ClientAuthenticationNoneOptions,

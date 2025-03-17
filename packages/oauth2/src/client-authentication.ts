@@ -9,6 +9,7 @@ import {
   oauthClientAttestationPopHeader,
 } from './client-attestation/z-client-attestation'
 import { Oauth2Error } from './error/Oauth2Error'
+import { preAuthorizedCodeGrantIdentifier } from './z-grant-type'
 
 export enum SupportedClientAuthenticationMethod {
   ClientSecretBasic = 'client_secret_basic',
@@ -17,7 +18,7 @@ export enum SupportedClientAuthenticationMethod {
   None = 'none',
 }
 
-type ClientAuthenticationEndpointType = 'endpoint' | 'introspection'
+type ClientAuthenticationEndpointType = 'endpoint' | 'token' | 'introspection'
 
 /**
  * Determine the supported client authentication method based on authorization
@@ -81,13 +82,29 @@ export interface ClientAuthenticationDynamicOptions {
 /**
  * Dynamicaly get the client authentication method based on endpoint type and authorization server.
  * Only `client_secret_post`, `client_secret_basic`, and `none` supported.
+ *
+ * It also supports anonymous access to the token endpoint for pre-authorized code flow
+ * if the authorization server has enabled `pre_authorized_grant_anonymous_access_supported`
  */
 export function clientAuthenticationDynamic(options: ClientAuthenticationDynamicOptions): ClientAuthenticationCallback {
   return (callbackOptions) => {
-    const { url, authorizationServerMetadata } = callbackOptions
+    const { url, authorizationServerMetadata, body } = callbackOptions
     const endpointType: ClientAuthenticationEndpointType =
-      url === authorizationServerMetadata.introspection_endpoint ? 'introspection' : 'endpoint'
+      url === authorizationServerMetadata.introspection_endpoint
+        ? 'introspection'
+        : url === authorizationServerMetadata.token_endpoint
+          ? 'token'
+          : 'endpoint'
     const method = getSupportedClientAuthenticationMethod(authorizationServerMetadata, endpointType)
+
+    // Special case for pre-auth flow where we can use anonymous client
+    if (
+      endpointType === 'token' &&
+      body.grant_type === preAuthorizedCodeGrantIdentifier &&
+      authorizationServerMetadata.pre_authorized_grant_anonymous_access_supported
+    ) {
+      return clientAuthenticationAnonymous()(callbackOptions)
+    }
 
     if (method === SupportedClientAuthenticationMethod.ClientSecretBasic) {
       return clientAuthenticationClientSecretBasic(options)(callbackOptions)
@@ -194,6 +211,13 @@ export function clientAuthenticationNone(options: ClientAuthenticationNoneOption
   return ({ body }) => {
     body.client_id = options.clientId
   }
+}
+
+/**
+ * Anonymous client authentication
+ */
+export function clientAuthenticationAnonymous(): ClientAuthenticationCallback {
+  return () => {}
 }
 
 export interface ClientAuthenticationClientAttestationJwtOptions {

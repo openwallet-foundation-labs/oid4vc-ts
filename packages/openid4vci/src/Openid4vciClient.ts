@@ -50,7 +50,7 @@ export interface Openid4vciClientOptions {
   /**
    * Callbacks required for the openid4vc client
    */
-  callbacks: Omit<CallbackContext, 'verifyJwt' | 'clientAuthentication' | 'decryptJwe' | 'encryptJwe'>
+  callbacks: Omit<CallbackContext, 'verifyJwt' | 'decryptJwe' | 'encryptJwe'>
 }
 
 export class Openid4vciClient {
@@ -196,7 +196,6 @@ export class Openid4vciClient {
           issuer_state: options.credentialOffer?.grants?.authorization_code?.issuer_state,
         },
         dpop: options.dpop,
-        clientAttestation: options.clientAttestation,
         resource: options.issuerMetadata.credentialIssuer.credential_issuer,
         authorizationServerMetadata,
       })
@@ -266,7 +265,6 @@ export class Openid4vciClient {
       redirectUri: options.redirectUri,
       scope: options.scope,
       pkceCodeVerifier: options.pkceCodeVerifier,
-      clientAttestation: options.clientAttestation,
       dpop: options.dpop,
     })
 
@@ -288,7 +286,6 @@ export class Openid4vciClient {
     additionalRequestPayload,
     txCode,
     dpop,
-    clientAttestation,
   }: Omit<
     RetrievePreAuthorizedCodeAccessTokenOptions,
     'callbacks' | 'authorizationServerMetadata' | 'preAuthorizedCode' | 'resource'
@@ -326,7 +323,6 @@ export class Openid4vciClient {
       resource: issuerMetadata.credentialIssuer.credential_issuer,
       additionalRequestPayload,
       dpop,
-      clientAttestation,
     })
 
     return {
@@ -347,7 +343,6 @@ export class Openid4vciClient {
     pkceCodeVerifier,
     redirectUri,
     dpop,
-    clientAttestation,
   }: Omit<RetrieveAuthorizationCodeAccessTokenOptions, 'authorizationServerMetadata' | 'callbacks'> & {
     credentialOffer: CredentialOfferObject
     issuerMetadata: IssuerMetadataResult
@@ -372,7 +367,6 @@ export class Openid4vciClient {
       pkceCodeVerifier,
       additionalRequestPayload,
       dpop,
-      clientAttestation,
       redirectUri,
       resource: issuerMetadata.credentialIssuer.credential_issuer,
     })

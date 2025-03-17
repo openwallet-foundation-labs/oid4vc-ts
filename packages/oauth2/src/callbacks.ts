@@ -121,6 +121,7 @@ export interface CallbackContext {
    * - `clientAuthenticationClientSecretBasic`
    * - `clientAuthenticationClientAttestationJwt`
    * - `clientAuthenticationNone`
+   * - `clientAuthenticationAnonymous`
    *
    * A custom implementation can be made for other methods, or allowing complex
    * scenarios where multiple authorization servers are supported.

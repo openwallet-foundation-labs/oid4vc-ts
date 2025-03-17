@@ -1,13 +1,13 @@
 import { describe, expect, test } from 'vitest'
 import { callbacks, getSignJwtCallback } from '../../../tests/util'
 import { createDpopJwt } from '../../dpop/dpop'
+import type { AuthorizationServerMetadata } from '../../metadata/authorization-server/z-authorization-server-metadata'
 import { PkceCodeChallengeMethod } from '../../pkce'
 import { authorizationCodeGrantIdentifier, preAuthorizedCodeGrantIdentifier } from '../../z-grant-type'
 import {
   verifyAuthorizationCodeAccessTokenRequest,
   verifyPreAuthorizedCodeAccessTokenRequest,
 } from '../verify-access-token-request'
-import type { AuthorizationServerMetadata } from '../../metadata/authorization-server/z-authorization-server-metadata'
 
 const request = {
   headers: new Headers(),
