@@ -61,27 +61,12 @@ const walletProviderJwk = {
 }
 const { d: __4, ...walletProviderJwkPublic } = walletProviderJwk
 
-const walletConfirmationJwk = {
-  kty: 'EC',
-  d: 'mGQM_sFuOw-kUvB8oUU0iQSr6AuOG0hCLyvGRHdfK-s',
-  crv: 'P-256',
-  x: 'mYgFqhj2fISu1V4UhrIwg5VJ1fdVzaGRsneZR7hsgkk',
-  y: 'wOZREecqelO_--lBV9_eQB9NAlhzw0urY5ZEDAoh1e4',
-}
-const { d: __5, ...walletConfirmationJwkPublic } = walletConfirmationJwk
-
 const server = setupServer()
 
 const callbacks = {
   ...partialCallbacks,
   fetch,
-  signJwt: getSignJwtCallback([
-    credentialRequestProofJwk,
-    dpopJwk,
-    accessTokenJwk,
-    walletConfirmationJwk,
-    walletProviderJwk,
-  ]),
+  signJwt: getSignJwtCallback([credentialRequestProofJwk, dpopJwk, accessTokenJwk, walletProviderJwk]),
 }
 
 const issuer = new Openid4vciIssuer({
@@ -217,7 +202,9 @@ describe('Full E2E test', () => {
             preAuthorizedCode: preAuthorizedCode,
             txCode: undefined,
           },
-          dpopJwt: expect.any(String),
+          dpop: {
+            jwt: expect.any(String),
+          },
           pkceCodeVerifier: undefined,
         })
 
@@ -229,6 +216,11 @@ describe('Full E2E test', () => {
         }
 
         const { dpop } = await authorizationServer.verifyPreAuthorizedCodeAccessTokenRequest({
+          authorizationServerMetadata,
+          clientAttestation: {
+            required: false,
+            ...parsedAccessTokenRequest.clientAttestation,
+          },
           grant: parsedAccessTokenRequest.grant,
           accessTokenRequest: parsedAccessTokenRequest.accessTokenRequest,
           expectedPreAuthorizedCode: preAuthorizedCode,
@@ -239,7 +231,7 @@ describe('Full E2E test', () => {
           },
           dpop: {
             required: true,
-            jwt: parsedAccessTokenRequest.dpopJwt,
+            ...parsedAccessTokenRequest.dpop,
           },
         })
 
@@ -394,6 +386,7 @@ describe('Full E2E test', () => {
     } = await client.retrievePreAuthorizedCodeAccessTokenFromOffer({
       credentialOffer: resolvedCredentialOffer,
       issuerMetadata,
+
       // TODO: how to select the alg
       dpop: isDpopSupported
         ? {
@@ -449,7 +442,8 @@ describe('Full E2E test', () => {
     const walletAttestation = await walletProvider.createWalletAttestationJwt({
       clientId: 'wallet',
       confirmation: {
-        jwk: walletConfirmationJwkPublic,
+        // We use the same key for DPoP as the wallet attestation
+        jwk: dpopJwkPublic,
       },
       // Valid one hour
       expiresAt: addSecondsToDate(new Date(), 3600),
@@ -504,11 +498,6 @@ describe('Full E2E test', () => {
       http.post(`${authorizationServerMetadata.pushed_authorization_request_endpoint}`, async ({ request }) => {
         const parRequest = parseXwwwFormUrlEncoded(await request.text())
 
-        // TODO: (should we make a method verify PAR request to make it easier to handle all these things?)
-        // - verify the client attestation sub against the request client_id
-        // - need to match dpop key and client attestation key??
-        // - add verify pushed authorization request method
-
         const { authorizationRequest, clientAttestation, dpop } = authorizationServer.parsePushedAuthorizationRequest({
           authorizationRequest: parRequest,
           request: {
@@ -518,7 +507,6 @@ describe('Full E2E test', () => {
           },
         })
 
-        // TODO: add verifyAuthorizationChallengeRequest method that also verifies DPoP and client attestation
         const verifiedParRequest = await authorizationServer.verifyPushedAuthorizationRequest({
           authorizationRequest,
           authorizationServerMetadata,
@@ -527,8 +515,16 @@ describe('Full E2E test', () => {
             method: request.method as HttpMethod,
             url: request.url,
           },
-          clientAttestation,
-          dpop,
+          clientAttestation: {
+            ...clientAttestation,
+            required: true,
+            ensureConfirmationKeyMatchesDpopKey: true,
+          },
+          dpop: {
+            ...dpop,
+            required: true,
+            allowedSigningAlgs: authorizationServerMetadata.dpop_signing_alg_values_supported,
+          },
         })
 
         expect(verifiedParRequest.dpop?.jwkThumbprint).toEqual(
@@ -551,7 +547,7 @@ describe('Full E2E test', () => {
               iat: expect.any(Number),
               exp: expect.any(Number),
               cnf: {
-                jwk: walletConfirmationJwkPublic,
+                jwk: dpopJwkPublic,
               },
               sub: 'wallet',
               wallet_name: 'Wallet',
@@ -578,7 +574,7 @@ describe('Full E2E test', () => {
             signer: {
               alg: 'ES256',
               method: 'jwk',
-              publicJwk: walletConfirmationJwkPublic,
+              publicJwk: dpopJwkPublic,
             },
           },
         })
@@ -629,7 +625,9 @@ describe('Full E2E test', () => {
             grantType: 'authorization_code',
             code: 'some-authorization-code',
           },
-          dpopJwt: expect.any(String),
+          dpop: {
+            jwt: expect.any(String),
+          },
           clientAttestation: {
             clientAttestationJwt: expect.any(String),
             clientAttestationPopJwt: expect.any(String),
@@ -638,8 +636,6 @@ describe('Full E2E test', () => {
         })
 
         // TODO:
-        // - verify dpop matches with dpop from request
-        //  - add expectedJwkThumprint
         // - verify client attestation matches with client attestation from auth request
         //   - is this needed? if so we can match the jwk thumbprint uri?
         //   - add client attestation to the verify access token request method
@@ -654,6 +650,7 @@ describe('Full E2E test', () => {
         }
 
         const { dpop } = await authorizationServer.verifyAuthorizationCodeAccessTokenRequest({
+          authorizationServerMetadata,
           grant: parsedAccessTokenRequest.grant,
           accessTokenRequest: parsedAccessTokenRequest.accessTokenRequest,
           pkce: {
@@ -670,8 +667,9 @@ describe('Full E2E test', () => {
             url: request.url,
           },
           dpop: {
+            ...parsedAccessTokenRequest.dpop,
             required: true,
-            jwt: parsedAccessTokenRequest.dpopJwt,
+            allowedSigningAlgs: authorizationServerMetadata.dpop_signing_alg_values_supported,
             expectedJwkThumbprint: await calculateJwkThumbprint({
               hashAlgorithm: HashAlgorithm.Sha256,
               hashCallback: callbacks.hash,

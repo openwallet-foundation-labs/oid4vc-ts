@@ -13,7 +13,9 @@ export function parseXwwwFormUrlEncoded(text: string) {
 export const callbacks = {
   hash: (data, alg) => crypto.createHash(alg.replace('-', '').toLowerCase()).update(data).digest(),
   generateRandom: (bytes) => crypto.randomBytes(bytes),
-  clientAuthentication: clientAuthenticationNone(),
+  clientAuthentication: clientAuthenticationNone({
+    clientId: 'some-random-client-id',
+  }),
   verifyJwt: async (signer, { compact, payload }) => {
     let jwk: Jwk
     if (signer.method === 'did') {

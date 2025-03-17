@@ -22,6 +22,10 @@ import {
   parseAuthorizationChallengeRequest,
 } from './authorization-challenge/parse-authorization-challenge-request'
 import {
+  type VerifyAuthorizationChallengeRequestOptions,
+  verifyAuthorizationChallengeRequest,
+} from './authorization-challenge/verify-authorization-challenge-request'
+import {
   type CreatePushedAuthorizationErrorResponseOptions,
   type CreatePushedAuthorizationResponseOptions,
   createPushedAuthorizationErrorResponse,
@@ -168,6 +172,13 @@ export class Oauth2AuthorizationServer {
    */
   public parseAuthorizationChallengeRequest(options: ParseAuthorizationChallengeRequestOptions) {
     return parseAuthorizationChallengeRequest(options)
+  }
+
+  public verifyAuthorizationChallengeRequest(options: Omit<VerifyAuthorizationChallengeRequestOptions, 'callbacks'>) {
+    return verifyAuthorizationChallengeRequest({
+      ...options,
+      callbacks: this.options.callbacks,
+    })
   }
 
   public createAuthorizationChallengeResponse(options: CreateAuthorizationChallengeResponseOptions) {

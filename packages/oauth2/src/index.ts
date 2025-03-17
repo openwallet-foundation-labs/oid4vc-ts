@@ -72,6 +72,14 @@ export type {
   AuthorizationChallengeRequest,
   AuthorizationChallengeResponse,
 } from './authorization-challenge/z-authorization-challenge'
+export type {
+  VerifyAuthorizationChallengeRequestOptions,
+  VerifyAuthorizationChallengeRequestReturn,
+} from './authorization-challenge/verify-authorization-challenge-request'
+export type {
+  ParseAuthorizationChallengeRequestOptions,
+  ParseAuthorizationChallengeRequestResult,
+} from './authorization-challenge/parse-authorization-challenge-request'
 export {
   fetchAuthorizationServerMetadata,
   getAuthorizationServerMetadataFromList,
@@ -101,6 +109,10 @@ export type {
   ParsePushedAuthorizationRequestOptions,
   ParsePushedAuthorizationRequestResult,
 } from './authorization-request/parse-pushed-authorization-request'
+export type {
+  VerifyPushedAuthorizationRequestOptions,
+  VerifyPushedAuthorizationRequestReturn,
+} from './authorization-request/verify-pushed-authorization-request'
 export {
   resourceRequest,
   type ResourceRequestOptions,

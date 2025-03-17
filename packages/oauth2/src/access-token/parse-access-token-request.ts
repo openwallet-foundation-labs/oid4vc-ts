@@ -34,7 +34,9 @@ export interface ParseAccessTokenRequestResult {
   /**
    * The dpop jwt from the access token request headers
    */
-  dpopJwt?: string
+  dpop?: {
+    jwt: string
+  }
 
   /**
    * The client attestation jwts from the access token request headers
@@ -137,7 +139,11 @@ export function parseAccessTokenRequest(options: ParseAccessTokenRequestOptions)
     accessTokenRequest,
     grant,
 
-    dpopJwt: extractedDpopJwt.dpopJwt,
+    dpop: extractedDpopJwt.dpopJwt
+      ? {
+          jwt: extractedDpopJwt.dpopJwt,
+        }
+      : undefined,
     clientAttestation: extractedClientAttestationJwts.clientAttestationHeader
       ? {
           clientAttestationJwt: extractedClientAttestationJwts.clientAttestationHeader,

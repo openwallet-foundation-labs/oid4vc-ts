@@ -162,6 +162,11 @@ export interface VerifyClientAttestationOptions {
   clientAttestationJwt: string
   clientAttestationPopJwt: string
   callbacks: Pick<CallbackContext, 'verifyJwt'>
+
+  /**
+   * Date to use for expiration. If not provided current date will be used.
+   */
+  now?: Date
 }
 
 export async function verifyClientAttestation({
@@ -169,11 +174,13 @@ export async function verifyClientAttestation({
   clientAttestationJwt,
   clientAttestationPopJwt,
   callbacks,
+  now,
 }: VerifyClientAttestationOptions) {
   try {
     const clientAttestation = await verifyClientAttestationJwt({
       callbacks,
       clientAttestationJwt,
+      now,
     })
 
     const clientAttestationPop = await verifyClientAttestationPopJwt({
@@ -181,6 +188,7 @@ export async function verifyClientAttestation({
       authorizationServer,
       clientAttestation,
       clientAttestationPopJwt,
+      now,
     })
 
     return {
@@ -192,7 +200,7 @@ export async function verifyClientAttestation({
       throw new Oauth2ServerErrorResponseError(
         {
           error: Oauth2ErrorCodes.InvalidClient,
-          error_description: error.message,
+          error_description: `Error verifying client attestation. ${error.message}`,
         },
         {
           status: 401,

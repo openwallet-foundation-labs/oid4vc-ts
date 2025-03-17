@@ -6,6 +6,7 @@ import { decodeJwt } from '../common/jwt/decode-jwt'
 import { createDpopJwt } from '../dpop/dpop'
 import { PkceCodeChallengeMethod, createPkce } from '../pkce'
 import { authorizationCodeGrantIdentifier, preAuthorizedCodeGrantIdentifier } from '../z-grant-type'
+import type { AuthorizationServerMetadata } from '../metadata/authorization-server/z-authorization-server-metadata'
 
 const dpopSignerJwk = {
   kty: 'EC',
@@ -23,6 +24,11 @@ const accessTokenSignerJwk = {
   x: 'rQbiDHRutR4YcJaWRV54Dx-sx81VlK7xuohm4-RXRT0',
   y: 'YM4MRy90G9PW59wKcawyrHDCPp7QsE6l5QT-H2Koz_M',
 } satisfies Jwk
+
+const authorizationServerMetadata = {
+  issuer: 'https://server.com',
+  token_endpoint: 'https://server.com/token',
+} satisfies AuthorizationServerMetadata
 
 const { d: __, ...accessTokenSignerJwkPublic } = accessTokenSignerJwk
 
@@ -58,7 +64,12 @@ describe('Oauth2AuthorizationServer', () => {
       url: 'https://authorization-server.com/token',
     } as const
 
-    const { accessTokenRequest, grant, dpopJwt, pkceCodeVerifier } = authorizationServer.parseAccessTokenRequest({
+    const {
+      accessTokenRequest,
+      grant,
+      dpop: dpopReturn,
+      pkceCodeVerifier,
+    } = authorizationServer.parseAccessTokenRequest({
       request,
       accessTokenRequest: {
         grant_type: preAuthorizedCodeGrantIdentifier,
@@ -67,7 +78,7 @@ describe('Oauth2AuthorizationServer', () => {
       },
     })
 
-    expect(dpopJwt).toEqual(createdDpopJwt)
+    expect(dpopReturn?.jwt).toEqual(createdDpopJwt)
     expect(pkceCodeVerifier).toEqual(undefined)
     expect(accessTokenRequest).toEqual({
       grant_type: preAuthorizedCodeGrantIdentifier,
@@ -89,8 +100,10 @@ describe('Oauth2AuthorizationServer', () => {
       accessTokenRequest,
       request,
       dpop: {
-        jwt: dpopJwt,
+        jwt: dpopReturn?.jwt,
       },
+
+      authorizationServerMetadata,
 
       expectedPreAuthorizedCode: grant.preAuthorizedCode,
       expectedTxCode: grant.txCode,
@@ -192,7 +205,12 @@ describe('Oauth2AuthorizationServer', () => {
       url: 'https://authorization-server.com/token',
     } as const
 
-    const { accessTokenRequest, grant, dpopJwt, pkceCodeVerifier } = authorizationServer.parseAccessTokenRequest({
+    const {
+      accessTokenRequest,
+      grant,
+      dpop: dpopReturn,
+      pkceCodeVerifier,
+    } = authorizationServer.parseAccessTokenRequest({
       request,
       accessTokenRequest: {
         grant_type: authorizationCodeGrantIdentifier,
@@ -202,7 +220,7 @@ describe('Oauth2AuthorizationServer', () => {
     })
 
     expect(pkceCodeVerifier).toEqual(pkce.codeVerifier)
-    expect(dpopJwt).toEqual(createdDpopJwt)
+    expect(dpopReturn?.jwt).toEqual(createdDpopJwt)
     expect(accessTokenRequest).toEqual({
       grant_type: authorizationCodeGrantIdentifier,
       code: 'something-something',
@@ -222,8 +240,9 @@ describe('Oauth2AuthorizationServer', () => {
       accessTokenRequest,
       request,
       dpop: {
-        jwt: dpopJwt,
+        jwt: dpopReturn?.jwt,
       },
+      authorizationServerMetadata,
 
       expectedCode: grant.code,
 

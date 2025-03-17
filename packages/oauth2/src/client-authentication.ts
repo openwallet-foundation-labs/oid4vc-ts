@@ -10,11 +10,11 @@ import {
 } from './client-attestation/z-client-attestation'
 import { Oauth2Error } from './error/Oauth2Error'
 
-// These two are well-supported and easy to implement
 export enum SupportedClientAuthenticationMethod {
   ClientSecretBasic = 'client_secret_basic',
   ClientSecretPost = 'client_secret_post',
   ClientAttestationJwt = 'attest_jwt_client_auth',
+  None = 'none',
 }
 
 type ClientAuthenticationEndpointType = 'endpoint' | 'introspection'
@@ -80,7 +80,7 @@ export interface ClientAuthenticationDynamicOptions {
 
 /**
  * Dynamicaly get the client authentication method based on endpoint type and authorization server.
- * Only `client_secret_post` and `client_secret_basic` supported.
+ * Only `client_secret_post`, `client_secret_basic`, and `none` supported.
  */
 export function clientAuthenticationDynamic(options: ClientAuthenticationDynamicOptions): ClientAuthenticationCallback {
   return (callbackOptions) => {
@@ -95,6 +95,10 @@ export function clientAuthenticationDynamic(options: ClientAuthenticationDynamic
 
     if (method === SupportedClientAuthenticationMethod.ClientSecretPost) {
       return clientAuthenticationClientSecretPost(options)(callbackOptions)
+    }
+
+    if (method === SupportedClientAuthenticationMethod.None) {
+      return clientAuthenticationNone(options)(callbackOptions)
     }
 
     throw new Oauth2Error(
@@ -179,11 +183,17 @@ export function clientAuthenticationClientSecretBasic(
   }
 }
 
+export interface ClientAuthenticationNoneOptions {
+  clientId: string
+}
+
 /**
- * No client authentication
+ * Client authentication using `none` option
  */
-export function clientAuthenticationNone() {
-  return () => {}
+export function clientAuthenticationNone(options: ClientAuthenticationNoneOptions): ClientAuthenticationCallback {
+  return ({ body }) => {
+    body.client_id = options.clientId
+  }
 }
 
 export interface ClientAuthenticationClientAttestationJwtOptions {
