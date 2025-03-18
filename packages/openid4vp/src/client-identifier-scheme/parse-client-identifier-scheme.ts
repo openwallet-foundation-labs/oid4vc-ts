@@ -50,13 +50,13 @@ export type ParsedClientIdentifier =
       clientMetadata?: ClientMetadata
     }
 
-export interface GetClientIdOptions {
+export interface GetOpenid4vpClientIdOptions {
   authorizationRequestPayload: Openid4vpAuthorizationRequest | Openid4vpAuthorizationRequestDcApi
   jar?: VerifiedJarRequest
   origin?: string
 }
 
-export function getClientId(options: GetClientIdOptions) {
+export function getOpenid4vpClientId(options: GetOpenid4vpClientIdOptions) {
   const version = parseAuthorizationRequestVersion(options.authorizationRequestPayload)
 
   if (version < 22) {
@@ -80,7 +80,7 @@ export function getClientId(options: GetClientIdOptions) {
   return options.authorizationRequestPayload.client_id
 }
 
-function getLegacyClientId(options: GetClientIdOptions) {
+function getLegacyClientId(options: GetOpenid4vpClientIdOptions) {
   const legacyClientIdScheme = options.authorizationRequestPayload.client_id_scheme ?? 'pre-registered'
 
   const clientIdScheme: ClientIdScheme = legacyClientIdScheme === 'entity_id' ? 'https' : legacyClientIdScheme
@@ -138,7 +138,7 @@ export function parseClientIdentifier(
     supportedSchemes: parserConfig?.supportedSchemes || Object.values(zClientIdScheme.options),
   }
 
-  const clientId = getClientId(options)
+  const clientId = getOpenid4vpClientId(options)
 
   const colonIndex = clientId.indexOf(':')
   if (colonIndex === -1) {

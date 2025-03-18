@@ -2,6 +2,18 @@ import { URL, zHttpsUrl } from '@openid4vc/utils'
 import { z } from 'zod'
 import { zClientMetadata } from '../models/z-client-metadata'
 
+const zStringToJson = z.string().transform((string, ctx) => {
+  try {
+    return JSON.parse(string)
+  } catch (error) {
+    ctx.addIssue({
+      code: 'custom',
+      message: 'Expected a JSON string, but could not parse the string to JSON',
+    })
+    return z.NEVER
+  }
+})
+
 export const zOpenid4vpAuthorizationRequest = z
   .object({
     response_type: z.literal('vp_token'),
@@ -14,9 +26,17 @@ export const zOpenid4vpAuthorizationRequest = z
     nonce: z.string(),
     wallet_nonce: z.string().optional(),
     scope: z.string().optional(),
-    presentation_definition: z.record(z.any()).optional(),
+    presentation_definition: z
+      .record(z.any())
+      // for backwards compat
+      .or(zStringToJson)
+      .optional(),
     presentation_definition_uri: zHttpsUrl.optional(),
-    dcql_query: z.record(z.any()).optional(),
+    dcql_query: z
+      .record(z.any())
+      // for backwards compat
+      .or(zStringToJson)
+      .optional(),
     client_metadata: zClientMetadata.optional(),
     client_metadata_uri: zHttpsUrl.optional(),
     state: z.string().optional(),
@@ -35,18 +55,6 @@ export const zOpenid4vpAuthorizationRequest = z
       .optional(),
   })
   .passthrough()
-
-const zStringToJson = z.string().transform((string, ctx) => {
-  try {
-    return JSON.parse(string)
-  } catch (error) {
-    ctx.addIssue({
-      code: 'custom',
-      message: 'Expected a JSON string, but could not parse the string to JSON',
-    })
-    return z.NEVER
-  }
-})
 
 // Helps with parsing from an URI to a valid authorization request object
 export const zOpenid4vpAuthorizationRequestFromUriParams = z

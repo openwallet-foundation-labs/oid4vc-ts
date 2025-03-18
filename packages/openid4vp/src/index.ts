@@ -1,3 +1,7 @@
+export {
+  getOpenid4vpClientId,
+  GetOpenid4vpClientIdOptions,
+} from './client-identifier-scheme/parse-client-identifier-scheme'
 export { zClientIdScheme, ClientIdScheme } from './client-identifier-scheme/z-client-id-scheme'
 export {
   verifyJarmAuthorizationResponse,
@@ -5,6 +9,7 @@ export {
   type JarmMode,
 } from './jarm/jarm-authorization-response/verify-jarm-authorization-response'
 export { zJarmClientMetadata, JarmClientMetadata } from './jarm/metadata/z-jarm-client-metadata'
+
 export {
   createOpenid4vpAuthorizationRequest,
   CreateOpenid4vpAuthorizationRequestOptions,
@@ -42,10 +47,16 @@ export {
   ParseTransactionDataOptions,
 } from './transaction-data/parse-transaction-data'
 export type { TransactionDataEntry } from './transaction-data/z-transaction-data'
+export type {
+  TransactionDataHashesCredentials,
+  VerifiedTransactionDataEntry,
+  VerifyTransactionDataOptions,
+} from './transaction-data/verify-transaction-data'
 export {
   parsePexVpToken,
   parseDcqlVpToken,
 } from './vp-token/parse-vp-token'
+export type { VpToken, VpTokenDcql, VpTokenPex, VpTokenPexEntry } from './vp-token/z-vp-token'
 
 export {
   parseOpenid4vpAuthorizationResponse,

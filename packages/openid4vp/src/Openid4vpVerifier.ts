@@ -24,7 +24,7 @@ export interface Openid4vpVerifierOptions {
   /**
    * Callbacks required for the openid4vp verifier
    */
-  callbacks: Omit<CallbackContext, 'hash' | 'generateRandom' | 'clientAuthentication'>
+  callbacks: Omit<CallbackContext, 'generateRandom' | 'clientAuthentication'>
 }
 
 export class Openid4vpVerifier {
@@ -60,7 +60,10 @@ export class Openid4vpVerifier {
     return parseTransactionData(options)
   }
 
-  public verifyTransactionData(options: VerifyTransactionDataOptions) {
-    return verifyTransactionData(options)
+  public verifyTransactionData(options: Omit<VerifyTransactionDataOptions, 'callbacks'>) {
+    return verifyTransactionData({
+      ...options,
+      callbacks: this.options.callbacks,
+    })
   }
 }
