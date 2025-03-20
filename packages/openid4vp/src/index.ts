@@ -6,7 +6,7 @@ export { zClientIdScheme, ClientIdScheme } from './client-identifier-scheme/z-cl
 export {
   verifyJarmAuthorizationResponse,
   type VerifyJarmAuthorizationResponseOptions,
-  type JarmMode,
+  JarmMode,
 } from './jarm/jarm-authorization-response/verify-jarm-authorization-response'
 export { zJarmClientMetadata, JarmClientMetadata } from './jarm/metadata/z-jarm-client-metadata'
 
