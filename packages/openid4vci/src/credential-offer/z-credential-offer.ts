@@ -4,7 +4,7 @@ import {
   preAuthorizedCodeGrantIdentifier,
 } from '@openid4vc/oauth2'
 import z from 'zod'
-import { zHttpsUrl } from '../../../utils/src/validation'
+import { zHttpsUrl } from '@openid4vc/utils'
 
 const zTxCode = z
   .object({
