@@ -1,18 +1,6 @@
-import { URL, zHttpsUrl } from '@openid4vc/utils'
+import { URL, zHttpsUrl, zStringToJson } from '@openid4vc/utils'
 import { z } from 'zod'
 import { zClientMetadata } from '../models/z-client-metadata'
-
-const zStringToJson = z.string().transform((string, ctx) => {
-  try {
-    return JSON.parse(string)
-  } catch (error) {
-    ctx.addIssue({
-      code: 'custom',
-      message: 'Expected a JSON string, but could not parse the string to JSON',
-    })
-    return z.NEVER
-  }
-})
 
 export const zOpenid4vpAuthorizationRequest = z
   .object({

@@ -17,5 +17,17 @@ export const zInteger = z.number().int()
 export const zHttpMethod = z.enum(['GET', 'POST', 'PUT', 'DELETE', 'HEAD', 'OPTIONS', 'TRACE', 'CONNECT', 'PATCH'])
 export type HttpMethod = z.infer<typeof zHttpMethod>
 
+export const zStringToJson = z.string().transform((string, ctx) => {
+  try {
+    return JSON.parse(string)
+  } catch (error) {
+    ctx.addIssue({
+      code: 'custom',
+      message: 'Expected a JSON string, but could not parse the string to JSON',
+    })
+    return z.NEVER
+  }
+})
+
 export const zIs = <Schema extends z.ZodSchema>(schema: Schema, data: unknown): data is z.infer<typeof schema> =>
   schema.safeParse(data).success
