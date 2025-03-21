@@ -2,6 +2,7 @@ import type z from 'zod'
 import { ContentType, isResponseContentType } from './content-type'
 import { InvalidFetchResponseError } from './error/InvalidFetchResponseError'
 import type { Fetch } from './globals'
+import { FetchError } from './error/FetchError'
 
 /**
  * A type utility which represents the function returned
@@ -41,7 +42,9 @@ export const defaultFetcher = fetch
  */
 export function createZodFetcher(fetcher = defaultFetcher): ZodFetcher {
   return async (schema, expectedContentType, ...args) => {
-    const response = await fetcher(...args)
+    const response = await fetcher(...args).catch((error) => {
+      throw new FetchError(`Unknown error occurred during fetch to '${args[0]}'`, { cause: error })
+    })
 
     if (response.ok && !isResponseContentType(expectedContentType, response)) {
       throw new InvalidFetchResponseError(
