@@ -3,8 +3,8 @@ import {
   type PreAuthorizedCodeGrantIdentifier,
   preAuthorizedCodeGrantIdentifier,
 } from '@openid4vc/oauth2'
+import { zHttpsUrl } from '@openid4vc/utils'
 import z from 'zod'
-import { zHttpsUrl } from '../../../utils/src/validation'
 
 const zTxCode = z
   .object({

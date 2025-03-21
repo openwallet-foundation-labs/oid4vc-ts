@@ -41,6 +41,7 @@ export {
   zHttpsUrl,
   zInteger,
   zIs,
+  zStringToJson,
 } from './validation'
 export { formatZodError } from './zod-error'
 export {

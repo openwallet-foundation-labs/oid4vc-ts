@@ -69,7 +69,7 @@ export function parseAuthorizationRequestVersion(
 
   // 21
 
-  if ('client_metadata_uri' in request) {
+  if (request.client_metadata_uri) {
     requirements.push(['<', 21])
   }
 
@@ -77,7 +77,7 @@ export function parseAuthorizationRequestVersion(
     requirements.push(['>=', 21])
   }
 
-  if ('request_uri_method' in request || 'wallet_nonce' in request) {
+  if (request.request_uri_method || request.wallet_nonce) {
     requirements.push(['>=', 21])
   }
 

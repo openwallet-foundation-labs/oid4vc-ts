@@ -4,8 +4,8 @@ import {
   createOpenid4vpAuthorizationRequest,
 } from './authorization-request/create-authorization-request'
 import {
-  type ParseOpenid4vpAuthorizationRequestPayloadOptions,
-  parseOpenid4vpAuthorizationRequestPayload,
+  type ParseOpenid4vpAuthorizationRequestOptions,
+  parseOpenid4vpAuthorizationRequest,
 } from './authorization-request/parse-authorization-request-params'
 import {
   type ParseOpenid4vpAuthorizationResponseOptions,
@@ -24,7 +24,7 @@ export interface Openid4vpVerifierOptions {
   /**
    * Callbacks required for the openid4vp verifier
    */
-  callbacks: Omit<CallbackContext, 'hash' | 'generateRandom' | 'clientAuthentication'>
+  callbacks: Omit<CallbackContext, 'generateRandom' | 'clientAuthentication'>
 }
 
 export class Openid4vpVerifier {
@@ -36,8 +36,8 @@ export class Openid4vpVerifier {
     return createOpenid4vpAuthorizationRequest({ ...options, callbacks: this.options.callbacks })
   }
 
-  public parseOpenid4vpAuthorizationRequestPayload(options: ParseOpenid4vpAuthorizationRequestPayloadOptions) {
-    return parseOpenid4vpAuthorizationRequestPayload(options)
+  public parseOpenid4vpAuthorizationRequestPayload(options: ParseOpenid4vpAuthorizationRequestOptions) {
+    return parseOpenid4vpAuthorizationRequest(options)
   }
 
   public parseOpenid4vpAuthorizationResponse(options: ParseOpenid4vpAuthorizationResponseOptions) {
@@ -60,7 +60,10 @@ export class Openid4vpVerifier {
     return parseTransactionData(options)
   }
 
-  public verifyTransactionData(options: VerifyTransactionDataOptions) {
-    return verifyTransactionData(options)
+  public verifyTransactionData(options: Omit<VerifyTransactionDataOptions, 'callbacks'>) {
+    return verifyTransactionData({
+      ...options,
+      callbacks: this.options.callbacks,
+    })
   }
 }

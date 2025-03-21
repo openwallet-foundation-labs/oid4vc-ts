@@ -52,7 +52,7 @@ export const zJwtVcJsonLdCredentialIssuerMetadataDraft14To11 = zJwtVcJsonLdCrede
     ...credentialDefinition,
     types: type,
   }))
-  .and(zJwtVcJsonLdCredentialIssuerMetadataDraft11)
+  .pipe(zJwtVcJsonLdCredentialIssuerMetadataDraft11)
 
 export const zJwtVcJsonLdCredentialRequestFormatDraft14 = z.object({
   format: zJwtVcJsonLdFormatIdentifier,
@@ -92,4 +92,4 @@ export const zJwtVcJsonLdCredentialRequestDraft14To11 = zJwtVcJsonLdCredentialRe
       types: type,
     },
   }))
-  .and(zJwtVcJsonLdCredentialRequestDraft11)
+  .pipe(zJwtVcJsonLdCredentialRequestDraft11)

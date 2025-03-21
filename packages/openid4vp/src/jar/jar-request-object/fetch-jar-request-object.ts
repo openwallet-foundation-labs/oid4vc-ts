@@ -17,7 +17,7 @@ import type { WalletMetadata } from '../../models/z-wallet-metadata'
  */
 export async function fetchJarRequestObject<Schema extends BaseSchema>(options: {
   requestUri: string
-  clientIdentifierScheme: ClientIdScheme
+  clientIdentifierScheme?: ClientIdScheme
   method: 'GET' | 'POST'
   wallet: {
     metadata?: WalletMetadata

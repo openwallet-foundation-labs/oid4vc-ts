@@ -1,4 +1,4 @@
-import { zHttpsUrl } from '@openid4vc/utils'
+import { URL, zHttpsUrl, zStringToJson } from '@openid4vc/utils'
 import { z } from 'zod'
 import { zClientMetadata } from '../models/z-client-metadata'
 
@@ -14,13 +14,21 @@ export const zOpenid4vpAuthorizationRequest = z
     nonce: z.string(),
     wallet_nonce: z.string().optional(),
     scope: z.string().optional(),
-    presentation_definition: z.record(z.any()).optional(),
+    presentation_definition: z
+      .record(z.any())
+      // for backwards compat
+      .or(zStringToJson)
+      .optional(),
     presentation_definition_uri: zHttpsUrl.optional(),
-    dcql_query: z.record(z.any()).optional(),
+    dcql_query: z
+      .record(z.any())
+      // for backwards compat
+      .or(zStringToJson)
+      .optional(),
     client_metadata: zClientMetadata.optional(),
     client_metadata_uri: zHttpsUrl.optional(),
     state: z.string().optional(),
-    transaction_data: z.array(z.string()).optional(),
+    transaction_data: z.array(z.string().base64url()).optional(),
     trust_chain: z.unknown().optional(),
     client_id_scheme: z
       .enum([
@@ -35,5 +43,21 @@ export const zOpenid4vpAuthorizationRequest = z
       .optional(),
   })
   .passthrough()
+
+// Helps with parsing from an URI to a valid authorization request object
+export const zOpenid4vpAuthorizationRequestFromUriParams = z
+  .string()
+  .url()
+  .transform((url) => Object.fromEntries(new URL(url).searchParams))
+  .pipe(
+    z
+      .object({
+        presentation_definition: zStringToJson.optional(),
+        client_metadata: zStringToJson.optional(),
+        dcql_query: zStringToJson.optional(),
+        transaction_data: zStringToJson.optional(),
+      })
+      .passthrough()
+  )
 
 export type Openid4vpAuthorizationRequest = z.infer<typeof zOpenid4vpAuthorizationRequest>

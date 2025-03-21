@@ -19,7 +19,7 @@ import { type JarAuthorizationRequest, validateJarRequestParams } from '../z-jar
 
 export interface VerifyJarRequestOptions {
   jarRequestParams: JarAuthorizationRequest
-  callbacks: Pick<CallbackContext, 'verifyJwt' | 'decryptJwe'>
+  callbacks: Pick<CallbackContext, 'verifyJwt' | 'decryptJwe' | 'fetch'>
   wallet?: {
     metadata?: WalletMetadata
     nonce?: string
@@ -47,8 +47,10 @@ export async function verifyJarRequest(options: VerifyJarRequestOptions): Promis
   const jarRequestParams = validateJarRequestParams(options)
 
   const sendBy = jarRequestParams.request ? 'value' : 'reference'
-  const clientIdentifierScheme: ClientIdScheme = jarRequestParams.client_id
-    ? zClientIdScheme.parse(jarRequestParams.client_id.split(':')[0])
+
+  // We can't know the client id scheme here if draft was before client_id_scheme became prefix
+  const clientIdentifierScheme: ClientIdScheme | undefined = jarRequestParams.client_id
+    ? zClientIdScheme.safeParse(jarRequestParams.client_id.split(':')[0]).data
     : 'web-origin'
 
   const method = jarRequestParams.request_uri_method ?? 'GET'
@@ -66,6 +68,7 @@ export async function verifyJarRequest(options: VerifyJarRequestOptions): Promis
       clientIdentifierScheme,
       method,
       wallet,
+      fetch: callbacks.fetch,
     }))
 
   const requestObjectIsEncrypted = zCompactJwe.safeParse(requestObject).success

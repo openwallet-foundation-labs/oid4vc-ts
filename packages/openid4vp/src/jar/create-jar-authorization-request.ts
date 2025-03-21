@@ -6,15 +6,29 @@ import {
   type JwtSigner,
   jwtHeaderFromJwtSigner,
 } from '@openid4vc/oauth2'
+import { addSecondsToDate, dateToSeconds } from '@openid4vc/utils'
 import type { JarAuthorizationRequest } from './z-jar-authorization-request'
 
 export interface CreateJarAuthorizationRequestOptions {
   authorizationRequestPayload: JwtPayload & { client_id?: string }
+  requestUri?: string
+
   jwtSigner: JwtSigner
   jweEncryptor?: JweEncryptor
-  requestUri?: string
-  additionalJwtPayload?: Record<string, unknown>
+
   callbacks: Pick<CallbackContext, 'signJwt' | 'encryptJwe'>
+
+  /**
+   * Number of seconds after which the signed authorization request will expire
+   */
+  expiresInSeconds: number
+
+  /**
+   * Date that should be used as now. If not provided current date will be used.
+   */
+  now?: Date
+
+  additionalJwtPayload?: Record<string, unknown>
 }
 
 /**
@@ -34,9 +48,16 @@ export async function createJarAuthorizationRequest(options: CreateJarAuthorizat
   let authorizationRequestJwt: string | undefined
   let encryptionJwk: Jwk | undefined
 
+  const now = options.now ?? new Date()
+
   const { jwt, signerJwk } = await callbacks.signJwt(jwtSigner, {
     header: { ...jwtHeaderFromJwtSigner(jwtSigner), typ: 'oauth-authz-req+jwt' },
-    payload: { ...options.additionalJwtPayload, ...authorizationRequestPayload },
+    payload: {
+      iat: dateToSeconds(now),
+      exp: dateToSeconds(addSecondsToDate(now, options.expiresInSeconds)),
+      ...options.additionalJwtPayload,
+      ...authorizationRequestPayload,
+    },
   })
   authorizationRequestJwt = jwt
 

@@ -1,6 +1,9 @@
-import { type CallbackContext, type JwtSigner, Oauth2Error } from '@openid4vc/oauth2'
+import { type CallbackContext, Oauth2Error } from '@openid4vc/oauth2'
 import { URL, URLSearchParams, objectToQueryParams, parseWithErrorHandling } from '@openid4vc/utils'
-import { createJarAuthorizationRequest } from '../jar/create-jar-authorization-request'
+import {
+  type CreateJarAuthorizationRequestOptions,
+  createJarAuthorizationRequest,
+} from '../jar/create-jar-authorization-request'
 import {
   type WalletVerificationOptions,
   validateOpenid4vpAuthorizationRequestPayload,
@@ -16,13 +19,18 @@ import {
 export interface CreateOpenid4vpAuthorizationRequestOptions {
   scheme?: string
   authorizationRequestPayload: Openid4vpAuthorizationRequest | Openid4vpAuthorizationRequestDcApi
-  jar?: {
-    requestUri?: string
-    jwtSigner: JwtSigner
-    additionalJwtPayload?: Record<string, unknown>
-  }
+  jar?: Pick<
+    CreateJarAuthorizationRequestOptions,
+    'additionalJwtPayload' | 'requestUri' | 'jwtSigner' | 'expiresInSeconds'
+  >
+
   wallet?: WalletVerificationOptions
   callbacks: Pick<CallbackContext, 'signJwt' | 'encryptJwe'>
+
+  /**
+   * Date that should be used as now. If not provided current date will be used.
+   */
+  now?: Date
 }
 
 /**

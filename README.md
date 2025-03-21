@@ -2,7 +2,7 @@
 
 <p align="center">
   <a href="https://typescriptlang.org">
-    <img src="https://imgk.shields.io/badge/%3C%2F%3E-TypeScript-%230074c1.svg" />
+    <img src="https://img.shields.io/badge/%3C%2F%3E-TypeScript-%230074c1.svg" />
   </a>
 </p>
 
@@ -74,8 +74,10 @@ An implementation of the [OpenID for Verifiable Presentations](https://openid.ne
 - Signed and unsigned requests
 - Support for respone mode `direct_post`, `direct_post.jwt`, `dc_api` and `dc_api.jwt`
 - No out of the box support for Presentation Exchange or DCQL, this needs to be provided using e.g. [dcql-ts](https://github.com/openwallet-foundation-labs/dcql-ts) or [PEX](https://github.com/Sphereon-Opensource/PEX).
-- Transaction D
-- Supports Draft 24
+- Trnasaction Data
+- Supports OpenID4VP Draft 18 to 24
+- Support for JWT Secured Authorization Request (JAR)
+- Support for JWT Secure Authorization Response Mode (JARM)
 
 ```ts
 import {

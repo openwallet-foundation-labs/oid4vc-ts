@@ -22,10 +22,7 @@ export function validateOpenid4vpAuthorizationResponsePayload(
 ): ValidateOpenid4VpAuthorizationResponseResult {
   const { authorizationRequestPayload, authorizationResponsePayload } = options
 
-  if (
-    'state' in authorizationRequestPayload &&
-    authorizationRequestPayload.state !== authorizationResponsePayload.state
-  ) {
+  if (authorizationRequestPayload.state && authorizationRequestPayload.state !== authorizationResponsePayload.state) {
     throw new Oauth2Error('OpenId4Vp Authorization Response state mismatch.')
   }
 
@@ -41,18 +38,17 @@ export function validateOpenid4vpAuthorizationResponsePayload(
 
     return {
       type: 'pex',
-      pex:
-        'scope' in authorizationRequestPayload && authorizationRequestPayload.scope
-          ? {
-              scope: authorizationRequestPayload.scope,
-              presentationSubmission: authorizationResponsePayload.presentation_submission,
-              presentations: parsePexVpToken(authorizationResponsePayload.vp_token),
-            }
-          : {
-              presentationDefinition: authorizationRequestPayload.presentation_definition,
-              presentationSubmission: authorizationResponsePayload.presentation_submission,
-              presentations: parsePexVpToken(authorizationResponsePayload.vp_token),
-            },
+      pex: authorizationRequestPayload.scope
+        ? {
+            scope: authorizationRequestPayload.scope,
+            presentationSubmission: authorizationResponsePayload.presentation_submission,
+            presentations: parsePexVpToken(authorizationResponsePayload.vp_token),
+          }
+        : {
+            presentationDefinition: authorizationRequestPayload.presentation_definition,
+            presentationSubmission: authorizationResponsePayload.presentation_submission,
+            presentations: parsePexVpToken(authorizationResponsePayload.vp_token),
+          },
     }
   }
 
@@ -61,16 +57,15 @@ export function validateOpenid4vpAuthorizationResponsePayload(
 
     return {
       type: 'dcql',
-      dcql:
-        'scope' in authorizationRequestPayload && authorizationRequestPayload.scope
-          ? {
-              scope: authorizationRequestPayload.scope,
-              presentations,
-            }
-          : {
-              query: authorizationRequestPayload.dcql_query,
-              presentations,
-            },
+      dcql: authorizationRequestPayload.scope
+        ? {
+            scope: authorizationRequestPayload.scope,
+            presentations,
+          }
+        : {
+            query: authorizationRequestPayload.dcql_query,
+            presentations,
+          },
     }
   }
 

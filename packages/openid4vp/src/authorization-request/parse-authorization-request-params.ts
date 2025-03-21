@@ -1,5 +1,4 @@
 import { decodeJwt } from '@openid4vc/oauth2'
-import { URL } from '@openid4vc/utils'
 import { parseWithErrorHandling } from '@openid4vc/utils'
 import z from 'zod'
 import {
@@ -7,7 +6,11 @@ import {
   isJarAuthorizationRequest,
   zJarAuthorizationRequest,
 } from '../jar/z-jar-authorization-request'
-import { type Openid4vpAuthorizationRequest, zOpenid4vpAuthorizationRequest } from './z-authorization-request'
+import {
+  type Openid4vpAuthorizationRequest,
+  zOpenid4vpAuthorizationRequest,
+  zOpenid4vpAuthorizationRequestFromUriParams,
+} from './z-authorization-request'
 import {
   type Openid4vpAuthorizationRequestDcApi,
   isOpenid4vpAuthorizationRequestDcApi,
@@ -32,12 +35,12 @@ export interface ParsedOpenid4vpDcApiAuthorizationRequest {
   params: Openid4vpAuthorizationRequestDcApi
 }
 
-export interface ParseOpenid4vpAuthorizationRequestPayloadOptions {
+export interface ParseOpenid4vpAuthorizationRequestOptions {
   authorizationRequest: string | Record<string, unknown>
 }
 
-export function parseOpenid4vpAuthorizationRequestPayload(
-  options: ParseOpenid4vpAuthorizationRequestPayloadOptions
+export function parseOpenid4vpAuthorizationRequest(
+  options: ParseOpenid4vpAuthorizationRequestOptions
 ): ParsedOpenid4vpAuthorizationRequest | ParsedJarRequest | ParsedOpenid4vpDcApiAuthorizationRequest {
   const { authorizationRequest } = options
   let provided: 'uri' | 'jwt' | 'params' = 'params'
@@ -45,8 +48,11 @@ export function parseOpenid4vpAuthorizationRequestPayload(
   let params: Record<string, unknown>
   if (typeof authorizationRequest === 'string') {
     if (authorizationRequest.includes('://')) {
-      const url = new URL(authorizationRequest)
-      params = Object.fromEntries(url.searchParams)
+      params = parseWithErrorHandling(
+        zOpenid4vpAuthorizationRequestFromUriParams,
+        authorizationRequest,
+        'Unable to parse openid4vp authorization request uri to a valid object'
+      )
       provided = 'uri'
     } else {
       const decoded = decodeJwt({ jwt: authorizationRequest })

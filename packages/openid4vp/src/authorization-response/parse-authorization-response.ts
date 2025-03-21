@@ -1,7 +1,7 @@
 import { type CallbackContext, Oauth2ServerErrorResponseError } from '@openid4vc/oauth2'
 import type { Openid4vpAuthorizationRequest } from '../authorization-request/z-authorization-request'
 import type { Openid4vpAuthorizationRequestDcApi } from '../authorization-request/z-authorization-request-dc-api'
-import { getClientId } from '../client-identifier-scheme/parse-client-identifier-scheme'
+import { getOpenid4vpClientId } from '../client-identifier-scheme/parse-client-identifier-scheme'
 import type { VerifiedJarmAuthorizationResponse } from '../jarm/jarm-authorization-response/verify-jarm-authorization-response'
 import type { JarmHeader } from '../jarm/jarm-authorization-response/z-jarm-authorization-response'
 import { isJarmResponseMode } from '../jarm/jarm-response-mode'
@@ -36,13 +36,18 @@ export async function parseOpenid4vpAuthorizationResponse(
 ): Promise<ParsedOpenid4vpAuthorizationResponse> {
   const { authorizationResponse, callbacks, authorizationRequestPayload, origin } = options
 
-  const expectedClientId = getClientId({ authorizationRequestPayload, origin })
+  const expectedClientId = getOpenid4vpClientId({
+    origin,
+    authorizationRequestPayload,
+  })
   if (authorizationResponse.response) {
     return parseJarmAuthorizationResponse({
       jarmResponseJwt: authorizationResponse.response as string,
       callbacks,
       authorizationRequestPayload,
-      expectedClientId,
+      // If client_id_scheme was provided we should use the legacy (unprefixed) client id scheme
+      // TODO: allow both versions, in case of e.g. did:
+      expectedClientId: expectedClientId.legacyClientId ?? expectedClientId.clientId,
     })
   }
 

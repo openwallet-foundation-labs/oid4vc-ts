@@ -27,11 +27,14 @@ import {
 } from './z-authorization-request-dc-api'
 
 export interface ResolveOpenid4vpAuthorizationRequestOptions {
-  authorizationRequestPayload: Openid4vpAuthorizationRequest | JarAuthorizationRequest
+  authorizationRequestPayload:
+    | Openid4vpAuthorizationRequest
+    | Openid4vpAuthorizationRequestDcApi
+    | JarAuthorizationRequest
   wallet?: WalletVerificationOptions
   origin?: string
   disableOriginValidation?: boolean
-  callbacks: Pick<CallbackContext, 'verifyJwt' | 'decryptJwe' | 'getX509CertificateMetadata'>
+  callbacks: Pick<CallbackContext, 'verifyJwt' | 'decryptJwe' | 'getX509CertificateMetadata' | 'fetch'>
 }
 
 export type ResolvedOpenid4vpAuthorizationRequest = {

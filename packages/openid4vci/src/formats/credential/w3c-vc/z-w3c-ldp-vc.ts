@@ -51,7 +51,7 @@ export const zLdpVcCredentialIssuerMetadataDraft14To11 = zLdpVcCredentialIssuerM
     ...credentialDefinition,
     types: type,
   }))
-  .and(zLdpVcCredentialIssuerMetadataDraft11)
+  .pipe(zLdpVcCredentialIssuerMetadataDraft11)
 
 export const zLdpVcCredentialRequestFormatDraft14 = z.object({
   format: zLdpVcFormatIdentifier,
@@ -89,4 +89,4 @@ export const zLdpVcCredentialRequestDraft14To11 = zLdpVcCredentialRequestFormatD
       types: type,
     },
   }))
-  .and(zLdpVcCredentialRequestDraft11)
+  .pipe(zLdpVcCredentialRequestDraft11)
