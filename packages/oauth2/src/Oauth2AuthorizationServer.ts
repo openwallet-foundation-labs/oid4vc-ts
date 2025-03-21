@@ -211,8 +211,8 @@ export class Oauth2AuthorizationServer {
 
   public async verifyDpopJwt(options: Omit<VerifyDpopJwtOptions, 'callbacks'>) {
     return verifyDpopJwt({
-      callbacks: this.options.callbacks,
       ...options,
+      callbacks: this.options.callbacks,
     })
   }
 
