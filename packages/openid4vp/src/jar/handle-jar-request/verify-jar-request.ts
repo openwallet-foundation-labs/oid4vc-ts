@@ -103,6 +103,15 @@ export async function verifyJarRequest(options: VerifyJarRequestOptions): Promis
       error_description: 'client_id does not match the request object client_id.',
     })
   }
+  if (
+    jarRequestParams.client_id_scheme &&
+    jarRequestParams.client_id_scheme !== authorizationRequestPayload.client_id_scheme
+  ) {
+    throw new Oauth2ServerErrorResponseError({
+      error: Oauth2ErrorCodes.InvalidRequest,
+      error_description: 'client_id_scheme does not match the request object client_id_scheme.',
+    })
+  }
 
   return {
     sendBy,
