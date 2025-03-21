@@ -23,12 +23,6 @@ export async function fetchAuthorizationServerMetadata(
     parsedIssuerUrl.pathname,
   ])
 
-  // NOTE: there is a difference in how to construct well-known OAuth2 and well-known openid
-  // url. For OAuth you place `.well-known/oauth-autohrization-server` between the origin and
-  // the path. Historically we used the same method as OpenID (which a lot of servers seems to
-  // host as well), and thus we use this as a last fallback (at least for now).
-  const nonCompliantAuthorizationServerWellKnownMetadataUrl = joinUriParts(issuer, [wellKnownAuthorizationServerSuffix])
-
   // First try oauth-authorization-server
   const authorizationServerResult = await fetchWellKnownMetadata(
     authorizationServerWellKnownMetadataUrl,
@@ -47,11 +41,20 @@ export async function fetchAuthorizationServerMetadata(
     return authorizationServerResult
   }
 
-  const alternativeAuthorizationServerResult = await fetchWellKnownMetadata(
-    nonCompliantAuthorizationServerWellKnownMetadataUrl,
-    zAuthorizationServerMetadata,
-    fetch
-  )
+  // NOTE: there is a difference in how to construct well-known OAuth2 and well-known openid
+  // url. For OAuth you place `.well-known/oauth-autohrization-server` between the origin and
+  // the path. Historically we used the same method as OpenID (which a lot of servers seems to
+  // host as well), and thus we use this as a last fallback if it's different for now (in case of subpath).
+  const nonCompliantAuthorizationServerWellKnownMetadataUrl = joinUriParts(issuer, [wellKnownAuthorizationServerSuffix])
+
+  const alternativeAuthorizationServerResult =
+    nonCompliantAuthorizationServerWellKnownMetadataUrl !== authorizationServerWellKnownMetadataUrl
+      ? await fetchWellKnownMetadata(
+          nonCompliantAuthorizationServerWellKnownMetadataUrl,
+          zAuthorizationServerMetadata,
+          fetch
+        )
+      : undefined
 
   if (alternativeAuthorizationServerResult) {
     if (alternativeAuthorizationServerResult.issuer !== issuer) {
