@@ -24,8 +24,6 @@ export interface VerifyJarRequestOptions {
     metadata?: WalletMetadata
     nonce?: string
   }
-
-  origin?: string
 }
 
 export interface VerifiedJarRequest {
