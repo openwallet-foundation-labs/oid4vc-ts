@@ -24,6 +24,8 @@ export interface VerifyJarRequestOptions {
     metadata?: WalletMetadata
     nonce?: string
   }
+
+  origin?: string
 }
 
 export interface VerifiedJarRequest {
@@ -47,8 +49,10 @@ export async function verifyJarRequest(options: VerifyJarRequestOptions): Promis
   const jarRequestParams = validateJarRequestParams(options)
 
   const sendBy = jarRequestParams.request ? 'value' : 'reference'
-  const clientIdentifierScheme: ClientIdScheme = jarRequestParams.client_id
-    ? zClientIdScheme.parse(jarRequestParams.client_id.split(':')[0])
+
+  // We can't know the client id scheme here if draft was before client_id_scheme became prefix
+  const clientIdentifierScheme: ClientIdScheme | undefined = jarRequestParams.client_id
+    ? zClientIdScheme.safeParse(jarRequestParams.client_id.split(':')[0]).data
     : 'web-origin'
 
   const method = jarRequestParams.request_uri_method ?? 'GET'

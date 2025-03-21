@@ -36,13 +36,20 @@ export async function parseOpenid4vpAuthorizationResponse(
 ): Promise<ParsedOpenid4vpAuthorizationResponse> {
   const { authorizationResponse, callbacks, authorizationRequestPayload, origin } = options
 
-  const expectedClientId = getOpenid4vpClientId({ authorizationRequestPayload, origin })
+  const expectedClientId = getOpenid4vpClientId({
+    origin,
+    responseMode: authorizationRequestPayload.response_mode,
+    clientId: authorizationRequestPayload.client_id,
+    legacyClientIdScheme: authorizationRequestPayload.client_id_scheme,
+  })
   if (authorizationResponse.response) {
     return parseJarmAuthorizationResponse({
       jarmResponseJwt: authorizationResponse.response as string,
       callbacks,
       authorizationRequestPayload,
-      expectedClientId,
+      // If client_id_scheme was provided we should use the legacy (unprefixed) client id scheme
+      // TODO: allow both versions, in case of e.g. did:
+      expectedClientId: expectedClientId.legacyClientId ?? expectedClientId.clientId,
     })
   }
 

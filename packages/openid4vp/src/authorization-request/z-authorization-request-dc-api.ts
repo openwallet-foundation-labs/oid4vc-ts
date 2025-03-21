@@ -2,11 +2,10 @@ import { z } from 'zod'
 import type { JarAuthorizationRequest } from '../jar/z-jar-authorization-request'
 import { type Openid4vpAuthorizationRequest, zOpenid4vpAuthorizationRequest } from './z-authorization-request'
 
+const zOpenid4vpResponseModeDcApi = z.enum(['dc_api', 'dc_api.jwt', 'w3c_dc_api.jwt', 'w3c_dc_api'])
 export const zOpenid4vpAuthorizationRequestDcApi = zOpenid4vpAuthorizationRequest
   .pick({
-    client_id: true,
     response_type: true,
-    response_mode: true,
     nonce: true,
     presentation_definition: true,
     client_metadata: true,
@@ -17,30 +16,27 @@ export const zOpenid4vpAuthorizationRequestDcApi = zOpenid4vpAuthorizationReques
   .extend({
     client_id: z.optional(z.string()),
     expected_origins: z.array(z.string()).optional(),
-    response_mode: z.enum(['dc_api', 'dc_api.jwt', 'w3c_dc_api.jwt', 'w3c_dc_api']),
-    client_id_scheme: z
-      .enum([
-        'pre-registered',
-        'redirect_uri',
-        'entity_id',
-        'did',
-        'verifier_attestation',
-        'x509_san_dns',
-        'x509_san_uri',
-      ])
-      .optional(),
+    response_mode: zOpenid4vpResponseModeDcApi,
+
+    // Not allowed with dc_api, but added to make working with interfaces easier
+    client_id_scheme: z.string().optional(),
+
+    // TODO: should we disallow any properties specifically, such as redirect_uri and response_uri?
   })
-  .strip()
 
 export type Openid4vpAuthorizationRequestDcApi = z.infer<typeof zOpenid4vpAuthorizationRequestDcApi>
+
+export function isOpenid4vpResponseModeDcApi(
+  responseMode?: string
+): responseMode is Openid4vpAuthorizationRequestDcApi['response_mode'] {
+  return (
+    responseMode !== undefined &&
+    zOpenid4vpResponseModeDcApi.options.includes(responseMode as Openid4vpAuthorizationRequestDcApi['response_mode'])
+  )
+}
 
 export function isOpenid4vpAuthorizationRequestDcApi(
   request: Openid4vpAuthorizationRequest | Openid4vpAuthorizationRequestDcApi | JarAuthorizationRequest
 ): request is Openid4vpAuthorizationRequestDcApi {
-  return (
-    request.response_mode === 'dc_api' ||
-    request.response_mode === 'dc_api.jwt' ||
-    request.response_mode === 'w3c_dc_api.jwt' ||
-    request.response_mode === 'w3c_dc_api'
-  )
+  return typeof request.response_mode === 'string' && isOpenid4vpResponseModeDcApi(request.response_mode)
 }
