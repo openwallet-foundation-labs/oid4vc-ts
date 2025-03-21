@@ -34,7 +34,7 @@ export interface ResolveOpenid4vpAuthorizationRequestOptions {
   wallet?: WalletVerificationOptions
   origin?: string
   disableOriginValidation?: boolean
-  callbacks: Pick<CallbackContext, 'verifyJwt' | 'decryptJwe' | 'getX509CertificateMetadata'>
+  callbacks: Pick<CallbackContext, 'verifyJwt' | 'decryptJwe' | 'getX509CertificateMetadata' | 'fetch'>
 }
 
 export type ResolvedOpenid4vpAuthorizationRequest = {

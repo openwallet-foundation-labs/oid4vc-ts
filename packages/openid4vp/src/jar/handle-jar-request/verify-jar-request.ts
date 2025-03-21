@@ -19,7 +19,7 @@ import { type JarAuthorizationRequest, validateJarRequestParams } from '../z-jar
 
 export interface VerifyJarRequestOptions {
   jarRequestParams: JarAuthorizationRequest
-  callbacks: Pick<CallbackContext, 'verifyJwt' | 'decryptJwe'>
+  callbacks: Pick<CallbackContext, 'verifyJwt' | 'decryptJwe' | 'fetch'>
   wallet?: {
     metadata?: WalletMetadata
     nonce?: string
@@ -68,6 +68,7 @@ export async function verifyJarRequest(options: VerifyJarRequestOptions): Promis
       clientIdentifierScheme,
       method,
       wallet,
+      fetch: callbacks.fetch,
     }))
 
   const requestObjectIsEncrypted = zCompactJwe.safeParse(requestObject).success

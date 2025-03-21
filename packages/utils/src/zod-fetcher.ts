@@ -1,8 +1,8 @@
 import type z from 'zod'
 import { ContentType, isResponseContentType } from './content-type'
+import { FetchError } from './error/FetchError'
 import { InvalidFetchResponseError } from './error/InvalidFetchResponseError'
 import type { Fetch } from './globals'
-import { FetchError } from './error/FetchError'
 
 /**
  * A type utility which represents the function returned
