@@ -27,10 +27,11 @@ export interface VerifyJarRequestOptions {
 }
 
 export interface VerifiedJarRequest {
-  authorizationRequestParams: JarRequestObjectPayload
+  authorizationRequestPayload: JarRequestObjectPayload
   sendBy: 'value' | 'reference'
   decryptionJwk?: Jwk
   signer: JwtSignerWithJwk
+  jwt: ReturnType<typeof decodeJwt<undefined, typeof zJarRequestObjectPayload>>
 }
 
 /**
@@ -84,18 +85,18 @@ export async function verifyJarRequest(options: VerifyJarRequestOptions): Promis
     })
   }
 
-  const { authorizationRequestParams, signer } = await verifyJarRequestObject({
+  const { authorizationRequestPayload, signer, jwt } = await verifyJarRequestObject({
     decryptedRequestObject,
     callbacks,
   })
-  if (!authorizationRequestParams.client_id) {
+  if (!authorizationRequestPayload.client_id) {
     throw new Oauth2ServerErrorResponseError({
       error: Oauth2ErrorCodes.InvalidRequestObject,
       error_description: 'Jar Request Object is missing the required "client_id" field.',
     })
   }
 
-  if (jarRequestParams.client_id !== authorizationRequestParams.client_id) {
+  if (jarRequestParams.client_id !== authorizationRequestPayload.client_id) {
     throw new Oauth2ServerErrorResponseError({
       error: Oauth2ErrorCodes.InvalidRequest,
       error_description: 'client_id does not match the request object client_id.',
@@ -104,7 +105,8 @@ export async function verifyJarRequest(options: VerifyJarRequestOptions): Promis
 
   return {
     sendBy,
-    authorizationRequestParams,
+    jwt,
+    authorizationRequestPayload,
     signer,
     decryptionJwk,
   }
@@ -142,7 +144,6 @@ async function verifyJarRequestObject(options: {
   const { decryptedRequestObject, callbacks } = options
 
   const jwt = decodeJwt({ jwt: decryptedRequestObject, payloadSchema: zJarRequestObjectPayload })
-
   const jwtSigner = jwtSignerFromJwt(jwt)
   const { signer } = await verifyJwt({
     verifyJwtCallback: callbacks.verifyJwt,
@@ -161,5 +162,9 @@ async function verifyJarRequestObject(options: {
     })
   }
 
-  return { authorizationRequestParams: jwt.payload, signer }
+  return {
+    signer,
+    jwt,
+    authorizationRequestPayload: jwt.payload,
+  }
 }
