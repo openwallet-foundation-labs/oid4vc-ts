@@ -17,9 +17,7 @@ import type { JarmServerMetadata } from '../jarm/metadata/z-jarm-authorization-s
 import type { Openid4vpAuthorizationResponse } from './z-authorization-response'
 
 export interface CreateOpenid4vpAuthorizationResponseOptions {
-  authorizationRequestPayload:
-    | Pick<Openid4vpAuthorizationRequest, 'state' | 'client_metadata' | 'nonce' | 'response_mode'>
-    | Pick<Openid4vpAuthorizationRequestDcApi, 'client_metadata' | 'response_mode' | 'nonce'>
+  authorizationRequestPayload: Openid4vpAuthorizationRequest | Openid4vpAuthorizationRequestDcApi
   authorizationResponsePayload: Openid4vpAuthorizationResponse & { state?: never }
   jarm?: {
     jwtSigner?: JwtSigner
@@ -44,7 +42,7 @@ export async function createOpenid4vpAuthorizationResponse(
 
   const authorizationResponsePayload = {
     ...options.authorizationResponsePayload,
-    ...('state' in authorizationRequestPayload && { state: authorizationRequestPayload.state }),
+    state: authorizationRequestPayload.state,
   } satisfies Openid4vpAuthorizationResponse
 
   if (

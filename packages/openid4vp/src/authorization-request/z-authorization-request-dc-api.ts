@@ -12,6 +12,7 @@ export const zOpenid4vpAuthorizationRequestDcApi = zOpenid4vpAuthorizationReques
     transaction_data: true,
     dcql_query: true,
     trust_chain: true,
+    state: true,
   })
   .extend({
     client_id: z.optional(z.string()),
@@ -19,7 +20,8 @@ export const zOpenid4vpAuthorizationRequestDcApi = zOpenid4vpAuthorizationReques
     response_mode: zOpenid4vpResponseModeDcApi,
 
     // Not allowed with dc_api, but added to make working with interfaces easier
-    client_id_scheme: z.string().optional(),
+    client_id_scheme: z.never().optional(),
+    scope: z.never().optional(),
 
     // TODO: should we disallow any properties specifically, such as redirect_uri and response_uri?
   })
