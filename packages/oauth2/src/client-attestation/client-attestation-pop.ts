@@ -36,17 +36,11 @@ export interface RequestClientAttestationOptions {
   jwt: string
 
   /**
-   * The signer of the client attestation pop jwt
-   */
-  signer: JwtSignerJwk
-
-  /**
-   * Whether to include the legacy draft 2 `client_assertion` and `client_assertion_type` properties
-   * IN ADDITION to the new header syntax
+   * The signer of the client attestation pop jwt.
    *
-   * @default false
+   * Will be extracted from the client attestation if not provided.
    */
-  includeLegacyDraft2ClientAssertion?: boolean
+  signer?: JwtSignerJwk
 }
 
 export async function createClientAttestationForRequest(
@@ -61,6 +55,7 @@ export async function createClientAttestationForRequest(
     callbacks: options.callbacks,
     expiresAt: options.clientAttestation.expiresAt,
     signer: options.clientAttestation.signer,
+    // TODO: support dynamic fetching of the nonce
     nonce: options.clientAttestation.nonce,
   })
 
@@ -69,12 +64,6 @@ export async function createClientAttestationForRequest(
       [oauthClientAttestationHeader]: options.clientAttestation.jwt,
       [oauthClientAttestationPopHeader]: clientAttestationPopJwt,
     },
-    body: options.clientAttestation.includeLegacyDraft2ClientAssertion
-      ? {
-          client_assertion: `${options.clientAttestation.jwt}~${clientAttestationPopJwt}`,
-          client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-client-attestation',
-        }
-      : undefined,
   }
 }
 
@@ -113,6 +102,7 @@ export interface VerifyClientAttestationPopJwtOptions {
   }
 }
 
+export type VerifiedClientAttestationPopJwt = Awaited<ReturnType<typeof verifyClientAttestationPopJwt>>
 export async function verifyClientAttestationPopJwt(options: VerifyClientAttestationPopJwtOptions) {
   const { header, payload } = decodeJwt({
     jwt: options.clientAttestationPopJwt,
@@ -193,21 +183,30 @@ export interface CreateClientAttestationPopJwtOptions {
 
   /**
    * The signer of jwt. Only jwk signer allowed.
+   *
+   * If not provided, the signer will be derived based on the
+   * `cnf.jwk` and `alg` in the client attestation.
    */
-  signer: JwtSignerJwk
+  signer?: JwtSignerJwk
 }
 
 export async function createClientAttestationPopJwt(options: CreateClientAttestationPopJwtOptions) {
-  const header = parseWithErrorHandling(zClientAttestationPopJwtHeader, {
-    typ: 'oauth-client-attestation-pop+jwt',
-    alg: options.signer.alg,
-  } satisfies ClientAttestationPopJwtHeader)
-
   const clientAttestation = decodeJwt({
     jwt: options.clientAttestation,
     headerSchema: zClientAttestationJwtHeader,
     payloadSchema: zClientAttestationJwtPayload,
   })
+
+  const signer = options.signer ?? {
+    method: 'jwk',
+    alg: clientAttestation.header.alg,
+    publicJwk: clientAttestation.payload.cnf.jwk,
+  }
+
+  const header = parseWithErrorHandling(zClientAttestationPopJwtHeader, {
+    typ: 'oauth-client-attestation-pop+jwt',
+    alg: signer.alg,
+  } satisfies ClientAttestationPopJwtHeader)
 
   const expiresAt = options.expiresAt ?? addSecondsToDate(options.issuedAt ?? new Date(), 1 * 60)
 
@@ -221,7 +220,7 @@ export async function createClientAttestationPopJwt(options: CreateClientAttesta
     ...options.additionalPayload,
   } satisfies ClientAttestationPopJwtPayload)
 
-  const { jwt } = await options.callbacks.signJwt(options.signer, {
+  const { jwt } = await options.callbacks.signJwt(signer, {
     header,
     payload,
   })

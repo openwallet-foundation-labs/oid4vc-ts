@@ -1,10 +1,12 @@
 import {
   type CallbackContext,
+  Oauth2AuthorizationServer,
   Oauth2ErrorCodes,
   Oauth2JwtVerificationError,
   Oauth2ServerErrorResponseError,
 } from '@openid4vc/oauth2'
 import { ValidationError, parseWithErrorHandling } from '@openid4vc/utils'
+import type { VerifyClientAttestationOptions } from '../../oauth2/src/client-attestation/clent-attestation'
 import { type CreateCredentialOfferOptions, createCredentialOffer } from './credential-offer/credential-offer'
 import {
   type CreateCredentialResponseOptions,
@@ -207,5 +209,11 @@ export class Openid4vciIssuer {
    */
   public createNonceResponse(options: CreateNonceResponseOptions) {
     return createNonceResponse(options)
+  }
+
+  public async verifyWalletAttestation(options: Omit<VerifyClientAttestationOptions, 'callbacks'>) {
+    return new Oauth2AuthorizationServer({
+      callbacks: this.options.callbacks,
+    }).verifyClientAttestation(options)
   }
 }

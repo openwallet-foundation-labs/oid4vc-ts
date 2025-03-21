@@ -16,22 +16,12 @@ export const zClientAttestationJwtPayload = z
     cnf: z
       .object({
         jwk: zJwk,
-        key_type: z.optional(
-          z.union([
-            z.enum(['software', 'hardware', 'tee', 'secure_enclave', 'strong_box', 'secure_element', 'hsm']),
-            z.string(),
-          ])
-        ),
-        user_authentication: z.optional(
-          z.union([
-            z.enum(['system_biometry', 'system_pin', 'internal_biometry', 'internal_pin', 'secure_element_pin']),
-            z.string(),
-          ])
-        ),
       })
       .passthrough(),
 
-    aal: z.optional(z.string()),
+    // OID4VCI Wallet Attestation Extensions
+    wallet_name: z.string().optional(),
+    wallet_link: z.string().url().optional(),
   })
   .passthrough()
 export type ClientAttestationJwtPayload = z.infer<typeof zClientAttestationJwtPayload>

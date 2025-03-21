@@ -198,7 +198,7 @@ export async function verifyResourceRequest(options: VerifyResourceRequestOption
 
   return {
     tokenPayload,
-    dpopJwk,
+    dpop: dpopJwk ? { jwk: dpopJwk } : undefined,
     scheme,
     accessToken,
     authorizationServer: authorizationServer.issuer,

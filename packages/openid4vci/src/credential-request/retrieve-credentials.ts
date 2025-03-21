@@ -7,6 +7,8 @@ import {
   resourceRequest,
 } from '@openid4vc/oauth2'
 import { ContentType, isResponseContentType, parseWithErrorHandling } from '@openid4vc/utils'
+import { Openid4vciError } from '../error/Openid4vciError'
+import { getCredentialConfigurationSupportedById } from '../metadata/credential-issuer/credential-issuer-metadata'
 import type { IssuerMetadataResult } from '../metadata/fetch-issuer-metadata'
 import { Openid4vciDraftVersion } from '../version'
 import {
@@ -40,6 +42,53 @@ interface RetrieveCredentialsBaseOptions {
   dpop?: RequestDpopOptions
 }
 
+export interface RetrieveCredentialsWithCredentialConfigurationIdOptions extends RetrieveCredentialsBaseOptions {
+  /**
+   * Additional payload to include in the credential request.
+   */
+  additionalRequestPayload?: Record<string, unknown>
+
+  /**
+   * The credential configuration id to request
+   */
+  credentialConfigurationId: string
+
+  proof?: CredentialRequestProof
+  proofs?: CredentialRequestProofs
+}
+
+export async function retrieveCredentialsWithCredentialConfigurationId(
+  options: RetrieveCredentialsWithCredentialConfigurationIdOptions
+) {
+  if (options.issuerMetadata.originalDraftVersion !== Openid4vciDraftVersion.Draft15) {
+    throw new Openid4vciError(
+      'Requesting credentials based on format is not supported in OpenID4VCI below draft 15. Make sure to provide the format and format specific claims in the request.'
+    )
+  }
+
+  // This ensures the credential configuration exists
+  getCredentialConfigurationSupportedById(
+    options.issuerMetadata.credentialIssuer.credential_configurations_supported,
+    options.credentialConfigurationId
+  )
+
+  const credentialRequest: CredentialRequest = {
+    ...options.additionalRequestPayload,
+
+    credential_configuration_id: options.credentialConfigurationId,
+    proof: options.proof,
+    proofs: options.proofs,
+  }
+
+  return retrieveCredentials({
+    callbacks: options.callbacks,
+    credentialRequest,
+    issuerMetadata: options.issuerMetadata,
+    accessToken: options.accessToken,
+    dpop: options.dpop,
+  })
+}
+
 export interface RetrieveCredentialsWithFormatOptions extends RetrieveCredentialsBaseOptions {
   /**
    * Additional payload to include in the credential request.
@@ -57,6 +106,12 @@ export interface RetrieveCredentialsWithFormatOptions extends RetrieveCredential
 }
 
 export async function retrieveCredentialsWithFormat(options: RetrieveCredentialsWithFormatOptions) {
+  if (options.issuerMetadata.originalDraftVersion === Openid4vciDraftVersion.Draft15) {
+    throw new Openid4vciError(
+      'Requesting credentials based on format is not supported in OpenID4VCI draft 15. Provide the credential configuration id directly in the request.'
+    )
+  }
+
   const credentialRequest: CredentialRequest = {
     ...options.formatPayload,
     ...options.additionalRequestPayload,

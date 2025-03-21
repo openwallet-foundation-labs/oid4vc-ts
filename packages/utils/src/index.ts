@@ -43,6 +43,7 @@ export {
   zIs,
   zStringToJson,
 } from './validation'
+export { formatZodError } from './zod-error'
 export {
   encodeWwwAuthenticateHeader,
   parseWwwAuthenticateHeader,

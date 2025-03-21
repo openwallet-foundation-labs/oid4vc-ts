@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest'
 import { callbacks, getSignJwtCallback } from '../../../tests/util'
 import { createDpopJwt } from '../../dpop/dpop'
+import type { AuthorizationServerMetadata } from '../../metadata/authorization-server/z-authorization-server-metadata'
 import { PkceCodeChallengeMethod } from '../../pkce'
 import { authorizationCodeGrantIdentifier, preAuthorizedCodeGrantIdentifier } from '../../z-grant-type'
 import {
@@ -14,10 +15,16 @@ const request = {
   url: 'https://request.com/token',
 } as const
 
+const authorizationServerMetadata = {
+  issuer: 'https://server.com',
+  token_endpoint: 'https://server.com/token',
+} satisfies AuthorizationServerMetadata
+
 describe('Verify Pre Auhthorized Code Access Token Request', () => {
   test('handles pre authorized code not matching', async () => {
     await expect(
       verifyPreAuthorizedCodeAccessTokenRequest({
+        authorizationServerMetadata,
         accessTokenRequest: {
           grant_type: preAuthorizedCodeGrantIdentifier,
           'pre-authorized_code': 'hello2',
@@ -36,6 +43,7 @@ describe('Verify Pre Auhthorized Code Access Token Request', () => {
   test('handles tx code not expected but provided', async () => {
     await expect(
       verifyPreAuthorizedCodeAccessTokenRequest({
+        authorizationServerMetadata,
         accessTokenRequest: {
           grant_type: preAuthorizedCodeGrantIdentifier,
           'pre-authorized_code': 'hello2',
@@ -56,6 +64,7 @@ describe('Verify Pre Auhthorized Code Access Token Request', () => {
   test('handles tx code not provided but expected', async () => {
     await expect(
       verifyPreAuthorizedCodeAccessTokenRequest({
+        authorizationServerMetadata,
         accessTokenRequest: {
           grant_type: preAuthorizedCodeGrantIdentifier,
           'pre-authorized_code': 'hello2',
@@ -75,6 +84,7 @@ describe('Verify Pre Auhthorized Code Access Token Request', () => {
   test('handles tx code provided and expected but not matching', async () => {
     await expect(
       verifyPreAuthorizedCodeAccessTokenRequest({
+        authorizationServerMetadata,
         accessTokenRequest: {
           grant_type: preAuthorizedCodeGrantIdentifier,
           'pre-authorized_code': 'hello2',
@@ -97,6 +107,7 @@ describe('Verify Pre Auhthorized Code Access Token Request', () => {
     const now = new Date()
     await expect(
       verifyPreAuthorizedCodeAccessTokenRequest({
+        authorizationServerMetadata,
         accessTokenRequest: {
           grant_type: preAuthorizedCodeGrantIdentifier,
           'pre-authorized_code': 'hello2',
@@ -117,6 +128,7 @@ describe('Verify Pre Auhthorized Code Access Token Request', () => {
   test('handles code_verifier expected but not provided', async () => {
     await expect(
       verifyPreAuthorizedCodeAccessTokenRequest({
+        authorizationServerMetadata,
         accessTokenRequest: {
           grant_type: preAuthorizedCodeGrantIdentifier,
           'pre-authorized_code': 'hello2',
@@ -139,6 +151,7 @@ describe('Verify Pre Auhthorized Code Access Token Request', () => {
   test('handles code_verifier expected but not provided', async () => {
     await expect(
       verifyPreAuthorizedCodeAccessTokenRequest({
+        authorizationServerMetadata,
         accessTokenRequest: {
           grant_type: preAuthorizedCodeGrantIdentifier,
           'pre-authorized_code': 'hello2',
@@ -161,6 +174,7 @@ describe('Verify Pre Auhthorized Code Access Token Request', () => {
   test('handles code_verifier not matching with code_challenge', async () => {
     await expect(
       verifyPreAuthorizedCodeAccessTokenRequest({
+        authorizationServerMetadata,
         accessTokenRequest: {
           grant_type: preAuthorizedCodeGrantIdentifier,
           'pre-authorized_code': 'hello2',
@@ -186,6 +200,7 @@ describe('Verify Pre Auhthorized Code Access Token Request', () => {
   test('handles dpop expected but not provided', async () => {
     await expect(
       verifyPreAuthorizedCodeAccessTokenRequest({
+        authorizationServerMetadata,
         accessTokenRequest: {
           grant_type: preAuthorizedCodeGrantIdentifier,
           'pre-authorized_code': 'hello2',
@@ -207,6 +222,7 @@ describe('Verify Pre Auhthorized Code Access Token Request', () => {
   test('handles dpop provided but not valid', async () => {
     await expect(
       verifyPreAuthorizedCodeAccessTokenRequest({
+        authorizationServerMetadata,
         accessTokenRequest: {
           grant_type: preAuthorizedCodeGrantIdentifier,
           'pre-authorized_code': 'hello2',
@@ -229,6 +245,29 @@ describe('Verify Pre Auhthorized Code Access Token Request', () => {
         },
       })
     ).rejects.toThrow('Jwt is not a valid jwt, unable to decode')
+  })
+
+  test('handles client attestation provided but not valid', async () => {
+    await expect(
+      verifyPreAuthorizedCodeAccessTokenRequest({
+        authorizationServerMetadata,
+        accessTokenRequest: {
+          grant_type: preAuthorizedCodeGrantIdentifier,
+          'pre-authorized_code': 'hello2',
+        },
+        grant: {
+          grantType: preAuthorizedCodeGrantIdentifier,
+          preAuthorizedCode: 'hello2',
+        },
+        callbacks,
+        expectedPreAuthorizedCode: 'hello2',
+        request,
+        clientAttestation: {
+          clientAttestationJwt: 'something',
+          clientAttestationPopJwt: 'something-else',
+        },
+      })
+    ).rejects.toThrow('Error verifying client attestation. Jwt is not a valid jwt, unable to decode')
   })
 
   test('handles valid pre-authorized code access token request', async () => {
@@ -255,7 +294,8 @@ describe('Verify Pre Auhthorized Code Access Token Request', () => {
     })
     const now = new Date()
 
-    const { dpopJwk } = await verifyPreAuthorizedCodeAccessTokenRequest({
+    const { dpop } = await verifyPreAuthorizedCodeAccessTokenRequest({
+      authorizationServerMetadata,
       accessTokenRequest: {
         grant_type: preAuthorizedCodeGrantIdentifier,
         code: 'hello2',
@@ -291,7 +331,10 @@ describe('Verify Pre Auhthorized Code Access Token Request', () => {
       },
     })
 
-    expect(dpopJwk).toEqual(dpopPublicJwk)
+    expect(dpop).toEqual({
+      jwk: dpopPublicJwk,
+      jwkThumbprint: 'VyMJnrA8aEQPnpDn0kCkNIkjfQgt94xDbK0N1O9Os_4',
+    })
   })
 })
 
@@ -299,6 +342,7 @@ describe('Verify Authorization Code Access Token Request', () => {
   test('handles authorization code not matching', async () => {
     await expect(
       verifyAuthorizationCodeAccessTokenRequest({
+        authorizationServerMetadata,
         accessTokenRequest: {
           grant_type: authorizationCodeGrantIdentifier,
           code: 'hello2',
@@ -318,6 +362,7 @@ describe('Verify Authorization Code Access Token Request', () => {
     const now = new Date()
     await expect(
       verifyAuthorizationCodeAccessTokenRequest({
+        authorizationServerMetadata,
         accessTokenRequest: {
           grant_type: authorizationCodeGrantIdentifier,
           code: 'hello2',
@@ -338,6 +383,7 @@ describe('Verify Authorization Code Access Token Request', () => {
   test('handles code_verifier expected but not provided', async () => {
     await expect(
       verifyAuthorizationCodeAccessTokenRequest({
+        authorizationServerMetadata,
         accessTokenRequest: {
           grant_type: authorizationCodeGrantIdentifier,
           code: 'hello2',
@@ -360,6 +406,7 @@ describe('Verify Authorization Code Access Token Request', () => {
   test('handles code_verifier expected but not provided', async () => {
     await expect(
       verifyAuthorizationCodeAccessTokenRequest({
+        authorizationServerMetadata,
         accessTokenRequest: {
           grant_type: authorizationCodeGrantIdentifier,
           code: 'hello2',
@@ -382,6 +429,7 @@ describe('Verify Authorization Code Access Token Request', () => {
   test('handles code_verifier not matching with code_challenge', async () => {
     await expect(
       verifyAuthorizationCodeAccessTokenRequest({
+        authorizationServerMetadata,
         accessTokenRequest: {
           grant_type: authorizationCodeGrantIdentifier,
           code: 'hello2',
@@ -407,6 +455,7 @@ describe('Verify Authorization Code Access Token Request', () => {
   test('handles dpop expected but not provided', async () => {
     await expect(
       verifyAuthorizationCodeAccessTokenRequest({
+        authorizationServerMetadata,
         accessTokenRequest: {
           grant_type: authorizationCodeGrantIdentifier,
           code: 'hello2',
@@ -428,6 +477,7 @@ describe('Verify Authorization Code Access Token Request', () => {
   test('handles dpop provided but not valid', async () => {
     await expect(
       verifyAuthorizationCodeAccessTokenRequest({
+        authorizationServerMetadata,
         accessTokenRequest: {
           grant_type: authorizationCodeGrantIdentifier,
           code: 'hello2',
@@ -450,6 +500,35 @@ describe('Verify Authorization Code Access Token Request', () => {
         },
       })
     ).rejects.toThrow('Jwt is not a valid jwt, unable to decode')
+  })
+
+  test('handles client attestation provided but not valid', async () => {
+    await expect(
+      verifyAuthorizationCodeAccessTokenRequest({
+        authorizationServerMetadata,
+        accessTokenRequest: {
+          grant_type: authorizationCodeGrantIdentifier,
+          code: 'hello2',
+        },
+        grant: {
+          grantType: authorizationCodeGrantIdentifier,
+          code: 'hello2',
+        },
+        callbacks,
+        expectedCode: 'hello2',
+        request: {
+          ...request,
+          headers: new Headers({
+            DPoP: 'ey',
+          }),
+        },
+
+        clientAttestation: {
+          clientAttestationJwt: 'something',
+          clientAttestationPopJwt: 'something-else',
+        },
+      })
+    ).rejects.toThrow('Error verifying client attestation. Jwt is not a valid jwt, unable to decode')
   })
 
   test('handles valid autohrization code request', async () => {
@@ -477,7 +556,8 @@ describe('Verify Authorization Code Access Token Request', () => {
 
     const now = new Date()
 
-    const { dpopJwk } = await verifyAuthorizationCodeAccessTokenRequest({
+    const { dpop } = await verifyAuthorizationCodeAccessTokenRequest({
+      authorizationServerMetadata,
       accessTokenRequest: {
         grant_type: authorizationCodeGrantIdentifier,
         code: 'hello2',
@@ -510,6 +590,6 @@ describe('Verify Authorization Code Access Token Request', () => {
       },
     })
 
-    expect(dpopJwk).toEqual(dpopPublicJwk)
+    expect(dpop).toEqual({ jwk: dpopPublicJwk, jwkThumbprint: 'VyMJnrA8aEQPnpDn0kCkNIkjfQgt94xDbK0N1O9Os_4' })
   })
 })

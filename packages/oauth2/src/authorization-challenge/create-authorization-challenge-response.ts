@@ -41,14 +41,10 @@ export interface CreateAuthorizationChallengeErrorResponseOptions {
   authSession?: string
 
   /**
-   * The presentation during issuance error.
-   *
    * Error codes specific to authorization challenge are:
    *  - @see Oauth2ErrorCodes.RedirectToWeb
    *  - @see Oauth2ErrorCodes.InvalidSession
    *  - @see Oauth2ErrorCodes.InsufficientAuthorization
-   *
-   * If you want to require presentation of a
    */
   error: StringWithAutoCompletion<Oauth2ErrorCodes>
 

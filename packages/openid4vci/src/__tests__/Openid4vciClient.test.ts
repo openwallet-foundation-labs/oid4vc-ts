@@ -1,4 +1,5 @@
 import { decodeJwt, preAuthorizedCodeGrantIdentifier } from '@openid4vc/oauth2'
+import { clientAuthenticationAnonymous } from '@openid4vc/oauth2'
 import { parseWithErrorHandling } from '@openid4vc/utils'
 import { http, HttpResponse } from 'msw'
 import { setupServer } from 'msw/node'
@@ -68,6 +69,7 @@ describe('Openid4vciClient', () => {
     const client = new Openid4vciClient({
       callbacks: {
         ...callbacks,
+        clientAuthentication: clientAuthenticationAnonymous(),
         fetch,
         signJwt: getSignJwtCallback([paradymDraft13.holderPrivateKeyJwk]),
       },
@@ -173,6 +175,7 @@ describe('Openid4vciClient', () => {
     const client = new Openid4vciClient({
       callbacks: {
         ...callbacks,
+        clientAuthentication: clientAuthenticationAnonymous(),
         fetch,
         signJwt: getSignJwtCallback([paradymDraft11.holderPrivateKeyJwk]),
       },
@@ -300,8 +303,9 @@ describe('Openid4vciClient', () => {
       http.get(`${bdrDraft13.credentialOfferObject.credential_issuer}/.well-known/openid-configuration`, () =>
         HttpResponse.text(undefined, { status: 404 })
       ),
-      http.get(`${bdrDraft13.credentialOfferObject.credential_issuer}/.well-known/oauth-authorization-server`, () =>
-        HttpResponse.json(bdrDraft13.authorizationServerMetadata)
+      http.get(
+        `${bdrDraft13.credentialOfferObject.credential_issuer.replace('/c', '')}/.well-known/oauth-authorization-server/c`,
+        () => HttpResponse.json(bdrDraft13.authorizationServerMetadata)
       ),
       http.get('https://demo.pid-issuer.bundesdruckerei.de/.well-known/oauth-authorization-server/c', () =>
         HttpResponse.json(bdrDraft13.authorizationServerMetadata)
@@ -311,7 +315,7 @@ describe('Openid4vciClient', () => {
         expect(parsed).toEqual({
           response_type: 'code',
           resource: issuerMetadata.credentialIssuer.credential_issuer,
-          client_id: '76c7c89b-8799-4bd1-a693-d49948a91b00',
+          client_id: 'some-random-client-id',
           scope: 'pid',
           redirect_uri: 'https://example.com/redirect',
           code_challenge: 'MuPA1CQYF9t3udwnb4A_SWig3BArengnQXS2yo8AFew',
@@ -344,6 +348,7 @@ describe('Openid4vciClient', () => {
           signature: expect.any(String),
         })
         expect(parseXwwwFormUrlEncoded(await request.text())).toEqual({
+          client_id: 'some-random-client-id',
           code: 'SHSw3KROXXsyvlCSPWBi4b',
           redirect_uri: 'https://example.com/redirect',
           code_verifier: 'l-yZMbym56l7IlENP17y-XgKzT6a37ut5n9yXMrh9BpTOt9g77CwCsWheRW0oMA2tL471UZhIr705MdHxRSQvQ',
@@ -413,7 +418,7 @@ describe('Openid4vciClient', () => {
 
     // Use a static value for the tests
     const pkceCodeVerifier = 'l-yZMbym56l7IlENP17y-XgKzT6a37ut5n9yXMrh9BpTOt9g77CwCsWheRW0oMA2tL471UZhIr705MdHxRSQvQ'
-    const clientId = '76c7c89b-8799-4bd1-a693-d49948a91b00'
+    const clientId = 'some-random-client-id'
     const redirectUri = 'https://example.com/redirect'
 
     const { authorizationRequestUrl, pkce, authorizationServer } = await client.createAuthorizationRequestUrlFromOffer({
@@ -471,7 +476,7 @@ describe('Openid4vciClient', () => {
     })
 
     expect(proofJwt).toMatch(
-      'eyJhbGciOiJFUzI1NiIsInR5cCI6Im9wZW5pZDR2Y2ktcHJvb2Yrand0IiwiandrIjp7Imt0eSI6IkVDIiwiY3J2IjoiUC0yNTYiLCJ4IjoiQUVYcEh5MTBHaHRXaGxWUE5tckZzYnl0X3dEc1FfN3EzZGpObnJoempfNCIsInkiOiJER1RBQ09BQW5RVGVwYUQ0MGd5RzlabC1vRGhPbHYzVUJsVHR4SWVyNWVvIn19.eyJpc3MiOiI3NmM3Yzg5Yi04Nzk5LTRiZDEtYTY5My1kNDk5NDhhOTFiMDAiLCJhdWQiOiJodHRwczovL2RlbW8ucGlkLWlzc3Vlci5idW5kZXNkcnVja2VyZWkuZGUvYyIsImlhdCI6MTcyODUxODQwMCwibm9uY2UiOiJzak5NaXF5Zm1CZUQxcWlvQ1Z5cXZTIn0.'
+      'eyJhbGciOiJFUzI1NiIsInR5cCI6Im9wZW5pZDR2Y2ktcHJvb2Yrand0IiwiandrIjp7Imt0eSI6IkVDIiwiY3J2IjoiUC0yNTYiLCJ4IjoiQUVYcEh5MTBHaHRXaGxWUE5tckZzYnl0X3dEc1FfN3EzZGpObnJoempfNCIsInkiOiJER1RBQ09BQW5RVGVwYUQ0MGd5RzlabC1vRGhPbHYzVUJsVHR4SWVyNWVvIn19.eyJpc3MiOiJzb21lLXJhbmRvbS1jbGllbnQtaWQiLCJhdWQiOiJodHRwczovL2RlbW8ucGlkLWlzc3Vlci5idW5kZXNkcnVja2VyZWkuZGUvYyIsImlhdCI6MTcyODUxODQwMCwibm9uY2UiOiJzak5NaXF5Zm1CZUQxcWlvQ1Z5cXZTIn0.'
     )
     expect(decodeJwt({ jwt: proofJwt })).toStrictEqual({
       header: {
@@ -531,6 +536,7 @@ describe('Openid4vciClient', () => {
             authorizationChallengeRequest.presentation_during_issuance_session
           ) {
             expect(authorizationChallengeRequest).toEqual({
+              client_id: 'some-random-client-id',
               auth_session: 'auth-session-identifier',
               presentation_during_issuance_session: 'some-session',
             })
@@ -538,7 +544,7 @@ describe('Openid4vciClient', () => {
           }
 
           expect(authorizationChallengeRequest).toEqual({
-            client_id: '76c7c89b-8799-4bd1-a693-d49948a91b00',
+            client_id: 'some-random-client-id',
             scope: 'pid',
             code_challenge: expect.any(String),
             code_challenge_method: 'S256',
@@ -549,6 +555,7 @@ describe('Openid4vciClient', () => {
       ),
       http.post(presentationDuringIssuance.authorizationServerMetadata.token_endpoint, async ({ request }) => {
         expect(parseXwwwFormUrlEncoded(await request.text())).toEqual({
+          client_id: 'some-random-client-id',
           code: presentationDuringIssuance.authorizationChallengeResponse.authorization_code,
           redirect_uri: 'https://example.com/redirect',
           grant_type: 'authorization_code',
@@ -587,7 +594,7 @@ describe('Openid4vciClient', () => {
 
     // Use a static value for the tests
     const pkceCodeVerifier = 'l-yZMbym56l7IlENP17y-XgKzT6a37ut5n9yXMrh9BpTOt9g77CwCsWheRW0oMA2tL471UZhIr705MdHxRSQvQ'
-    const clientId = '76c7c89b-8799-4bd1-a693-d49948a91b00'
+    const clientId = 'some-random-client-id'
     const redirectUri = 'https://example.com/redirect'
 
     const authorization = await client.initiateAuthorization({

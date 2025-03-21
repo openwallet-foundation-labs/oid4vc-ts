@@ -1,23 +1,23 @@
 import { expect, test } from 'vitest'
-import { zSdJwtVcCredentialIssuerMetadataDraft14, zSdJwtVcFormatIdentifier } from '../z-sd-jwt-vc'
+import { zSdJwtDcCredentialIssuerMetadata, zSdJwtDcFormatIdentifier } from '../z-sd-jwt-dc'
 
-test('should parse sd-jwt-vc format identifier', () => {
-  expect(zSdJwtVcFormatIdentifier.safeParse('vc+sd-jwt')).toStrictEqual({
-    data: 'vc+sd-jwt',
+test('should parse sd-jwt-dc format identifier', () => {
+  expect(zSdJwtDcFormatIdentifier.safeParse('dc+sd-jwt')).toStrictEqual({
+    data: 'dc+sd-jwt',
     success: true,
   })
 
-  expect(zSdJwtVcFormatIdentifier.safeParse('vc+sd-jwt2')).toStrictEqual({
+  expect(zSdJwtDcFormatIdentifier.safeParse('dc+sd-jwt2')).toStrictEqual({
     error: expect.any(Error),
     success: false,
   })
 })
 
-test('should parse sd-jwt-vc credential issuer metadata', () => {
+test('should parse sd-jwt-dc credential issuer metadata', () => {
   expect(
-    zSdJwtVcCredentialIssuerMetadataDraft14.safeParse({
-      format: 'vc+sd-jwt',
-      scope: 'SD_JWT_VC_example_in_OpenID4VCI',
+    zSdJwtDcCredentialIssuerMetadata.safeParse({
+      format: 'dc+sd-jwt',
+      scope: 'SD_JWT_DC_example_in_OpenID4VCI',
       cryptographic_binding_methods_supported: ['jwk'],
       credential_signing_alg_values_supported: ['ES256'],
       display: [
@@ -37,9 +37,10 @@ test('should parse sd-jwt-vc credential issuer metadata', () => {
           proof_signing_alg_values_supported: ['ES256'],
         },
       },
-      vct: 'SD_JWT_VC_example_in_OpenID4VCI',
-      claims: {
-        given_name: {
+      vct: 'SD_JWT_DC_example_in_OpenID4VCI',
+      claims: [
+        {
+          path: ['given_name'],
           display: [
             {
               name: 'Given Name',
@@ -51,7 +52,8 @@ test('should parse sd-jwt-vc credential issuer metadata', () => {
             },
           ],
         },
-        family_name: {
+        {
+          path: ['family_name'],
           display: [
             {
               name: 'Surname',
@@ -63,19 +65,10 @@ test('should parse sd-jwt-vc credential issuer metadata', () => {
             },
           ],
         },
-        email: {},
-        phone_number: {},
-        address: {
-          street_address: {},
-          locality: {},
-          region: {},
-          country: {},
+        {
+          path: ['email'],
         },
-        birthdate: {},
-        is_over_18: {},
-        is_over_21: {},
-        is_over_65: {},
-      },
+      ],
     })
   ).toStrictEqual({
     data: expect.objectContaining({}),

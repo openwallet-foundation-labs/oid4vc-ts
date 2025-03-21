@@ -5,29 +5,41 @@ import {
   type CredentialFormatIdentifier,
   zJwtVcJsonCredentialIssuerMetadata,
   zJwtVcJsonCredentialIssuerMetadataDraft11To14,
+  zJwtVcJsonCredentialIssuerMetadataDraft14,
   zJwtVcJsonCredentialIssuerMetadataDraft14To11,
   zJwtVcJsonFormatIdentifier,
   zJwtVcJsonLdCredentialIssuerMetadata,
   zJwtVcJsonLdCredentialIssuerMetadataDraft11To14,
+  zJwtVcJsonLdCredentialIssuerMetadataDraft14,
   zJwtVcJsonLdCredentialIssuerMetadataDraft14To11,
   zJwtVcJsonLdFormatIdentifier,
   zLdpVcCredentialIssuerMetadata,
   zLdpVcCredentialIssuerMetadataDraft11To14,
+  zLdpVcCredentialIssuerMetadataDraft14,
   zLdpVcCredentialIssuerMetadataDraft14To11,
   zLdpVcFormatIdentifier,
   zMsoMdocCredentialIssuerMetadata,
-  zSdJwtVcCredentialIssuerMetadata,
+  zMsoMdocCredentialIssuerMetadataDraft14,
+  zSdJwtDcCredentialIssuerMetadata,
+  zSdJwtDcFormatIdentifier,
+  zSdJwtVcCredentialIssuerMetadataDraft14,
 } from '../../formats/credential'
 import { Openid4vciDraftVersion } from '../../version'
 import { zCredentialConfigurationSupportedCommon } from './z-credential-configuration-supported-common'
 
 const allCredentialIssuerMetadataFormats = [
-  zSdJwtVcCredentialIssuerMetadata,
+  zSdJwtDcCredentialIssuerMetadata,
   zMsoMdocCredentialIssuerMetadata,
   zJwtVcJsonLdCredentialIssuerMetadata,
   zLdpVcCredentialIssuerMetadata,
   zJwtVcJsonCredentialIssuerMetadata,
+  zMsoMdocCredentialIssuerMetadataDraft14,
+  zSdJwtVcCredentialIssuerMetadataDraft14,
+  zJwtVcJsonLdCredentialIssuerMetadataDraft14,
+  zLdpVcCredentialIssuerMetadataDraft14,
+  zJwtVcJsonCredentialIssuerMetadataDraft14,
 ] as const
+type CredentialIssuerMetadataFromatValidator = (typeof allCredentialIssuerMetadataFormats)[number]
 export const allCredentialIssuerMetadataFormatIdentifiers = allCredentialIssuerMetadataFormats.map(
   (format) => format.shape.format.value
 )
@@ -37,11 +49,29 @@ export const zCredentialConfigurationSupportedWithFormats = zCredentialConfigura
     // No additional validation for unknown formats
     if (!allCredentialIssuerMetadataFormatIdentifiers.includes(data.format as CredentialFormatIdentifier)) return data
 
+    const validators = allCredentialIssuerMetadataFormats.reduce(
+      (validators, formatValidator) => {
+        const format = formatValidator.shape.format.value
+
+        if (!validators[format]) {
+          validators[format] = []
+        }
+
+        validators[format].push(formatValidator)
+        return validators
+      },
+      {} as Record<CredentialFormatIdentifier, CredentialIssuerMetadataFromatValidator[]>
+    )[data.format as CredentialFormatIdentifier]
+
     const result = z
       // We use object and passthrough as otherwise the non-format specific properties will be stripped
       .object({})
       .passthrough()
-      .and(z.discriminatedUnion('format', allCredentialIssuerMetadataFormats))
+      .and(
+        validators.length > 1
+          ? z.union(validators as [CredentialIssuerMetadataFromatValidator, CredentialIssuerMetadataFromatValidator])
+          : validators[0]
+      )
       .safeParse(data)
     if (result.success) {
       return result.data as Simplify<typeof result.data & typeof data>
@@ -85,8 +115,8 @@ const zCredentialIssuerMetadataDisplayEntry = z
   .passthrough()
 export type CredentialIssuerMetadataDisplayEntry = z.infer<typeof zCredentialIssuerMetadataDisplayEntry>
 
-export type CredentialIssuerMetadata = z.infer<typeof zCredentialIssuerMetadataDraft14>
-const zCredentialIssuerMetadataDraft14 = z
+export type CredentialIssuerMetadata = z.infer<typeof zCredentialIssuerMetadataDraft14Draft15>
+const zCredentialIssuerMetadataDraft14Draft15 = z
   .object({
     credential_issuer: zHttpsUrl,
     authorization_servers: z.array(zHttpsUrl).optional(),
@@ -289,9 +319,9 @@ export const zCredentialIssuerMetadataDraft11To14 = z
       })
       .passthrough()
   )
-  .pipe(zCredentialIssuerMetadataDraft14)
+  .pipe(zCredentialIssuerMetadataDraft14Draft15)
 
-export const zCredentialIssuerMetadataWithDraft11 = zCredentialIssuerMetadataDraft14
+export const zCredentialIssuerMetadataWithDraft11 = zCredentialIssuerMetadataDraft14Draft15
   .transform((issuerMetadata) => ({
     ...issuerMetadata,
     ...(issuerMetadata.authorization_servers ? { authorization_server: issuerMetadata.authorization_servers[0] } : {}),
@@ -301,25 +331,44 @@ export const zCredentialIssuerMetadataWithDraft11 = zCredentialIssuerMetadataDra
     })),
   }))
   .pipe(
-    zCredentialIssuerMetadataDraft14.extend({
+    zCredentialIssuerMetadataDraft14Draft15.extend({
       credentials_supported: z.array(zCredentialConfigurationSupportedDraft14To11),
     })
   )
 
 export const zCredentialIssuerMetadata = z.union([
-  // First prioritize draft 14 (and 13)
-  zCredentialIssuerMetadataDraft14,
+  // First prioritize draft 15/14 (and 13)
+  zCredentialIssuerMetadataDraft14Draft15,
   // Then try parsing draft 11 and transform into draft 14
   zCredentialIssuerMetadataDraft11To14,
 ])
 
 export const zCredentialIssuerMetadataWithDraftVersion = z.union([
-  // First prioritize draft 14 (and 13)
+  zCredentialIssuerMetadataDraft14Draft15.transform((credentialIssuerMetadata) => {
+    const isDraft15 = Object.values(credentialIssuerMetadata.credential_configurations_supported).some(
+      (configuration) => {
+        const knownConfiguration = configuration as CredentialConfigurationSupportedWithFormats
 
-  zCredentialIssuerMetadataDraft14.transform((credentialIssuerMetadata) => ({
-    credentialIssuerMetadata,
-    originalDraftVersion: Openid4vciDraftVersion.Draft14,
-  })),
+        // Added in draft 15, it's not possible to detect with 100% guarantee
+        if (knownConfiguration.format === zSdJwtDcFormatIdentifier.value) return true
+        if (Array.isArray(knownConfiguration.claims)) return true
+        if (
+          Object.values(knownConfiguration.proof_types_supported ?? {}).some(
+            (proofType) => proofType.key_attestations_required !== undefined
+          )
+        )
+          return true
+
+        // For now we assume draft 14 if we don't have any evidence it's draft 15
+        return false
+      }
+    )
+
+    return {
+      credentialIssuerMetadata,
+      originalDraftVersion: isDraft15 ? Openid4vciDraftVersion.Draft15 : Openid4vciDraftVersion.Draft14,
+    }
+  }),
   // Then try parsing draft 11 and transform into draft 14
   zCredentialIssuerMetadataDraft11To14.transform((credentialIssuerMetadata) => ({
     credentialIssuerMetadata,

@@ -2,8 +2,11 @@ import { type FetchHeaders, dateToSeconds, parseWithErrorHandling } from '@openi
 import type { CallbackContext } from '../callbacks'
 import { decodeJwt, jwtHeaderFromJwtSigner, jwtSignerFromJwt } from '../common/jwt/decode-jwt'
 import { verifyJwt } from '../common/jwt/verify-jwt'
-import type { JwtSigner } from '../common/jwt/z-jwt'
+import { type JwtSigner, zCompactJwt } from '../common/jwt/z-jwt'
+import { Oauth2ErrorCodes } from '../common/z-oauth2-error'
 import { Oauth2Error } from '../error/Oauth2Error'
+import { Oauth2ServerErrorResponseError } from '../error/Oauth2ServerErrorResponseError'
+import { verifyClientAttestationPopJwt } from './client-attestation-pop'
 import {
   type ClientAttestationJwtHeader,
   type ClientAttestationJwtPayload,
@@ -32,6 +35,7 @@ export interface VerifyClientAttestationJwtOptions {
   // TODO: expectedClientId? expectedIssuer?
 }
 
+export type VerifiedClientAttestationJwt = Awaited<ReturnType<typeof verifyClientAttestationJwt>>
 export async function verifyClientAttestationJwt(options: VerifyClientAttestationJwtOptions) {
   const { header, payload } = decodeJwt({
     jwt: options.clientAttestationJwt,
@@ -122,19 +126,99 @@ export async function createClientAttestationJwt(options: CreateClientAttestatio
   return jwt
 }
 
-export function extractClientAttestationJwtsFromHeaders(headers: FetchHeaders) {
+export function extractClientAttestationJwtsFromHeaders(
+  headers: FetchHeaders
+):
+  | { valid: false }
+  | { valid: true; clientAttestationHeader?: undefined; clientAttestationPopHeader?: undefined }
+  | { valid: true; clientAttestationHeader: string; clientAttestationPopHeader: string } {
   const clientAttestationHeader = headers.get(oauthClientAttestationHeader)
   const clientAttestationPopHeader = headers.get(oauthClientAttestationPopHeader)
 
-  if (!clientAttestationHeader || clientAttestationHeader.includes(',')) {
-    throw new Oauth2Error(`Missing or invalid '${oauthClientAttestationHeader}' header.`)
+  if (!clientAttestationHeader && !clientAttestationPopHeader) {
+    return { valid: true }
   }
-  if (!clientAttestationPopHeader || clientAttestationPopHeader.includes(',')) {
-    throw new Oauth2Error(`Missing or invalid '${oauthClientAttestationPopHeader}' header.`)
+
+  if (!clientAttestationHeader || !clientAttestationPopHeader) {
+    return { valid: false }
+  }
+
+  if (
+    !zCompactJwt.safeParse(clientAttestationHeader).success ||
+    !zCompactJwt.safeParse(clientAttestationPopHeader).success
+  ) {
+    return { valid: false } as const
   }
 
   return {
+    valid: true,
     clientAttestationPopHeader,
     clientAttestationHeader,
+  } as const
+}
+
+export interface VerifyClientAttestationOptions {
+  authorizationServer: string
+  clientAttestationJwt: string
+  clientAttestationPopJwt: string
+  callbacks: Pick<CallbackContext, 'verifyJwt'>
+
+  /**
+   * Date to use for expiration. If not provided current date will be used.
+   */
+  now?: Date
+}
+
+export async function verifyClientAttestation({
+  authorizationServer,
+  clientAttestationJwt,
+  clientAttestationPopJwt,
+  callbacks,
+  now,
+}: VerifyClientAttestationOptions) {
+  try {
+    const clientAttestation = await verifyClientAttestationJwt({
+      callbacks,
+      clientAttestationJwt,
+      now,
+    })
+
+    const clientAttestationPop = await verifyClientAttestationPopJwt({
+      callbacks: callbacks,
+      authorizationServer,
+      clientAttestation,
+      clientAttestationPopJwt,
+      now,
+    })
+
+    return {
+      clientAttestation,
+      clientAttestationPop,
+    }
+  } catch (error) {
+    if (error instanceof Oauth2Error) {
+      throw new Oauth2ServerErrorResponseError(
+        {
+          error: Oauth2ErrorCodes.InvalidClient,
+          error_description: `Error verifying client attestation. ${error.message}`,
+        },
+        {
+          status: 401,
+          cause: error,
+        }
+      )
+    }
+
+    throw new Oauth2ServerErrorResponseError(
+      {
+        error: Oauth2ErrorCodes.ServerError,
+        error_description: 'Error during verification of client attestation jwt',
+      },
+      {
+        status: 500,
+        cause: error,
+        internalMessage: 'Unknown error thrown during verification of client attestation jwt',
+      }
+    )
   }
 }

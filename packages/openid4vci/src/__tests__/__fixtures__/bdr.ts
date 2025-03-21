@@ -76,7 +76,7 @@ export const bdrDraft13 = {
     expires_in: 60,
   },
   authorizationRequestUrl:
-    'https://demo.pid-issuer.bundesdruckerei.de/c/authorize?request_uri=urn%3Aietf%3Aparams%3Aoauth%3Arequest_uri%3AhvbhS1BHhHZzZbwEbBwK2Y&client_id=76c7c89b-8799-4bd1-a693-d49948a91b00',
+    'https://demo.pid-issuer.bundesdruckerei.de/c/authorize?request_uri=urn%3Aietf%3Aparams%3Aoauth%3Arequest_uri%3AhvbhS1BHhHZzZbwEbBwK2Y&client_id=some-random-client-id',
   accessTokenResponse: {
     access_token: 'yvFUHf7pZBfgHd6pkI1ktc',
     token_type: 'DPoP',

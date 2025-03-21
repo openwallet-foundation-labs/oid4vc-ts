@@ -160,6 +160,11 @@ describe('Openid4vciIssuer', () => {
     })
 
     const parsedCredentialRequest = parseCredentialRequest({
+      issuerMetadata: {
+        authorizationServers: [],
+        credentialIssuer: credentialIssuerMetadata,
+        originalDraftVersion: Openid4vciDraftVersion.Draft14,
+      },
       credentialRequest: {
         format: 'vc+sd-jwt',
         vct: 'https://sd-jwt.com',

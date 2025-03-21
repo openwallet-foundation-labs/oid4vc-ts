@@ -1,11 +1,7 @@
-import { ContentType, createZodFetcher, objectToQueryParams, parseWithErrorHandling } from '@openid4vc/utils'
+import { ContentType, Headers, createZodFetcher, objectToQueryParams, parseWithErrorHandling } from '@openid4vc/utils'
 import { InvalidFetchResponseError } from '@openid4vc/utils'
 import { ValidationError } from '../../../utils/src/error/ValidationError'
 import type { CallbackContext } from '../callbacks'
-import {
-  type RequestClientAttestationOptions,
-  createClientAttestationForRequest,
-} from '../client-attestation/client-attestation-pop'
 import { type RequestDpopOptions, createDpopHeadersForRequest, extractDpopNonceFromHeaders } from '../dpop/dpop'
 import { authorizationServerRequestWithDpopRetry } from '../dpop/dpop-retry'
 import { Oauth2ClientErrorResponseError } from '../error/Oauth2ClientErrorResponseError'
@@ -37,7 +33,7 @@ interface RetrieveAccessTokenBaseOptions {
   /**
    * Callbacks to use for requesting access token
    */
-  callbacks: Pick<CallbackContext, 'fetch' | 'generateRandom' | 'hash' | 'signJwt'>
+  callbacks: Pick<CallbackContext, 'fetch' | 'generateRandom' | 'hash' | 'signJwt' | 'clientAuthentication'>
 
   /**
    * The resource to which access is being requested. This can help the authorization
@@ -53,11 +49,6 @@ interface RetrieveAccessTokenBaseOptions {
    * metadata, or the 'alg' value does not match an error will be thrown.
    */
   dpop?: RequestDpopOptions
-
-  /**
-   * If client attestation needs to be included in the request.
-   */
-  clientAttestation?: RequestClientAttestationOptions
 }
 
 export interface RetrievePreAuthorizedCodeAccessTokenOptions extends RetrieveAccessTokenBaseOptions {
@@ -88,7 +79,6 @@ export async function retrievePreAuthorizedCodeAccessToken(
     dpop: options.dpop,
     callbacks: options.callbacks,
     resource: options.resource,
-    clientAttestation: options.clientAttestation,
   })
 }
 
@@ -134,7 +124,6 @@ export async function retrieveAuthorizationCodeAccessToken(
     dpop: options.dpop,
     resource: options.resource,
     callbacks: options.callbacks,
-    clientAttestation: options.clientAttestation,
   })
 }
 
@@ -167,7 +156,6 @@ export async function retrieveRefreshTokenAccessToken(
     dpop: options.dpop,
     callbacks: options.callbacks,
     resource: options.resource,
-    clientAttestation: options.clientAttestation,
   })
 }
 
@@ -195,14 +183,6 @@ async function retrieveAccessToken(options: RetrieveAccessTokenOptions): Promise
     accessTokenRequest.user_pin = accessTokenRequest.tx_code
   }
 
-  const clientAttestation = options.clientAttestation
-    ? await createClientAttestationForRequest({
-        authorizationServer: options.authorizationServerMetadata.issuer,
-        clientAttestation: options.clientAttestation,
-        callbacks: options.callbacks,
-      })
-    : undefined
-
   return await authorizationServerRequestWithDpopRetry({
     dpop: options.dpop,
     request: async (dpop) => {
@@ -218,22 +198,29 @@ async function retrieveAccessToken(options: RetrieveAccessTokenOptions): Promise
           })
         : undefined
 
-      const requestQueryParams = objectToQueryParams({
-        ...accessTokenRequest,
-        ...clientAttestation?.body,
+      const headers = new Headers({
+        'Content-Type': ContentType.XWwwFormUrlencoded,
+        ...dpopHeaders,
       })
+
+      // Apply client authentication
+      await options.callbacks.clientAuthentication({
+        url: options.authorizationServerMetadata.token_endpoint,
+        method: 'POST',
+        authorizationServerMetadata: options.authorizationServerMetadata,
+        body: accessTokenRequest,
+        contentType: ContentType.XWwwFormUrlencoded,
+        headers,
+      })
+
       const { response, result } = await fetchWithZod(
         zAccessTokenResponse,
         ContentType.Json,
         options.authorizationServerMetadata.token_endpoint,
         {
-          body: requestQueryParams.toString(),
+          body: objectToQueryParams(accessTokenRequest).toString(),
           method: 'POST',
-          headers: {
-            'Content-Type': ContentType.XWwwFormUrlencoded,
-            ...clientAttestation?.headers,
-            ...dpopHeaders,
-          },
+          headers,
         }
       )
 

@@ -1,11 +1,7 @@
-import { ContentType, type Fetch, createZodFetcher, objectToQueryParams } from '@openid4vc/utils'
+import { ContentType, Headers, createZodFetcher, objectToQueryParams } from '@openid4vc/utils'
 import { InvalidFetchResponseError } from '@openid4vc/utils'
 import { ValidationError } from '../../../utils/src/error/ValidationError'
 import { type CallbackContext, HashAlgorithm } from '../callbacks'
-import {
-  type RequestClientAttestationOptions,
-  createClientAttestationForRequest,
-} from '../client-attestation/client-attestation-pop'
 import { calculateJwkThumbprint } from '../common/jwk/jwk-thumbprint'
 import { zOauth2ErrorResponse } from '../common/z-oauth2-error'
 import { type RequestDpopOptions, createDpopHeadersForRequest, extractDpopNonceFromHeaders } from '../dpop/dpop'
@@ -24,7 +20,7 @@ export interface CreateAuthorizationRequestUrlOptions {
   /**
    * Callback context mostly for crypto related functionality
    */
-  callbacks: Pick<CallbackContext, 'fetch' | 'hash' | 'generateRandom' | 'signJwt'>
+  callbacks: Pick<CallbackContext, 'fetch' | 'hash' | 'generateRandom' | 'signJwt' | 'clientAuthentication'>
 
   /**
    * Metadata of the authorization server for which to create the authorization request url
@@ -32,7 +28,11 @@ export interface CreateAuthorizationRequestUrlOptions {
   authorizationServerMetadata: AuthorizationServerMetadata
 
   /**
-   * The client id to use for the authorization request
+   * The client id to use for the authorization request.
+   *
+   * For authorization requests the `client_id` is ALWAYS required, even if client authentication is used
+   * (which differs from the token endpoint). This should match with the client_id that will be used for
+   * client authentication
    */
   clientId: string
 
@@ -62,13 +62,6 @@ export interface CreateAuthorizationRequestUrlOptions {
    * Code verifier to use for pkce. If not provided a value will generated when pkce is supported
    */
   pkceCodeVerifier?: string
-
-  /**
-   * If client attestation needs to be included in the request.
-   *
-   * Will ONLY be used if PAR is used.
-   */
-  clientAttestation?: RequestClientAttestationOptions
 
   /**
    * DPoP options
@@ -125,14 +118,6 @@ export async function createAuthorizationRequestUrl(options: CreateAuthorization
       )
     }
 
-    const clientAttestation = options.clientAttestation
-      ? await createClientAttestationForRequest({
-          authorizationServer: options.authorizationServerMetadata.issuer,
-          clientAttestation: options.clientAttestation,
-          callbacks: options.callbacks,
-        })
-      : undefined
-
     const { pushedAuthorizationResponse, dpopNonce } = await authorizationServerRequestWithDpopRetry({
       dpop: options.dpop,
       request: async (dpop) => {
@@ -149,16 +134,11 @@ export async function createAuthorizationRequestUrl(options: CreateAuthorization
           : undefined
 
         return await pushAuthorizationRequest({
-          authorizationRequest: {
-            ...authorizationRequest,
-            ...clientAttestation?.headers,
-          },
+          authorizationServerMetadata,
+          authorizationRequest,
           pushedAuthorizationRequestEndpoint,
-          fetch: options.callbacks.fetch,
-          headers: {
-            ...clientAttestation?.headers,
-            ...dpopHeaders,
-          },
+          callbacks: options.callbacks,
+          headers: dpopHeaders,
         })
       },
     })
@@ -194,6 +174,8 @@ export async function createAuthorizationRequestUrl(options: CreateAuthorization
 }
 
 interface PushAuthorizationRequestOptions {
+  authorizationServerMetadata: AuthorizationServerMetadata
+
   pushedAuthorizationRequestEndpoint: string
   authorizationRequest: AuthorizationRequest
 
@@ -202,20 +184,34 @@ interface PushAuthorizationRequestOptions {
    */
   headers?: Record<string, unknown>
 
-  /**
-   * Custom fetch implementation to use
-   */
-  fetch?: Fetch
+  callbacks: Pick<CallbackContext, 'fetch' | 'clientAuthentication'>
 }
 
 async function pushAuthorizationRequest(options: PushAuthorizationRequestOptions) {
-  const fetchWithZod = createZodFetcher(options.fetch)
+  const fetchWithZod = createZodFetcher(options.callbacks.fetch)
 
   if (options.authorizationRequest.request_uri) {
     throw new Oauth2Error(
       `Authorization request contains 'request_uri' parameter. This is not allowed for pushed authorization reuqests.`
     )
   }
+
+  const headers = new Headers({
+    ...options.headers,
+    'Content-Type': ContentType.XWwwFormUrlencoded,
+  })
+
+  // NOTE: this will currently be called twice if we need to retry dpop.
+  // Probably have to think about caching it in some way.
+  // Apply client authentication
+  await options.callbacks.clientAuthentication({
+    url: options.pushedAuthorizationRequestEndpoint,
+    method: 'POST',
+    authorizationServerMetadata: options.authorizationServerMetadata,
+    body: options.authorizationRequest,
+    contentType: ContentType.XWwwFormUrlencoded,
+    headers,
+  })
 
   const { response, result } = await fetchWithZod(
     zPushedAuthorizationResponse,
@@ -224,10 +220,7 @@ async function pushAuthorizationRequest(options: PushAuthorizationRequestOptions
     {
       method: 'POST',
       body: objectToQueryParams(options.authorizationRequest).toString(),
-      headers: {
-        ...options.headers,
-        'Content-Type': ContentType.XWwwFormUrlencoded,
-      },
+      headers,
     }
   )
 
