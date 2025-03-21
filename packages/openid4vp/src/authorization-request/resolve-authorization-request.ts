@@ -69,7 +69,7 @@ export async function resolveOpenid4vpAuthorizationRequest(
 
     const parsedJarAuthorizationRequestPayload = parseWithErrorHandling(
       z.union([zOpenid4vpAuthorizationRequestDcApi, zOpenid4vpAuthorizationRequest]),
-      jar.authorizationRequestParams,
+      jar.authorizationRequestPayload,
       'Invalid authorization request. Could not parse jar request payload as openid4vp auth request.'
     )
 
