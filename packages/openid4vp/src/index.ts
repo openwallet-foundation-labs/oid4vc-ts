@@ -64,6 +64,8 @@ export {
   ParsedOpenid4vpAuthorizationResponse,
 } from './authorization-response/parse-authorization-response'
 
+export { parseOpenid4VpAuthorizationResponsePayload } from './authorization-response/parse-authorization-response-payload'
+
 export {
   parseJarmAuthorizationResponse,
   ParseJarmAuthorizationResponseOptions,
