@@ -28,17 +28,13 @@ export const zOpenid4vpAuthorizationRequestDcApi = zOpenid4vpAuthorizationReques
 
 export type Openid4vpAuthorizationRequestDcApi = z.infer<typeof zOpenid4vpAuthorizationRequestDcApi>
 
-export function isOpenid4vpResponseModeDcApi(
-  responseMode?: string
-): responseMode is Openid4vpAuthorizationRequestDcApi['response_mode'] {
-  return (
-    responseMode !== undefined &&
-    zOpenid4vpResponseModeDcApi.options.includes(responseMode as Openid4vpAuthorizationRequestDcApi['response_mode'])
-  )
-}
-
 export function isOpenid4vpAuthorizationRequestDcApi(
   request: Openid4vpAuthorizationRequest | Openid4vpAuthorizationRequestDcApi | JarAuthorizationRequest
 ): request is Openid4vpAuthorizationRequestDcApi {
-  return typeof request.response_mode === 'string' && isOpenid4vpResponseModeDcApi(request.response_mode)
+  return (
+    request.response_mode !== undefined &&
+    zOpenid4vpResponseModeDcApi.options.includes(
+      request.response_mode as Openid4vpAuthorizationRequestDcApi['response_mode']
+    )
+  )
 }

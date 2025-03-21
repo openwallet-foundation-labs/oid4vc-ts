@@ -5,7 +5,6 @@ import type { Openid4vpAuthorizationRequest } from '../authorization-request/z-a
 import {
   type Openid4vpAuthorizationRequestDcApi,
   isOpenid4vpAuthorizationRequestDcApi,
-  isOpenid4vpResponseModeDcApi,
 } from '../authorization-request/z-authorization-request-dc-api'
 import type { VerifiedJarRequest } from '../jar/handle-jar-request/verify-jar-request'
 import type { ClientMetadata } from '../models/z-client-metadata'
@@ -59,9 +58,7 @@ export type ParsedClientIdentifier = (
 }
 
 export interface GetOpenid4vpClientIdOptions {
-  responseMode: Openid4vpAuthorizationRequestDcApi['response_mode'] | Openid4vpAuthorizationRequest['response_mode']
-  clientId?: string
-  legacyClientIdScheme?: string
+  authorizationRequestPayload: Openid4vpAuthorizationRequest | Openid4vpAuthorizationRequestDcApi
   origin?: string
 }
 
@@ -73,14 +70,7 @@ export interface GetOpenid4vpClientIdOptions {
  */
 export function getOpenid4vpClientId(options: GetOpenid4vpClientIdOptions) {
   // Handle DC API
-  if (isOpenid4vpResponseModeDcApi(options.responseMode)) {
-    if (options.legacyClientIdScheme) {
-      throw new Oauth2ServerErrorResponseError({
-        error: Oauth2ErrorCodes.InvalidRequest,
-        error_description: `Failed to parse client identifier. response_mode '${options.responseMode}' is not supported in combination with 'client_id_scheme'`,
-      })
-    }
-
+  if (isOpenid4vpAuthorizationRequestDcApi(options.authorizationRequestPayload)) {
     if (!options.origin) {
       throw new Oauth2ServerErrorResponseError({
         error: Oauth2ErrorCodes.InvalidRequest,
@@ -90,43 +80,43 @@ export function getOpenid4vpClientId(options: GetOpenid4vpClientIdOptions) {
     }
 
     return {
-      clientId: options.clientId ?? `web-origin:${options.origin}`,
+      clientId: options.authorizationRequestPayload.client_id ?? `web-origin:${options.origin}`,
     }
   }
 
   // If no DC API, client_id is required
-  if (!options.clientId) {
+  if (!options.authorizationRequestPayload.client_id) {
     throw new Oauth2ServerErrorResponseError({
       error: Oauth2ErrorCodes.InvalidRequest,
-      error_description: `Failed to parse client identifier. Missing required client_id parameter for response_mode '${options.responseMode}'.`,
+      error_description: `Failed to parse client identifier. Missing required client_id parameter for response_mode '${options.authorizationRequestPayload.response_mode}'.`,
     })
   }
 
   // Handle legacy client id scheme
-  if (options.legacyClientIdScheme) {
-    const parsedClientIdScheme = zLegacyClientIdScheme.safeParse(options.legacyClientIdScheme)
+  if (options.authorizationRequestPayload.client_id_scheme) {
+    const parsedClientIdScheme = zLegacyClientIdScheme.safeParse(options.authorizationRequestPayload.client_id_scheme)
     if (!parsedClientIdScheme.success) {
       throw new Oauth2ServerErrorResponseError({
         error: Oauth2ErrorCodes.InvalidRequest,
-        error_description: `Failed to parse client identifier. Unsupported client_id_scheme value '${options.legacyClientIdScheme}'.`,
+        error_description: `Failed to parse client identifier. Unsupported client_id_scheme value '${options.authorizationRequestPayload.client_id_scheme}'.`,
       })
     }
 
     const clientIdScheme = parsedClientIdScheme.data === 'entity_id' ? 'https' : parsedClientIdScheme.data
     if (clientIdScheme === 'https' || clientIdScheme === 'did' || clientIdScheme === 'pre-registered') {
-      return { clientId: options.clientId }
+      return { clientId: options.authorizationRequestPayload.client_id }
     }
 
     return {
-      clientId: `${clientIdScheme}:${options.clientId}`,
-      legacyClientId: options.clientId,
+      clientId: `${clientIdScheme}:${options.authorizationRequestPayload.client_id}`,
+      legacyClientId: options.authorizationRequestPayload.client_id,
     }
   }
 
   // Fall back to modern client id. We don't validate it yet, we just want to get the
   // modern client id
   return {
-    clientId: options.clientId,
+    clientId: options.authorizationRequestPayload.client_id,
   }
 }
 
@@ -151,7 +141,7 @@ export function parseClientIdentifier(
   options: ClientIdentifierParserOptions,
   parserConfig?: ClientIdentifierParserConfig
 ): ParsedClientIdentifier {
-  const { authorizationRequestPayload, jar } = options
+  const { authorizationRequestPayload, jar, origin } = options
 
   // By default require signatures for these schemes
   const parserConfigWithDefaults = {
@@ -159,9 +149,8 @@ export function parseClientIdentifier(
   }
 
   const { clientId, legacyClientId } = getOpenid4vpClientId({
-    responseMode: authorizationRequestPayload.response_mode,
-    clientId: authorizationRequestPayload.client_id,
-    legacyClientIdScheme: authorizationRequestPayload.client_id_scheme,
+    authorizationRequestPayload,
+    origin,
   })
 
   const colonIndex = clientId.indexOf(':')
