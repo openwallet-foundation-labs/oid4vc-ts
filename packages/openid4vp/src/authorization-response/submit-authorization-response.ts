@@ -1,5 +1,5 @@
 import { type CallbackContext, Oauth2Error } from '@openid4vc/oauth2'
-import { ContentType, defaultFetcher } from '@openid4vc/utils'
+import { ContentType, createFetcher } from '@openid4vc/utils'
 import { objectToQueryParams } from '@openid4vc/utils'
 import type { Openid4vpAuthorizationRequest } from '../authorization-request/z-authorization-request'
 import { jarmAuthorizationResponseSend } from '../jarm/jarm-authorizatino-response-send'
@@ -30,11 +30,11 @@ export async function submitOpenid4vpAuthorizationResponse(options: SubmitOpenid
     )
   }
 
-  const fetch = callbacks.fetch ?? defaultFetcher
+  const fetch = createFetcher(callbacks.fetch)
   const encodedResponse = objectToQueryParams(authorizationResponsePayload)
   const submissionResponse = await fetch(url, {
     method: 'POST',
-    body: encodedResponse,
+    body: encodedResponse.toString(),
     headers: {
       'Content-Type': ContentType.XWwwFormUrlencoded,
     },

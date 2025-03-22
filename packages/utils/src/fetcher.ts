@@ -2,7 +2,7 @@ import type z from 'zod'
 import { ContentType, isResponseContentType } from './content-type'
 import { FetchError } from './error/FetchError'
 import { InvalidFetchResponseError } from './error/InvalidFetchResponseError'
-import type { Fetch } from './globals'
+import { type Fetch, URLSearchParams } from './globals'
 
 /**
  * A type utility which represents the function returned
@@ -18,9 +18,27 @@ export type ZodFetcher = <Schema extends z.ZodTypeAny>(
  * The default fetcher used by createZodFetcher when no
  * fetcher is provided.
  */
+// biome-ignore lint/style/noRestrictedGlobals: this is the only place where we use the global
+const defaultFetcher = fetch
 
-// biome-ignore lint/style/noRestrictedGlobals: <explanation>
-export const defaultFetcher = fetch
+export function createFetcher(fetcher = defaultFetcher): Fetch {
+  return (input, init, ...args) => {
+    return fetcher(
+      input,
+      init
+        ? {
+            ...init,
+            // React Native does not seem to handle the toString(). This is hard to catch when running
+            // tests in Node.JS where this does work correctly. so we handle it here.
+            body: init.body instanceof URLSearchParams ? init.body.toString() : undefined,
+          }
+        : undefined,
+      ...args
+    ).catch((error) => {
+      throw new FetchError(`Unknown error occurred during fetch to '${input}'`, { cause: error })
+    })
+  }
+}
 
 /**
  * Creates a `fetchWithZod` function that takes in a schema of
@@ -40,11 +58,9 @@ export const defaultFetcher = fetch
  *   "https://example.com",
  * );
  */
-export function createZodFetcher(fetcher = defaultFetcher): ZodFetcher {
+export function createZodFetcher(fetcher?: Fetch): ZodFetcher {
   return async (schema, expectedContentType, ...args) => {
-    const response = await fetcher(...args).catch((error) => {
-      throw new FetchError(`Unknown error occurred during fetch to '${args[0]}'`, { cause: error })
-    })
+    const response = await createFetcher(fetcher)(...args)
 
     if (response.ok && !isResponseContentType(expectedContentType, response)) {
       throw new InvalidFetchResponseError(

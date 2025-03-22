@@ -1,5 +1,5 @@
 import { Oauth2ErrorCodes, Oauth2ServerErrorResponseError } from '@openid4vc/oauth2'
-import { ContentType, type Fetch, defaultFetcher, objectToQueryParams } from '@openid4vc/utils'
+import { ContentType, type Fetch, createFetcher, objectToQueryParams } from '@openid4vc/utils'
 import type { ClientIdScheme } from '../../client-identifier-scheme/z-client-id-scheme'
 import type { WalletMetadata } from '../../models/z-wallet-metadata'
 
@@ -24,7 +24,7 @@ export async function fetchJarRequestObject(options: {
   }
   fetch?: Fetch
 }): Promise<string> {
-  const { requestUri, clientIdentifierScheme, method, wallet, fetch = defaultFetcher } = options
+  const { requestUri, clientIdentifierScheme, method, wallet, fetch } = options
 
   let requestBody = wallet.metadata ? { wallet_metadata: wallet.metadata, wallet_nonce: wallet.nonce } : undefined
   if (
@@ -36,7 +36,7 @@ export async function fetchJarRequestObject(options: {
     requestBody = { ...requestBody, wallet_metadata: { ...rest } }
   }
 
-  const response = await fetch(requestUri, {
+  const response = await createFetcher(fetch)(requestUri, {
     method,
     body: method === 'POST' ? objectToQueryParams(wallet.metadata ?? {}) : undefined,
     headers: {
