@@ -387,7 +387,10 @@ export class Openid4vciClient {
    * @throws ValidationError - if validating the nonce response failed
    */
   public async requestNonce(options: Pick<RequestNonceOptions, 'issuerMetadata'>) {
-    return requestNonce(options)
+    return requestNonce({
+      ...options,
+      fetch: this.options.callbacks.fetch,
+    })
   }
 
   /**
