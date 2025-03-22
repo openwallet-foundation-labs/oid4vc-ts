@@ -62,7 +62,14 @@ export async function verifyJwtProfileAccessToken(options: VerifyJwtProfileAcces
     )
   }
 
-  const jwks = await fetchJwks(authorizationServer, options.callbacks.fetch)
+  const jwksUrl = authorizationServer.jwks_uri
+  if (!jwksUrl) {
+    throw new Oauth2Error(
+      `Authorization server '${authorizationServer.issuer}' does not have a 'jwks_uri' parameter to fetch JWKs.`
+    )
+  }
+
+  const jwks = await fetchJwks(jwksUrl, options.callbacks.fetch)
   const publicJwk = extractJwkFromJwksForJwt({
     kid: decodedJwt.header.kid,
     jwks,
