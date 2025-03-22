@@ -30,7 +30,7 @@ export function createFetcher(fetcher = defaultFetcher): Fetch {
             ...init,
             // React Native does not seem to handle the toString(). This is hard to catch when running
             // tests in Node.JS where this does work correctly. so we handle it here.
-            body: init.body instanceof URLSearchParams ? init.body.toString() : undefined,
+            body: init.body instanceof URLSearchParams ? init.body.toString() : init.body,
           }
         : undefined,
       ...args
