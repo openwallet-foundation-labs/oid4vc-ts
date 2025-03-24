@@ -1,7 +1,9 @@
 import {
   type CallbackContext,
   type Jwk,
+  type JwtSigner,
   type JwtSignerWithJwk,
+  Oauth2Error,
   Oauth2ErrorCodes,
   Oauth2ServerErrorResponseError,
   decodeJwt,
@@ -10,6 +12,8 @@ import {
   zCompactJwe,
   zCompactJwt,
 } from '@openid4vc/oauth2'
+import z from 'zod'
+import { getOpenid4vpClientId } from '../../client-identifier-scheme/parse-client-identifier-scheme'
 import { type ClientIdScheme, zClientIdScheme } from '../../client-identifier-scheme/z-client-id-scheme'
 import type { WalletMetadata } from '../../models/z-wallet-metadata'
 import { parseAuthorizationRequestVersion } from '../../version'
@@ -33,6 +37,9 @@ export interface VerifiedJarRequest {
   signer: JwtSignerWithJwk
   jwt: ReturnType<typeof decodeJwt<undefined, typeof zJarRequestObjectPayload>>
 }
+
+const zSignedAuthorizationRequestJwtHeaderTyp = z.literal('oauth-authz-req+jwt')
+export const signedAuthorizationRequestJwtHeaderTyp = zSignedAuthorizationRequestJwtHeaderTyp.value
 
 /**
  * Verifies a JAR (JWT Secured Authorization Request) request by validating, decrypting, and verifying signatures.
@@ -154,7 +161,50 @@ async function verifyJarRequestObject(options: {
   const { decryptedRequestObject, callbacks } = options
 
   const jwt = decodeJwt({ jwt: decryptedRequestObject, payloadSchema: zJarRequestObjectPayload })
-  const jwtSigner = jwtSignerFromJwt(jwt)
+
+  let jwtSigner: JwtSigner
+
+  const { clientIdScheme } = getOpenid4vpClientId({
+    responseMode: jwt.payload.response_mode,
+    clientId: jwt.payload.client_id,
+    legacyClientIdScheme: jwt.payload.client_id_scheme,
+  })
+
+  // Allowed signer methods for each of the client id schemes
+  const clientIdToSignerMethod: Record<ClientIdScheme, JwtSigner['method'][]> = {
+    did: ['did'],
+    'pre-registered': ['custom', 'did', 'jwk'],
+    'web-origin': [], // no signing allowed
+    redirect_uri: [], // no signing allowed
+
+    // Not 100% sure which one are allowed?
+    verifier_attestation: ['did', 'federation', 'jwk', 'x5c', 'custom'],
+
+    x509_san_dns: ['x5c'],
+    x509_san_uri: ['x5c'],
+
+    // Handled separately
+    https: [],
+  }
+
+  // The logic to determine the signer for a JWT is different for signed authorization request and federation
+  if (clientIdScheme === 'https') {
+    if (!jwt.header.kid) {
+      throw new Oauth2Error(
+        `When OpenID Federation is used for signed authorization request, the 'kid' parameter is required.`
+      )
+    }
+
+    jwtSigner = {
+      method: 'federation',
+      alg: jwt.header.alg,
+      trustChain: jwt.payload.trust_chain,
+      kid: jwt.header.kid,
+    }
+  } else {
+    jwtSigner = jwtSignerFromJwt({ ...jwt, allowedSignerMethods: clientIdToSignerMethod[clientIdScheme] })
+  }
+
   const { signer } = await verifyJwt({
     verifyJwtCallback: callbacks.verifyJwt,
     compact: decryptedRequestObject,

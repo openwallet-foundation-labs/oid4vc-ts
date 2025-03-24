@@ -1,10 +1,19 @@
 import { describe, expect, test } from 'vitest'
-import { parseClientIdentifier } from '../src/client-identifier-scheme/parse-client-identifier-scheme'
+import { validateOpenid4vpClientId } from '../src/client-identifier-scheme/parse-client-identifier-scheme'
 
 describe('Correctly parses the client identifier', () => {
   describe('legacy client_id_scheme', () => {
     test(`correctly handles legacy client_id_schme 'entity_id'`, () => {
-      const client = parseClientIdentifier({
+      const client = validateOpenid4vpClientId({
+        jar: {
+          signer: {
+            method: 'federation',
+            alg: '',
+            kid: '',
+            // @ts-ignore
+            publicJwk: {},
+          },
+        },
         authorizationRequestPayload: {
           response_mode: 'direct_post',
           client_id: 'https://example.com',
@@ -24,9 +33,14 @@ describe('Correctly parses the client identifier', () => {
     })
 
     test(`correctly handles legacy client_id_schme 'did'`, () => {
-      const client = parseClientIdentifier({
-        // @ts-expect-error
-        jar: { signer: { publicJwk: { kid: 'did:example:123#key-1' } } },
+      const client = validateOpenid4vpClientId({
+        jar: {
+          signer: {
+            method: 'did',
+            // @ts-expect-error
+            publicJwk: { kid: 'did:example:123#key-1' },
+          },
+        },
         authorizationRequestPayload: {
           response_mode: 'direct_post',
           client_id: 'did:example:123#key-1',
@@ -45,7 +59,7 @@ describe('Correctly parses the client identifier', () => {
     })
 
     test(`correctly handles legacy client_id_schme 'x509_san_dns'`, () => {
-      const client = parseClientIdentifier({
+      const client = validateOpenid4vpClientId({
         // @ts-expect-error
         jar: { signer: { method: 'x5c', x5c: ['certificate'] } },
         authorizationRequestPayload: {
@@ -69,7 +83,7 @@ describe('Correctly parses the client identifier', () => {
     })
 
     test(`correctly handles legacy client_id_schme 'x509_san_uri'`, () => {
-      const client = parseClientIdentifier({
+      const client = validateOpenid4vpClientId({
         // @ts-expect-error
         jar: { signer: { method: 'x5c', x5c: ['certificate'] } },
         authorizationRequestPayload: {
@@ -93,7 +107,7 @@ describe('Correctly parses the client identifier', () => {
     })
 
     test('correctly assumes no client_id_scheme as pre-registered', () => {
-      const client = parseClientIdentifier({
+      const client = validateOpenid4vpClientId({
         authorizationRequestPayload: {
           response_mode: 'direct_post',
           client_id: 'pre-registered client',
@@ -111,7 +125,7 @@ describe('Correctly parses the client identifier', () => {
     })
 
     test('correctly applies pre-registered', () => {
-      const client = parseClientIdentifier({
+      const client = validateOpenid4vpClientId({
         authorizationRequestPayload: {
           response_mode: 'direct_post',
           client_id: 'pre-registered client',
@@ -132,7 +146,16 @@ describe('Correctly parses the client identifier', () => {
 
   describe('client_id_scheme', () => {
     test(`correctly handles client_id_schme 'entity_id'`, () => {
-      const client = parseClientIdentifier({
+      const client = validateOpenid4vpClientId({
+        jar: {
+          signer: {
+            method: 'federation',
+            kid: '',
+            alg: '',
+            // @ts-ignore
+            publicJwk: {},
+          },
+        },
         authorizationRequestPayload: {
           response_mode: 'direct_post',
           client_id: 'https://example.com',
@@ -151,9 +174,16 @@ describe('Correctly parses the client identifier', () => {
     })
 
     test(`correctly handles client_id_schme 'did'`, () => {
-      const client = parseClientIdentifier({
-        // @ts-expect-error
-        jar: { signer: { publicJwk: { kid: 'did:example:123#key-1' } } },
+      const client = validateOpenid4vpClientId({
+        jar: {
+          signer: {
+            method: 'did',
+            // @ts-expect-error
+            publicJwk: {
+              kid: 'did:example:123#key-1',
+            },
+          },
+        },
         authorizationRequestPayload: {
           response_mode: 'direct_post',
           client_id: 'did:example:123#key-1',
@@ -171,7 +201,7 @@ describe('Correctly parses the client identifier', () => {
     })
 
     test(`correctly handles client_id_schme 'x509_san_dns'`, () => {
-      const client = parseClientIdentifier({
+      const client = validateOpenid4vpClientId({
         // @ts-expect-error
         jar: { signer: { method: 'x5c', x5c: ['certificate'] } },
         authorizationRequestPayload: {
@@ -194,7 +224,7 @@ describe('Correctly parses the client identifier', () => {
     })
 
     test(`correctly handles legacy client_id_schme 'x509_san_uri'`, () => {
-      const client = parseClientIdentifier({
+      const client = validateOpenid4vpClientId({
         // @ts-expect-error
         jar: { signer: { method: 'x5c', x5c: ['certificate'] } },
         authorizationRequestPayload: {
@@ -217,7 +247,7 @@ describe('Correctly parses the client identifier', () => {
     })
 
     test('correctly assumes no client_id_scheme as pre-registered', () => {
-      const client = parseClientIdentifier({
+      const client = validateOpenid4vpClientId({
         authorizationRequestPayload: {
           response_mode: 'direct_post',
           client_id: 'pre-registered client',
@@ -235,10 +265,10 @@ describe('Correctly parses the client identifier', () => {
     })
 
     test('correctly applies pre-registered', () => {
-      const client = parseClientIdentifier({
+      const client = validateOpenid4vpClientId({
         authorizationRequestPayload: {
           response_mode: 'direct_post',
-          client_id: 'pre-registered:pre-registered client',
+          client_id: 'pre-registered client',
           nonce: 'nonce',
           response_type: 'vp_token',
         },
@@ -247,7 +277,7 @@ describe('Correctly parses the client identifier', () => {
 
       expect(client).toMatchObject({
         identifier: 'pre-registered client',
-        originalValue: 'pre-registered:pre-registered client',
+        originalValue: 'pre-registered client',
         scheme: 'pre-registered',
       })
     })

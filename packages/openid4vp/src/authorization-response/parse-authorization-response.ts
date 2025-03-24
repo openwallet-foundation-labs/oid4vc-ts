@@ -38,7 +38,9 @@ export async function parseOpenid4vpAuthorizationResponse(
 
   const expectedClientId = getOpenid4vpClientId({
     origin,
-    authorizationRequestPayload,
+    responseMode: authorizationRequestPayload.response_mode,
+    clientId: authorizationRequestPayload.client_id,
+    legacyClientIdScheme: authorizationRequestPayload.client_id_scheme,
   })
   if (authorizationResponse.response) {
     return parseJarmAuthorizationResponse({

@@ -3,7 +3,7 @@ import { parseWithErrorHandling } from '@openid4vc/utils'
 import z from 'zod'
 import {
   type ParsedClientIdentifier,
-  parseClientIdentifier,
+  validateOpenid4vpClientId,
 } from '../client-identifier-scheme/parse-client-identifier-scheme'
 import { fetchClientMetadata } from '../fetch-client-metadata'
 import { type VerifiedJarRequest, verifyJarRequest } from '../jar/handle-jar-request/verify-jar-request'
@@ -99,7 +99,7 @@ export async function resolveOpenid4vpAuthorizationRequest(
     clientMetadata = await fetchClientMetadata({ clientMetadataUri: authorizationRequestPayload.client_metadata_uri })
   }
 
-  const clientMeta = parseClientIdentifier({
+  const clientMeta = validateOpenid4vpClientId({
     authorizationRequestPayload: {
       ...authorizationRequestPayload,
       client_metadata: clientMetadata,

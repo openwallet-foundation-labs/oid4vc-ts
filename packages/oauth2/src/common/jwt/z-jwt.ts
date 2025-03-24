@@ -21,9 +21,9 @@ export type JwtSignerX5c = {
   alg: string
 }
 
-export type JwtSignerTrustChain = {
-  method: 'trustChain'
-  trustChain: string[]
+export type JwtSignerFederation = {
+  method: 'federation'
+  trustChain?: [string, ...string[]]
   alg: string
   kid: string
 }
@@ -34,7 +34,7 @@ export type JwtSignerCustom = {
   alg: string
 }
 
-export type JwtSigner = JwtSignerDid | JwtSignerJwk | JwtSignerX5c | JwtSignerTrustChain | JwtSignerCustom
+export type JwtSigner = JwtSignerDid | JwtSignerJwk | JwtSignerX5c | JwtSignerFederation | JwtSignerCustom
 
 export type JwtSignerWithJwk = JwtSigner & { publicJwk: Jwk }
 
@@ -71,6 +71,9 @@ export const zJwtPayload = z
 
     // Reserved for status parameters
     status: z.record(z.string(), z.any()).optional(),
+
+    // Reserved for OpenID Federation
+    trust_chain: z.array(z.string()).nonempty().optional(),
   })
   .passthrough()
 
@@ -84,7 +87,9 @@ export const zJwtHeader = z
     kid: z.string().optional(),
     jwk: zJwk.optional(),
     x5c: z.array(z.string()).optional(),
-    trust_chain: z.array(z.string()).optional(),
+
+    // Reserved for OpenID Federation
+    trust_chain: z.array(z.string()).nonempty().optional(),
   })
   .passthrough()
 
