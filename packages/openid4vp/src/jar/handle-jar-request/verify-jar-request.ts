@@ -13,6 +13,7 @@ import {
   zCompactJwt,
 } from '@openid4vc/oauth2'
 import z from 'zod'
+import { getOpenid4vpClientId } from '../../client-identifier-scheme/parse-client-identifier-scheme'
 import { type ClientIdScheme, zClientIdScheme } from '../../client-identifier-scheme/z-client-id-scheme'
 import type { WalletMetadata } from '../../models/z-wallet-metadata'
 import { parseAuthorizationRequestVersion } from '../../version'
@@ -163,11 +164,14 @@ async function verifyJarRequestObject(options: {
 
   let jwtSigner: JwtSigner
 
+  const { clientIdScheme } = getOpenid4vpClientId({
+    responseMode: jwt.payload.response_mode,
+    clientId: jwt.payload.client_id,
+    legacyClientIdScheme: jwt.payload.client_id_scheme,
+  })
+
   // The logic to determine the signer for a JWT is different for signed authorization request and federation
-  if (
-    jwt.payload.client_id.startsWith('https:') &&
-    (jwt.payload.client_id_scheme === undefined || jwt.payload.client_id_scheme === 'entity_id')
-  ) {
+  if (clientIdScheme === 'https') {
     if (!jwt.header.kid) {
       throw new Oauth2Error(
         `When OpenID Federation is used for signed authorization request, the 'kid' parameter is required.`

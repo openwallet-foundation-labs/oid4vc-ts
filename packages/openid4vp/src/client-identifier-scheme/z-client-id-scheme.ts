@@ -13,6 +13,23 @@ export const zClientIdScheme = z.enum([
 
 export type ClientIdScheme = z.infer<typeof zClientIdScheme>
 
+export const zClientIdToClientIdScheme = z.union(
+  [
+    z
+      .string({ message: 'client_id MUST be a string' })
+      .includes(':')
+      .transform((clientId) => clientId.split(':')[0])
+      .pipe(zClientIdScheme.exclude(['pre-registered'])),
+    z
+      .string()
+      .refine((clientId) => clientId.includes(':') === false)
+      .transform(() => 'pre-registered' as const),
+  ],
+  {
+    message: `client_id must either start with a known prefix followed by ':' or contain no ':'. Known prefixes are ${zClientIdScheme.exclude(['pre-registered']).options.join(', ')}`,
+  }
+)
+
 export const zLegacyClientIdScheme = z.enum([
   'pre-registered',
   'redirect_uri',
@@ -24,3 +41,8 @@ export const zLegacyClientIdScheme = z.enum([
 ])
 
 export type LegacyClientIdScheme = z.infer<typeof zLegacyClientIdScheme>
+
+export const zLegacyClientIdSchemeToClientIdScheme = zLegacyClientIdScheme
+  .optional()
+  .default('pre-registered')
+  .transform((clientIdScheme) => (clientIdScheme === 'entity_id' ? 'https' : clientIdScheme))
