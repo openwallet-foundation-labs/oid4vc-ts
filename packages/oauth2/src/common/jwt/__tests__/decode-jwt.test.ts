@@ -37,7 +37,7 @@ describe('Decode JWT', () => {
         })
       ).toThrow(
         `Unable to extract signer method from jwt. Found 1 allowed signer method(s) but contained invalid configuration:
-❌ method did: kid in header starst with did that is different from did value in 'iss'`
+FAILED: method did - kid in header starst with did that is different from did value in 'iss'`
       )
     })
 
@@ -49,7 +49,7 @@ describe('Decode JWT', () => {
         })
       ).toThrow(
         `Unable to extract signer method from jwt. Found 1 allowed signer method(s) but contained invalid configuration:
-❌ method did: kid in header must start with either 'did:' or '#' when 'iss' value is a did`
+FAILED: method did - kid in header must start with either 'did:' or '#' when 'iss' value is a did`
       )
     })
 
@@ -114,7 +114,7 @@ describe('Decode JWT', () => {
           allowedSignerMethods: [],
         })
       ).toThrow(`Unable to extract signer method from jwt. Found 1 signer method(s) that are not allowed:
-✅ method did`)
+SUCCEEDED: method did`)
     })
 
     test('allowed methods error with valid and invalid methods', () => {
@@ -132,10 +132,10 @@ describe('Decode JWT', () => {
           allowedSignerMethods: [],
         })
       ).toThrow(`Unable to extract signer method from jwt. Found 4 signer method(s) that are not allowed:
-✅ method x5c
-✅ method federation
-❌ method did: kid in header starst with did that is different from did value in 'iss'
-✅ method jwk`)
+SUCCEEDED: method x5c
+SUCCEEDED: method federation
+FAILED: method did - kid in header starst with did that is different from did value in 'iss'
+SUCCEEDED: method jwk`)
     })
 
     test('no allowed methods no custom', () => {

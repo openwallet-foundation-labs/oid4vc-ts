@@ -193,14 +193,14 @@ export function jwtSignerFromJwt({
 
   if (allowedFoundMethods.length > 0) {
     throw new Oauth2Error(
-      `Unable to extract signer method from jwt. Found ${allowedFoundMethods.length} allowed signer method(s) but contained invalid configuration:\n${allowedFoundMethods.map((m) => (m.valid ? '' : `❌ method ${m.method}: ${m.error}`)).join('\n')}`
+      `Unable to extract signer method from jwt. Found ${allowedFoundMethods.length} allowed signer method(s) but contained invalid configuration:\n${allowedFoundMethods.map((m) => (m.valid ? '' : `FAILED: method ${m.method} - ${m.error}`)).join('\n')}`
     )
   }
 
   // Found x5c, allowed jwk
   if (found.length > 0) {
     throw new Oauth2Error(
-      `Unable to extract signer method from jwt. Found ${found.length} signer method(s) that are not allowed:\n${found.map((m) => (m.valid ? `✅ method ${m.method}` : `❌ method ${m.method}: ${m.error}`)).join('\n')}`
+      `Unable to extract signer method from jwt. Found ${found.length} signer method(s) that are not allowed:\n${found.map((m) => (m.valid ? `SUCCEEDED: method ${m.method}` : `FAILED: method ${m.method} - ${m.error}`)).join('\n')}`
     )
   }
 
