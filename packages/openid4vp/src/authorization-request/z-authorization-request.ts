@@ -29,7 +29,7 @@ export const zOpenid4vpAuthorizationRequest = z
     client_metadata_uri: zHttpsUrl.optional(),
     state: z.string().optional(),
     transaction_data: z.array(z.string().base64url()).optional(),
-    trust_chain: z.unknown().optional(),
+    trust_chain: z.array(z.string()).nonempty().optional(),
     client_id_scheme: z
       .enum([
         'pre-registered',
