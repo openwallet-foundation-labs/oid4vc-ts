@@ -5,6 +5,15 @@ describe('Correctly parses the client identifier', () => {
   describe('legacy client_id_scheme', () => {
     test(`correctly handles legacy client_id_schme 'entity_id'`, () => {
       const client = parseClientIdentifier({
+        jar: {
+          signer: {
+            method: 'federation',
+            alg: '',
+            kid: '',
+            // @ts-ignore
+            publicJwk: {},
+          },
+        },
         authorizationRequestPayload: {
           response_mode: 'direct_post',
           client_id: 'https://example.com',
@@ -25,8 +34,13 @@ describe('Correctly parses the client identifier', () => {
 
     test(`correctly handles legacy client_id_schme 'did'`, () => {
       const client = parseClientIdentifier({
-        // @ts-expect-error
-        jar: { signer: { publicJwk: { kid: 'did:example:123#key-1' } } },
+        jar: {
+          signer: {
+            method: 'did',
+            // @ts-expect-error
+            publicJwk: { kid: 'did:example:123#key-1' },
+          },
+        },
         authorizationRequestPayload: {
           response_mode: 'direct_post',
           client_id: 'did:example:123#key-1',
@@ -133,6 +147,15 @@ describe('Correctly parses the client identifier', () => {
   describe('client_id_scheme', () => {
     test(`correctly handles client_id_schme 'entity_id'`, () => {
       const client = parseClientIdentifier({
+        jar: {
+          signer: {
+            method: 'federation',
+            kid: '',
+            alg: '',
+            // @ts-ignore
+            publicJwk: {},
+          },
+        },
         authorizationRequestPayload: {
           response_mode: 'direct_post',
           client_id: 'https://example.com',
@@ -152,8 +175,15 @@ describe('Correctly parses the client identifier', () => {
 
     test(`correctly handles client_id_schme 'did'`, () => {
       const client = parseClientIdentifier({
-        // @ts-expect-error
-        jar: { signer: { publicJwk: { kid: 'did:example:123#key-1' } } },
+        jar: {
+          signer: {
+            method: 'did',
+            // @ts-expect-error
+            publicJwk: {
+              kid: 'did:example:123#key-1',
+            },
+          },
+        },
         authorizationRequestPayload: {
           response_mode: 'direct_post',
           client_id: 'did:example:123#key-1',

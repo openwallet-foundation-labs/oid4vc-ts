@@ -1,7 +1,9 @@
 import {
   type CallbackContext,
   type Jwk,
+  type JwtSigner,
   type JwtSignerWithJwk,
+  Oauth2Error,
   Oauth2ErrorCodes,
   Oauth2ServerErrorResponseError,
   decodeJwt,
@@ -10,6 +12,7 @@ import {
   zCompactJwe,
   zCompactJwt,
 } from '@openid4vc/oauth2'
+import z from 'zod'
 import { type ClientIdScheme, zClientIdScheme } from '../../client-identifier-scheme/z-client-id-scheme'
 import type { WalletMetadata } from '../../models/z-wallet-metadata'
 import { parseAuthorizationRequestVersion } from '../../version'
@@ -33,6 +36,9 @@ export interface VerifiedJarRequest {
   signer: JwtSignerWithJwk
   jwt: ReturnType<typeof decodeJwt<undefined, typeof zJarRequestObjectPayload>>
 }
+
+const zSignedAuthorizationRequestJwtHeaderTyp = z.literal('oauth-authz-req+jwt')
+export const signedAuthorizationRequestJwtHeaderTyp = zSignedAuthorizationRequestJwtHeaderTyp.value
 
 /**
  * Verifies a JAR (JWT Secured Authorization Request) request by validating, decrypting, and verifying signatures.
@@ -154,7 +160,30 @@ async function verifyJarRequestObject(options: {
   const { decryptedRequestObject, callbacks } = options
 
   const jwt = decodeJwt({ jwt: decryptedRequestObject, payloadSchema: zJarRequestObjectPayload })
-  const jwtSigner = jwtSignerFromJwt(jwt)
+
+  let jwtSigner: JwtSigner
+
+  // The logic to determine the signer for a JWT is different for signed authorization request and federation
+  if (
+    jwt.payload.client_id.startsWith('https:') &&
+    (jwt.payload.client_id_scheme === undefined || jwt.payload.client_id_scheme === 'entity_id')
+  ) {
+    if (!jwt.header.kid) {
+      throw new Oauth2Error(
+        `When OpenID Federation is used for signed authorization request, the 'kid' parameter is required.`
+      )
+    }
+
+    jwtSigner = {
+      method: 'federation',
+      alg: jwt.header.alg,
+      trustChain: jwt.payload.trust_chain,
+      kid: jwt.header.kid,
+    }
+  } else {
+    jwtSigner = jwtSignerFromJwt({ ...jwt, allowedSignerMethods: ['did', 'x5c', 'custom'] })
+  }
+
   const { signer } = await verifyJwt({
     verifyJwtCallback: callbacks.verifyJwt,
     compact: decryptedRequestObject,

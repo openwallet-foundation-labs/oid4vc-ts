@@ -188,6 +188,21 @@ export function parseClientIdentifier(
       )
     }
 
+    if (!jar) {
+      throw new Oauth2ServerErrorResponseError({
+        error: Oauth2ErrorCodes.InvalidRequest,
+        error_description: 'Using client identifier scheme "https" requires a signed JAR request.',
+      })
+    }
+
+    if (jar.signer.method !== 'federation') {
+      throw new Oauth2ServerErrorResponseError({
+        error: Oauth2ErrorCodes.InvalidRequest,
+        error_description:
+          'Something went wrong. The JWT signer method is not federation but the client identifier scheme is https.',
+      })
+    }
+
     return {
       scheme,
       identifier: clientId,
@@ -226,6 +241,14 @@ export function parseClientIdentifier(
       throw new Oauth2ServerErrorResponseError({
         error: Oauth2ErrorCodes.InvalidRequest,
         error_description: 'Using client identifier scheme "did" requires a signed JAR request.',
+      })
+    }
+
+    if (jar.signer.method !== 'did') {
+      throw new Oauth2ServerErrorResponseError({
+        error: Oauth2ErrorCodes.InvalidRequest,
+        error_description:
+          'Something went wrong. The JWT signer method is not did but the client identifier scheme is did.',
       })
     }
 

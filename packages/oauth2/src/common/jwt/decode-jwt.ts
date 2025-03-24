@@ -6,6 +6,7 @@ import {
   stringToJsonWithErrorHandling,
 } from '@openid4vc/utils'
 import type z from 'zod'
+import { Oauth2Error } from '../../error/Oauth2Error'
 import { Oauth2JwtParseError } from '../../error/Oauth2JwtParseError'
 import { decodeJwtHeader } from './decode-jwt-header'
 import { type JwtSigner, type zJwtHeader, zJwtPayload } from './z-jwt'
@@ -77,7 +78,7 @@ export function jwtHeaderFromJwtSigner(signer: JwtSigner) {
     } as const
   }
 
-  if (signer.method === 'trustChain') {
+  if (signer.method === 'federation') {
     return {
       alg: signer.alg,
       kid: signer.kid,
@@ -105,64 +106,114 @@ export function jwtHeaderFromJwtSigner(signer: JwtSigner) {
   }
 }
 
-export function jwtSignerFromJwt({ header, payload }: Pick<DecodeJwtResult, 'header' | 'payload'>): JwtSigner {
+export function jwtSignerFromJwt({
+  header,
+  payload,
+  allowedSignerMethods,
+}: Pick<DecodeJwtResult, 'header' | 'payload'> & { allowedSignerMethods?: JwtSigner['method'][] }): JwtSigner {
+  const found: Array<
+    | { method: JwtSigner['method']; signer: JwtSigner; valid: true }
+    | { method: JwtSigner['method']; error: string; valid: false }
+  > = []
+
   if (header.x5c) {
-    return {
-      alg: header.alg,
+    found.push({
       method: 'x5c',
-      x5c: header.x5c,
-    }
+      valid: true,
+      signer: {
+        alg: header.alg,
+        method: 'x5c',
+        x5c: header.x5c,
+      },
+    })
   }
 
   if (header.trust_chain) {
     if (!header.kid) {
-      throw new Error(`When 'trust_chain' is used in jwt header, the 'kid' parameter is required.`)
-    }
-
-    return {
-      method: 'trustChain',
-      alg: header.alg,
-      trustChain: header.trust_chain,
-      kid: header.kid,
+      found.push({
+        method: 'federation',
+        valid: false,
+        error: `When 'trust_chain' is used in jwt header, the 'kid' parameter is required.`,
+      })
+    } else {
+      found.push({
+        method: 'federation',
+        valid: true,
+        signer: {
+          alg: header.alg,
+          trustChain: header.trust_chain,
+          kid: header.kid,
+          method: 'federation',
+        },
+      })
     }
   }
 
-  if (header.kid) {
-    if (header.kid.startsWith('did:')) {
-      if (payload.iss && header.kid.startsWith(payload.iss)) {
-      }
-
-      if (!header.kid.includes('#')) {
-      }
-
-      return {
+  if (header.kid?.startsWith('did:') || payload.iss?.startsWith('did:')) {
+    if (payload.iss && header.kid?.startsWith('did:') && !header.kid.startsWith(payload.iss)) {
+      found.push({
         method: 'did',
-        didUrl: header.kid,
-        alg: header.alg,
-      }
-    }
-
-    if (header.kid.startsWith('#') && payload.iss?.startsWith('did:')) {
-      return {
+        valid: false,
+        error: `kid in header starst with did that is different from did value in 'iss'`,
+      })
+    } else if (!header.kid?.startsWith('did:') && !header.kid?.startsWith('#')) {
+      found.push({
         method: 'did',
-        didUrl: `${payload.iss}${header.kid}`,
-        alg: header.alg,
-      }
+        valid: false,
+        error: `kid in header must start with either 'did:' or '#' when 'iss' value is a did`,
+      })
+    } else {
+      found.push({
+        method: 'did',
+        valid: true,
+        signer: {
+          method: 'did',
+          alg: header.alg,
+          didUrl: header.kid.startsWith('did:') ? header.kid : `${payload.iss}${header.kid}`,
+        },
+      })
     }
   }
 
   if (header.jwk) {
-    return {
-      alg: header.alg,
+    found.push({
       method: 'jwk',
-      publicJwk: header.jwk,
+      signer: { alg: header.alg, method: 'jwk', publicJwk: header.jwk },
+      valid: true,
+    })
+  }
+
+  const allowedFoundMethods = found.filter((f) => !allowedSignerMethods || allowedSignerMethods?.includes(f.method))
+  const allowedValidMethods = allowedFoundMethods.filter((f) => f.valid)
+
+  if (allowedValidMethods.length > 0) {
+    // We found a valid method
+    return allowedValidMethods[0].signer
+  }
+
+  if (allowedFoundMethods.length > 0) {
+    throw new Oauth2Error(
+      `Unable to extract signer method from jwt. Found ${allowedFoundMethods.length} allowed signer method(s) but contained invalid configuration:\n${allowedFoundMethods.map((m) => (m.valid ? '' : `❌ method ${m.method}: ${m.error}`)).join('\n')}`
+    )
+  }
+
+  // Found x5c, allowed jwk
+  if (found.length > 0) {
+    throw new Oauth2Error(
+      `Unable to extract signer method from jwt. Found ${found.length} signer method(s) that are not allowed:\n${found.map((m) => (m.valid ? `✅ method ${m.method}` : `❌ method ${m.method}: ${m.error}`)).join('\n')}`
+    )
+  }
+
+  if (!allowedSignerMethods || allowedSignerMethods.includes('custom')) {
+    return {
+      method: 'custom',
+      alg: header.alg,
     }
   }
 
-  return {
-    method: 'custom',
-    alg: header.alg,
-  }
+  throw new Oauth2Error(
+    `Unable to extract signer method from jwt. Found no signer methods and 'custom' signer method is not allowed.`
+  )
 }
 
 // Helper type to check if a schema is provided
