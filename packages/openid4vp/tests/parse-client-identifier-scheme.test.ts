@@ -1,5 +1,9 @@
+import { getGlobalConfig, setGlobalConfig } from '@openid4vc/utils'
 import { describe, expect, test } from 'vitest'
-import { validateOpenid4vpClientId } from '../src/client-identifier-scheme/parse-client-identifier-scheme'
+import {
+  getOpenid4vpClientId,
+  validateOpenid4vpClientId,
+} from '../src/client-identifier-scheme/parse-client-identifier-scheme'
 
 describe('Correctly parses the client identifier', () => {
   describe('legacy client_id_scheme', () => {
@@ -280,6 +284,32 @@ describe('Correctly parses the client identifier', () => {
         originalValue: 'pre-registered client',
         scheme: 'pre-registered',
       })
+    })
+  })
+
+  describe('getOpenid4vpClientId', () => {
+    test('handles http url if allow insecure ', () => {
+      const beforeValue = getGlobalConfig().allowInsecureUrls
+
+      expect(() =>
+        getOpenid4vpClientId({
+          responseMode: 'direct_post.jwt',
+          clientId: 'http://federation.com/entity',
+        })
+      ).toThrow(`Failed to parse client identifier. Unsupported client_id 'http://federation.com/entity'.`)
+
+      setGlobalConfig({ allowInsecureUrls: true })
+      expect(
+        getOpenid4vpClientId({
+          responseMode: 'direct_post.jwt',
+          clientId: 'http://federation.com/entity',
+        })
+      ).toEqual({
+        clientId: 'http://federation.com/entity',
+        clientIdScheme: 'https',
+      })
+
+      setGlobalConfig({ allowInsecureUrls: beforeValue })
     })
   })
 })

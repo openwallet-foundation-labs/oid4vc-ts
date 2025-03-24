@@ -1,3 +1,4 @@
+import { getGlobalConfig } from '@openid4vc/utils'
 import { z } from 'zod'
 
 export const zClientIdScheme = z.enum([
@@ -18,7 +19,10 @@ export const zClientIdToClientIdScheme = z.union(
     z
       .string({ message: 'client_id MUST be a string' })
       .includes(':')
-      .transform((clientId) => clientId.split(':')[0])
+      .transform((clientId) => {
+        const clientIdScheme = clientId.split(':')[0]
+        return clientIdScheme === 'http' && getGlobalConfig().allowInsecureUrls ? 'https' : clientIdScheme
+      })
       .pipe(zClientIdScheme.exclude(['pre-registered'])),
     z
       .string()
