@@ -170,6 +170,23 @@ async function verifyJarRequestObject(options: {
     legacyClientIdScheme: jwt.payload.client_id_scheme,
   })
 
+  // Allowed signer methods for each of the client id schemes
+  const clientIdToSignerMethod: Record<ClientIdScheme, JwtSigner['method'][]> = {
+    did: ['did'],
+    'pre-registered': ['custom', 'did', 'jwk'],
+    'web-origin': [], // no signing allowed
+    redirect_uri: [], // no signing allowed
+
+    // Not 100% sure which one are allowed?
+    verifier_attestation: ['did', 'federation', 'jwk', 'x5c', 'custom'],
+
+    x509_san_dns: ['x5c'],
+    x509_san_uri: ['x5c'],
+
+    // Handled separately
+    https: [],
+  }
+
   // The logic to determine the signer for a JWT is different for signed authorization request and federation
   if (clientIdScheme === 'https') {
     if (!jwt.header.kid) {
@@ -185,7 +202,7 @@ async function verifyJarRequestObject(options: {
       kid: jwt.header.kid,
     }
   } else {
-    jwtSigner = jwtSignerFromJwt({ ...jwt, allowedSignerMethods: ['did', 'x5c', 'custom'] })
+    jwtSigner = jwtSignerFromJwt({ ...jwt, allowedSignerMethods: clientIdToSignerMethod[clientIdScheme] })
   }
 
   const { signer } = await verifyJwt({
