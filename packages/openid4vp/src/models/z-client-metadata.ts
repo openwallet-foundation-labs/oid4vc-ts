@@ -8,7 +8,10 @@ import { zVpFormatsSupported } from './z-vp-formats-supported'
 // for example those from an OpenID Federation Entity Statement, take precedence over the values passed in client_metadata.
 export const zClientMetadata = z
   .object({
+    // Up until draft 22
+    jwks_uri: z.string().url().optional(),
     jwks: z.optional(zJwkSet),
+
     vp_formats: z.optional(zVpFormatsSupported),
     ...zJarmClientMetadata.shape,
     logo_uri: zHttpsUrl.optional(),

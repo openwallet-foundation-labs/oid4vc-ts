@@ -1,9 +1,11 @@
 import {
   type CallbackContext,
+  type JwkSet,
   type JwtSigner,
   Oauth2Error,
   Oauth2ErrorCodes,
   Oauth2ServerErrorResponseError,
+  fetchJwks,
 } from '@openid4vc/oauth2'
 import { dateToSeconds } from '@openid4vc/utils'
 import { addSecondsToDate } from '../../../utils/src/date'
@@ -27,7 +29,7 @@ export interface CreateOpenid4vpAuthorizationResponseOptions {
     audience?: string // The client_id of the client the response is intended for
     expiresInSeconds?: number // The expiration time of the JWT. A maximum JWT lifetime of 10 minutes is RECOMMENDED.
   }
-  callbacks: Pick<CallbackContext, 'signJwt' | 'encryptJwe'>
+  callbacks: Pick<CallbackContext, 'signJwt' | 'encryptJwe' | 'fetch'>
 }
 
 export interface CreateOpenid4vpAuthorizationResponseResult {
@@ -65,10 +67,16 @@ export async function createOpenid4vpAuthorizationResponse(
     throw new Oauth2Error('Missing client metadata in the request params to assert Jarm metadata support.')
   }
 
-  if (!authorizationRequestPayload.client_metadata.jwks) {
+  let jwks: JwkSet
+
+  if (authorizationRequestPayload.client_metadata.jwks) {
+    jwks = authorizationRequestPayload.client_metadata.jwks
+  } else if (authorizationRequestPayload.client_metadata.jwks_uri) {
+    jwks = await fetchJwks(authorizationRequestPayload.client_metadata.jwks_uri, options.callbacks.fetch)
+  } else {
     throw new Oauth2ServerErrorResponseError({
       error: Oauth2ErrorCodes.InvalidRequest,
-      error_description: 'Missing JWKS in client metadata. Cannot extract encryption JWK.',
+      error_description: `Missing 'jwks' or 'jwks_uri' in client metadata. Cannot extract encryption JWK.`,
     })
   }
 
@@ -79,7 +87,7 @@ export async function createOpenid4vpAuthorizationResponse(
 
   const clientMetaJwks = extractJwksFromClientMetadata({
     ...authorizationRequestPayload.client_metadata,
-    jwks: authorizationRequestPayload.client_metadata.jwks,
+    jwks,
   })
 
   if (!clientMetaJwks?.encJwk) {

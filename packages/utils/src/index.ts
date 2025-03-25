@@ -34,7 +34,7 @@ export {
 export { joinUriParts } from './path'
 export type { Optional, OrPromise, Simplify, StringWithAutoCompletion } from './type'
 export { getQueryParams, objectToQueryParams } from './url'
-export { type ZodFetcher, createZodFetcher, defaultFetcher } from './zod-fetcher'
+export { type ZodFetcher, createZodFetcher, createFetcher } from './fetcher'
 export {
   type HttpMethod,
   zHttpMethod,

@@ -102,6 +102,10 @@ export async function createOpenid4vpAuthorizationRequest(options: CreateOpenid4
     url.search = `?${new URLSearchParams([
       ...url.searchParams.entries(),
       ...objectToQueryParams(jarResult.jarAuthorizationRequest).entries(),
+      // Add client_id_scheme if defined for backwards compat
+      ...(authorizationRequestPayload.client_id_scheme
+        ? [['client_id_scheme', authorizationRequestPayload.client_id_scheme]]
+        : []),
     ]).toString()}`
 
     return {

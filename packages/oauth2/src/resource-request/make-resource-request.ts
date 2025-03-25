@@ -1,4 +1,4 @@
-import { type FetchRequestInit, type FetchResponse, type HttpMethod, defaultFetcher } from '@openid4vc/utils'
+import { type FetchRequestInit, type FetchResponse, type HttpMethod, createFetcher } from '@openid4vc/utils'
 import type { CallbackContext } from '../callbacks'
 import { type RequestDpopOptions, createDpopHeadersForRequest, extractDpopNonceFromHeaders } from '../dpop/dpop'
 import { shouldRetryResourceRequestWithDPoPNonce } from '../dpop/dpop-retry'
@@ -78,8 +78,7 @@ export async function resourceRequest(
       })
     : undefined
 
-  const fetch = options.callbacks.fetch ?? defaultFetcher
-  const response = await fetch(options.url, {
+  const response = await createFetcher(options.callbacks.fetch)(options.url, {
     ...options.requestOptions,
     headers: {
       ...options.requestOptions.headers,

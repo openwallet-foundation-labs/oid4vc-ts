@@ -1,6 +1,5 @@
 import { Oauth2ErrorCodes, Oauth2ServerErrorResponseError } from '@openid4vc/oauth2'
-import { type BaseSchema, ContentType, type Fetch, createZodFetcher, objectToQueryParams } from '@openid4vc/utils'
-import { z } from 'zod'
+import { ContentType, type Fetch, createFetcher, objectToQueryParams } from '@openid4vc/utils'
 import type { ClientIdScheme } from '../../client-identifier-scheme/z-client-id-scheme'
 import type { WalletMetadata } from '../../models/z-wallet-metadata'
 
@@ -15,7 +14,7 @@ import type { WalletMetadata } from '../../models/z-wallet-metadata'
  * @throws {InvalidFetchResponseError} if no successful or 404 response
  * @throws {Error} if parsing json from response fails
  */
-export async function fetchJarRequestObject<Schema extends BaseSchema>(options: {
+export async function fetchJarRequestObject(options: {
   requestUri: string
   clientIdentifierScheme?: ClientIdScheme
   method: 'GET' | 'POST'
@@ -24,9 +23,8 @@ export async function fetchJarRequestObject<Schema extends BaseSchema>(options: 
     nonce?: string
   }
   fetch?: Fetch
-}): Promise<z.infer<Schema> | null> {
+}): Promise<string> {
   const { requestUri, clientIdentifierScheme, method, wallet, fetch } = options
-  const fetcher = createZodFetcher(fetch)
 
   let requestBody = wallet.metadata ? { wallet_metadata: wallet.metadata, wallet_nonce: wallet.nonce } : undefined
   if (
@@ -38,13 +36,18 @@ export async function fetchJarRequestObject<Schema extends BaseSchema>(options: 
     requestBody = { ...requestBody, wallet_metadata: { ...rest } }
   }
 
-  const { result, response } = await fetcher(z.string(), ContentType.OAuthAuthorizationRequestJwt, requestUri, {
+  const response = await createFetcher(fetch)(requestUri, {
     method,
+    body: method === 'POST' ? objectToQueryParams(wallet.metadata ?? {}) : undefined,
     headers: {
-      Accept: `${ContentType.OAuthAuthorizationRequestJwt}, ${ContentType.Jwt};q=0.9`,
+      Accept: `${ContentType.OAuthAuthorizationRequestJwt}, ${ContentType.Jwt};q=0.9, text/plain`,
       'Content-Type': ContentType.XWwwFormUrlencoded,
     },
-    body: method === 'POST' ? objectToQueryParams(wallet.metadata ?? {}) : undefined,
+  }).catch(() => {
+    throw new Oauth2ServerErrorResponseError({
+      error_description: `Fetching request_object from request_uri '${requestUri}' failed`,
+      error: Oauth2ErrorCodes.InvalidRequestUri,
+    })
   })
 
   if (!response.ok) {
@@ -54,12 +57,5 @@ export async function fetchJarRequestObject<Schema extends BaseSchema>(options: 
     })
   }
 
-  if (!result || !result.success) {
-    throw new Oauth2ServerErrorResponseError({
-      error_description: `Parsing request_object from request_uri '${requestUri}' failed.`,
-      error: Oauth2ErrorCodes.InvalidRequestObject,
-    })
-  }
-
-  return result.data
+  return await response.text()
 }
