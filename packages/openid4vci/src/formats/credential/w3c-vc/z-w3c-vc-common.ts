@@ -1,6 +1,6 @@
 import z from 'zod'
 
-const zCredentialSubjectLeafType = z
+const zCredentialSubjectLeafTypeDraft14 = z
   .object({
     mandatory: z.boolean().optional(),
     value_type: z.string().optional(),
@@ -17,14 +17,21 @@ const zCredentialSubjectLeafType = z
   })
   .passthrough()
 
-const zClaimValueSchema = z.union([z.array(z.any()), z.record(z.string(), z.any()), zCredentialSubjectLeafType])
+const zClaimValueSchemaDraft14 = z.union([
+  z.array(z.any()),
+  z.record(z.string(), z.any()),
+  zCredentialSubjectLeafTypeDraft14,
+])
 
-export const zW3cVcCredentialSubject = z.record(z.string(), zClaimValueSchema)
+export const zW3cVcCredentialSubjectDraft14 = z.record(z.string(), zClaimValueSchemaDraft14)
 
 export const zW3cVcJsonLdCredentialDefinition = z
   .object({
     '@context': z.array(z.string()),
     type: z.array(z.string()),
-    credentialSubject: zW3cVcCredentialSubject.optional(),
   })
   .passthrough()
+
+export const zW3cVcJsonLdCredentialDefinitionDraft14 = zW3cVcJsonLdCredentialDefinition.extend({
+  credentialSubject: zW3cVcCredentialSubjectDraft14.optional(),
+})

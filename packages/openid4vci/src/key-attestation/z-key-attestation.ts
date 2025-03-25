@@ -32,7 +32,7 @@ export const zKeyAttestationJwtPayload = z
     attested_keys: z.array(zJwk),
     key_storage: z.optional(zIso18045OrStringArray),
     user_authentication: z.optional(zIso18045OrStringArray),
-    certification: z.optional(z.string()),
+    certification: z.optional(z.string().url()),
   })
   .passthrough()
 

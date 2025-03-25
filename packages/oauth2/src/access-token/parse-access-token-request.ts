@@ -1,3 +1,5 @@
+import { formatZodError } from '@openid4vc/utils'
+import { extractClientAttestationJwtsFromHeaders } from '../client-attestation/clent-attestation'
 import type { RequestLike } from '../common/z-common'
 import { Oauth2ErrorCodes } from '../common/z-oauth2-error'
 import { extractDpopJwtFromHeaders } from '../dpop/dpop'
@@ -32,7 +34,17 @@ export interface ParseAccessTokenRequestResult {
   /**
    * The dpop jwt from the access token request headers
    */
-  dpopJwt?: string
+  dpop?: {
+    jwt: string
+  }
+
+  /**
+   * The client attestation jwts from the access token request headers
+   */
+  clientAttestation?: {
+    clientAttestationJwt: string
+    clientAttestationPopJwt: string
+  }
 
   /**
    * The pkce code verifier from the access token request
@@ -62,7 +74,7 @@ export function parseAccessTokenRequest(options: ParseAccessTokenRequestOptions)
   if (!parsedAccessTokenRequest.success) {
     throw new Oauth2ServerErrorResponseError({
       error: Oauth2ErrorCodes.InvalidRequest,
-      error_description: `Error occured during validation of authorization request.\n${JSON.stringify(parsedAccessTokenRequest.error.issues, null, 2)}`,
+      error_description: `Error occured during validation of authorization request.\n${formatZodError(parsedAccessTokenRequest.error)}`,
     })
   }
 
@@ -111,13 +123,33 @@ export function parseAccessTokenRequest(options: ParseAccessTokenRequestOptions)
     })
   }
 
+  // We only parse the client attestations, we don't verify it yet
+  const extractedClientAttestationJwts = extractClientAttestationJwtsFromHeaders(options.request.headers)
+  if (!extractedClientAttestationJwts.valid) {
+    throw new Oauth2ServerErrorResponseError({
+      error: Oauth2ErrorCodes.InvalidClient,
+      error_description:
+        'Request contains client attestation header, but the values are not valid client attestation and client attestation PoP header.',
+    })
+  }
+
   const pkceCodeVerifier = accessTokenRequest.code_verifier
 
   return {
     accessTokenRequest,
     grant,
 
-    dpopJwt: extractedDpopJwt.dpopJwt,
+    dpop: extractedDpopJwt.dpopJwt
+      ? {
+          jwt: extractedDpopJwt.dpopJwt,
+        }
+      : undefined,
+    clientAttestation: extractedClientAttestationJwts.clientAttestationHeader
+      ? {
+          clientAttestationJwt: extractedClientAttestationJwts.clientAttestationHeader,
+          clientAttestationPopJwt: extractedClientAttestationJwts.clientAttestationPopHeader,
+        }
+      : undefined,
     pkceCodeVerifier,
   }
 }

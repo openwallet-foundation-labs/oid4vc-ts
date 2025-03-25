@@ -80,7 +80,9 @@ describe('Oauth2ResourceServer', () => {
         publicJwk: accessTokenSignerJwkPublic,
       },
       subject: 'pre-auth-code',
-      dpopJwk: dpopSignerJwkPublic,
+      dpop: {
+        jwk: dpopSignerJwkPublic,
+      },
       now: new Date('2024-10-01'),
       scope: 'PidSdJwt PidMdoc',
     })
@@ -102,7 +104,7 @@ describe('Oauth2ResourceServer', () => {
       accessToken: jwt,
     })
 
-    const { dpopJwk, tokenPayload } = await resourceServer.verifyResourceRequest({
+    const { dpop, tokenPayload } = await resourceServer.verifyResourceRequest({
       authorizationServers: [authorizationServerMetadata],
       request: {
         method: 'POST',
@@ -116,7 +118,7 @@ describe('Oauth2ResourceServer', () => {
       resourceServer: 'https://resource-server.com',
     })
 
-    expect(dpopJwk).toEqual(dpopSignerJwkPublic)
+    expect(dpop?.jwk).toEqual(dpopSignerJwkPublic)
     expect(tokenPayload).toEqual({
       aud: 'https://resource-server.com',
       cnf: {

@@ -103,8 +103,7 @@ export async function verifyJarRequest(options: VerifyJarRequestOptions): Promis
     })
   }
 
-  // FIXME: we should always run this check, even if jarRequestParams.client_id is not defined
-  if (jarRequestParams.client_id && jarRequestParams.client_id !== authorizationRequestPayload.client_id) {
+  if (jarRequestParams.client_id !== authorizationRequestPayload.client_id) {
     throw new Oauth2ServerErrorResponseError({
       error: Oauth2ErrorCodes.InvalidRequest,
       error_description: 'client_id does not match the request object client_id.',

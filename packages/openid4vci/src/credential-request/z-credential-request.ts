@@ -1,12 +1,11 @@
 import type { InferOutputUnion, Simplify } from '@openid4vc/utils'
 import z from 'zod'
 import {
-  type CredentialFormatIdentifier,
-  zJwtVcJsonCredentialRequestFormat,
-  zJwtVcJsonLdCredentialRequestFormat,
-  zLdpVcCredentialRequestFormat,
-  zMsoMdocCredentialRequestFormat,
-  zSdJwtVcCredentialRequestFormat,
+  zJwtVcJsonCredentialRequestFormatDraft14,
+  zJwtVcJsonLdCredentialRequestFormatDraft14,
+  zLdpVcCredentialRequestFormatDraft14,
+  zMsoMdocCredentialRequestFormatDraft14,
+  zSdJwtVcCredentialRequestFormatDraft14,
 } from '../formats/credential'
 import {
   zJwtVcJsonCredentialRequestDraft11To14,
@@ -26,39 +25,63 @@ import {
 import { zCredentialRequestCommon } from './z-credential-request-common'
 
 export const allCredentialRequestFormats = [
-  zSdJwtVcCredentialRequestFormat,
-  zMsoMdocCredentialRequestFormat,
-  zLdpVcCredentialRequestFormat,
-  zJwtVcJsonLdCredentialRequestFormat,
-  zJwtVcJsonCredentialRequestFormat,
+  zSdJwtVcCredentialRequestFormatDraft14,
+  zMsoMdocCredentialRequestFormatDraft14,
+  zLdpVcCredentialRequestFormatDraft14,
+  zJwtVcJsonLdCredentialRequestFormatDraft14,
+  zJwtVcJsonCredentialRequestFormatDraft14,
 ] as const
 
 export const allCredentialRequestFormatIdentifiers = allCredentialRequestFormats.map(
   (format) => format.shape.format.value
 )
 
+// Credential configuration no format used
+const zCredentialRequestCredentialConfigurationId = z.object({
+  credential_configuration_id: z.string(),
+
+  format: z.never({ message: "'format' cannot be defined when 'credential_configuration_id' is set." }).optional(),
+  credential_identifier: z
+    .never({ message: "'credential_identifier' cannot be defined when 'credential_configuration_id' is set." })
+    .optional(),
+})
+
 // Authorization details no format used
 const zAuthorizationDetailsCredentialRequest = z.object({
   credential_identifier: z.string(),
+
+  credential_configuration_id: z
+    .never({ message: "'credential_configuration_id' cannot be defined when 'credential_identifier' is set." })
+    .optional(),
 
   // Cannot be present if credential identifier is present
   format: z.never({ message: "'format' cannot be defined when 'credential_identifier' is set." }).optional(),
 })
 
-const zCredentialRequestFormatNoCredentialIdentifier = z
+const zCredentialRequestFormat = z
   .object({
     format: z.string(),
+
     credential_identifier: z
       .never({ message: "'credential_identifier' cannot be defined when 'format' is set." })
+      .optional(),
+
+    credential_configuration_id: z
+      .never({ message: "'credential_configuration_id' cannot be defined when 'format' is set." })
       .optional(),
   })
   .passthrough()
 
 export const zCredenialRequestDraft14WithFormat = zCredentialRequestCommon
-  .and(zCredentialRequestFormatNoCredentialIdentifier)
+  .and(zCredentialRequestFormat)
   .transform((data, ctx) => {
     // No additional validation for unknown formats
-    if (!allCredentialRequestFormatIdentifiers.includes(data.format as CredentialFormatIdentifier)) return data
+    if (
+      !allCredentialRequestFormatIdentifiers.includes(
+        data.format as (typeof allCredentialRequestFormatIdentifiers)[number]
+      )
+    )
+      return data
 
     const result = z
       // We use object and passthrough as otherwise the non-format specific properties will be stripped
@@ -75,13 +98,18 @@ export const zCredenialRequestDraft14WithFormat = zCredentialRequestCommon
     return z.NEVER
   })
 
+const zCredentialRequestDraft15 = z.union([
+  zCredentialRequestCommon.and(zAuthorizationDetailsCredentialRequest),
+  zCredentialRequestCommon.and(zCredentialRequestCredentialConfigurationId),
+])
+
 const zCredentialRequestDraft14 = z.union([
   zCredenialRequestDraft14WithFormat,
   zCredentialRequestCommon.and(zAuthorizationDetailsCredentialRequest),
 ])
 
 export const zCredentialRequestDraft11To14 = zCredentialRequestCommon
-  .and(zCredentialRequestFormatNoCredentialIdentifier)
+  .and(zCredentialRequestFormat)
   .transform((data, ctx) => {
     const formatSpecificTransformations = {
       [zLdpVcFormatIdentifier.value]: zLdpVcCredentialRequestDraft11To14,
@@ -124,10 +152,16 @@ export const zCredentialRequestDraft14To11 = zCredentialRequestDraft14
     return z.NEVER
   })
 
-export const zCredentialRequest = z.union([zCredentialRequestDraft14, zCredentialRequestDraft11To14])
+export const zCredentialRequest = z.union([
+  zCredentialRequestDraft15,
+  zCredentialRequestDraft14,
+  zCredentialRequestDraft11To14,
+])
 
 type CredentialRequestCommon = z.infer<typeof zCredentialRequestCommon>
 export type CredentialRequestFormatSpecific = InferOutputUnion<typeof allCredentialRequestFormats>
 export type CredentialRequestWithFormats = CredentialRequestCommon & CredentialRequestFormatSpecific
 
-export type CredentialRequest = z.infer<typeof zCredentialRequestDraft14>
+export type CredentialRequestDraft14 = z.infer<typeof zCredentialRequestDraft14>
+export type CredentialRequestDraft15 = z.infer<typeof zCredentialRequestDraft15>
+export type CredentialRequest = CredentialRequestDraft14 | CredentialRequestDraft15

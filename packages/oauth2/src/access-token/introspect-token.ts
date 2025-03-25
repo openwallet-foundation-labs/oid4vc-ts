@@ -59,7 +59,7 @@ export async function introspectToken(options: IntrospectTokenOptions) {
   await options.callbacks.clientAuthentication({
     url: introspectionEndpoint,
     method: 'POST',
-    authorizationServerMetata: options.authorizationServerMetadata,
+    authorizationServerMetadata: options.authorizationServerMetadata,
     body: introspectionRequest,
     contentType: ContentType.XWwwFormUrlencoded,
     headers,

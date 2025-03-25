@@ -18,7 +18,9 @@ export interface CreateAccessTokenOptions {
   /**
    * public dpop jwk key. Will be encoded as jwk thubmprint in the `cnf.jkt` claim.
    */
-  dpopJwk?: Jwk
+  dpop?: {
+    jwk: Jwk
+  }
 
   /**
    * scope of the access token. If the authorization request included scopes
@@ -91,12 +93,12 @@ export async function createAccessTokenJwt(options: CreateAccessTokenOptions) {
     client_id: options.clientId,
     sub: options.subject,
     scope: options.scope,
-    cnf: options.dpopJwk
+    cnf: options.dpop
       ? {
           jkt: await calculateJwkThumbprint({
             hashAlgorithm: HashAlgorithm.Sha256,
             hashCallback: options.callbacks.hash,
-            jwk: options.dpopJwk,
+            jwk: options.dpop.jwk,
           }),
         }
       : undefined,

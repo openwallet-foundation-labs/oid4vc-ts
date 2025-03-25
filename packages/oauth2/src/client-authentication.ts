@@ -2,15 +2,23 @@ import type { ContentType, FetchHeaders, HttpMethod } from '@openid4vc/utils'
 import type { AuthorizationServerMetadata } from './metadata/authorization-server/z-authorization-server-metadata'
 
 import { decodeUtf8String, encodeToBase64Url } from '@openid4vc/utils'
+import type { CallbackContext } from './callbacks'
+import { createClientAttestationPopJwt } from './client-attestation/client-attestation-pop'
+import {
+  oauthClientAttestationHeader,
+  oauthClientAttestationPopHeader,
+} from './client-attestation/z-client-attestation'
 import { Oauth2Error } from './error/Oauth2Error'
+import { preAuthorizedCodeGrantIdentifier } from './z-grant-type'
 
-// These two are well-supported and easy to implement
 export enum SupportedClientAuthenticationMethod {
   ClientSecretBasic = 'client_secret_basic',
   ClientSecretPost = 'client_secret_post',
+  ClientAttestationJwt = 'attest_jwt_client_auth',
+  None = 'none',
 }
 
-type ClientAuthenticationEndpointType = 'endpoint' | 'introspection'
+type ClientAuthenticationEndpointType = 'endpoint' | 'token' | 'introspection'
 
 /**
  * Determine the supported client authentication method based on authorization
@@ -73,14 +81,30 @@ export interface ClientAuthenticationDynamicOptions {
 
 /**
  * Dynamicaly get the client authentication method based on endpoint type and authorization server.
- * Only `client_secret_post` and `client_secret_basic` supported.
+ * Only `client_secret_post`, `client_secret_basic`, and `none` supported.
+ *
+ * It also supports anonymous access to the token endpoint for pre-authorized code flow
+ * if the authorization server has enabled `pre_authorized_grant_anonymous_access_supported`
  */
 export function clientAuthenticationDynamic(options: ClientAuthenticationDynamicOptions): ClientAuthenticationCallback {
   return (callbackOptions) => {
-    const { url, authorizationServerMetata } = callbackOptions
+    const { url, authorizationServerMetadata, body } = callbackOptions
     const endpointType: ClientAuthenticationEndpointType =
-      url === authorizationServerMetata.introspection_endpoint ? 'introspection' : 'endpoint'
-    const method = getSupportedClientAuthenticationMethod(authorizationServerMetata, endpointType)
+      url === authorizationServerMetadata.introspection_endpoint
+        ? 'introspection'
+        : url === authorizationServerMetadata.token_endpoint
+          ? 'token'
+          : 'endpoint'
+    const method = getSupportedClientAuthenticationMethod(authorizationServerMetadata, endpointType)
+
+    // Special case for pre-auth flow where we can use anonymous client
+    if (
+      endpointType === 'token' &&
+      body.grant_type === preAuthorizedCodeGrantIdentifier &&
+      authorizationServerMetadata.pre_authorized_grant_anonymous_access_supported
+    ) {
+      return clientAuthenticationAnonymous()(callbackOptions)
+    }
 
     if (method === SupportedClientAuthenticationMethod.ClientSecretBasic) {
       return clientAuthenticationClientSecretBasic(options)(callbackOptions)
@@ -88,6 +112,10 @@ export function clientAuthenticationDynamic(options: ClientAuthenticationDynamic
 
     if (method === SupportedClientAuthenticationMethod.ClientSecretPost) {
       return clientAuthenticationClientSecretPost(options)(callbackOptions)
+    }
+
+    if (method === SupportedClientAuthenticationMethod.None) {
+      return clientAuthenticationNone(options)(callbackOptions)
     }
 
     throw new Oauth2Error(
@@ -105,7 +133,7 @@ export interface ClientAuthenticationCallbackOptions {
   /**
    * Metadata of the authorization server
    */
-  authorizationServerMetata: AuthorizationServerMetadata
+  authorizationServerMetadata: AuthorizationServerMetadata
 
   /**
    * URL to which the request will be made
@@ -172,9 +200,51 @@ export function clientAuthenticationClientSecretBasic(
   }
 }
 
+export interface ClientAuthenticationNoneOptions {
+  clientId: string
+}
+
 /**
- * No client authentication
+ * Client authentication using `none` option
  */
-export function clientAuthenticationNone() {
+export function clientAuthenticationNone(options: ClientAuthenticationNoneOptions): ClientAuthenticationCallback {
+  return ({ body }) => {
+    body.client_id = options.clientId
+  }
+}
+
+/**
+ * Anonymous client authentication
+ */
+export function clientAuthenticationAnonymous(): ClientAuthenticationCallback {
   return () => {}
+}
+
+export interface ClientAuthenticationClientAttestationJwtOptions {
+  clientAttestationJwt: string
+  callbacks: Pick<CallbackContext, 'signJwt' | 'generateRandom'>
+}
+
+/**
+ * Client authentication using `attest_jwt_client_auth` option.
+ */
+export function clientAuthenticationClientAttestationJwt(
+  options: ClientAuthenticationClientAttestationJwtOptions
+): ClientAuthenticationCallback {
+  return async ({ headers, authorizationServerMetadata }) => {
+    const clientAttestationPop = await createClientAttestationPopJwt({
+      authorizationServer: authorizationServerMetadata.issuer,
+      callbacks: options.callbacks,
+      clientAttestation: options.clientAttestationJwt,
+
+      // TODO: support client attestation nonce
+      // We can fetch it before making the request if we don't have a nonce
+      // https://www.ietf.org/archive/id/draft-ietf-oauth-attestation-based-client-auth-05.html
+      // https://github.com/oauth-wg/draft-ietf-oauth-attestation-based-client-auth/issues/101
+      // nonce:
+    })
+
+    headers.set(oauthClientAttestationHeader, options.clientAttestationJwt)
+    headers.set(oauthClientAttestationPopHeader, clientAttestationPop)
+  }
 }

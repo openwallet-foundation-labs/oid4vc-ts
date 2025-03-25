@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'vitest'
+import { ZodError } from 'zod'
 import { paradymDraft13 } from '../../../__tests__/__fixtures__/paradym'
 import {
   zCredentialConfigurationSupportedWithFormats,
@@ -56,11 +57,29 @@ describe('Credential Issuer Metadata', () => {
     })
     expect(parseResultMdoc.success).toEqual(false)
     expect(parseResultMdoc.error?.errors[0]).toEqual({
-      code: 'invalid_type',
-      expected: 'string',
-      received: 'undefined',
-      path: ['doctype'],
-      message: 'Required',
+      code: 'invalid_union',
+      message: 'Invalid input',
+      path: [],
+      unionErrors: [
+        new ZodError([
+          {
+            code: 'invalid_type',
+            expected: 'string',
+            received: 'undefined',
+            path: ['doctype'],
+            message: 'Required',
+          },
+        ]),
+        new ZodError([
+          {
+            code: 'invalid_type',
+            expected: 'string',
+            received: 'undefined',
+            path: ['doctype'],
+            message: 'Required',
+          },
+        ]),
+      ],
     })
   })
 

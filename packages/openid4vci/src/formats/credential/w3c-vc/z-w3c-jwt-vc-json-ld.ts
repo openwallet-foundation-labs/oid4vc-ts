@@ -1,5 +1,10 @@
 import z from 'zod'
-import { zW3cVcCredentialSubject, zW3cVcJsonLdCredentialDefinition } from './z-w3c-vc-common'
+import { zIssuerMetadataClaimsDescription } from '../../../metadata/credential-issuer/z-claims-description'
+import {
+  zW3cVcCredentialSubjectDraft14,
+  zW3cVcJsonLdCredentialDefinition,
+  zW3cVcJsonLdCredentialDefinitionDraft14,
+} from './z-w3c-vc-common'
 
 export const zJwtVcJsonLdFormatIdentifier = z.literal('jwt_vc_json-ld')
 export type JwtVcJsonLdFormatIdentifier = z.infer<typeof zJwtVcJsonLdFormatIdentifier>
@@ -7,6 +12,12 @@ export type JwtVcJsonLdFormatIdentifier = z.infer<typeof zJwtVcJsonLdFormatIdent
 export const zJwtVcJsonLdCredentialIssuerMetadata = z.object({
   format: zJwtVcJsonLdFormatIdentifier,
   credential_definition: zW3cVcJsonLdCredentialDefinition,
+  claims: zIssuerMetadataClaimsDescription.optional(),
+})
+
+export const zJwtVcJsonLdCredentialIssuerMetadataDraft14 = z.object({
+  format: zJwtVcJsonLdFormatIdentifier,
+  credential_definition: zW3cVcJsonLdCredentialDefinitionDraft14,
   order: z.optional(z.array(z.string())),
 })
 
@@ -18,7 +29,7 @@ export const zJwtVcJsonLdCredentialIssuerMetadataDraft11 = z
     // As well as using types instead of type
     '@context': z.array(z.string()),
     types: z.array(z.string()),
-    credentialSubject: zW3cVcCredentialSubject.optional(),
+    credentialSubject: zW3cVcCredentialSubjectDraft14.optional(),
   })
   .passthrough()
 
@@ -34,7 +45,7 @@ export const zJwtVcJsonLdCredentialIssuerMetadataDraft11To14 = zJwtVcJsonLdCrede
   })
 )
 
-export const zJwtVcJsonLdCredentialIssuerMetadataDraft14To11 = zJwtVcJsonLdCredentialIssuerMetadata
+export const zJwtVcJsonLdCredentialIssuerMetadataDraft14To11 = zJwtVcJsonLdCredentialIssuerMetadataDraft14
   .passthrough()
   .transform(({ credential_definition: { type, ...credentialDefinition }, ...rest }) => ({
     ...rest,
@@ -43,7 +54,7 @@ export const zJwtVcJsonLdCredentialIssuerMetadataDraft14To11 = zJwtVcJsonLdCrede
   }))
   .pipe(zJwtVcJsonLdCredentialIssuerMetadataDraft11)
 
-export const zJwtVcJsonLdCredentialRequestFormat = z.object({
+export const zJwtVcJsonLdCredentialRequestFormatDraft14 = z.object({
   format: zJwtVcJsonLdFormatIdentifier,
   credential_definition: zW3cVcJsonLdCredentialDefinition,
 })
@@ -56,7 +67,7 @@ export const zJwtVcJsonLdCredentialRequestDraft11 = z
         '@context': z.array(z.string()),
         // credential_definition was using types instead of type in v11
         types: z.array(z.string()),
-        credentialSubject: z.optional(zW3cVcCredentialSubject),
+        credentialSubject: z.optional(zW3cVcCredentialSubjectDraft14),
       })
       .passthrough(),
   })
@@ -72,7 +83,7 @@ export const zJwtVcJsonLdCredentialRequestDraft11To14 = zJwtVcJsonLdCredentialRe
   })
 )
 
-export const zJwtVcJsonLdCredentialRequestDraft14To11 = zJwtVcJsonLdCredentialRequestFormat
+export const zJwtVcJsonLdCredentialRequestDraft14To11 = zJwtVcJsonLdCredentialRequestFormatDraft14
   .passthrough()
   .transform(({ credential_definition: { type, ...restCredentialDefinition }, ...rest }) => ({
     ...rest,

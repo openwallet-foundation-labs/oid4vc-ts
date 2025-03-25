@@ -1,20 +1,51 @@
-import { parseWithErrorHandling } from '@openid4vc/utils'
-import { zAuthorizationChallengeRequest } from './z-authorization-challenge'
+import { formatZodError } from '@openid4vc/utils'
+import {
+  type ParseAuthorizationRequestResult,
+  parseAuthorizationRequest,
+} from '../authorization-request/parse-authorization-request'
+import type { RequestLike } from '../common/z-common'
+import { Oauth2ErrorCodes } from '../common/z-oauth2-error'
+import { Oauth2ServerErrorResponseError } from '../error/Oauth2ServerErrorResponseError'
+import { type AuthorizationChallengeRequest, zAuthorizationChallengeRequest } from './z-authorization-challenge'
 
 export interface ParseAuthorizationChallengeRequestOptions {
+  request: RequestLike
+
   authorizationChallengeRequest: unknown
+}
+
+export interface ParseAuthorizationChallengeRequestResult extends ParseAuthorizationRequestResult {
+  authorizationChallengeRequest: AuthorizationChallengeRequest
 }
 
 /**
  * Parse an authorization challenge request.
  *
- * @throws {ValidationError} if a successful response was received but an error occured during verification of the {@link AuthorizationChallengeResponse}
+ * @throws {Oauth2ServerErrorResponseError}
  */
-export function parseAuthorizationChallengeRequest(options: ParseAuthorizationChallengeRequestOptions) {
-  const authorizationChallengeRequest = parseWithErrorHandling(
-    zAuthorizationChallengeRequest,
+export function parseAuthorizationChallengeRequest(
+  options: ParseAuthorizationChallengeRequestOptions
+): ParseAuthorizationChallengeRequestResult {
+  const parsedAuthorizationChallengeRequest = zAuthorizationChallengeRequest.safeParse(
     options.authorizationChallengeRequest
   )
+  if (!parsedAuthorizationChallengeRequest.success) {
+    throw new Oauth2ServerErrorResponseError({
+      error: Oauth2ErrorCodes.InvalidRequest,
+      error_description: `Error occured during validation of authorization challenge request.\n${formatZodError(parsedAuthorizationChallengeRequest.error)}`,
+    })
+  }
 
-  return { authorizationChallengeRequest }
+  const authorizationChallengeRequest = parsedAuthorizationChallengeRequest.data
+  const { clientAttestation, dpop } = parseAuthorizationRequest({
+    authorizationRequest: authorizationChallengeRequest,
+    request: options.request,
+  })
+
+  return {
+    authorizationChallengeRequest: parsedAuthorizationChallengeRequest.data,
+
+    dpop,
+    clientAttestation,
+  }
 }

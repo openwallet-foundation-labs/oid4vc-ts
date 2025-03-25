@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'vitest'
+import { Oauth2ServerErrorResponseError } from '../../error/Oauth2ServerErrorResponseError'
 import { authorizationCodeGrantIdentifier, preAuthorizedCodeGrantIdentifier } from '../../z-grant-type'
 import { parseAccessTokenRequest } from '../parse-access-token-request'
 
@@ -134,7 +135,11 @@ describe('Parse Access Token Request', () => {
         },
         request: {
           headers: new Headers({
-            DPoP: 'dpop-jwt',
+            DPoP: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.dpop',
+            'OAuth-Client-Attestation':
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.client-attestation',
+            'OAuth-Client-Attestation-PoP':
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.client-attestation-pop',
           }),
           method: 'POST',
           url: 'https://request.com/token',
@@ -150,8 +155,71 @@ describe('Parse Access Token Request', () => {
         grantType: authorizationCodeGrantIdentifier,
         code: 'auth-code',
       },
-      dpopJwt: 'dpop-jwt',
+      clientAttestation: {
+        clientAttestationJwt:
+          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.client-attestation',
+        clientAttestationPopJwt:
+          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.client-attestation-pop',
+      },
+      dpop: {
+        jwt: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.dpop',
+      },
       pkceCodeVerifier: 'hello',
     })
+  })
+
+  test('handles invalid dpop jwt', () => {
+    expect(() =>
+      parseAccessTokenRequest({
+        accessTokenRequest: {
+          grant_type: authorizationCodeGrantIdentifier,
+          code: 'auth-code',
+          code_verifier: 'hello',
+        },
+        request: {
+          headers: new Headers({
+            DPoP: 'random',
+            'OAuth-Client-Attestation':
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.client-attestation',
+            'OAuth-Client-Attestation-PoP':
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.client-attestation-pop',
+          }),
+          method: 'POST',
+          url: 'https://request.com/token',
+        },
+      })
+    ).toThrow(
+      new Oauth2ServerErrorResponseError({
+        error: 'invalid_dpop_proof',
+        error_description: `Request contains a 'DPoP' header, but the value is not a valid DPoP jwt`,
+      })
+    )
+  })
+
+  test('handles invalid client attestation jwt', () => {
+    expect(() =>
+      parseAccessTokenRequest({
+        accessTokenRequest: {
+          grant_type: authorizationCodeGrantIdentifier,
+          code: 'auth-code',
+          code_verifier: 'hello',
+        },
+        request: {
+          headers: new Headers({
+            'OAuth-Client-Attestation': 'something',
+            'OAuth-Client-Attestation-PoP':
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.client-attestation-pop',
+          }),
+          method: 'POST',
+          url: 'https://request.com/token',
+        },
+      })
+    ).toThrow(
+      new Oauth2ServerErrorResponseError({
+        error: 'invalid_client',
+        error_description:
+          'Request contains client attestation header, but the values are not valid client attestation and client attestation PoP header.',
+      })
+    )
   })
 })

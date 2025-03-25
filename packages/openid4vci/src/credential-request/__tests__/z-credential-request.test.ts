@@ -39,14 +39,22 @@ describe('Credential Request', () => {
     expect(parseResult.success).toBe(false)
     expect(parseResult.error?.format()).toEqual({
       _errors: [],
+      credential_configuration_id: {
+        _errors: ['Required'],
+      },
       credential_identifier: {
         _errors: [
+          "'credential_identifier' cannot be defined when 'credential_configuration_id' is set.",
           "'credential_identifier' cannot be defined when 'format' is set.",
           "'credential_identifier' cannot be defined when 'format' is set.",
         ],
       },
       format: {
-        _errors: ["'format' cannot be defined when 'credential_identifier' is set."],
+        _errors: [
+          "'format' cannot be defined when 'credential_identifier' is set.",
+          "'format' cannot be defined when 'credential_configuration_id' is set.",
+          "'format' cannot be defined when 'credential_identifier' is set.",
+        ],
       },
     })
   })

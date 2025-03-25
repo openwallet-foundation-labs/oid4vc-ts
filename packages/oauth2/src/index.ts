@@ -43,6 +43,10 @@ export {
 export { zCompactJwe } from './common/jwt/z-jwe'
 
 export type { RequestClientAttestationOptions } from './client-attestation/client-attestation-pop'
+export {
+  createClientAttestationJwt,
+  type CreateClientAttestationJwtOptions,
+} from './client-attestation/clent-attestation'
 export type {
   ClientAttestationJwtHeader,
   ClientAttestationJwtPayload,
@@ -68,6 +72,14 @@ export type {
   AuthorizationChallengeRequest,
   AuthorizationChallengeResponse,
 } from './authorization-challenge/z-authorization-challenge'
+export type {
+  VerifyAuthorizationChallengeRequestOptions,
+  VerifyAuthorizationChallengeRequestReturn,
+} from './authorization-challenge/verify-authorization-challenge-request'
+export type {
+  ParseAuthorizationChallengeRequestOptions,
+  ParseAuthorizationChallengeRequestResult,
+} from './authorization-challenge/parse-authorization-challenge-request'
 export {
   fetchAuthorizationServerMetadata,
   getAuthorizationServerMetadataFromList,
@@ -89,6 +101,18 @@ export type {
 export { SupportedAuthenticationScheme } from './access-token/verify-access-token'
 export type { VerifyAccessTokenRequestReturn } from './access-token/verify-access-token-request'
 export type { CreateAuthorizationRequestUrlOptions } from './authorization-request/create-authorization-request'
+export type {
+  CreatePushedAuthorizationErrorResponseOptions,
+  CreatePushedAuthorizationResponseOptions,
+} from './authorization-request/create-pushed-authorization-response'
+export type {
+  ParsePushedAuthorizationRequestOptions,
+  ParsePushedAuthorizationRequestResult,
+} from './authorization-request/parse-pushed-authorization-request'
+export type {
+  VerifyPushedAuthorizationRequestOptions,
+  VerifyPushedAuthorizationRequestReturn,
+} from './authorization-request/verify-pushed-authorization-request'
 export {
   resourceRequest,
   type ResourceRequestOptions,
@@ -119,9 +143,14 @@ export {
   clientAuthenticationClientSecretPost,
   clientAuthenticationDynamic,
   clientAuthenticationNone,
+  clientAuthenticationAnonymous,
+  clientAuthenticationClientAttestationJwt,
+  SupportedClientAuthenticationMethod,
+  type ClientAuthenticationNoneOptions,
   type ClientAuthenticationClientSecretBasicOptions,
   type ClientAuthenticationClientSecretPostOptions,
   type ClientAuthenticationDynamicOptions,
+  type ClientAuthenticationClientAttestationJwtOptions,
 } from './client-authentication'
 
 export { Oauth2AuthorizationServer, type Oauth2AuthorizationServerOptions } from './Oauth2AuthorizationServer'

@@ -16,10 +16,7 @@ import {
   createAuthorizationRequestUrl,
 } from './authorization-request/create-authorization-request'
 import type { CallbackContext } from './callbacks'
-import {
-  type CreateClientAttestationJwtOptions,
-  createClientAttestationJwt,
-} from './client-attestation/clent-attestation'
+import { SupportedClientAuthenticationMethod } from './client-authentication'
 import { Oauth2ErrorCodes } from './common/z-oauth2-error'
 import { extractDpopNonceFromHeaders } from './dpop/dpop'
 import { Oauth2ClientAuthorizationChallengeError } from './error/Oauth2ClientAuthorizationChallengeError'
@@ -32,12 +29,14 @@ export interface Oauth2ClientOptions {
   /**
    * Callbacks required for the oauth2 client
    */
-  callbacks: Omit<CallbackContext, 'verifyJwt' | 'clientAuthentication' | 'decryptJwe' | 'encryptJwe'>
+  callbacks: Omit<CallbackContext, 'verifyJwt' | 'decryptJwe' | 'encryptJwe'>
 }
 
 export class Oauth2Client {
   public constructor(private options: Oauth2ClientOptions) {}
 
+  // TODO: add options to provide client metadata / algs supported by the client
+  // so we can find the commonly supported algs and make it easier
   public isDpopSupported(options: { authorizationServerMetadata: AuthorizationServerMetadata }) {
     if (
       !options.authorizationServerMetadata.dpop_signing_alg_values_supported ||
@@ -51,6 +50,23 @@ export class Oauth2Client {
     return {
       supported: true,
       dpopSigningAlgValuesSupported: options.authorizationServerMetadata.dpop_signing_alg_values_supported,
+    } as const
+  }
+
+  public isClientAttestationSupported(options: { authorizationServerMetadata: AuthorizationServerMetadata }) {
+    if (
+      !options.authorizationServerMetadata.token_endpoint_auth_methods_supported ||
+      !options.authorizationServerMetadata.token_endpoint_auth_methods_supported.includes(
+        SupportedClientAuthenticationMethod.ClientAttestationJwt
+      )
+    ) {
+      return {
+        supported: false,
+      } as const
+    }
+
+    return {
+      supported: true,
     } as const
   }
 
@@ -85,11 +101,9 @@ export class Oauth2Client {
         await this.sendAuthorizationChallengeRequest({
           authorizationServerMetadata: options.authorizationServerMetadata,
           additionalRequestPayload: options.additionalRequestPayload,
-          clientId: options.clientId,
           pkceCodeVerifier: pkce?.codeVerifier,
           scope: options.scope,
           resource: options.resource,
-          clientAttestation: options.clientAttestation,
           dpop: options.dpop,
         })
       } catch (error) {
@@ -132,7 +146,6 @@ export class Oauth2Client {
       scope: options.scope,
       pkceCodeVerifier: pkce?.codeVerifier,
       resource: options.resource,
-      clientAttestation: options.clientAttestation,
       dpop: options.dpop,
     })
   }
@@ -154,7 +167,6 @@ export class Oauth2Client {
       scope: options.scope,
       callbacks: this.options.callbacks,
       pkceCodeVerifier: options.pkceCodeVerifier,
-      clientAttestation: options.clientAttestation,
       dpop: options.dpop,
     })
   }
@@ -166,7 +178,6 @@ export class Oauth2Client {
     txCode,
     dpop,
     resource,
-    clientAttestation,
   }: Omit<RetrievePreAuthorizedCodeAccessTokenOptions, 'callbacks'>) {
     const result = await retrievePreAuthorizedCodeAccessToken({
       authorizationServerMetadata,
@@ -179,7 +190,6 @@ export class Oauth2Client {
       },
       callbacks: this.options.callbacks,
       dpop,
-      clientAttestation,
     })
 
     return result
@@ -193,7 +203,6 @@ export class Oauth2Client {
     redirectUri,
     resource,
     dpop,
-    clientAttestation,
   }: Omit<RetrieveAuthorizationCodeAccessTokenOptions, 'callbacks'>) {
     const result = await retrieveAuthorizationCodeAccessToken({
       authorizationServerMetadata,
@@ -204,7 +213,6 @@ export class Oauth2Client {
       callbacks: this.options.callbacks,
       dpop,
       redirectUri,
-      clientAttestation,
     })
 
     return result
@@ -216,7 +224,6 @@ export class Oauth2Client {
     refreshToken,
     resource,
     dpop,
-    clientAttestation,
   }: Omit<RetrieveRefreshTokenAccessTokenOptions, 'callbacks'>) {
     const result = await retrieveRefreshTokenAccessToken({
       authorizationServerMetadata,
@@ -225,7 +232,6 @@ export class Oauth2Client {
       resource,
       callbacks: this.options.callbacks,
       dpop,
-      clientAttestation,
     })
 
     return result
@@ -233,15 +239,5 @@ export class Oauth2Client {
 
   public async resourceRequest(options: ResourceRequestOptions) {
     return resourceRequest(options)
-  }
-
-  /**
-   * @todo move this to another class?
-   */
-  public async createClientAttestationJwt(options: Omit<CreateClientAttestationJwtOptions, 'callbacks'>) {
-    return await createClientAttestationJwt({
-      callbacks: this.options.callbacks,
-      ...options,
-    })
   }
 }
