@@ -9,7 +9,7 @@ concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 jobs:
   release-stable:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     name: Release Stable
     outputs:
       published: ${{ steps.changesets.outputs.published }}
@@ -50,7 +50,7 @@ jobs:
           tag_name: v${{ env.CURRENT_PACKAGE_VERSION }}
 
   release-unstable:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     name: Release Unstable
     needs: release-stable
     if: always() && github.event_name == 'push' && needs.release-stable.outputs.published == 'false'

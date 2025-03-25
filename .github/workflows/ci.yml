@@ -13,7 +13,7 @@ on:
 jobs:
   validate:
     if: github.event_name != 'pull_request_review' ||  github.event.pull_request.head.ref == 'changeset-release/main'
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     name: Validate
     steps:
       - name: Checkout Repo
@@ -39,7 +39,7 @@ jobs:
         run: pnpm build
 
   tests:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     name: Tests
     if: github.event_name != 'pull_request_review' ||  github.event.pull_request.head.ref == 'changeset-release/main'
 
