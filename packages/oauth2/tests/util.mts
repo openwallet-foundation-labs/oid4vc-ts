@@ -7,8 +7,10 @@ import { calculateJwkThumbprint } from '../src/common/jwk/jwk-thumbprint.js'
 import type { Jwk } from '../src/common/jwk/z-jwk.js'
 
 // Needed for Node 18 support with jose6. We can soon drop node18 support.
-// @ts-ignore
-globalThis.crypto = webcrypto
+if (process.versions.node.startsWith('18.')) {
+  // @ts-ignore
+  globalThis.crypto = webcrypto
+}
 
 export function parseXwwwFormUrlEncoded(text: string) {
   return Object.fromEntries(Array.from(new URLSearchParams(text).entries()))
