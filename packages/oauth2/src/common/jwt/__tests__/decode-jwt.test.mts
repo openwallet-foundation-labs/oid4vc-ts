@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { jwtSignerFromJwt } from '../decode-jwt'
+import { jwtSignerFromJwt } from '../decode-jwt.js'
 
 describe('Decode JWT', () => {
   describe('jwtSignerFromJwt', () => {

@@ -1,7 +1,7 @@
 import { HashAlgorithm, Oauth2ErrorCodes, Oauth2ServerErrorResponseError } from '@openid4vc/oauth2'
 import { describe, expect, test } from 'vitest'
-import { callbacks } from '../../../oauth2/tests/util'
-import { verifyTransactionData } from './verify-transaction-data'
+import { callbacks } from '../../../oauth2/tests/util.mjs'
+import { verifyTransactionData } from './verify-transaction-data.js'
 
 describe('Verify transaction data', () => {
   test('succesfully matches with a single credential and transaction data entry', async () => {

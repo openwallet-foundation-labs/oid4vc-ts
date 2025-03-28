@@ -1,13 +1,13 @@
 import { describe, expect, test } from 'vitest'
-import { callbacks, getSignJwtCallback } from '../../../tests/util'
-import { createDpopJwt } from '../../dpop/dpop'
-import type { AuthorizationServerMetadata } from '../../metadata/authorization-server/z-authorization-server-metadata'
-import { PkceCodeChallengeMethod } from '../../pkce'
-import { authorizationCodeGrantIdentifier, preAuthorizedCodeGrantIdentifier } from '../../z-grant-type'
+import { callbacks, getSignJwtCallback } from '../../../tests/util.mjs'
+import { createDpopJwt } from '../../dpop/dpop.js'
+import type { AuthorizationServerMetadata } from '../../metadata/authorization-server/z-authorization-server-metadata.js'
+import { PkceCodeChallengeMethod } from '../../pkce.js'
+import { authorizationCodeGrantIdentifier, preAuthorizedCodeGrantIdentifier } from '../../z-grant-type.js'
 import {
   verifyAuthorizationCodeAccessTokenRequest,
   verifyPreAuthorizedCodeAccessTokenRequest,
-} from '../verify-access-token-request'
+} from '../verify-access-token-request.js'
 
 const request = {
   headers: new Headers(),

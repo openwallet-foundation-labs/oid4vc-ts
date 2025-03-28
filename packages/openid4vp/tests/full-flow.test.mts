@@ -1,15 +1,15 @@
 import { http, HttpResponse } from 'msw'
 import { setupServer } from 'msw/node'
 import { afterAll, afterEach, beforeAll, describe, expect, test } from 'vitest'
-import { getSignJwtCallback, callbacks as partialCallbacks } from '../../oauth2/tests/util'
+import { getSignJwtCallback, callbacks as partialCallbacks } from '../../oauth2/tests/util.mjs'
+import { createOpenid4vpAuthorizationRequest } from '../src/authorization-request/create-authorization-request.js'
+import { parseOpenid4VpAuthorizationResponsePayload } from '../src/authorization-response/parse-authorization-response-payload.js'
 import {
   createOpenid4vpAuthorizationResponse,
   resolveOpenid4vpAuthorizationRequest,
   submitOpenid4vpAuthorizationResponse,
   validateOpenid4vpAuthorizationResponsePayload,
-} from '../src'
-import { createOpenid4vpAuthorizationRequest } from '../src/authorization-request/create-authorization-request'
-import { parseOpenid4VpAuthorizationResponsePayload } from '../src/authorization-response/parse-authorization-response-payload'
+} from '../src/index.js'
 
 const exampleDcqlQuery = {
   credentials: [

@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { parseAuthorizationRequestVersion } from '../src/version'
+import { parseAuthorizationRequestVersion } from '../src/version.js'
 
 describe('Version inference test', () => {
   test('w3c_dc_api is only available in v22 and below', () => {

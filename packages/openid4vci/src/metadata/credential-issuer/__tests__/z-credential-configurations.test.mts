@@ -1,5 +1,5 @@
 import { describe, test } from 'vitest'
-import type { CredentialConfigurationSupportedWithFormats } from '../../..'
+import type { CredentialConfigurationSupportedWithFormats } from '../../../index.js'
 
 describe('Credential Configuration Types', () => {
   // This is a type infer test, no actual code test

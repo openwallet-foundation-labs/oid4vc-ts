@@ -1,13 +1,13 @@
 import { preAuthorizedCodeGrantIdentifier } from '@openid4vc/oauth2'
 import { addSecondsToDate } from '@openid4vc/utils'
 import { describe, expect, test } from 'vitest'
-import { callbacks, getSignJwtCallback } from '../../../oauth2/tests/util'
-import { Openid4vciIssuer } from '../Openid4vciIssuer'
-import { parseCredentialRequest } from '../credential-request/parse-credential-request'
-import { createCredentialRequestJwtProof } from '../formats/proof-type/jwt/jwt-proof-type'
-import { createKeyAttestationJwt } from '../key-attestation/key-attestation'
-import type { IssuerMetadataResult } from '../metadata/fetch-issuer-metadata'
-import { Openid4vciDraftVersion } from '../version'
+import { callbacks, getSignJwtCallback } from '../../../oauth2/tests/util.mjs'
+import { Openid4vciIssuer } from '../Openid4vciIssuer.js'
+import { parseCredentialRequest } from '../credential-request/parse-credential-request.js'
+import { createCredentialRequestJwtProof } from '../formats/proof-type/jwt/jwt-proof-type.js'
+import { createKeyAttestationJwt } from '../key-attestation/key-attestation.js'
+import type { IssuerMetadataResult } from '../metadata/fetch-issuer-metadata.js'
+import { Openid4vciDraftVersion } from '../version.js'
 
 const credentialRequestProofJwk = {
   kty: 'EC',

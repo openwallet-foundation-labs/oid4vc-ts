@@ -3,7 +3,7 @@ import { describe, expect, test } from 'vitest'
 import {
   getOpenid4vpClientId,
   validateOpenid4vpClientId,
-} from '../src/client-identifier-scheme/parse-client-identifier-scheme'
+} from '../src/client-identifier-scheme/parse-client-identifier-scheme.js'
 
 describe('Correctly parses the client identifier', () => {
   describe('legacy client_id_scheme', () => {

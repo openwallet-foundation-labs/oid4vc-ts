@@ -1,9 +1,9 @@
 import { authorizationCodeGrantIdentifier, preAuthorizedCodeGrantIdentifier } from '@openid4vc/oauth2'
 import { describe, expect, test } from 'vitest'
-import { callbacks } from '../../../../oauth2/tests/util'
-import type { IssuerMetadataResult } from '../../metadata/fetch-issuer-metadata'
-import { Openid4vciDraftVersion } from '../../version'
-import { createCredentialOffer } from '../credential-offer'
+import { callbacks } from '../../../../oauth2/tests/util.mjs'
+import type { IssuerMetadataResult } from '../../metadata/fetch-issuer-metadata.js'
+import { Openid4vciDraftVersion } from '../../version.js'
+import { createCredentialOffer } from '../credential-offer.js'
 
 const issuerMetadata = {
   authorizationServers: [],

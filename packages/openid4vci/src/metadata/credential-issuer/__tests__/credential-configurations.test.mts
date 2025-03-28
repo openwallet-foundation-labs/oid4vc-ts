@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { credentialsSupportedToCredentialConfigurationsSupported } from '../credential-configurations'
+import { credentialsSupportedToCredentialConfigurationsSupported } from '../credential-configurations.js'
 
 describe('Credential Configurations', () => {
   test('credentials supported to credential configurations supported', () => {

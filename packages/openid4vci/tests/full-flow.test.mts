@@ -17,7 +17,7 @@ import { ContentType, type HttpMethod, addSecondsToDate, decodeUtf8String, encod
 import { http, HttpResponse } from 'msw'
 import { setupServer } from 'msw/node'
 import { afterAll, afterEach, beforeAll, describe, expect, test } from 'vitest'
-import { getSignJwtCallback, parseXwwwFormUrlEncoded, callbacks as partialCallbacks } from '../../oauth2/tests/util'
+import { getSignJwtCallback, parseXwwwFormUrlEncoded, callbacks as partialCallbacks } from '../../oauth2/tests/util.mjs'
 import {
   type CredentialConfigurationSupportedWithFormats,
   Openid4vciClient,
@@ -25,7 +25,7 @@ import {
   Openid4vciIssuer,
   Openid4vciWalletProvider,
   extractScopesForCredentialConfigurationIds,
-} from '../src'
+} from '../src/index.js'
 
 const dpopJwk = {
   kty: 'EC',

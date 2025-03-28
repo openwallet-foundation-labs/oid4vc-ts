@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest'
-import { Oauth2ServerErrorResponseError } from '../../error/Oauth2ServerErrorResponseError'
-import { authorizationCodeGrantIdentifier, preAuthorizedCodeGrantIdentifier } from '../../z-grant-type'
-import { parseAccessTokenRequest } from '../parse-access-token-request'
+import { Oauth2ServerErrorResponseError } from '../../error/Oauth2ServerErrorResponseError.js'
+import { authorizationCodeGrantIdentifier, preAuthorizedCodeGrantIdentifier } from '../../z-grant-type.js'
+import { parseAccessTokenRequest } from '../parse-access-token-request.js'
 
 describe('Parse Access Token Request', () => {
   test('handles invalid structure', () => {
