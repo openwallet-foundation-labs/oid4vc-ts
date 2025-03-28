@@ -7,7 +7,13 @@ export type KeyAttestationJwtUse = 'proof_type.jwt' | 'proof_type.attestation'
 export const zKeyAttestationJwtHeader = z
   .object({
     ...zJwtHeader.shape,
-    typ: z.literal('keyattestation+jwt'),
+    typ: z
+      // Draft 15
+      .literal('keyattestation+jwt')
+      .or(
+        // Draft 16
+        z.literal('key-attestation+jwt')
+      ),
   })
   .passthrough()
   .refine(({ kid, jwk }) => jwk === undefined || kid === undefined, {
