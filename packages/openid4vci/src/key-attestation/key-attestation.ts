@@ -99,6 +99,30 @@ export async function createKeyAttestationJwt(options: CreateKeyAttestationJwtOp
   return jwt
 }
 
+export interface ParseKeyAttestationJwtOptions {
+  /**
+   * The compact key attestation jwt
+   */
+  keyAttestationJwt: string
+
+  /**
+   * The intended use of the key attestation. Based on this additional validation
+   * is performed.
+   *
+   * - `proof_type.jwt` -> `exp` MUST be set
+   * - `proof_type.attestation` -> `nonce` MUST be set
+   */
+  use?: KeyAttestationJwtUse
+}
+
+export function parseKeyAttestationJwt({ keyAttestationJwt, use }: ParseKeyAttestationJwtOptions) {
+  return decodeJwt({
+    jwt: keyAttestationJwt,
+    headerSchema: zKeyAttestationJwtHeader,
+    payloadSchema: zKeyAttestationJwtPayloadForUse(use),
+  })
+}
+
 export interface VerifyKeyAttestationJwtOptions {
   /**
    * The compact key attestation jwt
@@ -137,11 +161,7 @@ export interface VerifyKeyAttestationJwtOptions {
 
 export type VerifyKeyAttestationJwtReturn = Awaited<ReturnType<typeof verifyKeyAttestationJwt>>
 export async function verifyKeyAttestationJwt(options: VerifyKeyAttestationJwtOptions) {
-  const { header, payload } = decodeJwt({
-    jwt: options.keyAttestationJwt,
-    headerSchema: zKeyAttestationJwtHeader,
-    payloadSchema: zKeyAttestationJwtPayloadForUse(options.use),
-  })
+  const { header, payload } = parseKeyAttestationJwt({ keyAttestationJwt: options.keyAttestationJwt, use: options.use })
 
   // TODO: if you use stateless nonce, it doesn't make sense to verify the nonce here
   // We should just return the nonce after verification so it can be checked (or actually, it should be checked upfront)

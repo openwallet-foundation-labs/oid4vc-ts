@@ -1,3 +1,5 @@
+export { determineAuthorizationServerForCredentialOffer } from './credential-offer/credential-offer'
+
 export type {
   CredentialOfferObject,
   CredentialOfferPreAuthorizedCodeGrantTxCode,
@@ -38,6 +40,16 @@ export type {
   CredentialRequestJwtProofTypePayload,
 } from './formats/proof-type/jwt/z-jwt-proof-type'
 export type { JwtProofTypeIdentifier, ProofTypeIdentifier } from './formats/proof-type'
+
+export {
+  createKeyAttestationJwt,
+  verifyKeyAttestationJwt,
+  parseKeyAttestationJwt,
+  type ParseKeyAttestationJwtOptions,
+  type CreateKeyAttestationJwtOptions,
+  type VerifyKeyAttestationJwtOptions,
+  type VerifyKeyAttestationJwtReturn,
+} from './key-attestation/key-attestation'
 
 export type {
   JwtVcJsonFormatIdentifier,
