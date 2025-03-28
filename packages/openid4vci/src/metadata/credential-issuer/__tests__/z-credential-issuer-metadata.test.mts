@@ -1,11 +1,11 @@
 import { describe, expect, test } from 'vitest'
 import type { ZodInvalidUnionIssue } from 'zod'
-import { paradymDraft13 } from '../../../__tests__/__fixtures__/paradym'
+import { paradymDraft13 } from '../../../__tests__/__fixtures__/paradym.js'
 import {
   zCredentialConfigurationSupportedWithFormats,
   zCredentialIssuerMetadata,
   zCredentialIssuerMetadataDraft11To14,
-} from '../z-credential-issuer-metadata'
+} from '../z-credential-issuer-metadata.js'
 
 describe('Credential Issuer Metadata', () => {
   test('should parse credential configurations supported with format', () => {

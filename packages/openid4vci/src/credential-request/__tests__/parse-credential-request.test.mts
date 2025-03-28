@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest'
-import type { CredentialIssuerMetadata } from '../../metadata/credential-issuer/z-credential-issuer-metadata'
-import { Openid4vciDraftVersion } from '../../version'
-import { parseCredentialRequest } from '../parse-credential-request'
+import type { CredentialIssuerMetadata } from '../../metadata/credential-issuer/z-credential-issuer-metadata.js'
+import { Openid4vciDraftVersion } from '../../version.js'
+import { parseCredentialRequest } from '../parse-credential-request.js'
 
 const issuerMetadata = {
   credential_issuer: 'https://issuer.com',

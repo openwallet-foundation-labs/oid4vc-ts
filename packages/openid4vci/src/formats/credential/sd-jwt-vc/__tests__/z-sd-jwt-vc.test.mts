@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest'
-import { zSdJwtVcCredentialIssuerMetadataDraft14, zSdJwtVcFormatIdentifier } from '../z-sd-jwt-vc'
+import { zSdJwtVcCredentialIssuerMetadataDraft14, zSdJwtVcFormatIdentifier } from '../z-sd-jwt-vc.js'
 
 test('should parse sd-jwt-vc format identifier', () => {
   expect(zSdJwtVcFormatIdentifier.safeParse('vc+sd-jwt')).toStrictEqual({

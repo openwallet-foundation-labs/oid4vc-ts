@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { encodeWwwAuthenticateHeader, parseWwwAuthenticateHeader } from '../www-authenticate'
+import { encodeWwwAuthenticateHeader, parseWwwAuthenticateHeader } from '../www-authenticate.js'
 
 describe('WWW-Authenticate Header', () => {
   test('Correctly parses single scheme', () => {

@@ -2,12 +2,12 @@ import { ContentType } from '@openid4vc/utils'
 import { http, HttpResponse } from 'msw'
 import { setupServer } from 'msw/node'
 import { afterAll, afterEach, beforeAll, describe, expect, test } from 'vitest'
-import { callbacks, getSignJwtCallback } from '../../tests/util'
-import { Oauth2ResourceServer } from '../Oauth2ResourceServer'
-import { createAccessTokenJwt } from '../access-token/create-access-token'
-import type { Jwk, JwkSet } from '../common/jwk/z-jwk'
-import { createDpopJwt } from '../dpop/dpop'
-import type { AuthorizationServerMetadata } from '../metadata/authorization-server/z-authorization-server-metadata'
+import { callbacks, getSignJwtCallback } from '../../tests/util.mjs'
+import { Oauth2ResourceServer } from '../Oauth2ResourceServer.js'
+import { createAccessTokenJwt } from '../access-token/create-access-token.js'
+import type { Jwk, JwkSet } from '../common/jwk/z-jwk.js'
+import { createDpopJwt } from '../dpop/dpop.js'
+import type { AuthorizationServerMetadata } from '../metadata/authorization-server/z-authorization-server-metadata.js'
 
 const server = setupServer()
 

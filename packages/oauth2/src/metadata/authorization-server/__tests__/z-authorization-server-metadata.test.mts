@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest'
-import { zAuthorizationServerMetadata } from '../z-authorization-server-metadata'
+import { zAuthorizationServerMetadata } from '../z-authorization-server-metadata.js'
 
 test('should parse authorization server metadata', () => {
   // Correct

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import z from 'zod'
-import { ValidationError } from '../error/ValidationError'
+import { ValidationError } from '../error/ValidationError.js'
 
 describe('Validation error', () => {
   test('basic formatting', () => {

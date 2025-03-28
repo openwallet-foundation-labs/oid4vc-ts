@@ -52,7 +52,7 @@
   },
   "overrides": [
     {
-      "include": ["*.test.ts", "**/tests/*"],
+      "include": ["*.test.ts", "**/tests/*", "*.test.mts"],
       "linter": {
         "rules": {
           "style": {

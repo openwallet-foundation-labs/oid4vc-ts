@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { parseOpenid4vpAuthorizationRequest } from '../parse-authorization-request-params'
+import { parseOpenid4vpAuthorizationRequest } from '../parse-authorization-request-params.js'
 
 describe('Parse Authorization Request Params', () => {
   test('parse authorization request uri and transforms string JSON fields to JSON', () => {

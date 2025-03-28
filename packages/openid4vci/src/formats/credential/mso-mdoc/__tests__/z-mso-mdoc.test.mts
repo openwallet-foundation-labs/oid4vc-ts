@@ -3,7 +3,7 @@ import {
   zMsoMdocCredentialIssuerMetadata,
   zMsoMdocCredentialIssuerMetadataDraft14,
   zMsoMdocFormatIdentifier,
-} from '../z-mso-mdoc'
+} from '../z-mso-mdoc.js'
 
 test('should parse mso mdoc format identifier', () => {
   expect(zMsoMdocFormatIdentifier.safeParse('mso_mdoc')).toStrictEqual({
