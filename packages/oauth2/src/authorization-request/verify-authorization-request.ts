@@ -150,7 +150,7 @@ async function verifyAuthorizationRequestClientAttestation(
     }
 
     throw new Oauth2ServerErrorResponseError({
-      error: Oauth2ErrorCodes.InvalidDpopProof,
+      error: Oauth2ErrorCodes.InvalidClient,
       error_description: `Missing required client attestation parameters in pushed authorization request. Make sure to provide the '${oauthClientAttestationHeader}' and '${oauthClientAttestationPopHeader}' header values.`,
     })
   }
