@@ -39,7 +39,7 @@ export const zAuthorizationServerMetadata = z
     authorization_challenge_endpoint: z.optional(zHttpsUrl),
 
     // From OpenID4VCI specification
-    pre_authorized_grant_anonymous_access_supported: z.optional(z.boolean()),
+    'pre-authorized_grant_anonymous_access_supported': z.optional(z.boolean()),
 
     // Attestation Based Client Auth (draft 5)
     client_attestation_pop_nonce_required: z.boolean().optional(),

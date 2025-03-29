@@ -84,7 +84,7 @@ export interface ClientAuthenticationDynamicOptions {
  * Only `client_secret_post`, `client_secret_basic`, and `none` supported.
  *
  * It also supports anonymous access to the token endpoint for pre-authorized code flow
- * if the authorization server has enabled `pre_authorized_grant_anonymous_access_supported`
+ * if the authorization server has enabled `pre-authorized_grant_anonymous_access_supported`
  */
 export function clientAuthenticationDynamic(options: ClientAuthenticationDynamicOptions): ClientAuthenticationCallback {
   return (callbackOptions) => {
@@ -101,7 +101,7 @@ export function clientAuthenticationDynamic(options: ClientAuthenticationDynamic
     if (
       endpointType === 'token' &&
       body.grant_type === preAuthorizedCodeGrantIdentifier &&
-      authorizationServerMetadata.pre_authorized_grant_anonymous_access_supported
+      authorizationServerMetadata['pre-authorized_grant_anonymous_access_supported']
     ) {
       return clientAuthenticationAnonymous()(callbackOptions)
     }
