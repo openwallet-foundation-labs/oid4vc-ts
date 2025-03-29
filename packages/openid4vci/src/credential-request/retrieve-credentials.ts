@@ -173,16 +173,16 @@ async function retrieveCredentials(
 
   if (credentialRequest.proofs) {
     const { batch_credential_issuance } = options.issuerMetadata.credentialIssuer
-    if (!batch_credential_issuance) {
+    if (options.issuerMetadata.originalDraftVersion === Openid4vciDraftVersion.Draft11) {
       throw new Oauth2Error(
         `Credential issuer '${options.issuerMetadata.credentialIssuer.credential_issuer}' does not support batch credential issuance using the 'proofs' request property. Only 'proof' is supported.`
       )
     }
 
     const proofs = Object.values(credentialRequest.proofs)[0]
-    if (proofs.length > batch_credential_issuance.batch_size) {
+    if (proofs.length > (batch_credential_issuance?.batch_size ?? 1)) {
       throw new Oauth2Error(
-        `Credential issuer '${options.issuerMetadata.credentialIssuer.credential_issuer}' supports batch issuance, but the max batch size is '${batch_credential_issuance.batch_size}'. A total of '${proofs.length}' proofs were provided.`
+        `Credential issuer '${options.issuerMetadata.credentialIssuer.credential_issuer}' supports batch issuance, but the max batch size is '${batch_credential_issuance?.batch_size ?? 1}'. A total of '${proofs.length}' proofs were provided.`
       )
     }
   }
