@@ -50,7 +50,7 @@ export async function verifyClientAttestationJwt(options: VerifyClientAttestatio
     payload,
     compact: options.clientAttestationJwt,
     verifyJwtCallback: options.callbacks.verifyJwt,
-    errorMessage: 'client attestation jwt verification failed',
+    errorMessage: 'client attestation jwt verification failed.',
   })
 
   return {
