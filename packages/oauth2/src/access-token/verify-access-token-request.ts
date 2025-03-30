@@ -278,7 +278,10 @@ async function verifyAccessTokenRequestClientAttestation(
     now,
   })
 
-  if (options.expectedClientId !== verifiedClientAttestation.clientAttestation.payload.sub) {
+  if (
+    options.expectedClientId &&
+    options.expectedClientId !== verifiedClientAttestation.clientAttestation.payload.sub
+  ) {
     // Ensure the client id matches with the client id from the session
     throw new Oauth2ServerErrorResponseError(
       {
