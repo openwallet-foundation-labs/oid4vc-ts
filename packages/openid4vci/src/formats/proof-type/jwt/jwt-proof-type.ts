@@ -143,7 +143,7 @@ export async function verifyCredentialRequestJwtProof(options: VerifyCredentialR
     payload,
     signer: jwtSignerFromJwt({ header, payload }),
     verifyJwtCallback: options.callbacks.verifyJwt,
-    errorMessage: 'Error verifiying credential request proof jwt',
+    errorMessage: 'Error verifiying credential request proof jwt.',
     expectedNonce: options.expectedNonce,
     expectedAudience: options.credentialIssuer,
     expectedIssuer: options.clientId,
