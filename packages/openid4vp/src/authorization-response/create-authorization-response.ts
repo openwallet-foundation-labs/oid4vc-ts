@@ -11,15 +11,29 @@ import { dateToSeconds } from '@openid4vc/utils'
 import { addSecondsToDate } from '../../../utils/src/date'
 import type { Openid4vpAuthorizationRequest } from '../authorization-request/z-authorization-request'
 import type { Openid4vpAuthorizationRequestDcApi } from '../authorization-request/z-authorization-request-dc-api'
+import { getOpenid4vpClientId } from '../client-identifier-scheme/parse-client-identifier-scheme'
 import { createJarmAuthorizationResponse } from '../jarm/jarm-authorization-response-create'
 import { extractJwksFromClientMetadata } from '../jarm/jarm-extract-jwks'
 import { isJarmResponseMode } from '../jarm/jarm-response-mode'
 import { jarmAssertMetadataSupported } from '../jarm/metadata/jarm-assert-metadata-supported'
 import type { JarmServerMetadata } from '../jarm/metadata/z-jarm-authorization-server-metadata'
+import type { ClientMetadata } from '../models/z-client-metadata'
 import type { Openid4vpAuthorizationResponse } from './z-authorization-response'
 
 export interface CreateOpenid4vpAuthorizationResponseOptions {
   authorizationRequestPayload: Openid4vpAuthorizationRequest | Openid4vpAuthorizationRequestDcApi
+
+  /**
+   * Optional client metadata to use for sending the authorization response. In case of e.g. OpenID Federation
+   * the client metadata needs to be resolved and verified externally.
+   */
+  clientMetadata?: ClientMetadata
+
+  /**
+   * The origin of the reuqest, required when creating a response for the Digital Credentials API.
+   */
+  origin?: string
+
   authorizationResponsePayload: Openid4vpAuthorizationResponse & { state?: never }
   jarm?: {
     jwtSigner?: JwtSigner
@@ -40,12 +54,19 @@ export interface CreateOpenid4vpAuthorizationResponseResult {
 export async function createOpenid4vpAuthorizationResponse(
   options: CreateOpenid4vpAuthorizationResponseOptions
 ): Promise<CreateOpenid4vpAuthorizationResponseResult> {
-  const { authorizationRequestPayload, jarm, callbacks } = options
+  const { authorizationRequestPayload, jarm, callbacks, origin } = options
 
   const authorizationResponsePayload = {
     ...options.authorizationResponsePayload,
     state: authorizationRequestPayload.state,
   } satisfies Openid4vpAuthorizationResponse
+
+  const { clientIdScheme } = getOpenid4vpClientId({
+    responseMode: authorizationRequestPayload.response_mode,
+    clientId: authorizationRequestPayload.client_id,
+    legacyClientIdScheme: authorizationRequestPayload.client_id_scheme,
+    origin,
+  })
 
   if (
     authorizationRequestPayload.response_mode &&
@@ -63,16 +84,24 @@ export async function createOpenid4vpAuthorizationResponse(
     }
   }
 
-  if (!authorizationRequestPayload.client_metadata) {
+  // When using OpenID Federation, we must not rely on the client metadata from the request
+  if (clientIdScheme === 'https' && !options.clientMetadata) {
+    throw new Oauth2Error(
+      "When OpenID Federation is used as the client id scheme (https), passing externally fetched and verified 'clientMetadata' to the 'createOpenid4vpAuthorizationResponse' is required."
+    )
+  }
+
+  const clientMetadata = options.clientMetadata ?? authorizationRequestPayload.client_metadata
+  if (!clientMetadata) {
     throw new Oauth2Error('Missing client metadata in the request params to assert Jarm metadata support.')
   }
 
   let jwks: JwkSet
 
-  if (authorizationRequestPayload.client_metadata.jwks) {
-    jwks = authorizationRequestPayload.client_metadata.jwks
-  } else if (authorizationRequestPayload.client_metadata.jwks_uri) {
-    jwks = await fetchJwks(authorizationRequestPayload.client_metadata.jwks_uri, options.callbacks.fetch)
+  if (clientMetadata.jwks) {
+    jwks = clientMetadata.jwks
+  } else if (clientMetadata.jwks_uri) {
+    jwks = await fetchJwks(clientMetadata.jwks_uri, options.callbacks.fetch)
   } else {
     throw new Oauth2ServerErrorResponseError({
       error: Oauth2ErrorCodes.InvalidRequest,
@@ -81,12 +110,12 @@ export async function createOpenid4vpAuthorizationResponse(
   }
 
   const supportedJarmMetadata = jarmAssertMetadataSupported({
-    clientMetadata: authorizationRequestPayload.client_metadata,
+    clientMetadata: clientMetadata,
     serverMetadata: jarm.serverMetadata,
   })
 
   const clientMetaJwks = extractJwksFromClientMetadata({
-    ...authorizationRequestPayload.client_metadata,
+    ...clientMetadata,
     jwks,
   })
 
