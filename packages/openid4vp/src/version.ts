@@ -23,8 +23,8 @@ export function parseAuthorizationRequestVersion(
   }
 
   if (
-    (isOpenid4vpAuthorizationRequestDcApi(request) && request.response_mode === 'dc_api') ||
-    request.response_mode === 'dc_api.jwt'
+    isOpenid4vpAuthorizationRequestDcApi(request) &&
+    (request.response_mode === 'dc_api' || request.response_mode === 'dc_api.jwt')
   ) {
     requirements.push(['>=', 23])
   }
@@ -34,10 +34,11 @@ export function parseAuthorizationRequestVersion(
   }
 
   // 22
-
-  if (request.dcql_query) {
-    requirements.push(['>=', 22])
-  }
+  // NOTE we disable this check because we have already integrated with DCQL from Draft 21, this is too strict
+  // and now causing interop issues.
+  // if (request.dcql_query) {
+  //   requirements.push(['>=', 22])
+  // }
 
   if (request.transaction_data) {
     requirements.push(['>=', 22])
