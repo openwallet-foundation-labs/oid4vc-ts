@@ -265,7 +265,7 @@ async function verifyAccessTokenRequestClientAttestation(
     }
 
     throw new Oauth2ServerErrorResponseError({
-      error: Oauth2ErrorCodes.InvalidDpopProof,
+      error: Oauth2ErrorCodes.InvalidClient,
       error_description: `Missing required client attestation parameters in access token request. Make sure to provide the '${oauthClientAttestationHeader}' and '${oauthClientAttestationPopHeader}' header values.`,
     })
   }
