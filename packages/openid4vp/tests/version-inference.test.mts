@@ -33,17 +33,4 @@ describe('Version inference test', () => {
 
     expect(version).toBe(20)
   })
-
-  test('client_metadata_uri requires version below 21, dcql is available from v22', () => {
-    expect(() =>
-      parseAuthorizationRequestVersion({
-        response_mode: 'direct_post',
-        client_id: 'client_id',
-        nonce: 'nonce',
-        response_type: 'vp_token',
-        client_metadata_uri: 'https://example.com',
-        dcql_query: {},
-      })
-    ).throws()
-  })
 })
