@@ -77,7 +77,7 @@ export async function fetchAuthorizationServerMetadata(
   if (openIdConfigurationResult) {
     if (openIdConfigurationResult.issuer !== issuer) {
       throw new Oauth2Error(
-        `The 'issuer' parameter '${openIdConfigurationResult.issuer}' in the well openid configuration metadata at '${openIdConfigurationWellKnownMetadataUrl}' does not match the provided issuer '${issuer}'.`
+        `The 'issuer' parameter '${openIdConfigurationResult.issuer}' in the well known openid configuration metadata at '${openIdConfigurationWellKnownMetadataUrl}' does not match the provided issuer '${issuer}'.`
       )
     }
     return openIdConfigurationResult
