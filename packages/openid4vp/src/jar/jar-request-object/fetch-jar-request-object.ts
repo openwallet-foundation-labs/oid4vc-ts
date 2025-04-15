@@ -17,7 +17,7 @@ import type { WalletMetadata } from '../../models/z-wallet-metadata'
 export async function fetchJarRequestObject(options: {
   requestUri: string
   clientIdentifierScheme?: ClientIdScheme
-  method: 'GET' | 'POST'
+  method: 'get' | 'post'
   wallet: {
     metadata?: WalletMetadata
     nonce?: string
@@ -38,7 +38,7 @@ export async function fetchJarRequestObject(options: {
 
   const response = await createFetcher(fetch)(requestUri, {
     method,
-    body: method === 'POST' ? objectToQueryParams(wallet.metadata ?? {}) : undefined,
+    body: method === 'post' ? objectToQueryParams(wallet.metadata ?? {}) : undefined,
     headers: {
       Accept: `${ContentType.OAuthAuthorizationRequestJwt}, ${ContentType.Jwt};q=0.9, text/plain`,
       'Content-Type': ContentType.XWwwFormUrlencoded,

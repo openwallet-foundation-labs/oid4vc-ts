@@ -61,11 +61,11 @@ export async function verifyJarRequest(options: VerifyJarRequestOptions): Promis
     ? zClientIdScheme.safeParse(jarRequestParams.client_id.split(':')[0]).data
     : 'web-origin'
 
-  const method = jarRequestParams.request_uri_method ?? 'GET'
-  if (method !== 'GET' && method !== 'POST') {
+  const method = jarRequestParams.request_uri_method ?? 'get'
+  if (method !== 'get' && method !== 'post') {
     throw new Oauth2ServerErrorResponseError({
       error: Oauth2ErrorCodes.InvalidRequestUriMethod,
-      error_description: 'Invalid request_uri_method. Must be GET or POST.',
+      error_description: `Invalid request_uri_method. Must be 'get' or 'post'.`,
     })
   }
 
