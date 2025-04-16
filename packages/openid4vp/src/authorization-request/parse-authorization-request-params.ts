@@ -47,7 +47,8 @@ export function parseOpenid4vpAuthorizationRequest(
 
   let params: Record<string, unknown>
   if (typeof authorizationRequest === 'string') {
-    if (authorizationRequest.includes('://')) {
+    // JWT will never contain :
+    if (authorizationRequest.includes(':')) {
       params = parseWithErrorHandling(
         zOpenid4vpAuthorizationRequestFromUriParams,
         authorizationRequest,
