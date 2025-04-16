@@ -6,6 +6,7 @@ export enum ContentType {
   JwkSet = 'application/jwk-set+json',
   OAuthAuthorizationRequestJwt = 'application/oauth-authz-req+jwt',
   Jwt = 'application/jwt',
+  Html = 'text/html',
 }
 
 export function isContentType(contentType: ContentType, value: string) {
