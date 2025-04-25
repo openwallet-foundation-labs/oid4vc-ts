@@ -13,6 +13,7 @@ import {
   zCompactJwt,
 } from '@openid4vc/oauth2'
 import z from 'zod'
+import { isOpenid4vpResponseModeDcApi } from '../../authorization-request/z-authorization-request-dc-api'
 import { getOpenid4vpClientId } from '../../client-identifier-scheme/parse-client-identifier-scheme'
 import { type ClientIdScheme, zClientIdScheme } from '../../client-identifier-scheme/z-client-id-scheme'
 import type { WalletMetadata } from '../../models/z-wallet-metadata'
@@ -103,7 +104,11 @@ export async function verifyJarRequest(options: VerifyJarRequestOptions): Promis
     })
   }
 
-  if (jarRequestParams.client_id !== authorizationRequestPayload.client_id) {
+  // Expect the client_id from the jar request to match the payload, but only if we're not using DC API
+  if (
+    !isOpenid4vpResponseModeDcApi(authorizationRequestPayload.response_mode) &&
+    jarRequestParams.client_id !== authorizationRequestPayload.client_id
+  ) {
     throw new Oauth2ServerErrorResponseError({
       error: Oauth2ErrorCodes.InvalidRequest,
       error_description: 'client_id does not match the request object client_id.',
