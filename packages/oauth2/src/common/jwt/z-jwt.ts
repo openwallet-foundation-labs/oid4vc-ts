@@ -44,7 +44,7 @@ export type JweEncryptor = JwtSignerJwk & {
   apv?: string
 }
 
-export const zCompactJwt = z.string().regex(/^([a-zA-Z0-9_=]+)\.([a-zA-Z0-9_=]+)\.([a-zA-Z0-9_\-\+\/=]*)$/, {
+export const zCompactJwt = z.string().regex(/^([a-zA-Z0-9-_]+)\.([a-zA-Z0-9-_]+)\.([a-zA-Z0-9-_]+)$/, {
   message: 'Not a valid compact jwt',
 })
 
