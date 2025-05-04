@@ -89,7 +89,7 @@ export async function verifyJarRequest(options: VerifyJarRequestOptions): Promis
   if (!requestIsSigned) {
     throw new Oauth2ServerErrorResponseError({
       error: Oauth2ErrorCodes.InvalidRequestObject,
-      error_description: 'Jar Request Object is not a valid JWS.',
+      error_description: 'JAR request object is not a valid JWT.',
     })
   }
 
