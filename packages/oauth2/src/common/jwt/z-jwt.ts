@@ -71,7 +71,15 @@ export type JwtSignerWithJwk = JwtSigner & { publicJwk: Jwk }
 
 export type JweEncryptor = JwtSignerJwk & {
   enc: string
+
+  /**
+   * base64-url encoded apu
+   */
   apu?: string
+
+  /**
+   * base64-url encoded apv
+   */
   apv?: string
 }
 

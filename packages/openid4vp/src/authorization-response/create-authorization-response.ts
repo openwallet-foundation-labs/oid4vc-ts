@@ -7,7 +7,7 @@ import {
   Oauth2ServerErrorResponseError,
   fetchJwks,
 } from '@openid4vc/oauth2'
-import { dateToSeconds } from '@openid4vc/utils'
+import { dateToSeconds, encodeToBase64Url } from '@openid4vc/utils'
 import { addSecondsToDate } from '../../../utils/src/date'
 import type { Openid4vpAuthorizationRequest } from '../authorization-request/z-authorization-request'
 import type { Openid4vpAuthorizationRequestDcApi } from '../authorization-request/z-authorization-request-dc-api'
@@ -163,8 +163,8 @@ export async function createOpenid4vpAuthorizationResponse(
         ? {
             method: 'jwk',
             publicJwk: clientMetaJwks.encJwk,
-            apu: jarm.encryption?.nonce,
-            apv: authorizationRequestPayload.nonce,
+            apu: jarm.encryption.nonce ? encodeToBase64Url(jarm.encryption.nonce) : undefined,
+            apv: encodeToBase64Url(authorizationRequestPayload.nonce),
             alg: supportedJarmMetadata.client_metadata.authorization_encrypted_response_alg,
             enc: supportedJarmMetadata.client_metadata.authorization_encrypted_response_enc,
           }
