@@ -7,24 +7,50 @@ export type JwtSignerDid = {
   method: 'did'
   didUrl: string
   alg: string
+
+  /**
+   * The key id that should be used for signing. You need to make sure the kid actuall matches
+   * with the key associated with the didUrl.
+   */
+  kid?: string
 }
 
 export type JwtSignerJwk = {
   method: 'jwk'
   publicJwk: Jwk
   alg: string
+
+  /**
+   * The key id that should be used for signing. You need to make sure the kid actuall matches
+   * with the key associated with the jwk.
+   *
+   * If not provided the kid can also be extracted from the `publicJwk`. Providing it here means the `kid` won't
+   * be included in the JWT header.
+   */
+  kid?: string
 }
 
 export type JwtSignerX5c = {
   method: 'x5c'
   x5c: string[]
   alg: string
+
+  /**
+   * The key id that should be used for signing. You need to make sure the kid actuall matches
+   * with the key associated with the leaf certificate.
+   */
+  kid?: string
 }
 
 export type JwtSignerFederation = {
   method: 'federation'
   trustChain?: [string, ...string[]]
   alg: string
+
+  /**
+   * The key id that should be used for signing. You need to make sure the kid actuall matches
+   * with a key present in the federation.
+   */
   kid: string
 }
 
@@ -32,6 +58,11 @@ export type JwtSignerFederation = {
 export type JwtSignerCustom = {
   method: 'custom'
   alg: string
+
+  /**
+   * The key id that should be used for signing.
+   */
+  kid?: string
 }
 
 export type JwtSigner = JwtSignerDid | JwtSignerJwk | JwtSignerX5c | JwtSignerFederation | JwtSignerCustom
