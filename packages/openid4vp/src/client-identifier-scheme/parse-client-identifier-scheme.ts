@@ -304,14 +304,8 @@ export function validateOpenid4vpClientId(
       })
     }
 
-    if (!jar.signer.publicJwk.kid) {
-      throw new Oauth2ServerErrorResponseError({
-        error: Oauth2ErrorCodes.InvalidRequest,
-        error_description: `Missing required 'kid' for client identifier scheme: did`,
-      })
-    }
-
-    if (!jar.signer.publicJwk.kid?.startsWith(clientId)) {
+    const [did] = jar.signer.didUrl.split('#')
+    if (clientId !== did) {
       throw new Oauth2ServerErrorResponseError({
         error: Oauth2ErrorCodes.InvalidRequest,
         error_description:
@@ -324,7 +318,7 @@ export function validateOpenid4vpClientId(
       identifier: clientId,
       originalValue: clientId,
       legacyClientId,
-      didUrl: jar.signer.publicJwk.kid,
+      didUrl: jar.signer.didUrl,
     }
   }
 
