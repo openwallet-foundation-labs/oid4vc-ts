@@ -124,6 +124,7 @@ export function jwtSignerFromJwt({
         alg: header.alg,
         method: 'x5c',
         x5c: header.x5c,
+        kid: header.kid,
       },
     })
   }
@@ -208,6 +209,7 @@ export function jwtSignerFromJwt({
     return {
       method: 'custom',
       alg: header.alg,
+      kid: header.kid,
     }
   }
 
