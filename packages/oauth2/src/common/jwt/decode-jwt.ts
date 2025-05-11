@@ -90,7 +90,6 @@ export function jwtHeaderFromJwtSigner(signer: JwtSigner) {
     return {
       alg: signer.alg,
       jwk: signer.publicJwk,
-      kid: signer.publicJwk.kid,
     } as const
   }
 
