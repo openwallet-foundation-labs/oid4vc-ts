@@ -14,7 +14,7 @@ export const zJwk = z
     dq: z.optional(z.string()),
     ext: z.optional(z.boolean()),
     k: z.optional(z.string()),
-    key_ops: z.optional(z.string()),
+    key_ops: z.optional(z.array(z.string())),
     kid: z.optional(z.string()),
     oth: z.optional(
       z.array(
