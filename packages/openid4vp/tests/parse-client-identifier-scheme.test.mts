@@ -7,7 +7,7 @@ import {
 
 describe('Correctly parses the client identifier', () => {
   describe('legacy client_id_scheme', () => {
-    test(`correctly handles legacy client_id_schme 'entity_id'`, () => {
+    test(`correctly handles legacy client_id_scheme 'entity_id'`, () => {
       const client = validateOpenid4vpClientId({
         jar: {
           signer: {
@@ -36,18 +36,19 @@ describe('Correctly parses the client identifier', () => {
       })
     })
 
-    test(`correctly handles legacy client_id_schme 'did'`, () => {
+    test(`correctly handles legacy client_id_scheme 'did'`, () => {
       const client = validateOpenid4vpClientId({
         jar: {
           signer: {
             method: 'did',
+            didUrl: 'did:example:123#key-1',
             // @ts-expect-error
             publicJwk: { kid: 'did:example:123#key-1' },
           },
         },
         authorizationRequestPayload: {
           response_mode: 'direct_post',
-          client_id: 'did:example:123#key-1',
+          client_id: 'did:example:123',
           nonce: 'nonce',
           response_type: 'vp_token',
           client_id_scheme: 'did',
@@ -56,13 +57,13 @@ describe('Correctly parses the client identifier', () => {
       })
 
       expect(client).toMatchObject({
-        identifier: 'did:example:123#key-1',
-        originalValue: 'did:example:123#key-1',
+        identifier: 'did:example:123',
+        originalValue: 'did:example:123',
         scheme: 'did',
       })
     })
 
-    test(`correctly handles legacy client_id_schme 'x509_san_dns'`, () => {
+    test(`correctly handles legacy client_id_scheme 'x509_san_dns'`, () => {
       const client = validateOpenid4vpClientId({
         // @ts-expect-error
         jar: { signer: { method: 'x5c', x5c: ['certificate'] } },
@@ -86,7 +87,7 @@ describe('Correctly parses the client identifier', () => {
       })
     })
 
-    test(`correctly handles legacy client_id_schme 'x509_san_uri'`, () => {
+    test(`correctly handles legacy client_id_scheme 'x509_san_uri'`, () => {
       const client = validateOpenid4vpClientId({
         // @ts-expect-error
         jar: { signer: { method: 'x5c', x5c: ['certificate'] } },
@@ -149,7 +150,7 @@ describe('Correctly parses the client identifier', () => {
   })
 
   describe('client_id_scheme', () => {
-    test(`correctly handles client_id_schme 'entity_id'`, () => {
+    test(`correctly handles client_id_scheme 'entity_id'`, () => {
       const client = validateOpenid4vpClientId({
         jar: {
           signer: {
@@ -177,11 +178,12 @@ describe('Correctly parses the client identifier', () => {
       })
     })
 
-    test(`correctly handles client_id_schme 'did'`, () => {
+    test(`correctly handles client_id_scheme 'did'`, () => {
       const client = validateOpenid4vpClientId({
         jar: {
           signer: {
             method: 'did',
+            didUrl: 'did:example:123#key-1',
             // @ts-expect-error
             publicJwk: {
               kid: 'did:example:123#key-1',
@@ -190,7 +192,7 @@ describe('Correctly parses the client identifier', () => {
         },
         authorizationRequestPayload: {
           response_mode: 'direct_post',
-          client_id: 'did:example:123#key-1',
+          client_id: 'did:example:123',
           nonce: 'nonce',
           response_type: 'vp_token',
         },
@@ -198,13 +200,13 @@ describe('Correctly parses the client identifier', () => {
       })
 
       expect(client).toMatchObject({
-        identifier: 'did:example:123#key-1',
-        originalValue: 'did:example:123#key-1',
+        identifier: 'did:example:123',
+        originalValue: 'did:example:123',
         scheme: 'did',
       })
     })
 
-    test(`correctly handles client_id_schme 'x509_san_dns'`, () => {
+    test(`correctly handles client_id_scheme 'x509_san_dns'`, () => {
       const client = validateOpenid4vpClientId({
         // @ts-expect-error
         jar: { signer: { method: 'x5c', x5c: ['certificate'] } },
@@ -227,7 +229,7 @@ describe('Correctly parses the client identifier', () => {
       })
     })
 
-    test(`correctly handles legacy client_id_schme 'x509_san_uri'`, () => {
+    test(`correctly handles legacy client_id_scheme 'x509_san_uri'`, () => {
       const client = validateOpenid4vpClientId({
         // @ts-expect-error
         jar: { signer: { method: 'x5c', x5c: ['certificate'] } },
