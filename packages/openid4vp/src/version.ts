@@ -48,6 +48,11 @@ export function parseAuthorizationRequestVersion(
     requirements.push(['<', 22])
   }
 
+  // TODO: add when version 26 is fully supported
+  // if (request.verifier_attestations) {
+  //   requirements.push(['>=', 26])
+  // }
+
   // what happens if we don't have a client_id_scheme?
 
   // if the client_id is prefixed with a scheme, we know for sure that the version is >= 22
