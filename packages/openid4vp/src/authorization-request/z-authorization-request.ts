@@ -41,6 +41,15 @@ export const zOpenid4vpAuthorizationRequest = z
         'x509_san_uri',
       ])
       .optional(),
+    verifier_attestations: z
+      .array(
+        z.object({
+          format: z.string(),
+          data: z.record(z.any()).or(z.string()),
+          credential_ids: z.array(z.string()).optional(),
+        })
+      )
+      .optional(),
   })
   .passthrough()
 
@@ -56,6 +65,7 @@ export const zOpenid4vpAuthorizationRequestFromUriParams = z
         client_metadata: zStringToJson.optional(),
         dcql_query: zStringToJson.optional(),
         transaction_data: zStringToJson.optional(),
+        verifier_attestations: zStringToJson.optional(),
       })
       .passthrough()
   )
