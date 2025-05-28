@@ -13,6 +13,7 @@ export const zOpenid4vpAuthorizationRequestDcApi = zOpenid4vpAuthorizationReques
     dcql_query: true,
     trust_chain: true,
     state: true,
+    verifier_attestations: true,
   })
   .extend({
     client_id: z.optional(z.string()),
