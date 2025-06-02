@@ -110,3 +110,9 @@ export {
   zWalletMetadata,
   WalletMetadata,
 } from './models/z-wallet-metadata'
+
+export {
+  zVerifierAttestations,
+  VerfierAttestation,
+  VerfierAttestations,
+} from './models/z-verifier-attestations'
