@@ -8,5 +8,5 @@ const zVerifierAttestation = z.object({
 
 export const zVerifierAttestations = z.array(zVerifierAttestation)
 
-export type VerfierAttestation = z.infer<typeof zVerifierAttestation>
-export type VerfierAttestations = z.infer<typeof zVerifierAttestations>
+export type VerifierAttestation = z.infer<typeof zVerifierAttestation>
+export type VerifierAttestations = z.infer<typeof zVerifierAttestations>
