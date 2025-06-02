@@ -1,6 +1,7 @@
 import { URL, zHttpsUrl, zStringToJson } from '@openid4vc/utils'
 import { z } from 'zod'
 import { zClientMetadata } from '../models/z-client-metadata'
+import { zVerifierAttestations } from '../models/z-verifier-attestations'
 
 export const zOpenid4vpAuthorizationRequest = z
   .object({
@@ -41,15 +42,7 @@ export const zOpenid4vpAuthorizationRequest = z
         'x509_san_uri',
       ])
       .optional(),
-    verifier_attestations: z
-      .array(
-        z.object({
-          format: z.string(),
-          data: z.record(z.any()).or(z.string()),
-          credential_ids: z.array(z.string()).optional(),
-        })
-      )
-      .optional(),
+    verifier_attestations: zVerifierAttestations.optional(),
   })
   .passthrough()
 
