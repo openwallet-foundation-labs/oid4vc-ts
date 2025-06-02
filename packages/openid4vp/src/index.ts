@@ -113,5 +113,6 @@ export {
 
 export {
   zVerifierAttestations,
+  VerfierAttestation,
   VerfierAttestations,
 } from './models/z-verifier-attestations'
