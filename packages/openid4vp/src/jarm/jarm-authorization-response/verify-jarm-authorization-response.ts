@@ -1,7 +1,9 @@
 import {
   type CallbackContext,
+  type Jwk,
   Oauth2Error,
   decodeJwt,
+  decodeJwtHeader,
   jwtSignerFromJwt,
   zCompactJwe,
   zCompactJwt,
@@ -39,16 +41,25 @@ const decryptJarmAuthorizationResponseJwt = async (options: {
 }) => {
   const { jarmAuthorizationResponseJwt, callbacks, authorizationRequestPayload } = options
 
+  let encryptionJwk: Jwk | undefined = undefined
+  const { header } = decodeJwtHeader({
+    jwt: jarmAuthorizationResponseJwt,
+  })
+
   // NOTE: previously we required `kid` to be present in the JARM header, but not all implementations seem to
-  // add this, so we removed the check. For now we try to extract the JWK from the request, if we are not successfull
-  // (because e.g. the request used client_metadata_uri) the decryptJwe callback has to handle this edge case
-  // See https://github.com/openid/OpenID4VP/issues/441
-  const encryptionJwk = authorizationRequestPayload.client_metadata?.jwks
-    ? extractJwksFromClientMetadata({
-        ...authorizationRequestPayload.client_metadata,
-        jwks: authorizationRequestPayload.client_metadata.jwks,
-      }).encJwk
-    : undefined
+  // add this, so we removed the check. Starting from draft 26 it's required again, so we can add the check again when
+  // removing support for drafts <26
+  if (header.kid) {
+    encryptionJwk = authorizationRequestPayload.client_metadata?.jwks?.keys.find((key) => key.kid === header.kid)
+  } else if (authorizationRequestPayload.client_metadata?.jwks) {
+    //  If there's no kid, we try to extract the JWK from the request, if we are not successful
+    // (because e.g. the request used client_metadata_uri) the decryptJwe callback has to handle this edge case
+    // See https://github.com/openid/OpenID4VP/issues/441
+    encryptionJwk = extractJwksFromClientMetadata({
+      ...authorizationRequestPayload.client_metadata,
+      jwks: authorizationRequestPayload.client_metadata.jwks,
+    }).encJwk
+  }
 
   const result = await callbacks.decryptJwe(jarmAuthorizationResponseJwt, { jwk: encryptionJwk })
   if (!result.decrypted) {
