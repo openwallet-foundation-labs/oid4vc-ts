@@ -19,7 +19,7 @@ export const zClientIdScheme = z.enum([
   'web-origin',
 ])
 
-const zUniformClientIdScheme = zClientIdScheme.exclude(['did', 'https'])
+export const zUniformClientIdScheme = zClientIdScheme.exclude(['did', 'https'])
 
 export type ClientIdScheme = z.infer<typeof zClientIdScheme>
 export type UniformClientIdSchema = z.infer<typeof zUniformClientIdScheme>
