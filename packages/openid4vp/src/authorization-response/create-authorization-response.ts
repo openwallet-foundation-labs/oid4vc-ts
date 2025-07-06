@@ -11,7 +11,7 @@ import { dateToSeconds, encodeToBase64Url } from '@openid4vc/utils'
 import { addSecondsToDate } from '../../../utils/src/date'
 import type { Openid4vpAuthorizationRequest } from '../authorization-request/z-authorization-request'
 import type { Openid4vpAuthorizationRequestDcApi } from '../authorization-request/z-authorization-request-dc-api'
-import { getOpenid4vpClientId } from '../client-identifier-scheme/parse-client-identifier-scheme'
+import { getOpenid4vpClientId } from '../client-identifier-prefix/parse-client-identifier-prefix'
 import { createJarmAuthorizationResponse } from '../jarm/jarm-authorization-response-create'
 import { extractJwksFromClientMetadata } from '../jarm/jarm-extract-jwks'
 import { isJarmResponseMode } from '../jarm/jarm-response-mode'
@@ -61,7 +61,7 @@ export async function createOpenid4vpAuthorizationResponse(
     state: authorizationRequestPayload.state,
   } satisfies Openid4vpAuthorizationResponse
 
-  const { clientIdScheme } = getOpenid4vpClientId({
+  const { clientIdPrefix } = getOpenid4vpClientId({
     responseMode: authorizationRequestPayload.response_mode,
     clientId: authorizationRequestPayload.client_id,
     legacyClientIdScheme: authorizationRequestPayload.client_id_scheme,
@@ -85,7 +85,7 @@ export async function createOpenid4vpAuthorizationResponse(
   }
 
   // When using OpenID Federation, we must not rely on the client metadata from the request
-  if (clientIdScheme === 'openid_federation' && !options.clientMetadata) {
+  if (clientIdPrefix === 'openid_federation' && !options.clientMetadata) {
     throw new Oauth2Error(
       "When OpenID Federation is used as the client id scheme (https/openid_federation), passing externally fetched and verified 'clientMetadata' to the 'createOpenid4vpAuthorizationResponse' is required."
     )

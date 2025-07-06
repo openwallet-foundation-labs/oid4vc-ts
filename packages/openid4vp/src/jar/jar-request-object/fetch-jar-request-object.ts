@@ -1,6 +1,6 @@
 import { Oauth2ErrorCodes, Oauth2ServerErrorResponseError } from '@openid4vc/oauth2'
 import { ContentType, type Fetch, createFetcher, objectToQueryParams } from '@openid4vc/utils'
-import type { ClientIdScheme } from '../../client-identifier-scheme/z-client-id-scheme'
+import type { ClientIdPrefix } from '../../client-identifier-prefix/z-client-id-prefix'
 import type { WalletMetadata } from '../../models/z-wallet-metadata'
 
 /**
@@ -16,7 +16,7 @@ import type { WalletMetadata } from '../../models/z-wallet-metadata'
  */
 export async function fetchJarRequestObject(options: {
   requestUri: string
-  clientIdentifierScheme?: ClientIdScheme
+  clientIdentifierScheme?: ClientIdPrefix
   method: 'get' | 'post'
   wallet: {
     metadata?: WalletMetadata

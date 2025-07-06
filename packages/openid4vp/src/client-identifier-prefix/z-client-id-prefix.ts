@@ -1,7 +1,7 @@
 import { getGlobalConfig } from '@openid4vc/utils'
 import { z } from 'zod'
 
-export const zClientIdScheme = z.enum([
+export const zClientIdPrefix = z.enum([
   'pre-registered',
   'redirect_uri',
   'verifier_attestation',
@@ -19,45 +19,45 @@ export const zClientIdScheme = z.enum([
   'web-origin',
 ])
 
-export const zUniformClientIdScheme = zClientIdScheme.exclude(['did', 'https'])
+export const zUniformClientIdPrefix = zClientIdPrefix.exclude(['did', 'https'])
 
-export type ClientIdScheme = z.infer<typeof zClientIdScheme>
-export type UniformClientIdSchema = z.infer<typeof zUniformClientIdScheme>
+export type ClientIdPrefix = z.infer<typeof zClientIdPrefix>
+export type UniformClientIdPrefix = z.infer<typeof zUniformClientIdPrefix>
 
-export const zClientIdToClientIdSchemeAndIdentifier = z.union(
+export const zClientIdToClientIdPrefixAndIdentifier = z.union(
   [
     z
       .string({ message: 'client_id MUST be a string' })
       .includes(':')
       .transform((clientId) => {
         const colonIndex = clientId.indexOf(':')
-        const clientIdScheme = clientId.slice(0, colonIndex)
+        const clientIdPrefix = clientId.slice(0, colonIndex)
         const clientIdIdentifier = clientId.slice(colonIndex + 1)
 
         // If we allow http, we parse it as https
-        if (clientIdScheme === 'http' && getGlobalConfig().allowInsecureUrls) {
+        if (clientIdPrefix === 'http' && getGlobalConfig().allowInsecureUrls) {
           return ['https', clientId]
         }
 
-        if (clientIdScheme === 'did' || clientIdScheme === 'http' || clientIdScheme === 'https') {
-          return [clientIdScheme, clientId]
+        if (clientIdPrefix === 'did' || clientIdPrefix === 'http' || clientIdPrefix === 'https') {
+          return [clientIdPrefix, clientId]
         }
 
-        return [clientIdScheme, clientIdIdentifier]
+        return [clientIdPrefix, clientIdIdentifier]
       })
-      .pipe(z.tuple([zClientIdScheme.exclude(['pre-registered']), z.string()])),
+      .pipe(z.tuple([zClientIdPrefix.exclude(['pre-registered']), z.string()])),
     z
       .string()
       .refine((clientId) => clientId.includes(':') === false)
       .transform((clientId) => ['pre-registered', clientId] as const),
   ],
   {
-    message: `client_id must either start with a known prefix followed by ':' or contain no ':'. Known prefixes are ${zClientIdScheme.exclude(['pre-registered']).options.join(', ')}`,
+    message: `client_id must either start with a known prefix followed by ':' or contain no ':'. Known prefixes are ${zClientIdPrefix.exclude(['pre-registered']).options.join(', ')}`,
   }
 )
 
-export const zClientIdSchemeToUniform = zClientIdScheme.transform((scheme) =>
-  scheme === 'did' ? 'decentralized_identifier' : scheme === 'https' ? 'openid_federation' : scheme
+export const zClientIdPrefixToUniform = zClientIdPrefix.transform((prefix) =>
+  prefix === 'did' ? 'decentralized_identifier' : prefix === 'https' ? 'openid_federation' : prefix
 )
 
 export const zLegacyClientIdScheme = z.enum([
@@ -72,7 +72,7 @@ export const zLegacyClientIdScheme = z.enum([
 
 export type LegacyClientIdScheme = z.infer<typeof zLegacyClientIdScheme>
 
-export const zLegacyClientIdSchemeToClientIdScheme = zLegacyClientIdScheme
+export const zLegacyClientIdSchemeToClientIdPrefix = zLegacyClientIdScheme
   .optional()
   .default('pre-registered')
   .transform((clientIdScheme) =>

@@ -4,7 +4,7 @@ import z from 'zod'
 import {
   type ParsedClientIdentifier,
   validateOpenid4vpClientId,
-} from '../client-identifier-scheme/parse-client-identifier-scheme'
+} from '../client-identifier-prefix/parse-client-identifier-prefix'
 import { fetchClientMetadata } from '../fetch-client-metadata'
 import { type VerifiedJarRequest, verifyJarRequest } from '../jar/handle-jar-request/verify-jar-request'
 import {

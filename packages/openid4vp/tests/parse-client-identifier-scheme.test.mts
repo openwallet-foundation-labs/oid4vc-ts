@@ -4,7 +4,7 @@ import { callbacks as oauth2TestCallbacks } from '../../oauth2/tests/util.mjs'
 import {
   getOpenid4vpClientId,
   validateOpenid4vpClientId,
-} from '../src/client-identifier-scheme/parse-client-identifier-scheme.js'
+} from '../src/client-identifier-prefix/parse-client-identifier-prefix.js'
 
 const callbacks = {
   getX509CertificateMetadata: () => ({ sanDnsNames: ['example.com'], sanUriNames: ['https://example.com'] }),
@@ -42,7 +42,7 @@ describe('Correctly parses the client identifier', () => {
           clientId: 'https://example.com',
           clientIdScheme: 'entity_id',
         },
-        scheme: 'openid_federation',
+        prefix: 'openid_federation',
         trustChain: undefined,
       })
     })
@@ -76,7 +76,7 @@ describe('Correctly parses the client identifier', () => {
           clientId: 'did:example:123',
           clientIdScheme: 'did',
         },
-        scheme: 'decentralized_identifier',
+        prefix: 'decentralized_identifier',
       })
     })
 
@@ -103,7 +103,7 @@ describe('Correctly parses the client identifier', () => {
           clientId: 'example.com',
           clientIdScheme: 'x509_san_dns',
         },
-        scheme: 'x509_san_dns',
+        prefix: 'x509_san_dns',
         x5c: ['certificate'],
       })
     })
@@ -131,7 +131,7 @@ describe('Correctly parses the client identifier', () => {
           clientIdScheme: 'x509_san_uri',
         },
         effective: 'https://example.com',
-        scheme: 'x509_san_uri',
+        prefix: 'x509_san_uri',
         x5c: ['certificate'],
       })
     })
@@ -150,7 +150,7 @@ describe('Correctly parses the client identifier', () => {
       expect(client).toEqual({
         identifier: 'pre-registered client',
         effective: 'pre-registered client',
-        scheme: 'pre-registered',
+        prefix: 'pre-registered',
         original: {
           clientId: 'pre-registered client',
         },
@@ -172,7 +172,7 @@ describe('Correctly parses the client identifier', () => {
       expect(client).toEqual({
         identifier: 'pre-registered client',
         effective: 'pre-registered client',
-        scheme: 'pre-registered',
+        prefix: 'pre-registered',
         original: {
           clientId: 'pre-registered client',
           clientIdScheme: 'pre-registered',
@@ -181,8 +181,8 @@ describe('Correctly parses the client identifier', () => {
     })
   })
 
-  describe('client_id_scheme', () => {
-    test(`correctly handles client_id_scheme 'entity_id'`, async () => {
+  describe('client id prefix', () => {
+    test(`correctly handles client id prefix 'entity_id'`, async () => {
       const client = await validateOpenid4vpClientId({
         jar: {
           signer: {
@@ -205,7 +205,7 @@ describe('Correctly parses the client identifier', () => {
       expect(client).toEqual({
         identifier: 'https://example.com',
         effective: 'https://example.com',
-        scheme: 'openid_federation',
+        prefix: 'openid_federation',
         trustChain: undefined,
         original: {
           clientId: 'https://example.com',
@@ -213,7 +213,7 @@ describe('Correctly parses the client identifier', () => {
       })
     })
 
-    test(`correctly handles client_id_scheme 'did'`, async () => {
+    test(`correctly handles client id prefix 'did'`, async () => {
       const client = await validateOpenid4vpClientId({
         jar: {
           signer: {
@@ -239,14 +239,14 @@ describe('Correctly parses the client identifier', () => {
         identifier: 'did:example:123',
         didUrl: 'did:example:123#key-1',
         effective: 'did:example:123',
-        scheme: 'decentralized_identifier',
+        prefix: 'decentralized_identifier',
         original: {
           clientId: 'did:example:123',
         },
       })
     })
 
-    test(`correctly handles client_id_scheme 'decentralized_identifier'`, async () => {
+    test(`correctly handles client id prefix 'decentralized_identifier'`, async () => {
       const client = await validateOpenid4vpClientId({
         jar: {
           signer: {
@@ -272,14 +272,14 @@ describe('Correctly parses the client identifier', () => {
         didUrl: 'did:example:123#key-1',
         identifier: 'did:example:123',
         effective: 'decentralized_identifier:did:example:123',
-        scheme: 'decentralized_identifier',
+        prefix: 'decentralized_identifier',
         original: {
           clientId: 'decentralized_identifier:did:example:123',
         },
       })
     })
 
-    test(`correctly handles client_id_scheme 'x509_san_dns'`, async () => {
+    test(`correctly handles client id prefix 'x509_san_dns'`, async () => {
       const client = await validateOpenid4vpClientId({
         // @ts-expect-error
         jar: { signer: { method: 'x5c', x5c: ['certificate'] } },
@@ -300,12 +300,12 @@ describe('Correctly parses the client identifier', () => {
         original: {
           clientId: 'x509_san_dns:example.com',
         },
-        scheme: 'x509_san_dns',
+        prefix: 'x509_san_dns',
         x5c: ['certificate'],
       })
     })
 
-    test(`correctly handles legacy client_id_scheme 'x509_san_uri'`, async () => {
+    test(`correctly handles legacy client id prefix 'x509_san_uri'`, async () => {
       const client = await validateOpenid4vpClientId({
         // @ts-expect-error
         jar: { signer: { method: 'x5c', x5c: ['certificate'] } },
@@ -326,12 +326,12 @@ describe('Correctly parses the client identifier', () => {
         original: {
           clientId: 'x509_san_uri:https://example.com',
         },
-        scheme: 'x509_san_uri',
+        prefix: 'x509_san_uri',
         x5c: ['certificate'],
       })
     })
 
-    test(`correctly handles client_id_scheme 'x509_hash'`, async () => {
+    test(`correctly handles client id prefix 'x509_hash'`, async () => {
       const client = await validateOpenid4vpClientId({
         // @ts-expect-error
         jar: { signer: { method: 'x5c', x5c: ['certificate'] } },
@@ -352,7 +352,7 @@ describe('Correctly parses the client identifier', () => {
         original: {
           clientId: 'x509_hash:2ipT8gPhDJOK76YJvl98T8BSOd4Zjld1k6KtMuLU90s',
         },
-        scheme: 'x509_hash',
+        prefix: 'x509_hash',
         x5c: ['certificate'],
       })
     })
@@ -376,7 +376,7 @@ describe('Correctly parses the client identifier', () => {
       )
     })
 
-    test('correctly assumes no client_id_scheme as pre-registered', async () => {
+    test('correctly assumes no client id prefix as pre-registered', async () => {
       const client = await validateOpenid4vpClientId({
         authorizationRequestPayload: {
           response_mode: 'direct_post',
@@ -391,7 +391,7 @@ describe('Correctly parses the client identifier', () => {
         clientMetadata: undefined,
         effective: 'pre-registered client',
         identifier: 'pre-registered client',
-        scheme: 'pre-registered',
+        prefix: 'pre-registered',
         original: {
           clientId: 'pre-registered client',
         },
@@ -413,7 +413,7 @@ describe('Correctly parses the client identifier', () => {
         clientMetadata: undefined,
         identifier: 'pre-registered client',
         effective: 'pre-registered client',
-        scheme: 'pre-registered',
+        prefix: 'pre-registered',
         original: {
           clientId: 'pre-registered client',
         },
@@ -440,9 +440,9 @@ describe('Correctly parses the client identifier', () => {
         })
       ).toEqual({
         clientIdIdentifier: 'http://federation.com/entity',
-        clientIdScheme: 'openid_federation',
+        clientIdPrefix: 'openid_federation',
         effectiveClientId: 'http://federation.com/entity',
-        effectiveClientIdScheme: 'https',
+        effectiveClientIdPrefix: 'https',
         original: {
           clientId: 'http://federation.com/entity',
         },

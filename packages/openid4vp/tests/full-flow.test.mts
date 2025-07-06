@@ -153,7 +153,7 @@ describe('Full E2E openid4vp test', () => {
       },
       jar: undefined,
       client: {
-        scheme: 'pre-registered',
+        prefix: 'pre-registered',
         identifier: 'client_id',
         effective: 'client_id',
         original: {

@@ -4,7 +4,7 @@ import {
   type Openid4vpAuthorizationRequestDcApi,
   isOpenid4vpAuthorizationRequestDcApi,
 } from './authorization-request/z-authorization-request-dc-api'
-import { zClientIdScheme } from './client-identifier-scheme/z-client-id-scheme'
+import { zClientIdPrefix } from './client-identifier-prefix/z-client-id-prefix'
 
 export const Openid4vpVersion = [18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29] as const
 export type OpenId4VpVersion = (typeof Openid4vpVersion)[number]
@@ -81,7 +81,7 @@ export function parseAuthorizationRequestVersion(
   if (request.client_id) {
     const colonIndex = request.client_id.indexOf(':')
     const schemePart = request.client_id.substring(0, colonIndex)
-    const parsedScheme = zClientIdScheme.safeParse(schemePart)
+    const parsedScheme = zClientIdPrefix.safeParse(schemePart)
 
     // we know this for sure
     if (parsedScheme.success && parsedScheme.data !== 'did' && parsedScheme.data !== 'https') {

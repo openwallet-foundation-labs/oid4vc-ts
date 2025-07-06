@@ -10,14 +10,14 @@ import {
 import type { VerifiedJarRequest } from '../jar/handle-jar-request/verify-jar-request'
 import type { ClientMetadata } from '../models/z-client-metadata'
 import {
-  type ClientIdScheme,
+  type ClientIdPrefix,
   type LegacyClientIdScheme,
-  type UniformClientIdSchema,
-  zClientIdScheme,
-  zClientIdSchemeToUniform,
-  zClientIdToClientIdSchemeAndIdentifier,
-  zLegacyClientIdSchemeToClientIdScheme,
-} from './z-client-id-scheme'
+  type UniformClientIdPrefix,
+  zClientIdPrefix,
+  zClientIdPrefixToUniform,
+  zClientIdToClientIdPrefixAndIdentifier,
+  zLegacyClientIdSchemeToClientIdPrefix,
+} from './z-client-id-prefix'
 
 type ParsedClientIdentifierBase = {
   /**
@@ -53,27 +53,27 @@ type ParsedClientIdentifierBase = {
  */
 export type ParsedClientIdentifier = (
   | {
-      scheme: 'redirect_uri'
+      prefix: 'redirect_uri'
       redirectUri: string
       clientMetadata?: ClientMetadata
     }
   | {
-      scheme: 'openid_federation'
+      prefix: 'openid_federation'
       trustChain?: unknown
       clientMetadata?: never // clientMetadata must be obtained from the entity statement
     }
   | {
-      scheme: 'decentralized_identifier'
+      prefix: 'decentralized_identifier'
       didUrl: string
       clientMetadata?: ClientMetadata
     }
   | {
-      scheme: 'x509_san_uri' | 'x509_san_dns' | 'x509_hash'
+      prefix: 'x509_san_uri' | 'x509_san_dns' | 'x509_hash'
       clientMetadata?: ClientMetadata
       x5c: string[]
     }
   | {
-      scheme: 'verifier_attestation' | 'pre-registered' | 'web-origin'
+      prefix: 'verifier_attestation' | 'pre-registered' | 'web-origin'
       clientMetadata?: ClientMetadata
     }
 ) &
@@ -107,20 +107,20 @@ export function getOpenid4vpClientId(options: GetOpenid4vpClientIdOptions): {
   clientIdIdentifier: string
 
   /**
-   * The client id scheme according to the latest verion of OpenID4VP. Older schemes are
-   * transformed into a singular value. Do not use this for checking the actual client id scheme
+   * The client id prefix according to the latest verion of OpenID4VP. Older prefixes are
+   * transformed into a singular value. Do not use this for checking the actual client id prefix
    * used, but can be used to understand which method is used.
    *
    * E.g. `did` will be put as `decentralized_identifier`
    */
-  clientIdScheme: UniformClientIdSchema
+  clientIdPrefix: UniformClientIdPrefix
 
   /**
    * The effective client id scheme, is the client id scheme that was used in the actual request.
    *
    * E.g. `did` will remain as `did`
    */
-  effectiveClientIdScheme: ClientIdScheme | LegacyClientIdScheme
+  effectiveClientIdPrefix: ClientIdPrefix | LegacyClientIdScheme
 
   /**
    * The effective client id is the client id that should be used for validation. E.g. if you're comparing
@@ -160,24 +160,24 @@ export function getOpenid4vpClientId(options: GetOpenid4vpClientIdOptions): {
       }
 
       return {
-        clientIdScheme: 'web-origin',
-        effectiveClientIdScheme: 'web-origin',
+        clientIdPrefix: 'web-origin',
+        effectiveClientIdPrefix: 'web-origin',
         clientIdIdentifier: options.origin,
         effectiveClientId: `web-origin:${options.origin}`,
         original,
       }
     }
 
-    const parsedClientIdSchemeAndIdentifier = zClientIdToClientIdSchemeAndIdentifier.safeParse(options.clientId)
-    if (!parsedClientIdSchemeAndIdentifier.success) {
+    const parsedClientIdPrefixAndIdentifier = zClientIdToClientIdPrefixAndIdentifier.safeParse(options.clientId)
+    if (!parsedClientIdPrefixAndIdentifier.success) {
       throw new Oauth2ServerErrorResponseError({
         error: Oauth2ErrorCodes.InvalidRequest,
         error_description: `Failed to parse client identifier. Unsupported client_id '${options.clientId}'.`,
       })
     }
 
-    const [clientIdScheme, clientIdIdentifier] = parsedClientIdSchemeAndIdentifier.data
-    const uniformClientIdScheme = zClientIdSchemeToUniform.safeParse(clientIdScheme)
+    const [clientIdScheme, clientIdIdentifier] = parsedClientIdPrefixAndIdentifier.data
+    const uniformClientIdScheme = zClientIdPrefixToUniform.safeParse(clientIdScheme)
     if (!uniformClientIdScheme.success) {
       throw new Oauth2ServerErrorResponseError({
         error: Oauth2ErrorCodes.InvalidRequest,
@@ -187,10 +187,10 @@ export function getOpenid4vpClientId(options: GetOpenid4vpClientIdOptions): {
 
     return {
       effectiveClientId: options.clientId,
-      effectiveClientIdScheme: clientIdScheme,
+      effectiveClientIdPrefix: clientIdScheme,
       original,
 
-      clientIdScheme: uniformClientIdScheme.data,
+      clientIdPrefix: uniformClientIdScheme.data,
       clientIdIdentifier,
     }
   }
@@ -205,21 +205,21 @@ export function getOpenid4vpClientId(options: GetOpenid4vpClientIdOptions): {
 
   // Handle legacy client id scheme
   if (options.legacyClientIdScheme) {
-    const parsedClientIdScheme = zLegacyClientIdSchemeToClientIdScheme.safeParse(options.legacyClientIdScheme)
-    if (!parsedClientIdScheme.success) {
+    const parsedClientIdPrefix = zLegacyClientIdSchemeToClientIdPrefix.safeParse(options.legacyClientIdScheme)
+    if (!parsedClientIdPrefix.success) {
       throw new Oauth2ServerErrorResponseError({
         error: Oauth2ErrorCodes.InvalidRequest,
         error_description: `Failed to parse client identifier. Unsupported client_id_scheme value '${options.legacyClientIdScheme}'.`,
       })
     }
 
-    const clientIdScheme = parsedClientIdScheme.data
+    const clientIdPrefix = parsedClientIdPrefix.data
 
     return {
       effectiveClientId: options.clientId,
       clientIdIdentifier: options.clientId,
-      clientIdScheme,
-      effectiveClientIdScheme: (options.legacyClientIdScheme ?? 'pre-registered') as LegacyClientIdScheme,
+      clientIdPrefix,
+      effectiveClientIdPrefix: (options.legacyClientIdScheme ?? 'pre-registered') as LegacyClientIdScheme,
       original: {
         ...original,
         clientIdScheme: options.legacyClientIdScheme as LegacyClientIdScheme | undefined,
@@ -227,16 +227,16 @@ export function getOpenid4vpClientId(options: GetOpenid4vpClientIdOptions): {
     }
   }
 
-  const parsedClientIdSchemeAndIdentifier = zClientIdToClientIdSchemeAndIdentifier.safeParse(options.clientId)
-  if (!parsedClientIdSchemeAndIdentifier.success) {
+  const parsedClientIdPrefixAndIdentifier = zClientIdToClientIdPrefixAndIdentifier.safeParse(options.clientId)
+  if (!parsedClientIdPrefixAndIdentifier.success) {
     throw new Oauth2ServerErrorResponseError({
       error: Oauth2ErrorCodes.InvalidRequest,
       error_description: `Failed to parse client identifier. Unsupported client_id '${options.clientId}'.`,
     })
   }
 
-  const [clientIdScheme, clientIdIdentifier] = parsedClientIdSchemeAndIdentifier.data
-  const uniformClientIdScheme = zClientIdSchemeToUniform.safeParse(clientIdScheme)
+  const [clientIdScheme, clientIdIdentifier] = parsedClientIdPrefixAndIdentifier.data
+  const uniformClientIdScheme = zClientIdPrefixToUniform.safeParse(clientIdScheme)
   if (!uniformClientIdScheme.success) {
     throw new Oauth2ServerErrorResponseError({
       error: Oauth2ErrorCodes.InvalidRequest,
@@ -248,8 +248,8 @@ export function getOpenid4vpClientId(options: GetOpenid4vpClientIdOptions): {
   // modern client id
   return {
     effectiveClientId: options.clientId,
-    clientIdScheme: uniformClientIdScheme.data,
-    effectiveClientIdScheme: clientIdScheme,
+    clientIdPrefix: uniformClientIdScheme.data,
+    effectiveClientIdPrefix: clientIdScheme,
     clientIdIdentifier,
     original,
   }
@@ -259,7 +259,7 @@ export function getOpenid4vpClientId(options: GetOpenid4vpClientIdOptions): {
  * Configuration options for the parser
  */
 export interface ValidateOpenid4vpClientIdParserConfig {
-  supportedSchemes?: UniformClientIdSchema[]
+  supportedSchemes?: UniformClientIdPrefix[]
 }
 
 export interface ValidateOpenid4vpClientIdOptions {
@@ -280,34 +280,33 @@ export async function validateOpenid4vpClientId(
 
   // By default require signatures for these schemes
   const parserConfigWithDefaults = {
-    supportedSchemes: parserConfig?.supportedSchemes || Object.values(zClientIdScheme.options),
+    supportedSchemes: parserConfig?.supportedSchemes || Object.values(zClientIdPrefix.options),
   }
 
-  const { clientIdIdentifier, clientIdScheme, effectiveClientId, original } = getOpenid4vpClientId({
+  const { clientIdIdentifier, clientIdPrefix, effectiveClientId, original } = getOpenid4vpClientId({
     clientId: authorizationRequestPayload.client_id,
     legacyClientIdScheme: authorizationRequestPayload.client_id_scheme,
     responseMode: authorizationRequestPayload.response_mode,
     origin,
   })
-  console.log(clientIdIdentifier)
 
-  if (clientIdScheme === 'pre-registered') {
+  if (clientIdPrefix === 'pre-registered') {
     return {
-      scheme: 'pre-registered',
+      prefix: 'pre-registered',
       identifier: clientIdIdentifier,
       effective: effectiveClientId,
       original,
     }
   }
 
-  if (!parserConfigWithDefaults.supportedSchemes.includes(clientIdScheme)) {
+  if (!parserConfigWithDefaults.supportedSchemes.includes(clientIdPrefix)) {
     throw new Oauth2ServerErrorResponseError({
       error: Oauth2ErrorCodes.InvalidRequest,
-      error_description: `Unsupported client identifier scheme. ${clientIdScheme} is not supported.`,
+      error_description: `Unsupported client identifier scheme. ${clientIdPrefix} is not supported.`,
     })
   }
 
-  if (clientIdScheme === 'openid_federation') {
+  if (clientIdPrefix === 'openid_federation') {
     if (!zHttpsUrl.safeParse(clientIdIdentifier).success) {
       throw new Oauth2ServerErrorResponseError(
         {
@@ -336,7 +335,7 @@ export async function validateOpenid4vpClientId(
     }
 
     return {
-      scheme: 'openid_federation',
+      prefix: 'openid_federation',
       identifier: clientIdIdentifier,
       effective: effectiveClientId,
       original,
@@ -344,7 +343,7 @@ export async function validateOpenid4vpClientId(
     }
   }
 
-  if (clientIdScheme === 'redirect_uri') {
+  if (clientIdPrefix === 'redirect_uri') {
     if (jar) {
       throw new Oauth2ServerErrorResponseError({
         error: Oauth2ErrorCodes.InvalidRequest,
@@ -360,7 +359,7 @@ export async function validateOpenid4vpClientId(
     }
 
     return {
-      scheme: clientIdScheme,
+      prefix: clientIdPrefix,
       identifier: clientIdIdentifier,
       effective: effectiveClientId,
       original,
@@ -369,7 +368,7 @@ export async function validateOpenid4vpClientId(
     }
   }
 
-  if (clientIdScheme === 'decentralized_identifier') {
+  if (clientIdPrefix === 'decentralized_identifier') {
     if (!jar) {
       throw new Oauth2ServerErrorResponseError({
         error: Oauth2ErrorCodes.InvalidRequest,
@@ -396,12 +395,12 @@ export async function validateOpenid4vpClientId(
     if (clientIdIdentifier !== did) {
       throw new Oauth2ServerErrorResponseError({
         error: Oauth2ErrorCodes.InvalidRequest,
-        error_description: `With client identifier scheme '${clientIdScheme}' the JAR request must be signed by the same DID as the client identifier.`,
+        error_description: `With client identifier scheme '${clientIdPrefix}' the JAR request must be signed by the same DID as the client identifier.`,
       })
     }
 
     return {
-      scheme: 'decentralized_identifier',
+      prefix: 'decentralized_identifier',
       identifier: clientIdIdentifier,
       effective: effectiveClientId,
       original,
@@ -410,18 +409,18 @@ export async function validateOpenid4vpClientId(
     }
   }
 
-  if (clientIdScheme === 'x509_san_dns' || clientIdScheme === 'x509_san_uri' || clientIdScheme === 'x509_hash') {
+  if (clientIdPrefix === 'x509_san_dns' || clientIdPrefix === 'x509_san_uri' || clientIdPrefix === 'x509_hash') {
     if (!jar) {
       throw new Oauth2ServerErrorResponseError({
         error: Oauth2ErrorCodes.InvalidRequest,
-        error_description: `Using client identifier scheme '${clientIdScheme}' requires a signed JAR request.`,
+        error_description: `Using client identifier scheme '${clientIdPrefix}' requires a signed JAR request.`,
       })
     }
 
     if (jar.signer.method !== 'x5c') {
       throw new Oauth2ServerErrorResponseError({
         error: Oauth2ErrorCodes.InvalidRequest,
-        error_description: `Something went wrong. The JWT signer method is not x5c but the client identifier scheme is '${clientIdScheme}'`,
+        error_description: `Something went wrong. The JWT signer method is not x5c but the client identifier scheme is '${clientIdPrefix}'`,
       })
     }
 
@@ -431,12 +430,12 @@ export async function validateOpenid4vpClientId(
           error: Oauth2ErrorCodes.ServerError,
         },
         {
-          internalMessage: `Missing required 'getX509CertificateMetadata' callback for verification of '${clientIdScheme}' client id scheme`,
+          internalMessage: `Missing required 'getX509CertificateMetadata' callback for verification of '${clientIdPrefix}' client id scheme`,
         }
       )
     }
 
-    if (clientIdScheme === 'x509_san_dns') {
+    if (clientIdPrefix === 'x509_san_dns') {
       const { sanDnsNames } = options.callbacks.getX509CertificateMetadata(jar.signer.x5c[0])
       if (!sanDnsNames.includes(clientIdIdentifier)) {
         throw new Oauth2ServerErrorResponseError({
@@ -455,7 +454,7 @@ export async function validateOpenid4vpClientId(
           })
         }
       }
-    } else if (clientIdScheme === 'x509_san_uri') {
+    } else if (clientIdPrefix === 'x509_san_uri') {
       const { sanUriNames } = options.callbacks.getX509CertificateMetadata(jar.signer.x5c[0])
       if (!sanUriNames.includes(clientIdIdentifier)) {
         throw new Oauth2ServerErrorResponseError({
@@ -474,7 +473,7 @@ export async function validateOpenid4vpClientId(
           })
         }
       }
-    } else if (clientIdScheme === 'x509_hash') {
+    } else if (clientIdPrefix === 'x509_hash') {
       const x509Hash = encodeToBase64Url(
         await options.callbacks.hash(decodeBase64(jar.signer.x5c[0]), HashAlgorithm.Sha256)
       )
@@ -488,7 +487,7 @@ export async function validateOpenid4vpClientId(
     }
 
     return {
-      scheme: clientIdScheme,
+      prefix: clientIdPrefix,
       identifier: clientIdIdentifier,
       effective: effectiveClientId,
       original,
@@ -497,9 +496,9 @@ export async function validateOpenid4vpClientId(
     }
   }
 
-  if (clientIdScheme === 'web-origin') {
+  if (clientIdPrefix === 'web-origin') {
     return {
-      scheme: clientIdScheme,
+      prefix: clientIdPrefix,
       identifier: clientIdIdentifier,
       effective: effectiveClientId,
       original,
@@ -507,7 +506,7 @@ export async function validateOpenid4vpClientId(
     }
   }
 
-  if (clientIdScheme === 'verifier_attestation') {
+  if (clientIdPrefix === 'verifier_attestation') {
     if (!jar) {
       throw new Oauth2ServerErrorResponseError({
         error: Oauth2ErrorCodes.InvalidRequest,
@@ -517,7 +516,7 @@ export async function validateOpenid4vpClientId(
   }
 
   return {
-    scheme: clientIdScheme,
+    prefix: clientIdPrefix,
     clientMetadata: authorizationRequestPayload.client_metadata,
     identifier: clientIdIdentifier,
     effective: effectiveClientId,
