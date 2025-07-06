@@ -34,7 +34,7 @@ export interface ResolveOpenid4vpAuthorizationRequestOptions {
   wallet?: WalletVerificationOptions
   origin?: string
   disableOriginValidation?: boolean
-  callbacks: Pick<CallbackContext, 'verifyJwt' | 'decryptJwe' | 'getX509CertificateMetadata' | 'fetch'>
+  callbacks: Pick<CallbackContext, 'verifyJwt' | 'decryptJwe' | 'getX509CertificateMetadata' | 'fetch' | 'hash'>
 }
 
 export type ResolvedOpenid4vpAuthorizationRequest = {
@@ -99,7 +99,7 @@ export async function resolveOpenid4vpAuthorizationRequest(
     clientMetadata = await fetchClientMetadata({ clientMetadataUri: authorizationRequestPayload.client_metadata_uri })
   }
 
-  const clientMeta = validateOpenid4vpClientId({
+  const clientMeta = await validateOpenid4vpClientId({
     authorizationRequestPayload: {
       ...authorizationRequestPayload,
       client_metadata: clientMetadata,

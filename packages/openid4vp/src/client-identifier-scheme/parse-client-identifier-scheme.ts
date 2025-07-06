@@ -1,6 +1,6 @@
 import { Oauth2ErrorCodes, Oauth2ServerErrorResponseError } from '@openid4vc/oauth2'
-import { URL, zHttpsUrl } from '@openid4vc/utils'
-import type { CallbackContext } from '../../../oauth2/src/callbacks'
+import { type CallbackContext, HashAlgorithm } from '@openid4vc/oauth2'
+import { URL, decodeBase64, encodeToBase64Url, zHttpsUrl } from '@openid4vc/utils'
 import type { Openid4vpAuthorizationRequest } from '../authorization-request/z-authorization-request'
 import {
   type Openid4vpAuthorizationRequestDcApi,
@@ -43,7 +43,7 @@ export type ParsedClientIdentifier = (
       clientMetadata?: ClientMetadata
     }
   | {
-      scheme: 'x509_san_uri' | 'x509_san_dns'
+      scheme: 'x509_san_uri' | 'x509_san_dns' | 'x509_hash'
       identifier: string
       originalValue: string
       clientMetadata?: ClientMetadata
@@ -177,16 +177,16 @@ export interface ValidateOpenid4vpClientIdOptions {
   authorizationRequestPayload: Openid4vpAuthorizationRequest | Openid4vpAuthorizationRequestDcApi
   jar?: VerifiedJarRequest
   origin?: string
-  callbacks: Partial<Pick<CallbackContext, 'getX509CertificateMetadata'>>
+  callbacks: Pick<CallbackContext, 'getX509CertificateMetadata' | 'hash'>
 }
 
 /**
  * Parse and validate a client identifier
  */
-export function validateOpenid4vpClientId(
+export async function validateOpenid4vpClientId(
   options: ValidateOpenid4vpClientIdOptions,
   parserConfig?: ValidateOpenid4vpClientIdParserConfig
-): ParsedClientIdentifier {
+): Promise<ParsedClientIdentifier> {
   const { authorizationRequestPayload, jar, origin } = options
 
   // By default require signatures for these schemes
@@ -322,36 +322,33 @@ export function validateOpenid4vpClientId(
     }
   }
 
-  if (clientIdScheme === 'x509_san_dns' || clientIdScheme === 'x509_san_uri') {
+  if (clientIdScheme === 'x509_san_dns' || clientIdScheme === 'x509_san_uri' || clientIdScheme === 'x509_hash') {
     if (!jar) {
       throw new Oauth2ServerErrorResponseError({
         error: Oauth2ErrorCodes.InvalidRequest,
-        error_description:
-          'Using client identifier scheme "x509_san_dns" or "x509_san_uri" requires a signed JAR request.',
+        error_description: `Using client identifier scheme '${clientIdScheme}' requires a signed JAR request.`,
       })
     }
 
     if (jar.signer.method !== 'x5c') {
       throw new Oauth2ServerErrorResponseError({
         error: Oauth2ErrorCodes.InvalidRequest,
-        error_description:
-          'Something went wrong. The JWT signer method is not x5c but the client identifier scheme is x509_san_dns.',
+        error_description: `Something went wrong. The JWT signer method is not x5c but the client identifier scheme is '${clientIdScheme}'`,
       })
     }
 
-    if (clientIdScheme === 'x509_san_dns') {
-      if (!options.callbacks.getX509CertificateMetadata) {
-        throw new Oauth2ServerErrorResponseError(
-          {
-            error: Oauth2ErrorCodes.ServerError,
-          },
-          {
-            internalMessage:
-              "Missing required 'getX509CertificateMetadata' callback for verification of 'x509_san_dns' client id scheme",
-          }
-        )
-      }
+    if (!options.callbacks.getX509CertificateMetadata) {
+      throw new Oauth2ServerErrorResponseError(
+        {
+          error: Oauth2ErrorCodes.ServerError,
+        },
+        {
+          internalMessage: `Missing required 'getX509CertificateMetadata' callback for verification of '${clientIdScheme}' client id scheme`,
+        }
+      )
+    }
 
+    if (clientIdScheme === 'x509_san_dns') {
       const { sanDnsNames } = options.callbacks.getX509CertificateMetadata(jar.signer.x5c[0])
       if (!sanDnsNames.includes(identifierPart)) {
         throw new Oauth2ServerErrorResponseError({
@@ -371,18 +368,6 @@ export function validateOpenid4vpClientId(
         }
       }
     } else if (clientIdScheme === 'x509_san_uri') {
-      if (!options.callbacks.getX509CertificateMetadata) {
-        throw new Oauth2ServerErrorResponseError(
-          {
-            error: Oauth2ErrorCodes.ServerError,
-          },
-          {
-            internalMessage:
-              "Missing required 'getX509CertificateMetadata' callback for verification of 'x509_san_uri' client id scheme",
-          }
-        )
-      }
-
       const { sanUriNames } = options.callbacks.getX509CertificateMetadata(jar.signer.x5c[0])
       if (!sanUriNames.includes(identifierPart)) {
         throw new Oauth2ServerErrorResponseError({
@@ -400,6 +385,17 @@ export function validateOpenid4vpClientId(
               'The redirect_uri value MUST match the Client Identifier without the prefix x509_san_uri',
           })
         }
+      }
+    } else if (clientIdScheme === 'x509_hash') {
+      const x509Hash = encodeToBase64Url(
+        await options.callbacks.hash(decodeBase64(jar.signer.x5c[0]), HashAlgorithm.Sha256)
+      )
+
+      if (x509Hash !== identifierPart) {
+        throw new Oauth2ServerErrorResponseError({
+          error: Oauth2ErrorCodes.InvalidRequest,
+          error_description: `Invalid client identifier. Expected the base64url encoded sha-256 hash of the leaf x5c certificate ('${x509Hash}') to match the client identifier '${identifierPart}'.`,
+        })
       }
     }
 

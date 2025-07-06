@@ -186,6 +186,7 @@ async function verifyJarRequestObject(options: {
 
     x509_san_dns: ['x5c'],
     x509_san_uri: ['x5c'],
+    x509_hash: ['x5c'],
 
     // Handled separately
     https: [],

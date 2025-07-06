@@ -6,13 +6,21 @@ import {
 } from './authorization-request/z-authorization-request-dc-api'
 import { zClientIdScheme } from './client-identifier-scheme/z-client-id-scheme'
 
-export const Openid4vpVersion = [18, 19, 20, 21, 22, 23, 24] as const
+export const Openid4vpVersion = [18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29] as const
 export type OpenId4VpVersion = (typeof Openid4vpVersion)[number]
 
 export function parseAuthorizationRequestVersion(
   request: Openid4vpAuthorizationRequest | Openid4vpAuthorizationRequestDcApi
 ): OpenId4VpVersion {
   const requirements: ['<' | '>=', OpenId4VpVersion][] = []
+
+  if (request.client_id?.startsWith('x509_san_uri:')) {
+    requirements.push(['<', 25])
+  }
+
+  if (request.client_id?.startsWith('x509_hash:')) {
+    requirements.push(['>=', 25])
+  }
 
   if (
     isOpenid4vpAuthorizationRequestDcApi(request) &&

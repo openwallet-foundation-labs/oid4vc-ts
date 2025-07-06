@@ -9,6 +9,7 @@ export const zClientIdScheme = z.enum([
   'did',
   'x509_san_dns',
   'x509_san_uri',
+  'x509_hash',
   'web-origin',
 ])
 

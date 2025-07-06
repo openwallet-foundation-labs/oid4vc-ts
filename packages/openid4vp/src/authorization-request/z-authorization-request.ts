@@ -40,6 +40,7 @@ export const zOpenid4vpAuthorizationRequest = z
         'verifier_attestation',
         'x509_san_dns',
         'x509_san_uri',
+        'x509_hash',
       ])
       .optional(),
     verifier_attestations: zVerifierAttestations.optional(),
