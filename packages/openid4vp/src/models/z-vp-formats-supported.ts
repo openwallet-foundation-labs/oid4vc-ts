@@ -29,6 +29,11 @@ export const zVpFormatsSupported = z
     mso_mdoc: z.optional(
       z
         .object({
+          // Draft 27
+          issuer_signed_alg_values: z.optional(z.array(z.number()).nonempty()),
+          device_signed_alg_values: z.optional(z.array(z.number()).nonempty()),
+
+          // Draft 28+
           issuerauth_alg_values: z.optional(z.array(z.number()).nonempty()),
           deviceauth_alg_values: z.optional(z.array(z.number()).nonempty()),
         })

@@ -13,6 +13,29 @@ export function parseAuthorizationRequestVersion(
   request: Openid4vpAuthorizationRequest | Openid4vpAuthorizationRequestDcApi
 ): OpenId4VpVersion {
   const requirements: ['<' | '>=', OpenId4VpVersion][] = []
+  // 28
+  if (
+    request.client_metadata?.vp_formats_supported?.mso_mdoc?.deviceauth_alg_values ||
+    request.client_metadata?.vp_formats_supported?.mso_mdoc?.deviceauth_alg_values
+  ) {
+    requirements.push(['>=', 28])
+  }
+
+  if (
+    request.client_metadata?.vp_formats_supported?.mso_mdoc?.issuer_signed_alg_values ||
+    request.client_metadata?.vp_formats_supported?.mso_mdoc?.device_signed_alg_values
+  ) {
+    requirements.push(['<', 28])
+  }
+
+  // 27
+
+  if (request.client_metadata?.vp_formats) {
+    requirements.push(['>=', 27])
+  }
+  if (request.client_metadata?.vp_formats_supported) {
+    requirements.push(['<', 27])
+  }
 
   // 26
   if (
