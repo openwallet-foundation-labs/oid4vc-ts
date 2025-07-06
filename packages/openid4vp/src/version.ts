@@ -14,6 +14,20 @@ export function parseAuthorizationRequestVersion(
 ): OpenId4VpVersion {
   const requirements: ['<' | '>=', OpenId4VpVersion][] = []
 
+  // 26
+  if (
+    request.client_id?.startsWith('openid_federation:') ||
+    request.client_id?.startsWith('decentralized_identifier:')
+  ) {
+    requirements.push(['>=', 26])
+  }
+
+  if (request.client_id?.startsWith('did:')) {
+    requirements.push(['<', 26])
+  }
+
+  // 25
+
   if (request.client_id?.startsWith('x509_san_uri:')) {
     requirements.push(['<', 25])
   }

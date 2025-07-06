@@ -34,10 +34,15 @@ describe('Correctly parses the client identifier', () => {
         callbacks,
       })
 
-      expect(client).toMatchObject({
+      expect(client).toEqual({
+        clientMetadata: undefined,
+        effective: 'https://example.com',
         identifier: 'https://example.com',
-        originalValue: 'https://example.com',
-        scheme: 'https',
+        original: {
+          clientId: 'https://example.com',
+          clientIdScheme: 'entity_id',
+        },
+        scheme: 'openid_federation',
         trustChain: undefined,
       })
     })
@@ -62,10 +67,16 @@ describe('Correctly parses the client identifier', () => {
         callbacks,
       })
 
-      expect(client).toMatchObject({
+      expect(client).toEqual({
+        clientMetadata: undefined,
         identifier: 'did:example:123',
-        originalValue: 'did:example:123',
-        scheme: 'did',
+        didUrl: 'did:example:123#key-1',
+        effective: 'did:example:123',
+        original: {
+          clientId: 'did:example:123',
+          clientIdScheme: 'did',
+        },
+        scheme: 'decentralized_identifier',
       })
     })
 
@@ -84,10 +95,16 @@ describe('Correctly parses the client identifier', () => {
         callbacks,
       })
 
-      expect(client).toMatchObject({
+      expect(client).toEqual({
+        clientMetadata: undefined,
         identifier: 'example.com',
-        originalValue: 'x509_san_dns:example.com',
+        effective: 'example.com',
+        original: {
+          clientId: 'example.com',
+          clientIdScheme: 'x509_san_dns',
+        },
         scheme: 'x509_san_dns',
+        x5c: ['certificate'],
       })
     })
 
@@ -106,10 +123,16 @@ describe('Correctly parses the client identifier', () => {
         callbacks,
       })
 
-      expect(client).toMatchObject({
+      expect(client).toEqual({
+        clientMetadata: undefined,
         identifier: 'https://example.com',
-        originalValue: 'x509_san_uri:https://example.com',
+        original: {
+          clientId: 'https://example.com',
+          clientIdScheme: 'x509_san_uri',
+        },
+        effective: 'https://example.com',
         scheme: 'x509_san_uri',
+        x5c: ['certificate'],
       })
     })
 
@@ -124,10 +147,13 @@ describe('Correctly parses the client identifier', () => {
         callbacks,
       })
 
-      expect(client).toMatchObject({
+      expect(client).toEqual({
         identifier: 'pre-registered client',
-        originalValue: 'pre-registered client',
+        effective: 'pre-registered client',
         scheme: 'pre-registered',
+        original: {
+          clientId: 'pre-registered client',
+        },
       })
     })
 
@@ -143,10 +169,14 @@ describe('Correctly parses the client identifier', () => {
         callbacks,
       })
 
-      expect(client).toMatchObject({
+      expect(client).toEqual({
         identifier: 'pre-registered client',
-        originalValue: 'pre-registered client',
+        effective: 'pre-registered client',
         scheme: 'pre-registered',
+        original: {
+          clientId: 'pre-registered client',
+          clientIdScheme: 'pre-registered',
+        },
       })
     })
   })
@@ -172,11 +202,14 @@ describe('Correctly parses the client identifier', () => {
         callbacks,
       })
 
-      expect(client).toMatchObject({
+      expect(client).toEqual({
         identifier: 'https://example.com',
-        originalValue: 'https://example.com',
-        scheme: 'https',
+        effective: 'https://example.com',
+        scheme: 'openid_federation',
         trustChain: undefined,
+        original: {
+          clientId: 'https://example.com',
+        },
       })
     })
 
@@ -201,10 +234,48 @@ describe('Correctly parses the client identifier', () => {
         callbacks,
       })
 
-      expect(client).toMatchObject({
+      expect(client).toEqual({
+        clientMetadata: undefined,
         identifier: 'did:example:123',
-        originalValue: 'did:example:123',
-        scheme: 'did',
+        didUrl: 'did:example:123#key-1',
+        effective: 'did:example:123',
+        scheme: 'decentralized_identifier',
+        original: {
+          clientId: 'did:example:123',
+        },
+      })
+    })
+
+    test(`correctly handles client_id_scheme 'decentralized_identifier'`, async () => {
+      const client = await validateOpenid4vpClientId({
+        jar: {
+          signer: {
+            method: 'did',
+            didUrl: 'did:example:123#key-1',
+            // @ts-expect-error
+            publicJwk: {
+              kid: 'did:example:123#key-1',
+            },
+          },
+        },
+        authorizationRequestPayload: {
+          response_mode: 'direct_post',
+          client_id: 'decentralized_identifier:did:example:123',
+          nonce: 'nonce',
+          response_type: 'vp_token',
+        },
+        callbacks,
+      })
+
+      expect(client).toEqual({
+        clientMetadata: undefined,
+        didUrl: 'did:example:123#key-1',
+        identifier: 'did:example:123',
+        effective: 'decentralized_identifier:did:example:123',
+        scheme: 'decentralized_identifier',
+        original: {
+          clientId: 'decentralized_identifier:did:example:123',
+        },
       })
     })
 
@@ -222,10 +293,15 @@ describe('Correctly parses the client identifier', () => {
         callbacks,
       })
 
-      expect(client).toMatchObject({
+      expect(client).toEqual({
+        clientMetadata: undefined,
         identifier: 'example.com',
-        originalValue: 'x509_san_dns:example.com',
+        effective: 'x509_san_dns:example.com',
+        original: {
+          clientId: 'x509_san_dns:example.com',
+        },
         scheme: 'x509_san_dns',
+        x5c: ['certificate'],
       })
     })
 
@@ -243,10 +319,15 @@ describe('Correctly parses the client identifier', () => {
         callbacks,
       })
 
-      expect(client).toMatchObject({
+      expect(client).toEqual({
+        clientMetadata: undefined,
         identifier: 'https://example.com',
-        originalValue: 'x509_san_uri:https://example.com',
+        effective: 'x509_san_uri:https://example.com',
+        original: {
+          clientId: 'x509_san_uri:https://example.com',
+        },
         scheme: 'x509_san_uri',
+        x5c: ['certificate'],
       })
     })
 
@@ -264,10 +345,15 @@ describe('Correctly parses the client identifier', () => {
         callbacks,
       })
 
-      expect(client).toMatchObject({
+      expect(client).toEqual({
+        clientMetadata: undefined,
         identifier: '2ipT8gPhDJOK76YJvl98T8BSOd4Zjld1k6KtMuLU90s',
-        originalValue: 'x509_hash:2ipT8gPhDJOK76YJvl98T8BSOd4Zjld1k6KtMuLU90s',
+        effective: 'x509_hash:2ipT8gPhDJOK76YJvl98T8BSOd4Zjld1k6KtMuLU90s',
+        original: {
+          clientId: 'x509_hash:2ipT8gPhDJOK76YJvl98T8BSOd4Zjld1k6KtMuLU90s',
+        },
         scheme: 'x509_hash',
+        x5c: ['certificate'],
       })
     })
 
@@ -301,10 +387,14 @@ describe('Correctly parses the client identifier', () => {
         callbacks,
       })
 
-      expect(client).toMatchObject({
+      expect(client).toEqual({
+        clientMetadata: undefined,
+        effective: 'pre-registered client',
         identifier: 'pre-registered client',
-        originalValue: 'pre-registered client',
         scheme: 'pre-registered',
+        original: {
+          clientId: 'pre-registered client',
+        },
       })
     })
 
@@ -319,10 +409,14 @@ describe('Correctly parses the client identifier', () => {
         callbacks,
       })
 
-      expect(client).toMatchObject({
+      expect(client).toEqual({
+        clientMetadata: undefined,
         identifier: 'pre-registered client',
-        originalValue: 'pre-registered client',
+        effective: 'pre-registered client',
         scheme: 'pre-registered',
+        original: {
+          clientId: 'pre-registered client',
+        },
       })
     })
   })
@@ -345,8 +439,13 @@ describe('Correctly parses the client identifier', () => {
           clientId: 'http://federation.com/entity',
         })
       ).toEqual({
-        clientId: 'http://federation.com/entity',
-        clientIdScheme: 'https',
+        clientIdIdentifier: 'http://federation.com/entity',
+        clientIdScheme: 'openid_federation',
+        effectiveClientId: 'http://federation.com/entity',
+        effectiveClientIdScheme: 'https',
+        original: {
+          clientId: 'http://federation.com/entity',
+        },
       })
 
       setGlobalConfig({ allowInsecureUrls: beforeValue })

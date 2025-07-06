@@ -47,9 +47,7 @@ export async function parseOpenid4vpAuthorizationResponse(
       jarmResponseJwt: authorizationResponse.response as string,
       callbacks,
       authorizationRequestPayload,
-      // If client_id_scheme was provided we should use the legacy (unprefixed) client id scheme
-      // TODO: allow both versions, in case of e.g. did:
-      expectedClientId: expectedClientId.legacyClientId ?? expectedClientId.clientId,
+      expectedClientId: expectedClientId.effectiveClientId,
     })
   }
 

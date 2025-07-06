@@ -15,7 +15,11 @@ import {
 import z from 'zod'
 import { isOpenid4vpResponseModeDcApi } from '../../authorization-request/z-authorization-request-dc-api'
 import { getOpenid4vpClientId } from '../../client-identifier-scheme/parse-client-identifier-scheme'
-import { type ClientIdScheme, zClientIdScheme } from '../../client-identifier-scheme/z-client-id-scheme'
+import {
+  type ClientIdScheme,
+  type UniformClientIdSchema,
+  zClientIdScheme,
+} from '../../client-identifier-scheme/z-client-id-scheme'
 import type { WalletMetadata } from '../../models/z-wallet-metadata'
 import { parseAuthorizationRequestVersion } from '../../version'
 import { fetchJarRequestObject } from '../jar-request-object/fetch-jar-request-object'
@@ -175,8 +179,9 @@ async function verifyJarRequestObject(options: {
   })
 
   // Allowed signer methods for each of the client id schemes
-  const clientIdToSignerMethod: Record<ClientIdScheme, JwtSigner['method'][]> = {
-    did: ['did'],
+  const clientIdToSignerMethod: Record<UniformClientIdSchema, JwtSigner['method'][]> = {
+    decentralized_identifier: ['did'],
+
     'pre-registered': ['custom', 'did', 'jwk'],
     'web-origin': [], // no signing allowed
     redirect_uri: [], // no signing allowed
@@ -189,11 +194,11 @@ async function verifyJarRequestObject(options: {
     x509_hash: ['x5c'],
 
     // Handled separately
-    https: [],
+    openid_federation: [],
   }
 
   // The logic to determine the signer for a JWT is different for signed authorization request and federation
-  if (clientIdScheme === 'https') {
+  if (clientIdScheme === 'openid_federation') {
     if (!jwt.header.kid) {
       throw new Oauth2Error(
         `When OpenID Federation is used for signed authorization request, the 'kid' parameter is required.`
