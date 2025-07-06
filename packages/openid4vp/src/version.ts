@@ -26,6 +26,14 @@ export function parseAuthorizationRequestVersion(
     requirements.push(['<', 26])
   }
 
+  if (request.presentation_definition || request.presentation_definition_uri) {
+    requirements.push(['>=', 26])
+  }
+
+  if (request.verifier_attestations) {
+    requirements.push(['>=', 26])
+  }
+
   // 25
 
   if (request.client_id?.startsWith('x509_san_uri:')) {
@@ -36,6 +44,7 @@ export function parseAuthorizationRequestVersion(
     requirements.push(['>=', 25])
   }
 
+  // 23
   if (
     isOpenid4vpAuthorizationRequestDcApi(request) &&
     (request.response_mode === 'w3c_dc_api' || request.response_mode === 'w3c_dc_api.jwt')
@@ -56,11 +65,6 @@ export function parseAuthorizationRequestVersion(
   }
 
   // 22
-  // NOTE we disable this check because we have already integrated with DCQL from Draft 21, this is too strict
-  // and now causing interop issues.
-  // if (request.dcql_query) {
-  //   requirements.push(['>=', 22])
-  // }
 
   if (request.transaction_data) {
     requirements.push(['>=', 22])
@@ -69,11 +73,6 @@ export function parseAuthorizationRequestVersion(
   if (request.client_id_scheme) {
     requirements.push(['<', 22])
   }
-
-  // TODO: add when version 26 is fully supported
-  // if (request.verifier_attestations) {
-  //   requirements.push(['>=', 26])
-  // }
 
   // what happens if we don't have a client_id_scheme?
 
@@ -90,12 +89,18 @@ export function parseAuthorizationRequestVersion(
     }
   }
 
+  // 21
+
   // only possible with dc_api which is available in 21
   if (!request.client_id) {
     requirements.push(['>=', 21])
   }
 
-  // 21
+  // NOTE: DCQL was added in 22, but we've used it with draft 21 before, so it's
+  // not 100% correct, but prevents interop issues
+  if (request.dcql_query) {
+    requirements.push(['>=', 21])
+  }
 
   if (request.client_metadata_uri) {
     requirements.push(['<', 21])
