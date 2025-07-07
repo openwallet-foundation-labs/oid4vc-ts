@@ -40,9 +40,11 @@ export const zOpenid4vpAuthorizationRequest = z
         'verifier_attestation',
         'x509_san_dns',
         'x509_san_uri',
+        'x509_hash',
       ])
       .optional(),
     verifier_attestations: zVerifierAttestations.optional(),
+    verifier_info: zVerifierAttestations.optional(),
   })
   .passthrough()
 
@@ -59,6 +61,7 @@ export const zOpenid4vpAuthorizationRequestFromUriParams = z
         dcql_query: zStringToJson.optional(),
         transaction_data: zStringToJson.optional(),
         verifier_attestations: zStringToJson.optional(),
+        verifier_info: zStringToJson.optional(),
       })
       .passthrough()
   )

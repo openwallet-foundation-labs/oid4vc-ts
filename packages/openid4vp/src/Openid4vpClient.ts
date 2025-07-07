@@ -19,7 +19,7 @@ export interface Openid4vpClientOptions {
   /**
    * Callbacks required for the openid4vp client
    */
-  callbacks: Omit<CallbackContext, 'hash' | 'generateRandom' | 'clientAuthentication'>
+  callbacks: Omit<CallbackContext, 'generateRandom' | 'clientAuthentication'>
 }
 
 export class Openid4vpClient {

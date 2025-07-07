@@ -86,10 +86,10 @@ export const validateOpenid4vpAuthorizationRequestPayload = (
     })
   }
 
-  if (params.client_id.startsWith('web-origin:')) {
+  if (params.client_id.startsWith('web-origin:') || params.client_id.startsWith('origin:')) {
     throw new Oauth2ServerErrorResponseError({
       error: Oauth2ErrorCodes.InvalidRequest,
-      error_description: `The 'client_id' parameter MUST NOT use client identifier scheme 'web-origin' when not using the dc_api response mode. Current: ${params.client_id}`,
+      error_description: `The 'client_id' parameter MUST NOT use client identifier scheme '${params.client_id.split(':')[0]}' when not using the dc_api response mode. Current: ${params.client_id}`,
     })
   }
 }

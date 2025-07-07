@@ -11,11 +11,11 @@ import { dateToSeconds, encodeToBase64Url } from '@openid4vc/utils'
 import { addSecondsToDate } from '../../../utils/src/date'
 import type { Openid4vpAuthorizationRequest } from '../authorization-request/z-authorization-request'
 import type { Openid4vpAuthorizationRequestDcApi } from '../authorization-request/z-authorization-request-dc-api'
-import { getOpenid4vpClientId } from '../client-identifier-scheme/parse-client-identifier-scheme'
+import { getOpenid4vpClientId } from '../client-identifier-prefix/parse-client-identifier-prefix'
 import { createJarmAuthorizationResponse } from '../jarm/jarm-authorization-response-create'
-import { extractJwksFromClientMetadata } from '../jarm/jarm-extract-jwks'
+import { extractJwkFromJwks } from '../jarm/jarm-extract-jwks'
 import { isJarmResponseMode } from '../jarm/jarm-response-mode'
-import { jarmAssertMetadataSupported } from '../jarm/metadata/jarm-assert-metadata-supported'
+import { assertValueSupported, jarmAssertMetadataSupported } from '../jarm/metadata/jarm-assert-metadata-supported'
 import type { JarmServerMetadata } from '../jarm/metadata/z-jarm-authorization-server-metadata'
 import type { ClientMetadata } from '../models/z-client-metadata'
 import type { Openid4vpAuthorizationResponse } from './z-authorization-response'
@@ -61,7 +61,7 @@ export async function createOpenid4vpAuthorizationResponse(
     state: authorizationRequestPayload.state,
   } satisfies Openid4vpAuthorizationResponse
 
-  const { clientIdScheme } = getOpenid4vpClientId({
+  const { clientIdPrefix } = getOpenid4vpClientId({
     responseMode: authorizationRequestPayload.response_mode,
     clientId: authorizationRequestPayload.client_id,
     legacyClientIdScheme: authorizationRequestPayload.client_id_scheme,
@@ -85,9 +85,9 @@ export async function createOpenid4vpAuthorizationResponse(
   }
 
   // When using OpenID Federation, we must not rely on the client metadata from the request
-  if (clientIdScheme === 'https' && !options.clientMetadata) {
+  if (clientIdPrefix === 'openid_federation' && !options.clientMetadata) {
     throw new Oauth2Error(
-      "When OpenID Federation is used as the client id scheme (https), passing externally fetched and verified 'clientMetadata' to the 'createOpenid4vpAuthorizationResponse' is required."
+      "When OpenID Federation is used as the client id scheme (https/openid_federation), passing externally fetched and verified 'clientMetadata' to the 'createOpenid4vpAuthorizationResponse' is required."
     )
   }
 
@@ -109,23 +109,59 @@ export async function createOpenid4vpAuthorizationResponse(
     })
   }
 
-  const supportedJarmMetadata = jarmAssertMetadataSupported({
-    clientMetadata: clientMetadata,
-    serverMetadata: jarm.serverMetadata,
+  if (
+    clientMetadata.authorization_encrypted_response_alg ||
+    clientMetadata.authorization_encrypted_response_env ||
+    clientMetadata.authorization_signed_response_alg
+  ) {
+    jarmAssertMetadataSupported({
+      clientMetadata: clientMetadata,
+      serverMetadata: jarm.serverMetadata,
+    })
+  }
+
+  const encJwk = extractJwkFromJwks(jwks, {
+    supportedAlgValues:
+      jarm.serverMetadata.authorization_encryption_alg_values_supported ??
+      (clientMetadata.authorization_encrypted_response_alg
+        ? [clientMetadata.authorization_encrypted_response_alg]
+        : undefined),
   })
 
-  const clientMetaJwks = extractJwksFromClientMetadata({
-    ...clientMetadata,
-    jwks,
-  })
-
-  if (!clientMetaJwks?.encJwk) {
+  if (!encJwk) {
     throw new Oauth2ServerErrorResponseError({
       error: Oauth2ErrorCodes.InvalidRequest,
       error_description: 'Could not extract encryption JWK from client metadata. Failed to create JARM response.',
     })
   }
 
+  let enc: string
+  if (clientMetadata.encrypted_response_enc_values_supported) {
+    // Take first supported, or otherwise the first value
+    enc =
+      jarm.serverMetadata.authorization_encryption_enc_values_supported.find((enc) =>
+        clientMetadata.encrypted_response_enc_values_supported?.includes(enc)
+      ) ?? clientMetadata.encrypted_response_enc_values_supported[0]
+  } else {
+    // Use old value, or otherwise fallback to default
+    enc = clientMetadata.authorization_encrypted_response_enc ?? 'A128GCM'
+  }
+
+  assertValueSupported({
+    actual: enc,
+    supported: jarm.serverMetadata.authorization_encryption_enc_values_supported,
+    errorMessage: `Invalid 'enc' value ${enc}. Supported values are ${jarm.serverMetadata.authorization_encryption_enc_values_supported.join(', ')}`,
+  })
+
+  const alg = encJwk.alg ?? clientMetadata.authorization_encrypted_response_alg ?? 'ECDH-ES'
+  assertValueSupported({
+    actual: alg,
+    supported: jarm.serverMetadata.authorization_encryption_alg_values_supported,
+    errorMessage: `Invalid 'alg' value ${alg}. Supported values are ${jarm.serverMetadata.authorization_encryption_alg_values_supported.join(', ')}`,
+  })
+
+  // TODO: we can remove this once support for pre-1.0 versions have been removed
+  // TODO: we should keep the JARM implementation and move it to oauth2 package
   // When the response is NOT only encrypted, the JWT payload needs to include the iss, aud and exp.
   let additionalJwtPayload: Record<string, string | number> | undefined
   if (jarm?.jwtSigner) {
@@ -158,17 +194,16 @@ export async function createOpenid4vpAuthorizationResponse(
   const result = await createJarmAuthorizationResponse({
     jarmAuthorizationResponse: jarmResponsePayload,
     jwtSigner: jarm?.jwtSigner,
-    jweEncryptor:
-      jarm?.encryption && (supportedJarmMetadata.type === 'encrypt' || supportedJarmMetadata.type === 'sign_encrypt')
-        ? {
-            method: 'jwk',
-            publicJwk: clientMetaJwks.encJwk,
-            apu: jarm.encryption.nonce ? encodeToBase64Url(jarm.encryption.nonce) : undefined,
-            apv: encodeToBase64Url(authorizationRequestPayload.nonce),
-            alg: supportedJarmMetadata.client_metadata.authorization_encrypted_response_alg,
-            enc: supportedJarmMetadata.client_metadata.authorization_encrypted_response_enc,
-          }
-        : undefined,
+    jweEncryptor: jarm?.encryption
+      ? {
+          method: 'jwk',
+          publicJwk: encJwk,
+          apu: jarm.encryption.nonce ? encodeToBase64Url(jarm.encryption.nonce) : undefined,
+          apv: encodeToBase64Url(authorizationRequestPayload.nonce),
+          alg,
+          enc,
+        }
+      : undefined,
     callbacks: {
       signJwt: callbacks.signJwt,
       encryptJwe: callbacks.encryptJwe,

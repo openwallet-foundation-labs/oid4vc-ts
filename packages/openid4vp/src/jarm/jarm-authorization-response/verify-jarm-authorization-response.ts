@@ -1,7 +1,9 @@
 import {
   type CallbackContext,
+  type Jwk,
   Oauth2Error,
   decodeJwt,
+  decodeJwtHeader,
   jwtSignerFromJwt,
   zCompactJwe,
   zCompactJwt,
@@ -10,7 +12,7 @@ import {
 import z from 'zod'
 import type { Openid4vpAuthorizationRequest } from '../../authorization-request/z-authorization-request'
 import type { Openid4vpAuthorizationRequestDcApi } from '../../authorization-request/z-authorization-request-dc-api'
-import { extractJwksFromClientMetadata } from '../jarm-extract-jwks'
+import { extractJwkFromJwks } from '../jarm-extract-jwks'
 import { jarmAuthorizationResponseValidate } from './jarm-validate-authorization-response'
 import {
   type JarmAuthorizationResponse,
@@ -39,16 +41,28 @@ const decryptJarmAuthorizationResponseJwt = async (options: {
 }) => {
   const { jarmAuthorizationResponseJwt, callbacks, authorizationRequestPayload } = options
 
+  let encryptionJwk: Jwk | undefined = undefined
+  const { header } = decodeJwtHeader({
+    jwt: jarmAuthorizationResponseJwt,
+  })
+
   // NOTE: previously we required `kid` to be present in the JARM header, but not all implementations seem to
-  // add this, so we removed the check. For now we try to extract the JWK from the request, if we are not successfull
-  // (because e.g. the request used client_metadata_uri) the decryptJwe callback has to handle this edge case
-  // See https://github.com/openid/OpenID4VP/issues/441
-  const encryptionJwk = authorizationRequestPayload.client_metadata?.jwks
-    ? extractJwksFromClientMetadata({
-        ...authorizationRequestPayload.client_metadata,
-        jwks: authorizationRequestPayload.client_metadata.jwks,
-      }).encJwk
-    : undefined
+  // add this, so we removed the check. Starting from draft 26 it's required again, so we can add the check again when
+  // removing support for drafts <26
+  if (authorizationRequestPayload.client_metadata?.jwks) {
+    //  If there's no kid, we try to extract the JWK from the request, if we are not successful
+    // (because e.g. the request used client_metadata_uri) the decryptJwe callback has to handle this edge case
+    // See https://github.com/openid/OpenID4VP/issues/441
+    encryptionJwk = extractJwkFromJwks(authorizationRequestPayload.client_metadata.jwks, {
+      // Kid always take precedence
+      kid: header.kid,
+
+      // This value was removed in draft 26, but if it's still provided, we can use it to determine the key to use
+      supportedAlgValues: authorizationRequestPayload.client_metadata.authorization_encrypted_response_alg
+        ? [authorizationRequestPayload.client_metadata.authorization_encrypted_response_alg]
+        : undefined,
+    })
+  }
 
   const result = await callbacks.decryptJwe(jarmAuthorizationResponseJwt, { jwk: encryptionJwk })
   if (!result.decrypted) {
@@ -66,7 +80,7 @@ export interface VerifyJarmAuthorizationResponseOptions {
   /**
    * The client id of the authorization request. This should be the effective client id,
    * meaning that if no client_id was present in the authorization request and DC API is used
-   * it should be `web-origin:<origin>`
+   * it should be `web-origin:<origin>` (until draft 24) or `origin:<origin>` (from draft 25)
    */
   expectedClientId: string
 

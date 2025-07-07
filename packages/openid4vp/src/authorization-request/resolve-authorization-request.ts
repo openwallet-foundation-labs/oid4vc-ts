@@ -4,7 +4,7 @@ import z from 'zod'
 import {
   type ParsedClientIdentifier,
   validateOpenid4vpClientId,
-} from '../client-identifier-scheme/parse-client-identifier-scheme'
+} from '../client-identifier-prefix/parse-client-identifier-prefix'
 import { fetchClientMetadata } from '../fetch-client-metadata'
 import { type VerifiedJarRequest, verifyJarRequest } from '../jar/handle-jar-request/verify-jar-request'
 import {
@@ -14,6 +14,7 @@ import {
 } from '../jar/z-jar-authorization-request'
 import type { PexPresentationDefinition } from '../models/z-pex'
 import { type ParsedTransactionDataEntry, parseTransactionData } from '../transaction-data/parse-transaction-data'
+import { type Openid4vpDraftVersionNumber, parseAuthorizationRequestVersion } from '../version'
 import {
   type WalletVerificationOptions,
   validateOpenid4vpAuthorizationRequestPayload,
@@ -34,7 +35,7 @@ export interface ResolveOpenid4vpAuthorizationRequestOptions {
   wallet?: WalletVerificationOptions
   origin?: string
   disableOriginValidation?: boolean
-  callbacks: Pick<CallbackContext, 'verifyJwt' | 'decryptJwe' | 'getX509CertificateMetadata' | 'fetch'>
+  callbacks: Pick<CallbackContext, 'verifyJwt' | 'decryptJwe' | 'getX509CertificateMetadata' | 'fetch' | 'hash'>
 }
 
 export type ResolvedOpenid4vpAuthorizationRequest = {
@@ -47,6 +48,11 @@ export type ResolvedOpenid4vpAuthorizationRequest = {
     presentation_definition_uri?: string
   }
   dcql?: { query: unknown } | undefined
+
+  /**
+   * The highest possible draft version number based on draft-specific version checks done on the request.
+   */
+  version: Openid4vpDraftVersionNumber
 }
 export async function resolveOpenid4vpAuthorizationRequest(
   options: ResolveOpenid4vpAuthorizationRequestOptions
@@ -99,7 +105,7 @@ export async function resolveOpenid4vpAuthorizationRequest(
     clientMetadata = await fetchClientMetadata({ clientMetadataUri: authorizationRequestPayload.client_metadata_uri })
   }
 
-  const clientMeta = validateOpenid4vpClientId({
+  const clientMeta = await validateOpenid4vpClientId({
     authorizationRequestPayload: {
       ...authorizationRequestPayload,
       client_metadata: clientMetadata,
@@ -141,6 +147,7 @@ export async function resolveOpenid4vpAuthorizationRequest(
     client: clientMeta,
     pex,
     dcql,
+    version: parseAuthorizationRequestVersion(authorizationRequestPayload),
   }
 }
 
