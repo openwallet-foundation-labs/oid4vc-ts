@@ -52,7 +52,7 @@ export const zJarmClientMetadataParsed = zJarmClientMetadata.transform((client_m
       type: 'sign_encrypt',
       client_metadata: {
         ...SignEncrypt.data,
-        authorization_encrypted_response_enc: client_metadata.authorization_encrypted_response_enc ?? 'A128CBC-HS256',
+        authorization_encrypted_response_enc: client_metadata.authorization_encrypted_response_enc,
       },
     } as const
   }
@@ -63,7 +63,7 @@ export const zJarmClientMetadataParsed = zJarmClientMetadata.transform((client_m
       type: 'encrypt',
       client_metadata: {
         ...encryptOnly.data,
-        authorization_encrypted_response_enc: parsedClientMeta.authorization_encrypted_response_enc ?? 'A128CBC-HS256',
+        authorization_encrypted_response_enc: parsedClientMeta.authorization_encrypted_response_enc,
       },
     } as const
   }
@@ -75,7 +75,7 @@ export const zJarmClientMetadataParsed = zJarmClientMetadata.transform((client_m
       type: 'sign',
       client_metadata: {
         ...signOnly.data,
-        authorization_signed_response_alg: parsedClientMeta.authorization_signed_response_alg ?? 'RS256',
+        authorization_signed_response_alg: parsedClientMeta.authorization_signed_response_alg,
       },
     } as const
   }

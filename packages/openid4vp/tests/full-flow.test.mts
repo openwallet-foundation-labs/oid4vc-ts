@@ -140,8 +140,9 @@ describe('Full E2E openid4vp test', () => {
       callbacks,
     })
 
-    expect(resolved).toMatchObject({
+    expect(resolved).toEqual({
       transactionData: undefined,
+      version: 29,
       authorizationRequestPayload: {
         response_type: 'vp_token',
         client_id: 'client_id',
@@ -153,10 +154,12 @@ describe('Full E2E openid4vp test', () => {
       },
       jar: undefined,
       client: {
-        scheme: 'pre-registered',
+        prefix: 'pre-registered',
         identifier: 'client_id',
-        originalValue: 'client_id',
-        clientMetadata: {},
+        effective: 'client_id',
+        original: {
+          clientId: 'client_id',
+        },
       },
       pex: undefined,
       dcql: {

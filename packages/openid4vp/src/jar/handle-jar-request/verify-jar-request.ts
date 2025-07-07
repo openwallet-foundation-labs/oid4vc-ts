@@ -14,8 +14,12 @@ import {
 } from '@openid4vc/oauth2'
 import z from 'zod'
 import { isOpenid4vpResponseModeDcApi } from '../../authorization-request/z-authorization-request-dc-api'
-import { getOpenid4vpClientId } from '../../client-identifier-scheme/parse-client-identifier-scheme'
-import { type ClientIdScheme, zClientIdScheme } from '../../client-identifier-scheme/z-client-id-scheme'
+import { getOpenid4vpClientId } from '../../client-identifier-prefix/parse-client-identifier-prefix'
+import {
+  type ClientIdPrefix,
+  type UniformClientIdPrefix,
+  zClientIdPrefix,
+} from '../../client-identifier-prefix/z-client-id-prefix'
 import type { WalletMetadata } from '../../models/z-wallet-metadata'
 import { parseAuthorizationRequestVersion } from '../../version'
 import { fetchJarRequestObject } from '../jar-request-object/fetch-jar-request-object'
@@ -58,9 +62,9 @@ export async function verifyJarRequest(options: VerifyJarRequestOptions): Promis
   const sendBy = jarRequestParams.request ? 'value' : 'reference'
 
   // We can't know the client id scheme here if draft was before client_id_scheme became prefix
-  const clientIdentifierScheme: ClientIdScheme | undefined = jarRequestParams.client_id
-    ? zClientIdScheme.safeParse(jarRequestParams.client_id.split(':')[0]).data
-    : 'web-origin'
+  const clientIdentifierScheme: ClientIdPrefix | undefined = jarRequestParams.client_id
+    ? zClientIdPrefix.safeParse(jarRequestParams.client_id.split(':')[0]).data
+    : 'origin'
 
   const method = jarRequestParams.request_uri_method ?? 'get'
   if (method !== 'get' && method !== 'post') {
@@ -168,17 +172,18 @@ async function verifyJarRequestObject(options: {
 
   let jwtSigner: JwtSigner
 
-  const { clientIdScheme } = getOpenid4vpClientId({
+  const { clientIdPrefix } = getOpenid4vpClientId({
     responseMode: jwt.payload.response_mode,
     clientId: jwt.payload.client_id,
     legacyClientIdScheme: jwt.payload.client_id_scheme,
   })
 
   // Allowed signer methods for each of the client id schemes
-  const clientIdToSignerMethod: Record<ClientIdScheme, JwtSigner['method'][]> = {
-    did: ['did'],
+  const clientIdToSignerMethod: Record<UniformClientIdPrefix, JwtSigner['method'][]> = {
+    decentralized_identifier: ['did'],
+
     'pre-registered': ['custom', 'did', 'jwk'],
-    'web-origin': [], // no signing allowed
+    origin: [], // no signing allowed
     redirect_uri: [], // no signing allowed
 
     // Not 100% sure which one are allowed?
@@ -186,13 +191,14 @@ async function verifyJarRequestObject(options: {
 
     x509_san_dns: ['x5c'],
     x509_san_uri: ['x5c'],
+    x509_hash: ['x5c'],
 
     // Handled separately
-    https: [],
+    openid_federation: [],
   }
 
   // The logic to determine the signer for a JWT is different for signed authorization request and federation
-  if (clientIdScheme === 'https') {
+  if (clientIdPrefix === 'openid_federation') {
     if (!jwt.header.kid) {
       throw new Oauth2Error(
         `When OpenID Federation is used for signed authorization request, the 'kid' parameter is required.`
@@ -206,7 +212,7 @@ async function verifyJarRequestObject(options: {
       kid: jwt.header.kid,
     }
   } else {
-    jwtSigner = jwtSignerFromJwt({ ...jwt, allowedSignerMethods: clientIdToSignerMethod[clientIdScheme] })
+    jwtSigner = jwtSignerFromJwt({ ...jwt, allowedSignerMethods: clientIdToSignerMethod[clientIdPrefix] })
   }
 
   const { signer } = await verifyJwt({

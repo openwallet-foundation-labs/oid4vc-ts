@@ -1,8 +1,8 @@
 export {
   getOpenid4vpClientId,
   GetOpenid4vpClientIdOptions,
-} from './client-identifier-scheme/parse-client-identifier-scheme'
-export { zClientIdScheme, ClientIdScheme } from './client-identifier-scheme/z-client-id-scheme'
+} from './client-identifier-prefix/parse-client-identifier-prefix'
+export { zClientIdPrefix, ClientIdPrefix } from './client-identifier-prefix/z-client-id-prefix'
 export {
   verifyJarmAuthorizationResponse,
   type VerifyJarmAuthorizationResponseOptions,

@@ -8,7 +8,7 @@ interface AssertValueSupported<T> {
   errorMessage: string
 }
 
-function assertValueSupported<T>(options: AssertValueSupported<T>): T {
+export function assertValueSupported<T>(options: AssertValueSupported<T>): T {
   const { errorMessage, supported, actual } = options
   const intersection = supported.find((value) => value === actual)
 
