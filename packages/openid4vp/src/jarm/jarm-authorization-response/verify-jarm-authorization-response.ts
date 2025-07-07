@@ -77,7 +77,7 @@ export interface VerifyJarmAuthorizationResponseOptions {
   /**
    * The client id of the authorization request. This should be the effective client id,
    * meaning that if no client_id was present in the authorization request and DC API is used
-   * it should be `web-origin:<origin>`
+   * it should be `web-origin:<origin>` (until draft 24) or `origin:<origin>` (from draft 25)
    */
   expectedClientId: string
 

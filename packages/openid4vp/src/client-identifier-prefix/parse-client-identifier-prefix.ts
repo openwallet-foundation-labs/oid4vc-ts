@@ -73,7 +73,7 @@ export type ParsedClientIdentifier = (
       x5c: string[]
     }
   | {
-      prefix: 'verifier_attestation' | 'pre-registered' | 'web-origin'
+      prefix: 'verifier_attestation' | 'pre-registered' | 'origin'
       clientMetadata?: ClientMetadata
     }
 ) &
@@ -160,10 +160,14 @@ export function getOpenid4vpClientId(options: GetOpenid4vpClientIdOptions): {
       }
 
       return {
-        clientIdPrefix: 'web-origin',
-        effectiveClientIdPrefix: 'web-origin',
+        clientIdPrefix: 'origin',
+        effectiveClientIdPrefix: 'origin',
         clientIdIdentifier: options.origin,
-        effectiveClientId: `web-origin:${options.origin}`,
+
+        // FIXME: draft 24 uses web-origin, draft 25+ uses origin
+        // But it's not really possible to know which one to use as the
+        // 'effective' client id. Defaulting to origin: since that's newer
+        effectiveClientId: `origin:${options.origin}`,
         original,
       }
     }
@@ -496,7 +500,7 @@ export async function validateOpenid4vpClientId(
     }
   }
 
-  if (clientIdPrefix === 'web-origin') {
+  if (clientIdPrefix === 'origin') {
     return {
       prefix: clientIdPrefix,
       identifier: clientIdIdentifier,

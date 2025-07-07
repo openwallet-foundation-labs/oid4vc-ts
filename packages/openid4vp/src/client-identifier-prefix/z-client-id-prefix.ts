@@ -16,10 +16,12 @@ export const zClientIdPrefix = z.enum([
   'x509_hash', // from draft 25
 
   'x509_san_dns',
-  'web-origin',
+
+  'origin', // from draft 25
+  'web-origin', // pre-draft 25
 ])
 
-export const zUniformClientIdPrefix = zClientIdPrefix.exclude(['did', 'https'])
+export const zUniformClientIdPrefix = zClientIdPrefix.exclude(['did', 'https', 'web-origin'])
 
 export type ClientIdPrefix = z.infer<typeof zClientIdPrefix>
 export type UniformClientIdPrefix = z.infer<typeof zUniformClientIdPrefix>
@@ -57,7 +59,13 @@ export const zClientIdToClientIdPrefixAndIdentifier = z.union(
 )
 
 export const zClientIdPrefixToUniform = zClientIdPrefix.transform((prefix) =>
-  prefix === 'did' ? 'decentralized_identifier' : prefix === 'https' ? 'openid_federation' : prefix
+  prefix === 'did'
+    ? 'decentralized_identifier'
+    : prefix === 'https'
+      ? 'openid_federation'
+      : prefix === 'web-origin'
+        ? 'origin'
+        : prefix
 )
 
 export const zLegacyClientIdScheme = z.enum([

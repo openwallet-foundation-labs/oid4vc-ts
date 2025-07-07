@@ -64,7 +64,7 @@ export async function verifyJarRequest(options: VerifyJarRequestOptions): Promis
   // We can't know the client id scheme here if draft was before client_id_scheme became prefix
   const clientIdentifierScheme: ClientIdPrefix | undefined = jarRequestParams.client_id
     ? zClientIdPrefix.safeParse(jarRequestParams.client_id.split(':')[0]).data
-    : 'web-origin'
+    : 'origin'
 
   const method = jarRequestParams.request_uri_method ?? 'get'
   if (method !== 'get' && method !== 'post') {
@@ -183,7 +183,7 @@ async function verifyJarRequestObject(options: {
     decentralized_identifier: ['did'],
 
     'pre-registered': ['custom', 'did', 'jwk'],
-    'web-origin': [], // no signing allowed
+    origin: [], // no signing allowed
     redirect_uri: [], // no signing allowed
 
     // Not 100% sure which one are allowed?

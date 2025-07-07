@@ -58,12 +58,19 @@ export function parseAuthorizationRequestVersion(
   }
 
   // 25
-
   if (request.client_id?.startsWith('x509_san_uri:')) {
     requirements.push(['<', 25])
   }
 
   if (request.client_id?.startsWith('x509_hash:')) {
+    requirements.push(['>=', 25])
+  }
+
+  if (request.client_id?.startsWith('web-origin:')) {
+    requirements.push(['<', 25])
+  }
+
+  if (request.client_id?.startsWith('origin:')) {
     requirements.push(['>=', 25])
   }
 
