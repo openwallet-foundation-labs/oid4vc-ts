@@ -18,6 +18,9 @@ export const zClientMetadata = z
     // From draft 27
     vp_formats_supported: z.optional(zVpFormatsSupported),
 
+    // From draft 28
+    encrypted_response_enc_values_supported: z.optional(z.array(z.string())),
+
     ...zJarmClientMetadata.shape,
 
     logo_uri: zHttpsUrl.optional(),
