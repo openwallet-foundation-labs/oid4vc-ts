@@ -44,6 +44,7 @@ export const zOpenid4vpAuthorizationRequest = z
       ])
       .optional(),
     verifier_attestations: zVerifierAttestations.optional(),
+    verifier_info: zVerifierAttestations.optional(),
   })
   .passthrough()
 
@@ -60,6 +61,7 @@ export const zOpenid4vpAuthorizationRequestFromUriParams = z
         dcql_query: zStringToJson.optional(),
         transaction_data: zStringToJson.optional(),
         verifier_attestations: zStringToJson.optional(),
+        verifier_info: zStringToJson.optional(),
       })
       .passthrough()
   )

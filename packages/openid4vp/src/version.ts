@@ -13,6 +13,14 @@ export function parseAuthorizationRequestVersion(
   request: Openid4vpAuthorizationRequest | Openid4vpAuthorizationRequestDcApi
 ): OpenId4VpVersion {
   const requirements: ['<' | '>=', OpenId4VpVersion][] = []
+  // 29
+  if (request.verifier_info) {
+    requirements.push(['>=', 29])
+  }
+  if (request.verifier_attestations) {
+    requirements.push(['<', 29])
+  }
+
   // 28
   if (
     request.client_metadata?.vp_formats_supported?.mso_mdoc?.deviceauth_alg_values ||
