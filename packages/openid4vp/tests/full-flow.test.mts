@@ -142,6 +142,7 @@ describe('Full E2E openid4vp test', () => {
 
     expect(resolved).toEqual({
       transactionData: undefined,
+      version: 29,
       authorizationRequestPayload: {
         response_type: 'vp_token',
         client_id: 'client_id',
