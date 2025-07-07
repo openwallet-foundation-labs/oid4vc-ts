@@ -10,7 +10,7 @@ import { type Fetch, URLSearchParams } from './globals'
  */
 export type ZodFetcher = <Schema extends z.ZodTypeAny>(
   schema: Schema,
-  expectedContentType: ContentType,
+  expectedContentType: ContentType | ContentType[],
   ...args: Parameters<Fetch>
 ) => Promise<{ response: Awaited<ReturnType<Fetch>>; result?: z.SafeParseReturnType<Schema, z.infer<Schema>> }>
 
@@ -62,15 +62,17 @@ export function createZodFetcher(fetcher?: Fetch): ZodFetcher {
   return async (schema, expectedContentType, ...args) => {
     const response = await createFetcher(fetcher)(...args)
 
-    if (response.ok && !isResponseContentType(expectedContentType, response)) {
+    const expectedContentTypeArray = Array.isArray(expectedContentType) ? expectedContentType : [expectedContentType]
+
+    if (response.ok && !isResponseContentType(expectedContentTypeArray, response)) {
       throw new InvalidFetchResponseError(
-        `Expected response to match content type '${expectedContentType}', but received '${response.headers.get('Content-Type')}'`,
+        `Expected response to match content type ${expectedContentTypeArray.join(' | ')}, but received '${response.headers.get('Content-Type')}'`,
         await response.clone().text(),
         response
       )
     }
 
-    if (expectedContentType === ContentType.OAuthAuthorizationRequestJwt) {
+    if (expectedContentTypeArray.includes(ContentType.OAuthAuthorizationRequestJwt)) {
       return {
         response,
         result: response.ok ? schema.safeParse(await response.text()) : undefined,
