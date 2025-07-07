@@ -6,13 +6,12 @@ import {
 } from './authorization-request/z-authorization-request-dc-api'
 import { zClientIdPrefix } from './client-identifier-prefix/z-client-id-prefix'
 
-export const Openid4vpVersion = [18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29] as const
-export type OpenId4VpVersion = (typeof Openid4vpVersion)[number]
+export type Openid4vpDraftVersionNumber = 18 | 19 | 20 | 21 | 22 | 23 | 24 | 25 | 26 | 27 | 28 | 29
 
 export function parseAuthorizationRequestVersion(
   request: Openid4vpAuthorizationRequest | Openid4vpAuthorizationRequestDcApi
-): OpenId4VpVersion {
-  const requirements: ['<' | '>=', OpenId4VpVersion][] = []
+): Openid4vpDraftVersionNumber {
+  const requirements: ['<' | '>=', Openid4vpDraftVersionNumber][] = []
   // 29
   if (request.verifier_info) {
     requirements.push(['>=', 29])
@@ -171,11 +170,13 @@ export function parseAuthorizationRequestVersion(
 
   // Find the minimum version that satisfies all "less than" constraints
   const highestPossibleVersion =
-    lessThanVersions.length > 0 ? (Math.max(Math.min(...lessThanVersions) - 1, 18) as OpenId4VpVersion) : (24 as const) // Default to highest version
+    lessThanVersions.length > 0
+      ? (Math.max(Math.min(...lessThanVersions) - 1, 18) as Openid4vpDraftVersionNumber)
+      : (29 as const) // Default to highest version
 
   // Find the maximum version that satisfies all "greater than or equal to" constraints
   const lowestRequiredVersion =
-    greaterThanVersions.length > 0 ? (Math.max(...greaterThanVersions) as OpenId4VpVersion) : (18 as const) // Default to lowest version
+    greaterThanVersions.length > 0 ? (Math.max(...greaterThanVersions) as Openid4vpDraftVersionNumber) : (18 as const) // Default to lowest version
 
   // The acceptable range is [lowestRequiredVersion, highestPossibleVersion]
   // We return the lowest possible version that satisfies all constraints

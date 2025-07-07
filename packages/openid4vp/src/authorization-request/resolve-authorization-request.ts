@@ -14,6 +14,7 @@ import {
 } from '../jar/z-jar-authorization-request'
 import type { PexPresentationDefinition } from '../models/z-pex'
 import { type ParsedTransactionDataEntry, parseTransactionData } from '../transaction-data/parse-transaction-data'
+import { type Openid4vpDraftVersionNumber, parseAuthorizationRequestVersion } from '../version'
 import {
   type WalletVerificationOptions,
   validateOpenid4vpAuthorizationRequestPayload,
@@ -47,6 +48,11 @@ export type ResolvedOpenid4vpAuthorizationRequest = {
     presentation_definition_uri?: string
   }
   dcql?: { query: unknown } | undefined
+
+  /**
+   * The highest possible draft version number based on draft-specific version checks done on the request.
+   */
+  version: Openid4vpDraftVersionNumber
 }
 export async function resolveOpenid4vpAuthorizationRequest(
   options: ResolveOpenid4vpAuthorizationRequestOptions
@@ -141,6 +147,7 @@ export async function resolveOpenid4vpAuthorizationRequest(
     client: clientMeta,
     pex,
     dcql,
+    version: parseAuthorizationRequestVersion(authorizationRequestPayload),
   }
 }
 
