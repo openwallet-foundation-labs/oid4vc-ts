@@ -10,11 +10,13 @@ export enum ContentType {
 }
 
 export function isContentType(contentType: ContentType, value: string) {
-  return value.toLowerCase().trim().split(';')[0] === contentType
+  return value.toLowerCase().includes(contentType)
 }
 
-export function isResponseContentType(contentType: ContentType, response: FetchResponse) {
+export function isResponseContentType(contentType: ContentType | ContentType[], response: FetchResponse) {
+  const contentTypeArray = Array.isArray(contentType) ? contentType : [contentType]
+
   const header = response.headers.get('Content-Type')
   if (!header) return false
-  return isContentType(contentType, header)
+  return contentTypeArray.some((contentTypeEntry) => isContentType(contentTypeEntry, header))
 }

@@ -15,7 +15,7 @@ import { type JwkSet, zJwkSet } from '../common/jwk/z-jwk'
 export async function fetchJwks(jwksUrl: string, fetch?: Fetch): Promise<JwkSet> {
   const fetcher = createZodFetcher(fetch)
 
-  const { result, response } = await fetcher(zJwkSet, ContentType.JwkSet, jwksUrl)
+  const { result, response } = await fetcher(zJwkSet, [ContentType.JwkSet, ContentType.Json], jwksUrl)
   if (!response.ok) {
     throw new InvalidFetchResponseError(
       `Fetching JWKs from jwks_uri '${jwksUrl}' resulted in an unsuccessfull response with status code '${response.status}'.`,
