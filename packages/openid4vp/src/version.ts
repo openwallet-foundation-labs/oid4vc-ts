@@ -6,18 +6,23 @@ import {
 } from './authorization-request/z-authorization-request-dc-api'
 import { zClientIdPrefix } from './client-identifier-prefix/z-client-id-prefix'
 
-export type Openid4vpDraftVersionNumber = 18 | 19 | 20 | 21 | 22 | 23 | 24 | 25 | 26 | 27 | 28 | 29
+/**
+ * The Openid4vpVersionNumber
+ *
+ * 100 means 1.0 final, all others are draft versions
+ */
+export type Openid4vpVersionNumber = 18 | 19 | 20 | 21 | 22 | 23 | 24 | 25 | 26 | 27 | 28 | 100
 
 export function parseAuthorizationRequestVersion(
   request: Openid4vpAuthorizationRequest | Openid4vpAuthorizationRequestDcApi
-): Openid4vpDraftVersionNumber {
-  const requirements: ['<' | '>=', Openid4vpDraftVersionNumber][] = []
+): Openid4vpVersionNumber {
+  const requirements: ['<' | '>=', Openid4vpVersionNumber][] = []
   // 29
   if (request.verifier_info) {
-    requirements.push(['>=', 29])
+    requirements.push(['>=', 100])
   }
   if (request.verifier_attestations) {
-    requirements.push(['<', 29])
+    requirements.push(['<', 100])
   }
 
   // 28
@@ -171,12 +176,12 @@ export function parseAuthorizationRequestVersion(
   // Find the minimum version that satisfies all "less than" constraints
   const highestPossibleVersion =
     lessThanVersions.length > 0
-      ? (Math.max(Math.min(...lessThanVersions) - 1, 18) as Openid4vpDraftVersionNumber)
-      : (29 as const) // Default to highest version
+      ? (Math.max(Math.min(...lessThanVersions) - 1, 18) as Openid4vpVersionNumber)
+      : (100 as const) // Default to highest version
 
   // Find the maximum version that satisfies all "greater than or equal to" constraints
   const lowestRequiredVersion =
-    greaterThanVersions.length > 0 ? (Math.max(...greaterThanVersions) as Openid4vpDraftVersionNumber) : (18 as const) // Default to lowest version
+    greaterThanVersions.length > 0 ? (Math.max(...greaterThanVersions) as Openid4vpVersionNumber) : (18 as const) // Default to lowest version
 
   // The acceptable range is [lowestRequiredVersion, highestPossibleVersion]
   // We return the lowest possible version that satisfies all constraints
@@ -184,7 +189,7 @@ export function parseAuthorizationRequestVersion(
     // No valid version exists that satisfies all constraints
     throw new Oauth2ServerErrorResponseError({
       error: Oauth2ErrorCodes.InvalidRequest,
-      error_description: 'Could not infer openid4vp version from the openid4vp request payload.',
+      error_description: `Could not infer openid4vp version from the openid4vp request payload. Based on specification requirements, lowest required version is ${lowestRequiredVersion} and highest possible version is ${highestPossibleVersion}`,
     })
   }
 
