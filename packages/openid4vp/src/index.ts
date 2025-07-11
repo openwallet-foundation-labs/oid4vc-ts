@@ -10,6 +10,7 @@ export {
 } from './jarm/jarm-authorization-response/verify-jarm-authorization-response'
 export { zJarmClientMetadata, JarmClientMetadata } from './jarm/metadata/z-jarm-client-metadata'
 
+export { type Openid4vpVersionNumber, parseAuthorizationRequestVersion } from './version'
 export {
   createOpenid4vpAuthorizationRequest,
   CreateOpenid4vpAuthorizationRequestOptions,
