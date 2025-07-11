@@ -56,7 +56,7 @@ export {
   parsePexVpToken,
   parseDcqlVpToken,
 } from './vp-token/parse-vp-token'
-export type { VpToken, VpTokenDcql, VpTokenPex, VpTokenPexEntry } from './vp-token/z-vp-token'
+export type { VpToken, VpTokenDcql, VpTokenPex, VpTokenPresentationEntry } from './vp-token/z-vp-token'
 
 export {
   parseOpenid4vpAuthorizationResponse,

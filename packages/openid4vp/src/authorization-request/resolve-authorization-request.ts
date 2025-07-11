@@ -14,7 +14,7 @@ import {
 } from '../jar/z-jar-authorization-request'
 import type { PexPresentationDefinition } from '../models/z-pex'
 import { type ParsedTransactionDataEntry, parseTransactionData } from '../transaction-data/parse-transaction-data'
-import { type Openid4vpDraftVersionNumber, parseAuthorizationRequestVersion } from '../version'
+import { type Openid4vpVersionNumber, parseAuthorizationRequestVersion } from '../version'
 import {
   type WalletVerificationOptions,
   validateOpenid4vpAuthorizationRequestPayload,
@@ -50,10 +50,13 @@ export type ResolvedOpenid4vpAuthorizationRequest = {
   dcql?: { query: unknown } | undefined
 
   /**
-   * The highest possible draft version number based on draft-specific version checks done on the request.
+   * The highest possible version number based on (draft)-version checks done on the request.
+   *
+   * 100 means 1.0 final, all other numbers are draft versions.
    */
-  version: Openid4vpDraftVersionNumber
+  version: Openid4vpVersionNumber
 }
+
 export async function resolveOpenid4vpAuthorizationRequest(
   options: ResolveOpenid4vpAuthorizationRequestOptions
 ): Promise<ResolvedOpenid4vpAuthorizationRequest> {
