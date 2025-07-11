@@ -60,6 +60,14 @@ export class Openid4vpVerifier {
     return parseTransactionData(options)
   }
 
+  /**
+   * Verify transaction data against submitted credentials.
+   *
+   * NOTE: this expects transaction data based authorization based on hashes. This is the method defined
+   * for SD-JWT VC, but for mDOCs it's much more generic. If you're using transaction data with mDOCs based
+   * on hashes, you can extract the values from the DeviceResponse, otherwise you must verify the transaction data
+   * manually.
+   */
   public verifyTransactionData(options: Omit<VerifyTransactionDataOptions, 'callbacks'>) {
     return verifyTransactionData({
       ...options,

@@ -4,7 +4,9 @@ export const zTransactionEntry = z
   .object({
     type: z.string(),
     credential_ids: z.array(z.string()).nonempty(),
-    transaction_data_hashes_alg: z.array(z.string()).optional(),
+
+    // SD-JWT VC specific
+    transaction_data_hashes_alg: z.array(z.string()).nonempty().optional(),
   })
   .passthrough()
 export type TransactionDataEntry = z.infer<typeof zTransactionEntry>

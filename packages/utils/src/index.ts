@@ -32,7 +32,7 @@ export {
   type InferOutputUnion,
 } from './parse'
 export { joinUriParts } from './path'
-export type { Optional, OrPromise, Simplify, StringWithAutoCompletion } from './type'
+export type { Optional, OrPromise, Simplify, StringWithAutoCompletion, NonEmptyArray } from './type'
 export { getQueryParams, objectToQueryParams } from './url'
 export { type ZodFetcher, createZodFetcher, createFetcher } from './fetcher'
 export {
