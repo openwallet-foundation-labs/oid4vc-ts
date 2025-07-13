@@ -42,10 +42,10 @@ export function parseAuthorizationRequestVersion(
 
   // 27
 
-  if (request.client_metadata?.vp_formats) {
+  if (request.client_metadata?.vp_formats_supported) {
     requirements.push(['>=', 27])
   }
-  if (request.client_metadata?.vp_formats_supported) {
+  if (request.client_metadata?.vp_formats) {
     requirements.push(['<', 27])
   }
 
