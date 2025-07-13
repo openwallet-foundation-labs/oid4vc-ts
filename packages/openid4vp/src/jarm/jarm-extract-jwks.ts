@@ -1,6 +1,6 @@
 import type { JwkSet } from '@openid4vc/oauth2'
 
-export function extractJwkFromJwks(
+export function extractEncryptionJwkFromJwks(
   jwks: JwkSet,
   {
     kid,
