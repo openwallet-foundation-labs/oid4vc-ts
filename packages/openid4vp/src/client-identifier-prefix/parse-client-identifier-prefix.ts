@@ -9,6 +9,7 @@ import {
 } from '../authorization-request/z-authorization-request-dc-api'
 import type { VerifiedJarRequest } from '../jar/handle-jar-request/verify-jar-request'
 import type { ClientMetadata } from '../models/z-client-metadata'
+import type { Openid4vpVersionNumber } from '../version'
 import {
   type ClientIdPrefix,
   type LegacyClientIdScheme,
@@ -92,6 +93,16 @@ export interface GetOpenid4vpClientIdOptions {
 
   responseMode: unknown
   origin?: string
+
+  /**
+   * The version of OpenID4VP used.
+   *
+   * Currently it is only used for:
+   * - determining whether effective client id is `origin:` or `web-origin:` when DC API is used.
+   *
+   * When no version is provided, it is assumed version 1.0 (100) is used.
+   */
+  version?: Openid4vpVersionNumber
 }
 
 /**
@@ -148,6 +159,8 @@ export function getOpenid4vpClientId(options: GetOpenid4vpClientIdOptions): {
     clientId: options.clientId,
   }
 
+  const version = options.version ?? 100
+
   // Handle DC API
   if (isOpenid4vpResponseModeDcApi(options.responseMode)) {
     if (!options.clientId) {
@@ -163,11 +176,7 @@ export function getOpenid4vpClientId(options: GetOpenid4vpClientIdOptions): {
         clientIdPrefix: 'origin',
         effectiveClientIdPrefix: 'origin',
         clientIdIdentifier: options.origin,
-
-        // FIXME: draft 24 uses web-origin, draft 25+ uses origin
-        // But it's not really possible to know which one to use as the
-        // 'effective' client id. Defaulting to origin: since that's newer
-        effectiveClientId: `origin:${options.origin}`,
+        effectiveClientId: version >= 25 ? `origin:${options.origin}` : `web-origin:${options.origin}`,
         original,
       }
     }
@@ -271,6 +280,8 @@ export interface ValidateOpenid4vpClientIdOptions {
   jar?: VerifiedJarRequest
   origin?: string
   callbacks: Pick<CallbackContext, 'getX509CertificateMetadata' | 'hash'>
+
+  version: Openid4vpVersionNumber
 }
 
 /**
