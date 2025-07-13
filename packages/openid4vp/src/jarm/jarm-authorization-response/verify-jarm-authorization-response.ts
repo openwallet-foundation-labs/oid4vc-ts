@@ -9,6 +9,7 @@ import {
   zCompactJwt,
   zJwtHeader,
 } from '@openid4vc/oauth2'
+import { stringToJsonWithErrorHandling } from '@openid4vc/utils'
 import z from 'zod'
 import type { Openid4vpAuthorizationRequest } from '../../authorization-request/z-authorization-request'
 import type { Openid4vpAuthorizationRequestDcApi } from '../../authorization-request/z-authorization-request-dc-api'
@@ -69,7 +70,10 @@ const decryptJarmAuthorizationResponseJwt = async (options: {
     throw new Oauth2Error('Failed to decrypt jarm auth response.')
   }
 
-  return result.payload
+  return {
+    decryptionJwk: result.decryptionJwk,
+    payload: result.payload,
+  }
 }
 
 export interface VerifyJarmAuthorizationResponseOptions {
@@ -104,9 +108,9 @@ export async function verifyJarmAuthorizationResponse(options: VerifyJarmAuthori
         callbacks,
         authorizationRequestPayload,
       })
-    : jarmAuthorizationResponseJwt
+    : { payload: jarmAuthorizationResponseJwt, decryptionJwk: undefined }
 
-  const responseIsSigned = zCompactJwt.safeParse(decryptedRequestData).success
+  const responseIsSigned = zCompactJwt.safeParse(decryptedRequestData.payload).success
   if (!requestDataIsEncrypted && !responseIsSigned) {
     throw new Oauth2Error('Jarm Auth Response must be either encrypted, signed, or signed and encrypted.')
   }
@@ -115,7 +119,7 @@ export async function verifyJarmAuthorizationResponse(options: VerifyJarmAuthori
 
   if (responseIsSigned) {
     const { header: jwsProtectedHeader, payload: jwsPayload } = decodeJwt({
-      jwt: decryptedRequestData,
+      jwt: decryptedRequestData.payload,
       headerSchema: z.object({ ...zJwtHeader.shape, kid: z.string() }),
     })
 
@@ -123,7 +127,7 @@ export async function verifyJarmAuthorizationResponse(options: VerifyJarmAuthori
     const jwtSigner = jwtSignerFromJwt({ header: jwsProtectedHeader, payload: jwsPayload })
 
     const verificationResult = await options.callbacks.verifyJwt(jwtSigner, {
-      compact: decryptedRequestData,
+      compact: decryptedRequestData.payload,
       header: jwsProtectedHeader,
       payload: jwsPayload,
     })
@@ -134,7 +138,10 @@ export async function verifyJarmAuthorizationResponse(options: VerifyJarmAuthori
 
     jarmAuthorizationResponse = response
   } else {
-    const jsonRequestData: unknown = JSON.parse(decryptedRequestData)
+    const jsonRequestData = stringToJsonWithErrorHandling(
+      decryptedRequestData.payload,
+      'Unable to parse decrypted JARM JWE body to JSON'
+    )
     jarmAuthorizationResponse = zJarmAuthorizationResponseEncryptedOnly.parse(jsonRequestData)
   }
 
@@ -150,5 +157,10 @@ export async function verifyJarmAuthorizationResponse(options: VerifyJarmAuthori
         : JarmMode.Signed
 
   const issuer = jarmAuthorizationResponse.iss
-  return { jarmAuthorizationResponse, type, issuer }
+  return {
+    jarmAuthorizationResponse,
+    type,
+    issuer,
+    decryptionJwk: decryptedRequestData.decryptionJwk,
+  }
 }
