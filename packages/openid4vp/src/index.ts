@@ -86,6 +86,7 @@ export {
 } from './authorization-response/z-authorization-response'
 
 export { isJarmResponseMode } from './jarm/jarm-response-mode'
+export { extractEncryptionJwkFromJwks } from './jarm/jarm-extract-jwks'
 
 export {
   isOpenid4vpAuthorizationRequestDcApi,
