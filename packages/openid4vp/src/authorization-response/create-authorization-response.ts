@@ -1,5 +1,6 @@
 import {
   type CallbackContext,
+  type Jwk,
   type JwkSet,
   type JwtSigner,
   Oauth2Error,
@@ -13,7 +14,7 @@ import type { Openid4vpAuthorizationRequest } from '../authorization-request/z-a
 import type { Openid4vpAuthorizationRequestDcApi } from '../authorization-request/z-authorization-request-dc-api'
 import { getOpenid4vpClientId } from '../client-identifier-prefix/parse-client-identifier-prefix'
 import { createJarmAuthorizationResponse } from '../jarm/jarm-authorization-response-create'
-import { extractJwkFromJwks } from '../jarm/jarm-extract-jwks'
+import { extractEncryptionJwkFromJwks } from '../jarm/jarm-extract-jwks'
 import { isJarmResponseMode } from '../jarm/jarm-response-mode'
 import { assertValueSupported, jarmAssertMetadataSupported } from '../jarm/metadata/jarm-assert-metadata-supported'
 import type { JarmServerMetadata } from '../jarm/metadata/z-jarm-authorization-server-metadata'
@@ -37,7 +38,16 @@ export interface CreateOpenid4vpAuthorizationResponseOptions {
   authorizationResponsePayload: Openid4vpAuthorizationResponse & { state?: never }
   jarm?: {
     jwtSigner?: JwtSigner
-    encryption?: { nonce: string }
+    encryption?: {
+      nonce: string
+
+      /**
+       * The JWK that should be used for encryption of the JARM response.
+       *
+       * If not defined, the Jwk will be determined based on the client_metadata.
+       */
+      jwk?: Jwk
+    }
     serverMetadata: JarmServerMetadata
     authorizationServer?: string // The issuer URL of the authorization server that created the response
     audience?: string // The client_id of the client the response is intended for
@@ -48,7 +58,13 @@ export interface CreateOpenid4vpAuthorizationResponseOptions {
 
 export interface CreateOpenid4vpAuthorizationResponseResult {
   authorizationResponsePayload: Openid4vpAuthorizationResponse
-  jarm?: { responseJwt: string }
+  jarm?: {
+    responseJwt: string
+    /**
+     * The JWK used to encrypt the JARM response. Only defined if the response is encrypted.
+     */
+    encryptionJwk?: Jwk
+  }
 }
 
 export async function createOpenid4vpAuthorizationResponse(
@@ -111,7 +127,7 @@ export async function createOpenid4vpAuthorizationResponse(
 
   if (
     clientMetadata.authorization_encrypted_response_alg ||
-    clientMetadata.authorization_encrypted_response_env ||
+    clientMetadata.authorization_encrypted_response_enc ||
     clientMetadata.authorization_signed_response_alg
   ) {
     jarmAssertMetadataSupported({
@@ -120,18 +136,22 @@ export async function createOpenid4vpAuthorizationResponse(
     })
   }
 
-  const encJwk = extractJwkFromJwks(jwks, {
-    supportedAlgValues:
-      jarm.serverMetadata.authorization_encryption_alg_values_supported ??
-      (clientMetadata.authorization_encrypted_response_alg
-        ? [clientMetadata.authorization_encrypted_response_alg]
-        : undefined),
-  })
+  const encJwk =
+    // User-provided JWK takes precedence
+    jarm?.encryption?.jwk ??
+    extractEncryptionJwkFromJwks(jwks, {
+      supportedAlgValues:
+        jarm.serverMetadata.authorization_encryption_alg_values_supported ??
+        (clientMetadata.authorization_encrypted_response_alg
+          ? [clientMetadata.authorization_encrypted_response_alg]
+          : undefined),
+    })
 
   if (!encJwk) {
     throw new Oauth2ServerErrorResponseError({
       error: Oauth2ErrorCodes.InvalidRequest,
-      error_description: 'Could not extract encryption JWK from client metadata. Failed to create JARM response.',
+      error_description:
+        'No encryption JWK provided and could not extract encryption JWK from client metadata. Failed to create JARM response.',
     })
   }
 
@@ -212,6 +232,6 @@ export async function createOpenid4vpAuthorizationResponse(
 
   return {
     authorizationResponsePayload: jarmResponsePayload,
-    jarm: { responseJwt: result.jarmAuthorizationResponseJwt },
+    jarm: { responseJwt: result.jarmAuthorizationResponseJwt, encryptionJwk: encJwk },
   }
 }

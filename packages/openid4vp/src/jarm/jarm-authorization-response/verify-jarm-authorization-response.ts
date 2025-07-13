@@ -13,7 +13,7 @@ import { stringToJsonWithErrorHandling } from '@openid4vc/utils'
 import z from 'zod'
 import type { Openid4vpAuthorizationRequest } from '../../authorization-request/z-authorization-request'
 import type { Openid4vpAuthorizationRequestDcApi } from '../../authorization-request/z-authorization-request-dc-api'
-import { extractJwkFromJwks } from '../jarm-extract-jwks'
+import { extractEncryptionJwkFromJwks } from '../jarm-extract-jwks'
 import { jarmAuthorizationResponseValidate } from './jarm-validate-authorization-response'
 import {
   type JarmAuthorizationResponse,
@@ -54,7 +54,7 @@ const decryptJarmAuthorizationResponseJwt = async (options: {
     //  If there's no kid, we try to extract the JWK from the request, if we are not successful
     // (because e.g. the request used client_metadata_uri) the decryptJwe callback has to handle this edge case
     // See https://github.com/openid/OpenID4VP/issues/441
-    encryptionJwk = extractJwkFromJwks(authorizationRequestPayload.client_metadata.jwks, {
+    encryptionJwk = extractEncryptionJwkFromJwks(authorizationRequestPayload.client_metadata.jwks, {
       // Kid always take precedence
       kid: header.kid,
 
