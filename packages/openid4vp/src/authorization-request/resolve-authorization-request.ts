@@ -99,6 +99,7 @@ export async function resolveOpenid4vpAuthorizationRequest(
     })
   }
 
+  const version = parseAuthorizationRequestVersion(authorizationRequestPayload)
   let clientMetadata = authorizationRequestPayload.client_metadata
   if (
     !isOpenid4vpAuthorizationRequestDcApi(authorizationRequestPayload) &&
@@ -116,6 +117,7 @@ export async function resolveOpenid4vpAuthorizationRequest(
     jar,
     callbacks,
     origin,
+    version,
   })
 
   let pex: ResolvedOpenid4vpAuthorizationRequest['pex'] | undefined
@@ -150,7 +152,7 @@ export async function resolveOpenid4vpAuthorizationRequest(
     client: clientMeta,
     pex,
     dcql,
-    version: parseAuthorizationRequestVersion(authorizationRequestPayload),
+    version,
   }
 }
 

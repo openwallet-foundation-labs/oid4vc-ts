@@ -145,6 +145,7 @@ describe('Correctly parses the client identifier', () => {
           response_type: 'vp_token',
         },
         callbacks,
+        version: 100,
       })
 
       expect(client).toEqual({
@@ -167,6 +168,7 @@ describe('Correctly parses the client identifier', () => {
           client_id_scheme: 'pre-registered',
         },
         callbacks,
+        version: 100,
       })
 
       expect(client).toEqual({
@@ -385,6 +387,7 @@ describe('Correctly parses the client identifier', () => {
           response_type: 'vp_token',
         },
         callbacks,
+        version: 100,
       })
 
       expect(client).toEqual({
@@ -407,6 +410,7 @@ describe('Correctly parses the client identifier', () => {
           response_type: 'vp_token',
         },
         callbacks,
+        version: 100,
       })
 
       expect(client).toEqual({
