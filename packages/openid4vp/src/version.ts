@@ -62,7 +62,7 @@ export function parseAuthorizationRequestVersion(
   }
 
   if (request.presentation_definition || request.presentation_definition_uri) {
-    requirements.push(['>=', 26])
+    requirements.push(['<', 26])
   }
 
   if (request.verifier_attestations) {
