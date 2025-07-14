@@ -3,7 +3,7 @@ import { objectToQueryParams, parseWithErrorHandling, URL, URLSearchParams } fro
 import {
   type CreateJarAuthorizationRequestOptions,
   createJarAuthorizationRequest,
-} from '../jar/create-jar-authorization-request'
+} from '@openid4vc/oauth2'
 import {
   validateOpenid4vpAuthorizationRequestPayload,
   type WalletVerificationOptions,
