@@ -167,8 +167,8 @@ export class Oauth2AuthorizationServer {
   /**
    * Parse a pushed authorization request
    */
-  public parsePushedAuthorizationRequest(options: ParsePushedAuthorizationRequestOptions) {
-    return parsePushedAuthorizationRequest(options)
+  public async parsePushedAuthorizationRequest(options: ParsePushedAuthorizationRequestOptions) {
+    return await parsePushedAuthorizationRequest(options)
   }
 
   public verifyPushedAuthorizationRequest(options: Omit<VerifyPushedAuthorizationRequestOptions, 'callbacks'>) {

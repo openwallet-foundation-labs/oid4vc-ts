@@ -509,13 +509,14 @@ describe('Full E2E test', () => {
       http.post(`${authorizationServerMetadata.pushed_authorization_request_endpoint}`, async ({ request }) => {
         const parRequest = parseXwwwFormUrlEncoded(await request.text())
 
-        const { authorizationRequest, clientAttestation, dpop } = authorizationServer.parsePushedAuthorizationRequest({
+        const { authorizationRequest, clientAttestation, dpop } = await authorizationServer.parsePushedAuthorizationRequest({
           authorizationRequest: parRequest,
           request: {
             headers: request.headers,
             method: request.method as HttpMethod,
             url: request.url,
           },
+          callbacks
         })
 
         const verifiedParRequest = await authorizationServer.verifyPushedAuthorizationRequest({
