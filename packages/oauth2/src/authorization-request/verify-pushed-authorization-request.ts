@@ -7,7 +7,7 @@ import {
 
 export type VerifyPushedAuthorizationRequestReturn = VerifyAuthorizationRequestReturn
 export interface VerifyPushedAuthorizationRequestOptions extends VerifyAuthorizationRequestOptions {
-  jwtRequestObject?: string
+  authorizationRequestJwt?: string
 }
 
 export async function verifyPushedAuthorizationRequest(
@@ -15,14 +15,14 @@ export async function verifyPushedAuthorizationRequest(
 ): Promise<VerifyPushedAuthorizationRequestReturn> {
   const { clientAttestation, dpop } = await verifyAuthorizationRequest(options)
 
-  if(options.jwtRequestObject) {
+  if(options.authorizationRequestJwt) {
     const clientPayload = clientAttestation?.clientAttestation?.payload
     if (!clientPayload) {
       throw new Error('Missing client-attestation payload while verifying JAR')
     }
 
     await verifyJarRequest({ 
-      jwtRequestObject: options.jwtRequestObject,
+      authorizationRequestJwt: options.authorizationRequestJwt,
       jarRequestParams: options.authorizationRequest, 
       callbacks: options.callbacks, 
       clientAttestationPayload: clientPayload

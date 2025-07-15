@@ -27,7 +27,7 @@ export interface ParsePushedAuthorizationRequestResult extends ParseAuthorizatio
    * The JWT-secured request object, if the request was pushed as a JAR.
    * May be undefined if the request object is not a JAR.
    */
-  jwtRequestObject?: string
+  authorizationRequestJwt?: string
 }
 
 /**
@@ -46,10 +46,10 @@ export async function parsePushedAuthorizationRequest(
   )
 
   let parsedAuthorizationRequest;
-  let jwtRequestObject;
+  let authorizationRequestJwt;
   if (isJarAuthorizationRequest(parsed)) {
     const parsedJar = await parseJarRequest({ jarRequestParams: parsed, callbacks: options.callbacks })
-    const jwt = decodeJwt({ jwt: parsedJar.jwtRequestObject })
+    const jwt = decodeJwt({ jwt: parsedJar.authorizationRequestJwt })
 
     parsedAuthorizationRequest = zAuthorizationRequest.safeParse(jwt.payload)
     if (!parsedAuthorizationRequest.success) {
@@ -59,7 +59,7 @@ export async function parsePushedAuthorizationRequest(
       })
     }
 
-    jwtRequestObject = parsedJar.jwtRequestObject;
+    authorizationRequestJwt = parsedJar.authorizationRequestJwt;
   } else {
 
     parsedAuthorizationRequest = zAuthorizationRequest.safeParse(options.authorizationRequest)
@@ -79,7 +79,7 @@ export async function parsePushedAuthorizationRequest(
 
   return {
     authorizationRequest,
-    jwtRequestObject,
+    authorizationRequestJwt,
     dpop,
     clientAttestation,
   }
