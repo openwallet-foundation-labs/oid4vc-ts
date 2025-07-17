@@ -103,7 +103,7 @@ export async function createOpenid4vpAuthorizationResponse(
   // When using OpenID Federation, we must not rely on the client metadata from the request
   if (clientIdPrefix === 'openid_federation' && !options.clientMetadata) {
     throw new Oauth2Error(
-      "When OpenID Federation is used as the client id scheme (https/openid_federation), passing externally fetched and verified 'clientMetadata' to the 'createOpenid4vpAuthorizationResponse' is required."
+      "When OpenID Federation is used as the client id prefix (https/openid_federation), passing externally fetched and verified 'clientMetadata' to the 'createOpenid4vpAuthorizationResponse' is required."
     )
   }
 

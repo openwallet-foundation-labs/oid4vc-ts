@@ -16,7 +16,7 @@ import type { WalletMetadata } from '../../models/z-wallet-metadata'
  */
 export async function fetchJarRequestObject(options: {
   requestUri: string
-  clientIdentifierScheme?: ClientIdPrefix
+  clientIdPrefix?: ClientIdPrefix
   method: 'get' | 'post'
   wallet: {
     metadata?: WalletMetadata
@@ -24,13 +24,10 @@ export async function fetchJarRequestObject(options: {
   }
   fetch?: Fetch
 }): Promise<string> {
-  const { requestUri, clientIdentifierScheme, method, wallet, fetch } = options
+  const { requestUri, clientIdPrefix, method, wallet, fetch } = options
 
   let requestBody = wallet.metadata ? { wallet_metadata: wallet.metadata, wallet_nonce: wallet.nonce } : undefined
-  if (
-    requestBody?.wallet_metadata?.request_object_signing_alg_values_supported &&
-    clientIdentifierScheme === 'redirect_uri'
-  ) {
+  if (requestBody?.wallet_metadata?.request_object_signing_alg_values_supported && clientIdPrefix === 'redirect_uri') {
     // This value indicates that the Client Identifier (without the prefix redirect_uri:) is the Verifier's Redirect URI (or Response URI when Response Mode direct_post is used). The Authorization Request MUST NOT be signed.
     const { request_object_signing_alg_values_supported, ...rest } = requestBody.wallet_metadata
     requestBody = { ...requestBody, wallet_metadata: { ...rest } }
