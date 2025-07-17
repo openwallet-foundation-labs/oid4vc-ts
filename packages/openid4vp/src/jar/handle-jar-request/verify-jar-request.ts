@@ -61,8 +61,8 @@ export async function verifyJarRequest(options: VerifyJarRequestOptions): Promis
 
   const sendBy = jarRequestParams.request ? 'value' : 'reference'
 
-  // We can't know the client id scheme here if draft was before client_id_scheme became prefix
-  const clientIdentifierScheme: ClientIdPrefix | undefined = jarRequestParams.client_id
+  // We can't know the client id prefix here if draft was before client_id_scheme became prefix
+  const clientIdPrefix: ClientIdPrefix | undefined = jarRequestParams.client_id
     ? zClientIdPrefix.safeParse(jarRequestParams.client_id.split(':')[0]).data
     : 'origin'
 
@@ -78,7 +78,7 @@ export async function verifyJarRequest(options: VerifyJarRequestOptions): Promis
     jarRequestParams.request ??
     (await fetchJarRequestObject({
       requestUri: jarRequestParams.request_uri,
-      clientIdentifierScheme,
+      clientIdPrefix,
       method,
       wallet,
       fetch: callbacks.fetch,
