@@ -14,7 +14,7 @@ describe('Parse Access Token Request', () => {
           url: 'https://request.com/token',
         },
       })
-    ).toThrow('Error occured during validation of authorization request.')
+    ).toThrow('Error occurred during validation of authorization request.')
   })
 
   test('handles unknown grant_type', () => {

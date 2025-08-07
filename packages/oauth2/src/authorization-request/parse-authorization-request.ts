@@ -1,4 +1,4 @@
-import { extractClientAttestationJwtsFromHeaders } from '../client-attestation/clent-attestation'
+import { extractClientAttestationJwtsFromHeaders } from '../client-attestation/client-attestation'
 import type { RequestLike } from '../common/z-common'
 import { Oauth2ErrorCodes } from '../common/z-oauth2-error'
 import { extractDpopJwtFromHeaders } from '../dpop/dpop'
@@ -31,7 +31,7 @@ export interface ParseAuthorizationRequestResult {
         jwt: string
       }
 
-  // TOOD: we should revampt this to generic client authentication so we can suppor other
+  // TODO: we should revampt this to generic client authentication so we can suppor other
   // method as well. We should also create a generic verify client authentication method.
   /**
    * The client attestation jwts from the authorization request headers.

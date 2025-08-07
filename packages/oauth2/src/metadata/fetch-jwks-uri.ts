@@ -6,10 +6,10 @@ import { type JwkSet, zJwkSet } from '../common/jwk/z-jwk'
 /**
  * Fetch JWKs from a provided JWKs URI.
  *
- * Returns validated metadata if successfull response
+ * Returns validated metadata if successful response
  * Throws error otherwise
  *
- * @throws {ValidationError} if successfull response but validation of response failed
+ * @throws {ValidationError} if successful response but validation of response failed
  * @throws {InvalidFetchResponseError} if unsuccesful response
  */
 export async function fetchJwks(jwksUrl: string, fetch?: Fetch): Promise<JwkSet> {
@@ -18,7 +18,7 @@ export async function fetchJwks(jwksUrl: string, fetch?: Fetch): Promise<JwkSet>
   const { result, response } = await fetcher(zJwkSet, [ContentType.JwkSet, ContentType.Json], jwksUrl)
   if (!response.ok) {
     throw new InvalidFetchResponseError(
-      `Fetching JWKs from jwks_uri '${jwksUrl}' resulted in an unsuccessfull response with status code '${response.status}'.`,
+      `Fetching JWKs from jwks_uri '${jwksUrl}' resulted in an unsuccessful response with status code '${response.status}'.`,
       await response.clone().text(),
       response
     )

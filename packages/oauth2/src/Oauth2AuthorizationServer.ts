@@ -40,7 +40,7 @@ import {
   verifyPushedAuthorizationRequest,
 } from './authorization-request/verify-pushed-authorization-request'
 import type { CallbackContext } from './callbacks'
-import { type VerifyClientAttestationOptions, verifyClientAttestation } from './client-attestation/clent-attestation'
+import { type VerifyClientAttestationOptions, verifyClientAttestation } from './client-attestation/client-attestation'
 import { Oauth2ErrorCodes } from './common/z-oauth2-error'
 import { type VerifyDpopJwtOptions, verifyDpopJwt } from './dpop/dpop'
 import {

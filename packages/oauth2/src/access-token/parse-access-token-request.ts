@@ -1,5 +1,5 @@
 import { formatZodError } from '@openid4vc/utils'
-import { extractClientAttestationJwtsFromHeaders } from '../client-attestation/clent-attestation'
+import { extractClientAttestationJwtsFromHeaders } from '../client-attestation/client-attestation'
 import type { RequestLike } from '../common/z-common'
 import { Oauth2ErrorCodes } from '../common/z-oauth2-error'
 import { extractDpopJwtFromHeaders } from '../dpop/dpop'
@@ -57,7 +57,7 @@ export interface ParseAccessTokenRequestOptions {
 
   /**
    * The access token request as a JSON object. Your server should decode the
-   * `x-www-url-form-urlencoded` body into an object (e.g. using `bodyParser.urlEncoed()` in express)
+   * `x-www-url-form-urlencoded` body into an object (e.g. using `bodyParser.urlEncoded()` in express)
    */
   accessTokenRequest: Record<string, unknown>
 }
@@ -74,7 +74,7 @@ export function parseAccessTokenRequest(options: ParseAccessTokenRequestOptions)
   if (!parsedAccessTokenRequest.success) {
     throw new Oauth2ServerErrorResponseError({
       error: Oauth2ErrorCodes.InvalidRequest,
-      error_description: `Error occured during validation of authorization request.\n${formatZodError(parsedAccessTokenRequest.error)}`,
+      error_description: `Error occurred during validation of authorization request.\n${formatZodError(parsedAccessTokenRequest.error)}`,
     })
   }
 

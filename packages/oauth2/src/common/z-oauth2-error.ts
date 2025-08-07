@@ -28,11 +28,15 @@ export enum Oauth2ErrorCodes {
   // OpenID4VCI
   InvalidCredentialRequest = 'invalid_credential_request',
   CredentialRequestDenied = 'credential_request_denied',
-  UnsupportedCredentialType = 'unsupported_credential_type',
-  UnsupportedCredentialFormat = 'unsupported_credential_format',
   InvalidProof = 'invalid_proof',
   InvalidNonce = 'invalid_nonce',
   InvalidEncryptionParameters = 'invalid_encryption_parameters',
+  UnknownCredentialConfiguration = 'unknown_credential_configuration',
+  UnknownCredentialIdentifier = 'unknown_credential_identifier',
+  InvalidTransactionId = 'invalid_transaction_id',
+  // Removed from Draft 16+
+  UnsupportedCredentialType = 'unsupported_credential_type',
+  UnsupportedCredentialFormat = 'unsupported_credential_format',
 
   // Jar
   InvalidRequestUri = 'invalid_request_uri',

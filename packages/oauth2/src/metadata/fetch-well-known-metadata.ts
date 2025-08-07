@@ -7,11 +7,11 @@ import { ValidationError } from '../../../utils/src/error/ValidationError'
  * Fetch well known metadata and validate the response.
  *
  * Returns null if 404 is returned
- * Returns validated metadata if successfull response
+ * Returns validated metadata if successful response
  * Throws error otherwise
  *
- * @throws {ValidationError} if successfull response but validation of response failed
- * @throws {InvalidFetchResponseError} if no successfull or 404 response
+ * @throws {ValidationError} if successful response but validation of response failed
+ * @throws {InvalidFetchResponseError} if no successful or 404 response
  * @throws {Error} if parsing json from response fails
  */
 export async function fetchWellKnownMetadata<Schema extends BaseSchema>(
@@ -28,7 +28,7 @@ export async function fetchWellKnownMetadata<Schema extends BaseSchema>(
 
   if (!response.ok) {
     throw new InvalidFetchResponseError(
-      `Fetching well known metadata from '${wellKnownMetadataUrl}' resulted in an unsuccessfull response with status '${response.status}'.`,
+      `Fetching well known metadata from '${wellKnownMetadataUrl}' resulted in an unsuccessful response with status '${response.status}'.`,
       await response.clone().text(),
       response
     )

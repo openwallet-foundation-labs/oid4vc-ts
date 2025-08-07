@@ -46,7 +46,7 @@ export type { RequestClientAttestationOptions } from './client-attestation/clien
 export {
   createClientAttestationJwt,
   type CreateClientAttestationJwtOptions,
-} from './client-attestation/clent-attestation'
+} from './client-attestation/client-attestation'
 export type {
   ClientAttestationJwtHeader,
   ClientAttestationJwtPayload,
