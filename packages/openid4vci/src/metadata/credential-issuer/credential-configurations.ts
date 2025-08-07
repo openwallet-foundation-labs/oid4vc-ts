@@ -15,7 +15,7 @@ export interface ExtractScopesForCredentialConfigurationIdsOptions {
   credentialConfigurationIds: string[]
 
   /**
-   * Wheter to throw an error if the correspdong credential configuration
+   * Whether to throw an error if the corresponding credential configuration
    * for a provided credential configuration id has no scope.
    *
    * @default false

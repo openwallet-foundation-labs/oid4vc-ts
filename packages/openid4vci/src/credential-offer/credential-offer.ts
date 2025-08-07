@@ -24,7 +24,7 @@ import type z from 'zod'
 import type { IssuerMetadataResult } from '../metadata/fetch-issuer-metadata'
 import { Openid4vciDraftVersion } from '../version'
 import {
-  type CredenialOfferAuthorizationCodeGrant,
+  type CredentialOfferAuthorizationCodeGrant,
   type CredentialOfferGrants,
   type CredentialOfferObject,
   type CredentialOfferPreAuthorizedCodeGrant,
@@ -59,7 +59,7 @@ export async function resolveCredentialOffer(
     )
     if (!response.ok || !result) {
       throw new InvalidFetchResponseError(
-        `Fetching credential offer from '${parsedQueryParams.credential_offer_uri}' resulted in an unsuccesfull response with status '${response.status}'`,
+        `Fetching credential offer from '${parsedQueryParams.credential_offer_uri}' resulted in an unsuccessful response with status '${response.status}'`,
         await response.clone().text(),
         response
       )
@@ -92,7 +92,7 @@ export async function resolveCredentialOffer(
 
 export interface CreateCredentialOfferGrantsOptions {
   [preAuthorizedCodeGrantIdentifier]?: Partial<CredentialOfferPreAuthorizedCodeGrant>
-  [authorizationCodeGrantIdentifier]?: CredenialOfferAuthorizationCodeGrant
+  [authorizationCodeGrantIdentifier]?: CredentialOfferAuthorizationCodeGrant
 
   [key: string]: unknown
 }
@@ -118,7 +118,7 @@ export interface CreateCredentialOfferOptions {
 
   /**
    * If provided the encoded credential offer will use the `credential_offer_uri` parameter
-   * instaed of directly adding the `credential_offer`. Requires hosting of the `credential_offer_uri`
+   * instead of directly adding the `credential_offer`. Requires hosting of the `credential_offer_uri`
    */
   credentialOfferUri?: string
 

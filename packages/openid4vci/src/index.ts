@@ -4,7 +4,7 @@ export type {
   CredentialOfferObject,
   CredentialOfferPreAuthorizedCodeGrantTxCode,
   CredentialOfferGrants,
-  CredenialOfferAuthorizationCodeGrant,
+  CredentialOfferAuthorizationCodeGrant,
   CredentialOfferPreAuthorizedCodeGrant,
 } from './credential-offer/z-credential-offer'
 
@@ -20,8 +20,13 @@ export type {
   CredentialRequestWithFormats,
   CredentialRequest,
   CredentialRequestFormatSpecific,
+  DeferredCredentialRequest,
 } from './credential-request/z-credential-request'
-export type { CredentialErrorResponse, CredentialResponse } from './credential-request/z-credential-response'
+export type {
+  CredentialErrorResponse,
+  CredentialResponse,
+  DeferredCredentialResponse,
+} from './credential-request/z-credential-response'
 export {
   type GetCredentialConfigurationsMatchingRequestFormatOptions,
   getCredentialConfigurationsMatchingRequestFormat,

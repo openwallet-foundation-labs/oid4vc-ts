@@ -24,8 +24,11 @@ import {
   type RetrieveCredentialsResponseNotOk,
   type RetrieveCredentialsResponseOk,
   type RetrieveCredentialsWithFormatOptions,
+  type RetrieveDeferredCredentialsOptions,
+  type RetrieveDeferredCredentialsResponseOk,
   retrieveCredentialsWithCredentialConfigurationId,
   retrieveCredentialsWithFormat,
+  retrieveDeferredCredentials,
 } from './credential-request/retrieve-credentials'
 import { Openid4vciError } from './error/Openid4vciError'
 import { Openid4vciRetrieveCredentialsError } from './error/Openid4vciRetrieveCredentialsError'
@@ -38,7 +41,7 @@ import { extractKnownCredentialConfigurationSupportedFormats } from './metadata/
 import type { CredentialIssuerMetadata } from './metadata/credential-issuer/z-credential-issuer-metadata'
 import { type IssuerMetadataResult, resolveIssuerMetadata } from './metadata/fetch-issuer-metadata'
 import { type RequestNonceOptions, requestNonce } from './nonce/nonce-request'
-import { type SendNotifcationOptions, sendNotifcation } from './notification/notification'
+import { type SendNotificationOptions, sendNotification } from './notification/notification'
 import { Openid4vciDraftVersion } from './version'
 
 export enum AuthorizationFlow {
@@ -88,7 +91,7 @@ export class Openid4vciClient {
    * Retrieve an authorization code for a presentation during issuance session
    *
    * This can only be called if an authorization challenge was performed before and returned a
-   * `presentation` paramater along with an `auth_session`. If the presentation response included
+   * `presentation` parameter along with an `auth_session`. If the presentation response included
    * an `presentation_during_issuance_session` parameter it MUST be included in this request as well.
    */
   public async retrieveAuthorizationCodeUsingPresentation(options: {
@@ -142,9 +145,9 @@ export class Openid4vciClient {
    *
    * In case the authorization challenge request returns an error with `insufficient_authorization`
    * with a `presentation` field it means the authorization server expects presentation of credentials
-   * before issuance of crednetials. If this is the case, the value in `presentation` should be treated
+   * before issuance of credentials. If this is the case, the value in `presentation` should be treated
    * as an openid4vp authorization request and submitted to the verifier. Once the presentation response
-   * has been submitted, the RP will respnosd with a `presentation_during_issuance_session` parameter.
+   * has been submitted, the RP will respond with a `presentation_during_issuance_session` parameter.
    * Together with the `auth_session` parameter returned in this call you can retrieve an `authorization_code`
    * using
    */
@@ -381,7 +384,7 @@ export class Openid4vciClient {
    * Request a nonce to be used in credential request proofs from the `nonce_endpoint`
    *
    * @throws Openid4vciError - if no `nonce_endpoint` is configured in the issuer metadata
-   * @thrwos InvalidFetchResponseError - if the nonce endpoint did not return a succesfull response
+   * @throws InvalidFetchResponseError - if the nonce endpoint did not return a successful response
    * @throws ValidationError - if validating the nonce response failed
    */
   public async requestNonce(options: Pick<RequestNonceOptions, 'issuerMetadata'>) {
@@ -452,7 +455,7 @@ export class Openid4vciClient {
   }
 
   /**
-   * @throws Openid4vciRetrieveCredentialsError - if an unsuccesfull response or the respnose couldn't be parsed as credential response
+   * @throws Openid4vciRetrieveCredentialsError - if an unsuccessful response or the response couldn't be parsed as credential response
    * @throws ValidationError - if validation of the credential request failed
    * @throws Openid4vciError - if the `credentialConfigurationId` couldn't be found, or if the the format specific request couldn't be constructed
    */
@@ -470,7 +473,10 @@ export class Openid4vciClient {
   > & { credentialConfigurationId: string }) {
     let credentialResponse: RetrieveCredentialsResponseNotOk | RetrieveCredentialsResponseOk
 
-    if (issuerMetadata.originalDraftVersion === Openid4vciDraftVersion.Draft15) {
+    if (
+      issuerMetadata.originalDraftVersion === Openid4vciDraftVersion.Draft15 ||
+      issuerMetadata.originalDraftVersion === Openid4vciDraftVersion.Draft16
+    ) {
       credentialResponse = await retrieveCredentialsWithCredentialConfigurationId({
         accessToken,
         credentialConfigurationId,
@@ -511,7 +517,33 @@ export class Openid4vciClient {
   }
 
   /**
-   * @throws Openid4vciSendNotificationError - if an unsuccesfull response
+   * @throws Openid4vciRetrieveCredentialsError - if an unsuccessful response or the response couldn't be parsed as credential response
+   * @throws ValidationError - if validation of the credential request failed
+   */
+  public async retrieveDeferredCredentials(
+    options: Pick<
+      RetrieveDeferredCredentialsOptions,
+      'issuerMetadata' | 'accessToken' | 'transactionId' | 'dpop' | 'additionalRequestPayload'
+    >
+  ): Promise<RetrieveDeferredCredentialsResponseOk> {
+    const credentialResponse = await retrieveDeferredCredentials({
+      ...options,
+      callbacks: this.options.callbacks,
+    })
+
+    if (!credentialResponse.ok) {
+      throw new Openid4vciRetrieveCredentialsError(
+        `Error retrieving deferred credentials from '${options.issuerMetadata.credentialIssuer.credential_issuer}'`,
+        credentialResponse,
+        await credentialResponse.response.clone().text()
+      )
+    }
+
+    return credentialResponse
+  }
+
+  /**
+   * @throws Openid4vciSendNotificationError - if an unsuccessful response
    * @throws ValidationError - if validation of the notification request failed
    */
   public async sendNotification({
@@ -521,10 +553,10 @@ export class Openid4vciClient {
     accessToken,
     dpop,
   }: Pick<
-    SendNotifcationOptions,
+    SendNotificationOptions,
     'accessToken' | 'additionalRequestPayload' | 'issuerMetadata' | 'dpop' | 'notification'
   >) {
-    const notificationResponse = await sendNotifcation({
+    const notificationResponse = await sendNotification({
       accessToken,
       issuerMetadata,
       additionalRequestPayload,

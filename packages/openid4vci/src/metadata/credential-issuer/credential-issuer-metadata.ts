@@ -41,7 +41,7 @@ export async function fetchCredentialIssuerMetadata(
 /**
  * Extract credential configuration supported entries where the `format` is known to this
  * library. Should be ran only after verifying the credential issuer metadata structure, so
- * we can be certain that if the `format` matches the other format specific requriements are also met.
+ * we can be certain that if the `format` matches the other format specific requirements are also met.
  *
  * Validation is done when resolving issuer metadata, or when calling `createIssuerMetadata`.
  */

@@ -3,11 +3,22 @@ import {
   zCredentialConfigurationSupportedClaimsDraft14,
   zMsoMdocIssuerMetadataClaimsDescription,
 } from '../../../metadata/credential-issuer/z-claims-description'
+import { zCredentialConfigurationSupportedCommonCredentialMetadata } from '../../../metadata/credential-issuer/z-credential-configuration-supported-common'
 
 export const zMsoMdocFormatIdentifier = z.literal('mso_mdoc')
 export type MsoMdocFormatIdentifier = z.infer<typeof zMsoMdocFormatIdentifier>
 
 export const zMsoMdocCredentialIssuerMetadata = z.object({
+  format: zMsoMdocFormatIdentifier,
+  doctype: z.string(),
+  credential_metadata: zCredentialConfigurationSupportedCommonCredentialMetadata
+    .extend({
+      claims: z.array(zMsoMdocIssuerMetadataClaimsDescription).optional(),
+    })
+    .optional(),
+})
+
+export const zMsoMdocCredentialIssuerMetadataDraft15 = z.object({
   format: zMsoMdocFormatIdentifier,
   doctype: z.string(),
   claims: z.array(zMsoMdocIssuerMetadataClaimsDescription).optional(),
