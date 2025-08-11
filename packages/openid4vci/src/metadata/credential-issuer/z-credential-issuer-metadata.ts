@@ -305,7 +305,7 @@ const zCredentialConfigurationSupportedDraft14To11 = zCredentialConfigurationSup
     ])
   )
 
-export const zCredentialIssuerMetadataDraft11To14 = z
+export const zCredentialIssuerMetadataDraft11To16 = z
   .object({
     authorization_server: z.string().optional(),
     credentials_supported: z.array(
@@ -332,7 +332,7 @@ export const zCredentialIssuerMetadataDraft11To14 = z
   .pipe(
     z
       .object({
-        // Update from v11 structrue to v14 structure
+        // Update from v11 structure to v14 structure
         credential_configurations_supported: z.record(z.string(), zCredentialConfigurationSupportedDraft11To14),
       })
       .passthrough()
@@ -355,10 +355,10 @@ export const zCredentialIssuerMetadataWithDraft11 = zCredentialIssuerMetadataDra
   )
 
 export const zCredentialIssuerMetadata = z.union([
-  // First prioritize draft 15/14 (and 13)
+  // First prioritize draft 16/15/14 (and 13)
   zCredentialIssuerMetadataDraft14Draft15Draft16,
-  // Then try parsing draft 11 and transform into draft 14
-  zCredentialIssuerMetadataDraft11To14,
+  // Then try parsing draft 11 and transform into draft 16
+  zCredentialIssuerMetadataDraft11To16,
 ])
 
 export const zCredentialIssuerMetadataWithDraftVersion = z.union([
@@ -397,7 +397,7 @@ export const zCredentialIssuerMetadataWithDraftVersion = z.union([
     }
   }),
   // Then try parsing draft 11 and transform into draft 14
-  zCredentialIssuerMetadataDraft11To14.transform((credentialIssuerMetadata) => ({
+  zCredentialIssuerMetadataDraft11To16.transform((credentialIssuerMetadata) => ({
     credentialIssuerMetadata,
     originalDraftVersion: Openid4vciDraftVersion.Draft11,
   })),
