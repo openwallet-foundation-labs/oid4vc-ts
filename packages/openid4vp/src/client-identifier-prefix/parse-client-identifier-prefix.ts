@@ -380,7 +380,7 @@ export async function validateOpenid4vpClientId(
       })
     }
 
-    if (authorizationRequestPayload.response_uri && authorizationRequestPayload.redirect_uri !== clientIdIdentifier) {
+    if (authorizationRequestPayload.response_uri && authorizationRequestPayload.response_uri !== clientIdIdentifier) {
       throw new Oauth2ServerErrorResponseError({
         error: Oauth2ErrorCodes.InvalidClient,
         error_description: `When the client identifier prefix is 'redirect_uri', the client id identifier MUST match the response_uri.`,
