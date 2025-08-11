@@ -5,17 +5,15 @@ const zCredentialEncoding = z.union([z.string(), z.record(z.string(), z.any())])
 
 const zBaseCredentialResponse = z
   .object({
-    credential: z.optional(zCredentialEncoding),
     credentials: z.optional(z.array(zCredentialEncoding)),
-
     interval: z.number().int().positive().optional(),
-
     notification_id: z.string().optional(),
   })
   .passthrough()
 
 export const zCredentialResponse = zBaseCredentialResponse
   .extend({
+    credential: z.optional(zCredentialEncoding),
     transaction_id: z.string().optional(),
 
     c_nonce: z.string().optional(),
@@ -62,11 +60,11 @@ export type CredentialErrorResponse = z.infer<typeof zCredentialErrorResponse>
 
 export const zDeferredCredentialResponse = zBaseCredentialResponse.refine(
   (value) => {
-    const { credential, credentials, interval } = value
-    return [credential, credentials, interval].filter((i) => i !== undefined).length === 1
+    const { credentials, interval } = value
+    return [credentials, interval].filter((i) => i !== undefined).length === 1
   },
   {
-    message: `Exactly one of 'credential', 'credentials', or 'interval' MUST be defined.`,
+    message: `Exactly one of 'credentials' or 'interval' MUST be defined.`,
   }
 )
 

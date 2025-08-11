@@ -47,14 +47,21 @@ export function createCredentialResponse(options: CreateCredentialResponseOption
   return credentialResponse
 }
 
-export type CreateDeferredCredentialResponseOptions = Omit<
-  CreateCredentialResponseOptions,
-  'credentialRequest' | 'transactionId' | 'cNonce' | 'cNonceExpiresInSeconds'
->
+export type CreateDeferredCredentialResponseOptions = {
+  credentials?: DeferredCredentialResponse['credentials']
+
+  interval?: number
+
+  notificationId?: string
+
+  /**
+   * Additional payload to include in the deferred credential response
+   */
+  additionalPayload?: Record<string, unknown>
+}
 
 export function createDeferredCredentialResponse(options: CreateDeferredCredentialResponseOptions) {
   return parseWithErrorHandling(zDeferredCredentialResponse, {
-    credential: options.credential,
     credentials: options.credentials,
     notification_id: options.notificationId,
     interval: options.interval,
