@@ -108,7 +108,7 @@ export interface GetOpenid4vpClientIdOptions {
 /**
  * Get the client id for an authorization request based on the response_mode, client_id, client_id_scheme and origin values.
  *
- * It will return the client id scheme as used in OpenID4VP draft 29, and optionally provide the legacyClientId if the
+ * It will return the client id prefix as used in OpenID4VP v1, and optionally provide the legacyClientId if the
  * client id was provided with a client_id_scheme
  */
 export function getOpenid4vpClientId(options: GetOpenid4vpClientIdOptions): {
@@ -127,7 +127,7 @@ export function getOpenid4vpClientId(options: GetOpenid4vpClientIdOptions): {
   clientIdPrefix: UniformClientIdPrefix
 
   /**
-   * The effective client id scheme, is the client id scheme that was used in the actual request.
+   * The effective client id prefix, is the client id prefix that was used in the actual request.
    *
    * E.g. `did` will remain as `did`
    */
@@ -317,7 +317,7 @@ export async function validateOpenid4vpClientId(
   if (!parserConfigWithDefaults.supportedSchemes.includes(clientIdPrefix)) {
     throw new Oauth2ServerErrorResponseError({
       error: Oauth2ErrorCodes.InvalidRequest,
-      error_description: `Unsupported client identifier scheme. ${clientIdPrefix} is not supported.`,
+      error_description: `Unsupported client identifier prefix. ${clientIdPrefix} is not supported.`,
     })
   }
 
@@ -337,7 +337,7 @@ export async function validateOpenid4vpClientId(
     if (!jar) {
       throw new Oauth2ServerErrorResponseError({
         error: Oauth2ErrorCodes.InvalidRequest,
-        error_description: 'Using client identifier scheme "https" requires a signed JAR request.',
+        error_description: 'Using client identifier prefix "https" requires a signed JAR request.',
       })
     }
 
@@ -345,7 +345,7 @@ export async function validateOpenid4vpClientId(
       throw new Oauth2ServerErrorResponseError({
         error: Oauth2ErrorCodes.InvalidRequest,
         error_description:
-          'Something went wrong. The JWT signer method is not federation but the client identifier scheme is https.',
+          'Something went wrong. The JWT signer method is not federation but the client identifier prefix is https.',
       })
     }
 
@@ -362,14 +362,28 @@ export async function validateOpenid4vpClientId(
     if (jar) {
       throw new Oauth2ServerErrorResponseError({
         error: Oauth2ErrorCodes.InvalidRequest,
-        error_description: 'Using client identifier scheme "redirect_uri" the request MUST NOT be signed.',
+        error_description: 'Using client identifier prefix "redirect_uri" the request MUST NOT be signed.',
       })
     }
 
     if (isOpenid4vpAuthorizationRequestDcApi(authorizationRequestPayload)) {
       throw new Oauth2ServerErrorResponseError({
         error: Oauth2ErrorCodes.InvalidRequest,
-        error_description: `The client identifier scheme 'redirect_uri' is not supported when using the dc_api response mode.`,
+        error_description: `The client identifier prefix 'redirect_uri' is not supported when using the dc_api response mode.`,
+      })
+    }
+
+    if (authorizationRequestPayload.redirect_uri && authorizationRequestPayload.redirect_uri !== clientIdIdentifier) {
+      throw new Oauth2ServerErrorResponseError({
+        error: Oauth2ErrorCodes.InvalidClient,
+        error_description: `When the client identifier prefix is 'redirect_uri', the client id identifier MUST match the redirect_uri.`,
+      })
+    }
+
+    if (authorizationRequestPayload.response_uri && authorizationRequestPayload.redirect_uri !== clientIdIdentifier) {
+      throw new Oauth2ServerErrorResponseError({
+        error: Oauth2ErrorCodes.InvalidClient,
+        error_description: `When the client identifier prefix is 'redirect_uri', the client id identifier MUST match the response_uri.`,
       })
     }
 
@@ -387,7 +401,7 @@ export async function validateOpenid4vpClientId(
     if (!jar) {
       throw new Oauth2ServerErrorResponseError({
         error: Oauth2ErrorCodes.InvalidRequest,
-        error_description: 'Using client identifier scheme "did" requires a signed JAR request.',
+        error_description: 'Using client identifier prefix "did" requires a signed JAR request.',
       })
     }
 
@@ -395,7 +409,7 @@ export async function validateOpenid4vpClientId(
       throw new Oauth2ServerErrorResponseError({
         error: Oauth2ErrorCodes.InvalidRequest,
         error_description:
-          'Something went wrong. The JWT signer method is not did but the client identifier scheme is did.',
+          'Something went wrong. The JWT signer method is not did but the client identifier prefix is did.',
       })
     }
 
@@ -410,7 +424,7 @@ export async function validateOpenid4vpClientId(
     if (clientIdIdentifier !== did) {
       throw new Oauth2ServerErrorResponseError({
         error: Oauth2ErrorCodes.InvalidRequest,
-        error_description: `With client identifier scheme '${clientIdPrefix}' the JAR request must be signed by the same DID as the client identifier.`,
+        error_description: `With client identifier prefix '${clientIdPrefix}' the JAR request must be signed by the same DID as the client identifier.`,
       })
     }
 
@@ -428,14 +442,14 @@ export async function validateOpenid4vpClientId(
     if (!jar) {
       throw new Oauth2ServerErrorResponseError({
         error: Oauth2ErrorCodes.InvalidRequest,
-        error_description: `Using client identifier scheme '${clientIdPrefix}' requires a signed JAR request.`,
+        error_description: `Using client identifier prefix '${clientIdPrefix}' requires a signed JAR request.`,
       })
     }
 
     if (jar.signer.method !== 'x5c') {
       throw new Oauth2ServerErrorResponseError({
         error: Oauth2ErrorCodes.InvalidRequest,
-        error_description: `Something went wrong. The JWT signer method is not x5c but the client identifier scheme is '${clientIdPrefix}'`,
+        error_description: `Something went wrong. The JWT signer method is not x5c but the client identifier prefix is '${clientIdPrefix}'`,
       })
     }
 
@@ -445,7 +459,7 @@ export async function validateOpenid4vpClientId(
           error: Oauth2ErrorCodes.ServerError,
         },
         {
-          internalMessage: `Missing required 'getX509CertificateMetadata' callback for verification of '${clientIdPrefix}' client id scheme`,
+          internalMessage: `Missing required 'getX509CertificateMetadata' callback for verification of '${clientIdPrefix}' client id prefix`,
         }
       )
     }
@@ -525,7 +539,7 @@ export async function validateOpenid4vpClientId(
     if (!jar) {
       throw new Oauth2ServerErrorResponseError({
         error: Oauth2ErrorCodes.InvalidRequest,
-        error_description: 'Using client identifier scheme "verifier_attestation" requires a signed JAR request.',
+        error_description: 'Using client identifier prefix "verifier_attestation" requires a signed JAR request.',
       })
     }
   }
