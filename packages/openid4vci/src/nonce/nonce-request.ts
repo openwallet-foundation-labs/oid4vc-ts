@@ -17,7 +17,7 @@ export interface RequestNonceOptions {
  * Request a nonce from the `nonce_endpoint`
  *
  * @throws Openid4vciError - if no `nonce_endpoint` is configured in the issuer metadata
- * @thrwos InvalidFetchResponseError - if the nonce endpoint did not return a succesfull response
+ * @throws InvalidFetchResponseError - if the nonce endpoint did not return a successful response
  * @throws ValidationError - if validating the nonce response failed
  */
 export async function requestNonce(options: RequestNonceOptions): Promise<NonceResponse> {
@@ -36,7 +36,7 @@ export async function requestNonce(options: RequestNonceOptions): Promise<NonceR
 
   if (!response.ok || !result) {
     throw new InvalidFetchResponseError(
-      `Requesting nonce from '${nonceEndpoint}' resulted in an unsuccesfull response with status '${response.status}'`,
+      `Requesting nonce from '${nonceEndpoint}' resulted in an unsuccessful response with status '${response.status}'`,
       await response.clone().text(),
       response
     )

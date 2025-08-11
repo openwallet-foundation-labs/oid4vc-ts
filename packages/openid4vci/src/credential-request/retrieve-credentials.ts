@@ -5,6 +5,7 @@ import {
   type ResourceRequestResponseNotOk,
   type ResourceRequestResponseOk,
   resourceRequest,
+  type zOauth2ErrorResponse,
 } from '@openid4vc/oauth2'
 import { ContentType, isResponseContentType, parseWithErrorHandling } from '@openid4vc/utils'
 import { Openid4vciError } from '../error/Openid4vciError'
@@ -16,9 +17,16 @@ import {
   type CredentialRequestWithFormats,
   zCredentialRequest,
   zCredentialRequestDraft14To11,
+  zDeferredCredentialRequest,
 } from './z-credential-request'
 import type { CredentialRequestProof, CredentialRequestProofs } from './z-credential-request-common'
-import { type CredentialResponse, zCredentialErrorResponse, zCredentialResponse } from './z-credential-response'
+import {
+  type CredentialResponse,
+  type DeferredCredentialResponse,
+  zCredentialErrorResponse,
+  zCredentialResponse,
+  type zDeferredCredentialResponse,
+} from './z-credential-response'
 
 interface RetrieveCredentialsBaseOptions {
   /**
@@ -60,9 +68,12 @@ export interface RetrieveCredentialsWithCredentialConfigurationIdOptions extends
 export async function retrieveCredentialsWithCredentialConfigurationId(
   options: RetrieveCredentialsWithCredentialConfigurationIdOptions
 ) {
-  if (options.issuerMetadata.originalDraftVersion !== Openid4vciDraftVersion.Draft15) {
+  if (
+    options.issuerMetadata.originalDraftVersion !== Openid4vciDraftVersion.Draft15 &&
+    options.issuerMetadata.originalDraftVersion !== Openid4vciDraftVersion.Draft16
+  ) {
     throw new Openid4vciError(
-      'Requesting credentials based on format is not supported in OpenID4VCI below draft 15. Make sure to provide the format and format specific claims in the request.'
+      'Requesting credentials based on credential configuration ID is not supported in OpenID4VCI below draft 15. Make sure to provide the format and format specific claims in the request.'
     )
   }
 
@@ -106,7 +117,10 @@ export interface RetrieveCredentialsWithFormatOptions extends RetrieveCredential
 }
 
 export async function retrieveCredentialsWithFormat(options: RetrieveCredentialsWithFormatOptions) {
-  if (options.issuerMetadata.originalDraftVersion === Openid4vciDraftVersion.Draft15) {
+  if (
+    options.issuerMetadata.originalDraftVersion === Openid4vciDraftVersion.Draft15 ||
+    options.issuerMetadata.originalDraftVersion === Openid4vciDraftVersion.Draft16
+  ) {
     throw new Openid4vciError(
       'Requesting credentials based on format is not supported in OpenID4VCI draft 15. Provide the credential configuration id directly in the request.'
     )
@@ -138,21 +152,21 @@ export interface RetrieveCredentialsOptions extends RetrieveCredentialsBaseOptio
 
 export interface RetrieveCredentialsResponseOk extends ResourceRequestResponseOk {
   /**
-   * The successfull validated (in structure, not the actual contents are validated) credential response payload
+   * The successful validated (in structure, not the actual contents are validated) credential response payload
    */
   credentialResponse: CredentialResponse
 }
 
 export interface RetrieveCredentialsResponseNotOk extends ResourceRequestResponseNotOk {
   /**
-   * If this is defined it means the response itself was succesfull but the validation of the
+   * If this is defined it means the response itself was successful but the validation of the
    * credential response data structure failed
    */
   credentialResponseResult?: ReturnType<typeof zCredentialResponse.safeParse>
 
   /**
    * If this is defined it means the response was JSON and we tried to parse it as
-   * a credential error response. It may be successfull or it may not be.
+   * a credential error response. It may be successful or it may not be.
    */
   credentialErrorResponseResult?: ReturnType<typeof zCredentialErrorResponse.safeParse>
 }
@@ -235,5 +249,100 @@ async function retrieveCredentials(
   return {
     ...resourceResponse,
     credentialResponse: credentialResponseResult.data,
+  }
+}
+
+export interface RetrieveDeferredCredentialsOptions extends RetrieveCredentialsBaseOptions {
+  /**
+   * Additional payload to include in the credential request.
+   */
+  additionalRequestPayload?: Record<string, unknown>
+
+  /**
+   * The transaction ID
+   */
+  transactionId: string
+}
+
+export interface RetrieveDeferredCredentialsResponseOk extends ResourceRequestResponseOk {
+  /**
+   * The successful validated (in structure, not the actual contents are validated) deferred credential response payload
+   */
+  deferredCredentialResponse: DeferredCredentialResponse
+}
+
+export interface RetrieveDeferredCredentialsResponseNotOk extends ResourceRequestResponseNotOk {
+  /**
+   * If this is defined it means the response itself was successful but the validation of the
+   * credential response data structure failed
+   */
+  deferredCredentialResponseResult?: ReturnType<typeof zDeferredCredentialResponse.safeParse>
+
+  /**
+   * If this is defined it means the response was JSON and we tried to parse it as
+   * a credential error response. It may be successful or it may not be.
+   */
+  deferredCredentialErrorResponseResult?: ReturnType<typeof zOauth2ErrorResponse.safeParse>
+}
+
+export async function retrieveDeferredCredentials(
+  options: RetrieveDeferredCredentialsOptions
+): Promise<RetrieveDeferredCredentialsResponseNotOk | RetrieveDeferredCredentialsResponseOk> {
+  const credentialEndpoint = options.issuerMetadata.credentialIssuer.deferred_credential_endpoint
+  if (!credentialEndpoint) {
+    throw new Openid4vciError(
+      `Credential issuer '${options.issuerMetadata.credentialIssuer.credential_issuer}' does not support deferred credential retrieval.`
+    )
+  }
+
+  const deferredCredentialRequest = parseWithErrorHandling(
+    zDeferredCredentialRequest,
+    {
+      transaction_id: options.transactionId,
+      ...options.additionalRequestPayload,
+    },
+    'Error validating deferred credential request'
+  )
+
+  const resourceResponse = await resourceRequest({
+    dpop: options.dpop,
+    accessToken: options.accessToken,
+    callbacks: options.callbacks,
+    url: credentialEndpoint,
+    requestOptions: {
+      method: 'POST',
+      headers: {
+        'Content-Type': ContentType.Json,
+      },
+      body: JSON.stringify(deferredCredentialRequest),
+    },
+  })
+
+  if (!resourceResponse.ok) {
+    const deferredCredentialErrorResponseResult = isResponseContentType(ContentType.Json, resourceResponse.response)
+      ? zCredentialErrorResponse.safeParse(await resourceResponse.response.clone().json())
+      : undefined
+
+    return {
+      ...resourceResponse,
+      deferredCredentialErrorResponseResult,
+    }
+  }
+
+  // Try to parse the credential response
+  const deferredCredentialResponseResult = isResponseContentType(ContentType.Json, resourceResponse.response)
+    ? zCredentialResponse.safeParse(await resourceResponse.response.clone().json())
+    : undefined
+  if (!deferredCredentialResponseResult?.success) {
+    return {
+      ...resourceResponse,
+      ok: false,
+      deferredCredentialResponseResult,
+    }
+  }
+
+  return {
+    ...resourceResponse,
+    deferredCredentialResponse: deferredCredentialResponseResult.data,
   }
 }

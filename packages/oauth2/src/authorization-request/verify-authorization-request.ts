@@ -1,5 +1,5 @@
 import { type CallbackContext, HashAlgorithm } from '../callbacks'
-import { type VerifiedClientAttestationJwt, verifyClientAttestation } from '../client-attestation/clent-attestation'
+import { type VerifiedClientAttestationJwt, verifyClientAttestation } from '../client-attestation/client-attestation'
 import type { VerifiedClientAttestationPopJwt } from '../client-attestation/client-attestation-pop'
 import {
   oauthClientAttestationHeader,
@@ -23,7 +23,7 @@ export interface VerifyAuthorizationRequestDpop {
    * The dpop jwt from the pushed authorization request.
    *
    * If dpop is required, at least one of `jwt` or `jwkThumbprint` MUST
-   * be provided. If both are provided, the jwk thubmprints are matched
+   * be provided. If both are provided, the jwk thumbprints are matched
    */
   jwt?: string
 
@@ -31,7 +31,7 @@ export interface VerifyAuthorizationRequestDpop {
    * The jwk thumbprint as provided in the `dpop_jkt` parameter.
    *
    * If dpop is required, at least one of `jwt` or `jwkThumbprint` MUST
-   * be provided. If both are provided, the jwk thubmprints are matched
+   * be provided. If both are provided, the jwk thumbprints are matched
    */
   jwkThumbprint?: string
 
@@ -73,7 +73,7 @@ export interface VerifyAuthorizationRequestReturn {
     jwkThumbprint: string
 
     /**
-     * The JWK will be returend if a DPoP proof was provided in the header.
+     * The JWK will be returned if a DPoP proof was provided in the header.
      */
     jwk?: Jwk
   }
@@ -188,7 +188,7 @@ async function verifyAuthorizationRequestClientAttestation(
         {
           error: Oauth2ErrorCodes.InvalidRequest,
           error_description:
-            'Expected the DPoP JWK thumbprint value to match the JWK thumbprint of the client attestation confirmation JWK. Ensrue both DPoP and client attestation use the same key.',
+            'Expected the DPoP JWK thumbprint value to match the JWK thumbprint of the client attestation confirmation JWK. Ensure both DPoP and client attestation use the same key.',
         },
         {
           status: 401,

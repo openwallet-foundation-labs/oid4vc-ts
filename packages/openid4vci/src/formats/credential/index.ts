@@ -9,6 +9,7 @@ import type { LdpVcFormatIdentifier } from './w3c-vc/z-w3c-ldp-vc'
 export {
   type MsoMdocFormatIdentifier,
   zMsoMdocCredentialIssuerMetadata,
+  zMsoMdocCredentialIssuerMetadataDraft15,
   zMsoMdocCredentialIssuerMetadataDraft14,
   zMsoMdocCredentialRequestFormatDraft14,
   zMsoMdocFormatIdentifier,
@@ -26,6 +27,7 @@ export {
 export {
   type SdJwtDcFormatIdentifier,
   zSdJwtDcCredentialIssuerMetadata,
+  zSdJwtDcCredentialIssuerMetadataDraft15,
   zSdJwtDcFormatIdentifier,
 } from './sd-jwt-dc/z-sd-jwt-dc'
 
@@ -33,6 +35,7 @@ export {
 export {
   type LdpVcFormatIdentifier,
   zLdpVcCredentialIssuerMetadata,
+  zLdpVcCredentialIssuerMetadataDraft15,
   zLdpVcCredentialIssuerMetadataDraft14,
   zLdpVcCredentialIssuerMetadataDraft11,
   zLdpVcCredentialIssuerMetadataDraft11To14,
@@ -46,6 +49,7 @@ export {
 export {
   type JwtVcJsonLdFormatIdentifier,
   zJwtVcJsonLdCredentialIssuerMetadata,
+  zJwtVcJsonLdCredentialIssuerMetadataDraft15,
   zJwtVcJsonLdCredentialIssuerMetadataDraft14,
   zJwtVcJsonLdCredentialIssuerMetadataDraft11,
   zJwtVcJsonLdCredentialIssuerMetadataDraft11To14,
@@ -59,6 +63,7 @@ export {
 export {
   type JwtVcJsonFormatIdentifier,
   zJwtVcJsonCredentialIssuerMetadata,
+  zJwtVcJsonCredentialIssuerMetadataDraft15,
   zJwtVcJsonCredentialIssuerMetadataDraft14,
   zJwtVcJsonCredentialIssuerMetadataDraft11,
   zJwtVcJsonCredentialIssuerMetadataDraft11To14,

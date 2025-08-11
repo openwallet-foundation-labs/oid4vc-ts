@@ -39,7 +39,7 @@ export const zCredentialOfferGrants = z
 export type CredentialOfferGrants = z.input<typeof zCredentialOfferGrants>
 
 export type CredentialOfferPreAuthorizedCodeGrant = CredentialOfferGrants[PreAuthorizedCodeGrantIdentifier]
-export type CredenialOfferAuthorizationCodeGrant = CredentialOfferGrants[AuthorizationCodeGrantIdentifier]
+export type CredentialOfferAuthorizationCodeGrant = CredentialOfferGrants[AuthorizationCodeGrantIdentifier]
 
 const zCredentialOfferObjectDraft14 = z
   .object({
