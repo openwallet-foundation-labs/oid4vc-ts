@@ -73,7 +73,7 @@ export async function retrieveCredentialsWithCredentialConfigurationId(
     options.issuerMetadata.originalDraftVersion !== Openid4vciDraftVersion.Draft16
   ) {
     throw new Openid4vciError(
-      'Requesting credentials based on format is not supported in OpenID4VCI below draft 15. Make sure to provide the format and format specific claims in the request.'
+      'Requesting credentials based on credential configuration ID is not supported in OpenID4VCI below draft 15. Make sure to provide the format and format specific claims in the request.'
     )
   }
 
