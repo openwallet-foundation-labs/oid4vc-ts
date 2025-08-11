@@ -6,17 +6,24 @@ import {
   Oauth2ServerErrorResponseError,
 } from '@openid4vc/oauth2'
 import { ValidationError, parseWithErrorHandling } from '@openid4vc/utils'
-import type { VerifyClientAttestationOptions } from '../../oauth2/src/client-attestation/clent-attestation'
+import type { VerifyClientAttestationOptions } from '../../oauth2/src/client-attestation/client-attestation'
 import { type CreateCredentialOfferOptions, createCredentialOffer } from './credential-offer/credential-offer'
 import {
   type CreateCredentialResponseOptions,
+  type CreateDeferredCredentialResponseOptions,
   createCredentialResponse,
+  createDeferredCredentialResponse,
 } from './credential-request/credential-response'
 import {
   type ParseCredentialRequestOptions,
   type ParseCredentialRequestReturn,
   parseCredentialRequest,
 } from './credential-request/parse-credential-request'
+import {
+  type ParseDeferredCredentialRequestOptions,
+  type ParseDeferredCredentialRequestReturn,
+  parseDeferredCredentialRequest,
+} from './credential-request/parse-deferred-credential-request'
 import { Openid4vciError } from './error/Openid4vciError'
 import {
   type VerifyCredentialRequestAttestationProofOptions,
@@ -115,7 +122,7 @@ export class Openid4vciIssuer {
         {
           error: Oauth2ErrorCodes.InvalidProof,
           error_description:
-            // TOOD: error should have a internalErrorMessage and a publicErrorMessage
+            // TODO: error should have a internalErrorMessage and a publicErrorMessage
             error instanceof Oauth2JwtVerificationError || error instanceof Openid4vciError
               ? error.message
               : 'Invalid proof',
@@ -154,7 +161,7 @@ export class Openid4vciIssuer {
         {
           error: Oauth2ErrorCodes.InvalidProof,
           error_description:
-            // TOOD: error should have a internalErrorMessage and a publicErrorMessage
+            // TODO: error should have a internalErrorMessage and a publicErrorMessage
             error instanceof Oauth2JwtVerificationError || error instanceof Openid4vciError
               ? error.message
               : 'Invalid proof',
@@ -191,10 +198,32 @@ export class Openid4vciIssuer {
       )
     }
 
-    // TOOD: might be nice to add some extra validation params here so it's
+    // TODO: might be nice to add some extra validation params here so it's
     // easy for an issuer to verify whether the request matches with the configuration
     // e.g. alg of holder binding, key_attestations_required, proof_types_supported,
     // request matches offer, etc..
+  }
+
+  /**
+   * @throws Oauth2ServerErrorResponseError - when validation of the deferred credential request fails
+   */
+  public parseDeferredCredentialRequest(
+    options: ParseDeferredCredentialRequestOptions
+  ): ParseDeferredCredentialRequestReturn {
+    try {
+      return parseDeferredCredentialRequest(options)
+    } catch (error) {
+      throw new Oauth2ServerErrorResponseError(
+        {
+          error: Oauth2ErrorCodes.InvalidCredentialRequest,
+          error_description: error instanceof ValidationError ? error.message : 'Invalid request',
+        },
+        {
+          internalMessage: 'Error parsing deferred credential request',
+          cause: error,
+        }
+      )
+    }
   }
 
   /**
@@ -202,6 +231,13 @@ export class Openid4vciIssuer {
    */
   public createCredentialResponse(options: CreateCredentialResponseOptions) {
     return createCredentialResponse(options)
+  }
+
+  /**
+   * @throws ValidationError - when validation of the credential response fails
+   */
+  public createDeferredCredentialResponse(options: CreateDeferredCredentialResponseOptions) {
+    return createDeferredCredentialResponse(options)
   }
 
   /**

@@ -1,3 +1,4 @@
+import { zJwk } from '@openid4vc/oauth2'
 import type { InferOutputUnion, Simplify } from '@openid4vc/utils'
 import z from 'zod'
 import {
@@ -72,7 +73,7 @@ const zCredentialRequestFormat = z
   })
   .passthrough()
 
-export const zCredenialRequestDraft14WithFormat = zCredentialRequestCommon
+export const zCredentialRequestDraft14WithFormat = zCredentialRequestCommon
   .and(zCredentialRequestFormat)
   .transform((data, ctx) => {
     // No additional validation for unknown formats
@@ -104,7 +105,7 @@ const zCredentialRequestDraft15 = z.union([
 ])
 
 const zCredentialRequestDraft14 = z.union([
-  zCredenialRequestDraft14WithFormat,
+  zCredentialRequestDraft14WithFormat,
   zCredentialRequestCommon.and(zAuthorizationDetailsCredentialRequest),
 ])
 
@@ -158,6 +159,18 @@ export const zCredentialRequest = z.union([
   zCredentialRequestDraft11To14,
 ])
 
+export const zDeferredCredentialRequest = z.object({
+  transaction_id: z.string().nonempty(),
+  credential_response_encryption: z
+    .object({
+      jwk: zJwk,
+      alg: z.string(),
+      enc: z.string(),
+    })
+    .passthrough()
+    .optional(),
+})
+
 type CredentialRequestCommon = z.infer<typeof zCredentialRequestCommon>
 export type CredentialRequestFormatSpecific = InferOutputUnion<typeof allCredentialRequestFormats>
 export type CredentialRequestWithFormats = CredentialRequestCommon & CredentialRequestFormatSpecific
@@ -165,3 +178,5 @@ export type CredentialRequestWithFormats = CredentialRequestCommon & CredentialR
 export type CredentialRequestDraft14 = z.infer<typeof zCredentialRequestDraft14>
 export type CredentialRequestDraft15 = z.infer<typeof zCredentialRequestDraft15>
 export type CredentialRequest = CredentialRequestDraft14 | CredentialRequestDraft15
+
+export type DeferredCredentialRequest = z.infer<typeof zDeferredCredentialRequest>

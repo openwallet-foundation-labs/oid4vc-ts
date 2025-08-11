@@ -18,7 +18,7 @@ export interface IntrospectTokenOptions {
   authorizationServerMetadata: AuthorizationServerMetadata
 
   /**
-   * The provided acccess token
+   * The provided access token
    */
   token: string
 
@@ -29,7 +29,7 @@ export interface IntrospectTokenOptions {
   tokenTypeHint?: string
 
   /**
-   * Additional payload to include in the introspection equest. Items will be encoded and sent
+   * Additional payload to include in the introspection request. Items will be encoded and sent
    * using x-www-form-urlencoded format. Nested items (JSON) will be stringified and url encoded.
    */
   additionalPayload?: Record<string, unknown>

@@ -32,7 +32,7 @@ export function parseAuthorizationChallengeRequest(
   if (!parsedAuthorizationChallengeRequest.success) {
     throw new Oauth2ServerErrorResponseError({
       error: Oauth2ErrorCodes.InvalidRequest,
-      error_description: `Error occured during validation of authorization challenge request.\n${formatZodError(parsedAuthorizationChallengeRequest.error)}`,
+      error_description: `Error occurred during validation of authorization challenge request.\n${formatZodError(parsedAuthorizationChallengeRequest.error)}`,
     })
   }
 

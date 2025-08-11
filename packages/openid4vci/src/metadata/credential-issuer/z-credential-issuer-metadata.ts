@@ -7,20 +7,25 @@ import {
   zJwtVcJsonCredentialIssuerMetadataDraft11To14,
   zJwtVcJsonCredentialIssuerMetadataDraft14,
   zJwtVcJsonCredentialIssuerMetadataDraft14To11,
+  zJwtVcJsonCredentialIssuerMetadataDraft15,
   zJwtVcJsonFormatIdentifier,
   zJwtVcJsonLdCredentialIssuerMetadata,
   zJwtVcJsonLdCredentialIssuerMetadataDraft11To14,
   zJwtVcJsonLdCredentialIssuerMetadataDraft14,
   zJwtVcJsonLdCredentialIssuerMetadataDraft14To11,
+  zJwtVcJsonLdCredentialIssuerMetadataDraft15,
   zJwtVcJsonLdFormatIdentifier,
   zLdpVcCredentialIssuerMetadata,
   zLdpVcCredentialIssuerMetadataDraft11To14,
   zLdpVcCredentialIssuerMetadataDraft14,
   zLdpVcCredentialIssuerMetadataDraft14To11,
+  zLdpVcCredentialIssuerMetadataDraft15,
   zLdpVcFormatIdentifier,
   zMsoMdocCredentialIssuerMetadata,
   zMsoMdocCredentialIssuerMetadataDraft14,
+  zMsoMdocCredentialIssuerMetadataDraft15,
   zSdJwtDcCredentialIssuerMetadata,
+  zSdJwtDcCredentialIssuerMetadataDraft15,
   zSdJwtDcFormatIdentifier,
   zSdJwtVcCredentialIssuerMetadataDraft14,
 } from '../../formats/credential'
@@ -33,13 +38,18 @@ const allCredentialIssuerMetadataFormats = [
   zJwtVcJsonLdCredentialIssuerMetadata,
   zLdpVcCredentialIssuerMetadata,
   zJwtVcJsonCredentialIssuerMetadata,
+  zSdJwtDcCredentialIssuerMetadataDraft15,
+  zMsoMdocCredentialIssuerMetadataDraft15,
+  zJwtVcJsonLdCredentialIssuerMetadataDraft15,
+  zLdpVcCredentialIssuerMetadataDraft15,
+  zJwtVcJsonCredentialIssuerMetadataDraft15,
   zMsoMdocCredentialIssuerMetadataDraft14,
   zSdJwtVcCredentialIssuerMetadataDraft14,
   zJwtVcJsonLdCredentialIssuerMetadataDraft14,
   zLdpVcCredentialIssuerMetadataDraft14,
   zJwtVcJsonCredentialIssuerMetadataDraft14,
 ] as const
-type CredentialIssuerMetadataFromatValidator = (typeof allCredentialIssuerMetadataFormats)[number]
+type CredentialIssuerMetadataFormatValidator = (typeof allCredentialIssuerMetadataFormats)[number]
 export const allCredentialIssuerMetadataFormatIdentifiers = allCredentialIssuerMetadataFormats.map(
   (format) => format.shape.format.value
 )
@@ -60,7 +70,7 @@ export const zCredentialConfigurationSupportedWithFormats = zCredentialConfigura
         validators[format].push(formatValidator)
         return validators
       },
-      {} as Record<CredentialFormatIdentifier, CredentialIssuerMetadataFromatValidator[]>
+      {} as Record<CredentialFormatIdentifier, CredentialIssuerMetadataFormatValidator[]>
     )[data.format as CredentialFormatIdentifier]
 
     const result = z
@@ -69,7 +79,7 @@ export const zCredentialConfigurationSupportedWithFormats = zCredentialConfigura
       .passthrough()
       .and(
         validators.length > 1
-          ? z.union(validators as [CredentialIssuerMetadataFromatValidator, CredentialIssuerMetadataFromatValidator])
+          ? z.union(validators as [CredentialIssuerMetadataFormatValidator, CredentialIssuerMetadataFormatValidator])
           : validators[0]
       )
       .safeParse(data)
@@ -115,8 +125,8 @@ const zCredentialIssuerMetadataDisplayEntry = z
   .passthrough()
 export type CredentialIssuerMetadataDisplayEntry = z.infer<typeof zCredentialIssuerMetadataDisplayEntry>
 
-export type CredentialIssuerMetadata = z.infer<typeof zCredentialIssuerMetadataDraft14Draft15>
-const zCredentialIssuerMetadataDraft14Draft15 = z
+export type CredentialIssuerMetadata = z.infer<typeof zCredentialIssuerMetadataDraft14Draft15Draft16>
+const zCredentialIssuerMetadataDraft14Draft15Draft16 = z
   .object({
     credential_issuer: zHttpsUrl,
     authorization_servers: z.array(zHttpsUrl).optional(),
@@ -228,9 +238,17 @@ export const zCredentialConfigurationSupportedDraft11To14 = z
   })
   .pipe(zCredentialConfigurationSupportedWithFormats)
 
+// Transforms credential configuration supported from draft 16 to draft 15
+const zCredentialConfigurationSupportedDraft16To15 = zCredentialConfigurationSupportedWithFormats.transform(
+  ({ credential_metadata, ...rest }) => ({
+    ...credential_metadata,
+    ...rest,
+  })
+)
+
 // Transforms credential configuration supported to credentials_supported format
 // Ignores unknown formats
-const zCredentialConfigurationSupportedDraft14To11 = zCredentialConfigurationSupportedWithFormats
+const zCredentialConfigurationSupportedDraft14To11 = zCredentialConfigurationSupportedDraft16To15
   .and(
     z
       .object({
@@ -266,7 +284,7 @@ const zCredentialConfigurationSupportedDraft14To11 = zCredentialConfigurationSup
       zJwtVcJsonCredentialIssuerMetadataDraft14To11,
       zJwtVcJsonLdCredentialIssuerMetadataDraft14To11,
       // To handle unrecognized formats and not error immediately we allow the common format as well
-      // but they can't use any of the foramt identifiers that have a specific transformation. This way if a format is
+      // but they can't use any of the format identifiers that have a specific transformation. This way if a format is
       // has a transformation it NEEDS to use the format specific transformation, and otherwise we fall back to the common validation
       z
         .object({
@@ -287,7 +305,7 @@ const zCredentialConfigurationSupportedDraft14To11 = zCredentialConfigurationSup
     ])
   )
 
-export const zCredentialIssuerMetadataDraft11To14 = z
+export const zCredentialIssuerMetadataDraft11To16 = z
   .object({
     authorization_server: z.string().optional(),
     credentials_supported: z.array(
@@ -314,14 +332,14 @@ export const zCredentialIssuerMetadataDraft11To14 = z
   .pipe(
     z
       .object({
-        // Update from v11 structrue to v14 structure
+        // Update from v11 structure to v14 structure
         credential_configurations_supported: z.record(z.string(), zCredentialConfigurationSupportedDraft11To14),
       })
       .passthrough()
   )
-  .pipe(zCredentialIssuerMetadataDraft14Draft15)
+  .pipe(zCredentialIssuerMetadataDraft14Draft15Draft16)
 
-export const zCredentialIssuerMetadataWithDraft11 = zCredentialIssuerMetadataDraft14Draft15
+export const zCredentialIssuerMetadataWithDraft11 = zCredentialIssuerMetadataDraft14Draft15Draft16
   .transform((issuerMetadata) => ({
     ...issuerMetadata,
     ...(issuerMetadata.authorization_servers ? { authorization_server: issuerMetadata.authorization_servers[0] } : {}),
@@ -331,46 +349,55 @@ export const zCredentialIssuerMetadataWithDraft11 = zCredentialIssuerMetadataDra
     })),
   }))
   .pipe(
-    zCredentialIssuerMetadataDraft14Draft15.extend({
+    zCredentialIssuerMetadataDraft14Draft15Draft16.extend({
       credentials_supported: z.array(zCredentialConfigurationSupportedDraft14To11),
     })
   )
 
 export const zCredentialIssuerMetadata = z.union([
-  // First prioritize draft 15/14 (and 13)
-  zCredentialIssuerMetadataDraft14Draft15,
-  // Then try parsing draft 11 and transform into draft 14
-  zCredentialIssuerMetadataDraft11To14,
+  // First prioritize draft 16/15/14 (and 13)
+  zCredentialIssuerMetadataDraft14Draft15Draft16,
+  // Then try parsing draft 11 and transform into draft 16
+  zCredentialIssuerMetadataDraft11To16,
 ])
 
 export const zCredentialIssuerMetadataWithDraftVersion = z.union([
-  zCredentialIssuerMetadataDraft14Draft15.transform((credentialIssuerMetadata) => {
-    const isDraft15 = Object.values(credentialIssuerMetadata.credential_configurations_supported).some(
-      (configuration) => {
-        const knownConfiguration = configuration as CredentialConfigurationSupportedWithFormats
+  zCredentialIssuerMetadataDraft14Draft15Draft16.transform((credentialIssuerMetadata) => {
+    const credentialConfigurations = Object.values(credentialIssuerMetadata.credential_configurations_supported)
 
-        // Added in draft 15, it's not possible to detect with 100% guarantee
-        if (knownConfiguration.format === zSdJwtDcFormatIdentifier.value) return true
-        if (Array.isArray(knownConfiguration.claims)) return true
-        if (
-          Object.values(knownConfiguration.proof_types_supported ?? {}).some(
-            (proofType) => proofType.key_attestations_required !== undefined
-          )
+    const isDraft15 = credentialConfigurations.some((configuration) => {
+      const knownConfiguration = configuration as CredentialConfigurationSupportedWithFormats
+
+      // Added in draft 15, it's not possible to detect with 100% guarantee
+      if (knownConfiguration.format === zSdJwtDcFormatIdentifier.value) return true
+      if (Array.isArray(knownConfiguration.claims)) return true
+      if (
+        Object.values(knownConfiguration.proof_types_supported ?? {}).some(
+          (proofType) => proofType.key_attestations_required !== undefined
         )
-          return true
+      )
+        return true
 
-        // For now we assume draft 14 if we don't have any evidence it's draft 15
-        return false
-      }
-    )
+      // For now we assume draft 14 if we don't have any evidence it's draft 15
+      return false
+    })
+
+    const isDraft16 = credentialConfigurations.some((configuration) => {
+      // Added in draft 16
+      return configuration.credential_metadata
+    })
 
     return {
       credentialIssuerMetadata,
-      originalDraftVersion: isDraft15 ? Openid4vciDraftVersion.Draft15 : Openid4vciDraftVersion.Draft14,
+      originalDraftVersion: isDraft16
+        ? Openid4vciDraftVersion.Draft16
+        : isDraft15
+          ? Openid4vciDraftVersion.Draft15
+          : Openid4vciDraftVersion.Draft14,
     }
   }),
   // Then try parsing draft 11 and transform into draft 14
-  zCredentialIssuerMetadataDraft11To14.transform((credentialIssuerMetadata) => ({
+  zCredentialIssuerMetadataDraft11To16.transform((credentialIssuerMetadata) => ({
     credentialIssuerMetadata,
     originalDraftVersion: Openid4vciDraftVersion.Draft11,
   })),

@@ -1,5 +1,6 @@
 import z from 'zod'
 import { zIssuerMetadataClaimsDescription } from '../../../metadata/credential-issuer/z-claims-description'
+import { zCredentialConfigurationSupportedCommonCredentialMetadata } from '../../../metadata/credential-issuer/z-credential-configuration-supported-common'
 import { zW3cVcCredentialSubjectDraft14 } from './z-w3c-vc-common'
 
 export const zJwtVcJsonFormatIdentifier = z.literal('jwt_vc_json')
@@ -16,6 +17,16 @@ const zJwtVcJsonCredentialDefinitionDraft14 = zJwtVcJsonCredentialDefinition.ext
 })
 
 export const zJwtVcJsonCredentialIssuerMetadata = z.object({
+  format: zJwtVcJsonFormatIdentifier,
+  credential_definition: zJwtVcJsonCredentialDefinition,
+  credential_metadata: zCredentialConfigurationSupportedCommonCredentialMetadata
+    .extend({
+      claims: zIssuerMetadataClaimsDescription.optional(),
+    })
+    .optional(),
+})
+
+export const zJwtVcJsonCredentialIssuerMetadataDraft15 = z.object({
   format: zJwtVcJsonFormatIdentifier,
   credential_definition: zJwtVcJsonCredentialDefinition,
   claims: zIssuerMetadataClaimsDescription.optional(),

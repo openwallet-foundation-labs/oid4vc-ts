@@ -1,5 +1,5 @@
 import { type CallbackContext, HashAlgorithm } from '../callbacks'
-import { type VerifiedClientAttestationJwt, verifyClientAttestation } from '../client-attestation/clent-attestation'
+import { type VerifiedClientAttestationJwt, verifyClientAttestation } from '../client-attestation/client-attestation'
 import type { VerifiedClientAttestationPopJwt } from '../client-attestation/client-attestation-pop'
 import {
   oauthClientAttestationHeader,
@@ -306,7 +306,7 @@ async function verifyAccessTokenRequestClientAttestation(
         {
           error: Oauth2ErrorCodes.InvalidRequest,
           error_description:
-            'Expected the DPoP JWK thumbprint value to match the JWK thumbprint of the client attestation confirmation JWK. Ensrue both DPoP and client attestation use the same key.',
+            'Expected the DPoP JWK thumbprint value to match the JWK thumbprint of the client attestation confirmation JWK. Ensure both DPoP and client attestation use the same key.',
         },
         {
           status: 401,

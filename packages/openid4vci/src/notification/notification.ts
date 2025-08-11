@@ -15,7 +15,7 @@ import {
   zNotificationRequest,
 } from './z-notification'
 
-export interface SendNotifcationOptions {
+export interface SendNotificationOptions {
   notification: {
     /**
      * Notification id, as returned in the credential response
@@ -28,7 +28,7 @@ export interface SendNotifcationOptions {
     event: NotificationEvent
 
     /**
-     * Humand readable desription of the event
+     * Human readable description of the event
      */
     eventDescription?: string
   }
@@ -63,13 +63,13 @@ export type SendNotificationResponseOk = ResourceRequestResponseOk
 export interface SendNotificationResponseNotOk extends ResourceRequestResponseNotOk {
   /**
    * If this is defined it means the response was JSON and we tried to parse it as
-   * a notification error response. It may be successfull or it may not be.
+   * a notification error response. It may be successful or it may not be.
    */
   notificationErrorResponseResult?: ReturnType<typeof zNotificationErrorResponse.safeParse>
 }
 
-export async function sendNotifcation(
-  options: SendNotifcationOptions
+export async function sendNotification(
+  options: SendNotificationOptions
 ): Promise<SendNotificationResponseNotOk | SendNotificationResponseOk> {
   const notificationEndpoint = options.issuerMetadata.credentialIssuer.notification_endpoint
 

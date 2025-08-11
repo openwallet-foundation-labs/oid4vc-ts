@@ -633,7 +633,7 @@ describe('Openid4vciClient', () => {
       issuerMetadata,
       authorizationCode: authorizationChallengeResponse.authorization_code,
       credentialOffer,
-      // TOOD: pkce with presentation_during_issuance? I don't think so
+      // TODO: pkce with presentation_during_issuance? I don't think so
       // pkceCodeVerifier: pkce?.codeVerifier,
       redirectUri,
     })
