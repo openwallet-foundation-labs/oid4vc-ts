@@ -22,6 +22,11 @@ export interface CreateAccessTokenResponseOptions {
   expiresInSeconds: number
 
   /**
+   * The refresh token
+   */
+  refreshToken?: string
+
+  /**
    * New cNonce value
    */
   cNonce?: string
@@ -38,6 +43,7 @@ export interface CreateAccessTokenResponseOptions {
 export async function createAccessTokenResponse(options: CreateAccessTokenResponseOptions) {
   const accessTokenResponse = parseWithErrorHandling(zAccessTokenResponse, {
     access_token: options.accessToken,
+    refresh_token: options.refreshToken,
     token_type: options.tokenType,
     expires_in: options.expiresInSeconds,
     c_nonce: options.cNonce,
