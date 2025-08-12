@@ -28,7 +28,7 @@ export const zAccessTokenRequest = z.intersection(
         zPreAuthorizedCodeGrantIdentifier,
         zAuthorizationCodeGrantIdentifier,
         zRefreshTokenGrantIdentifier,
-        // string makes the previous ones unessary, but it does help with error messages
+        // string makes the previous ones unnecessary, but it does help with error messages
         z.string(),
       ]),
     })

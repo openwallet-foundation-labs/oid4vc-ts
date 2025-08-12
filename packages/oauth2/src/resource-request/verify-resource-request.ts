@@ -92,7 +92,7 @@ export async function verifyResourceRequest(options: VerifyResourceRequestOption
 
     const errorMessage = error instanceof Oauth2Error ? error.message : 'Invalid access token'
     throw new Oauth2ResourceUnauthorizedError(
-      `Error occured during verification of jwt profile access token: ${error.message}`,
+      `Error occurred during verification of jwt profile access token: ${error.message}`,
       {
         scheme,
         error: Oauth2ErrorCodes.InvalidToken,
@@ -104,7 +104,7 @@ export async function verifyResourceRequest(options: VerifyResourceRequestOption
   let tokenPayload: AccessTokenProfileJwtPayload | TokenIntrospectionResponse | undefined = verificationResult?.payload
   let authorizationServer = verificationResult?.authorizationServer
   if (!tokenPayload) {
-    // If there's no verification result it means it coudln't be parsed and we will try
+    // If there's no verification result it means it couldn't be parsed and we will try
     // to use token introspection on all authorization servers until we've found the correct one
     for (const authorizationServerMetadata of options.authorizationServers) {
       try {

@@ -1,4 +1,4 @@
-import { parseWithErrorHandling } from '@openid4vc/utils'
+import { encodeToBase64Url, parseWithErrorHandling } from '@openid4vc/utils'
 import { type CreateAccessTokenOptions, createAccessTokenJwt } from './access-token/create-access-token'
 import {
   type CreateAccessTokenResponseOptions,
@@ -8,8 +8,10 @@ import { type ParseAccessTokenRequestOptions, parseAccessTokenRequest } from './
 import {
   type VerifyAuthorizationCodeAccessTokenRequestOptions,
   type VerifyPreAuthorizedCodeAccessTokenRequestOptions,
+  type VerifyRefreshTokenAccessTokenRequestOptions,
   verifyAuthorizationCodeAccessTokenRequest,
   verifyPreAuthorizedCodeAccessTokenRequest,
+  verifyRefreshTokenAccessTokenRequest,
 } from './access-token/verify-access-token-request'
 import {
   type CreateAuthorizationChallengeErrorResponseOptions,
@@ -95,12 +97,22 @@ export class Oauth2AuthorizationServer {
     })
   }
 
+  public verifyRefreshTokenAccessTokenRequest(options: Omit<VerifyRefreshTokenAccessTokenRequestOptions, 'callbacks'>) {
+    return verifyRefreshTokenAccessTokenRequest({
+      ...options,
+      callbacks: this.options.callbacks,
+    })
+  }
+
   /**
    * Create an access token response.
    *
    * The `sub` claim can be used to identify the resource owner is subsequent requests.
    * For pre-auth flow this can be the pre-authorized_code but there are no requirements
    * on the value.
+   *
+   * To generate a refresh token, set the `refreshToken` option to `true`. You can
+   * also provide a custom refresh token string.
    */
   public async createAccessTokenResponse(
     options: Pick<
@@ -118,6 +130,7 @@ export class Oauth2AuthorizationServer {
       Pick<CreateAccessTokenResponseOptions, 'cNonce' | 'cNonceExpiresIn'> & {
         additionalAccessTokenPayload?: CreateAccessTokenOptions['additionalPayload']
         additionalAccessTokenResponsePayload?: CreateAccessTokenResponseOptions['additionalPayload']
+        refreshToken?: boolean | string
       }
   ) {
     const { jwt: accessToken } = await createAccessTokenJwt({
@@ -136,6 +149,12 @@ export class Oauth2AuthorizationServer {
 
     return createAccessTokenResponse({
       accessToken,
+      refreshToken:
+        typeof options.refreshToken === 'string'
+          ? options.refreshToken
+          : options.refreshToken
+            ? encodeToBase64Url(await this.options.callbacks.generateRandom(32))
+            : undefined,
       callbacks: this.options.callbacks,
       expiresInSeconds: options.expiresInSeconds,
       tokenType: options.dpop ? 'DPoP' : 'Bearer',
