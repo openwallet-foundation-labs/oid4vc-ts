@@ -16,7 +16,7 @@ export interface CreateAccessTokenOptions {
   callbacks: Pick<CallbackContext, 'signJwt' | 'generateRandom' | 'hash'>
 
   /**
-   * public dpop jwk key. Will be encoded as jwk thubmprint in the `cnf.jkt` claim.
+   * public dpop jwk key. Will be encoded as jwk thumbprint in the `cnf.jkt` claim.
    */
   dpop?: {
     jwk: Jwk

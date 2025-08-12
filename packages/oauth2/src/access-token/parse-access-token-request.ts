@@ -7,8 +7,10 @@ import { Oauth2ServerErrorResponseError } from '../error/Oauth2ServerErrorRespon
 import {
   type AuthorizationCodeGrantIdentifier,
   type PreAuthorizedCodeGrantIdentifier,
+  type RefreshTokenGrantIdentifier,
   authorizationCodeGrantIdentifier,
   preAuthorizedCodeGrantIdentifier,
+  refreshTokenGrantIdentifier,
 } from '../z-grant-type'
 import { type AccessTokenRequest, zAccessTokenRequest } from './z-access-token'
 
@@ -23,9 +25,15 @@ export interface ParsedAccessTokenAuthorizationCodeRequestGrant {
   code: string
 }
 
+export interface ParsedAccessTokenRefreshTokenRequestGrant {
+  grantType: RefreshTokenGrantIdentifier
+  refreshToken: string
+}
+
 type ParsedAccessTokenRequestGrant =
   | ParsedAccessTokenPreAuthorizedCodeRequestGrant
   | ParsedAccessTokenAuthorizationCodeRequestGrant
+  | ParsedAccessTokenRefreshTokenRequestGrant
 
 export interface ParseAccessTokenRequestResult {
   accessTokenRequest: AccessTokenRequest
@@ -105,6 +113,18 @@ export function parseAccessTokenRequest(options: ParseAccessTokenRequestOptions)
     grant = {
       grantType: authorizationCodeGrantIdentifier,
       code: accessTokenRequest.code,
+    }
+  } else if (accessTokenRequest.grant_type === refreshTokenGrantIdentifier) {
+    if (!accessTokenRequest.refresh_token) {
+      throw new Oauth2ServerErrorResponseError({
+        error: Oauth2ErrorCodes.InvalidRequest,
+        error_description: `Missing required 'refresh_token' for grant type '${refreshTokenGrantIdentifier}'`,
+      })
+    }
+
+    grant = {
+      grantType: refreshTokenGrantIdentifier,
+      refreshToken: accessTokenRequest.refresh_token,
     }
   } else {
     // Unsupported grant type

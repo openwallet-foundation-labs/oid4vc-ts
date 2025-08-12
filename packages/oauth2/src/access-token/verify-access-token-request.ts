@@ -17,6 +17,7 @@ import { type PkceCodeChallengeMethod, verifyPkce } from '../pkce'
 import type {
   ParsedAccessTokenAuthorizationCodeRequestGrant,
   ParsedAccessTokenPreAuthorizedCodeRequestGrant,
+  ParsedAccessTokenRefreshTokenRequestGrant,
 } from './parse-access-token-request'
 import type { AccessTokenRequest } from './z-access-token'
 
@@ -252,6 +253,73 @@ export async function verifyAuthorizationCodeAccessTokenRequest(
 
   return { dpop: dpopResult, clientAttestation: clientAttestationResult }
 }
+
+export interface VerifyRefreshTokenAccessTokenRequestOptions {
+  authorizationServerMetadata: AuthorizationServerMetadata
+
+  grant: ParsedAccessTokenRefreshTokenRequestGrant
+  accessTokenRequest: AccessTokenRequest
+  request: RequestLike
+
+  expectedRefreshToken: string
+
+  clientAttestation?: VerifyAccessTokenRequestClientAttestation
+  dpop?: VerifyAccessTokenRequestDpop
+  pkce?: VerifyAccessTokenRequestPkce
+
+  refreshTokenExpiresAt?: Date
+  now?: Date
+
+  callbacks: Pick<CallbackContext, 'hash' | 'verifyJwt'>
+}
+
+export async function verifyRefreshTokenAccessTokenRequest(
+  options: VerifyRefreshTokenAccessTokenRequestOptions
+): Promise<VerifyAccessTokenRequestReturn> {
+  if (options.pkce) {
+    await verifyAccessTokenRequestPkce(options.pkce, options.callbacks)
+  }
+
+  const dpopResult = options.dpop
+    ? await verifyAccessTokenRequestDpop(options.dpop, options.request, options.callbacks)
+    : undefined
+
+  const clientAttestationResult = options.clientAttestation
+    ? await verifyAccessTokenRequestClientAttestation(
+        options.clientAttestation,
+        options.authorizationServerMetadata,
+        options.callbacks,
+        dpopResult?.jwkThumbprint,
+        options.now
+      )
+    : undefined
+
+  if (options.grant.refreshToken !== options.expectedRefreshToken) {
+    throw new Oauth2ServerErrorResponseError({
+      error: Oauth2ErrorCodes.InvalidGrant,
+      error_description: `Invalid 'refresh_token' provided`,
+    })
+  }
+
+  if (options.refreshTokenExpiresAt) {
+    const now = options.now ?? new Date()
+
+    if (now.getTime() > options.refreshTokenExpiresAt.getTime()) {
+      throw new Oauth2ServerErrorResponseError(
+        {
+          error: Oauth2ErrorCodes.InvalidGrant,
+          error_description: `Expired 'refresh_token' provided`,
+        },
+        {
+          internalMessage: `The provided 'refresh_token' in the request expired at '${options.refreshTokenExpiresAt.getTime()}', now is '${now.getTime()}'`,
+        }
+      )
+    }
+  }
+
+  return { dpop: dpopResult, clientAttestation: clientAttestationResult }
+}
+
 async function verifyAccessTokenRequestClientAttestation(
   options: VerifyAccessTokenRequestClientAttestation,
   authorizationServerMetadata: AuthorizationServerMetadata,

@@ -1,6 +1,10 @@
 import { describe, expect, test } from 'vitest'
 import { Oauth2ServerErrorResponseError } from '../../error/Oauth2ServerErrorResponseError.js'
-import { authorizationCodeGrantIdentifier, preAuthorizedCodeGrantIdentifier } from '../../z-grant-type.js'
+import {
+  authorizationCodeGrantIdentifier,
+  preAuthorizedCodeGrantIdentifier,
+  refreshTokenGrantIdentifier,
+} from '../../z-grant-type.js'
 import { parseAccessTokenRequest } from '../parse-access-token-request.js'
 
 describe('Parse Access Token Request', () => {
@@ -47,7 +51,7 @@ describe('Parse Access Token Request', () => {
     ).toThrow(`The grant type 'something' is not supported`)
   })
 
-  test('handles mising pre-authorized_code for pre-auth grant_type', () => {
+  test('handles missing pre-authorized_code for pre-auth grant_type', () => {
     expect(() =>
       parseAccessTokenRequest({
         accessTokenRequest: {
@@ -62,7 +66,7 @@ describe('Parse Access Token Request', () => {
     ).toThrow(`Missing required 'pre-authorized_code' for grant type '${preAuthorizedCodeGrantIdentifier}'`)
   })
 
-  test('handles mising code for authorization_code grant_type', () => {
+  test('handles missing code for authorization_code grant_type', () => {
     expect(() =>
       parseAccessTokenRequest({
         accessTokenRequest: {
@@ -168,7 +172,34 @@ describe('Parse Access Token Request', () => {
     })
   })
 
-  test('handles invalid dpop jwt', () => {
+  test('handles refresh token grant', () => {
+    expect(
+      parseAccessTokenRequest({
+        accessTokenRequest: {
+          grant_type: refreshTokenGrantIdentifier,
+          refresh_token: 'mamma-mia',
+        },
+        request: {
+          headers: new Headers({}),
+          method: 'POST',
+          url: 'https://request.com/token',
+        },
+      })
+    ).toEqual({
+      accessTokenRequest: {
+        grant_type: refreshTokenGrantIdentifier,
+        refresh_token: 'mamma-mia',
+      },
+      grant: {
+        grantType: refreshTokenGrantIdentifier,
+        refreshToken: 'mamma-mia',
+      },
+      dpopJwt: undefined,
+      pkceCodeVerifier: undefined,
+    })
+  })
+
+  test('handles invalid dpop jwt', () =>
     expect(() =>
       parseAccessTokenRequest({
         accessTokenRequest: {
@@ -193,10 +224,9 @@ describe('Parse Access Token Request', () => {
         error: 'invalid_dpop_proof',
         error_description: `Request contains a 'DPoP' header, but the value is not a valid DPoP jwt`,
       })
-    )
-  })
+    ))
 
-  test('handles invalid client attestation jwt', () => {
+  test('handles invalid client attestation jwt', () =>
     expect(() =>
       parseAccessTokenRequest({
         accessTokenRequest: {
@@ -220,6 +250,5 @@ describe('Parse Access Token Request', () => {
         error_description:
           'Request contains client attestation header, but the values are not valid client attestation and client attestation PoP header.',
       })
-    )
-  })
+    ))
 })

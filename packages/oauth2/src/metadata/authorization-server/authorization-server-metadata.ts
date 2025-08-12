@@ -42,7 +42,7 @@ export async function fetchAuthorizationServerMetadata(
   }
 
   // NOTE: there is a difference in how to construct well-known OAuth2 and well-known openid
-  // url. For OAuth you place `.well-known/oauth-autohrization-server` between the origin and
+  // url. For OAuth you place `.well-known/oauth-authorization-server` between the origin and
   // the path. Historically we used the same method as OpenID (which a lot of servers seems to
   // host as well), and thus we use this as a last fallback if it's different for now (in case of subpath).
   const nonCompliantAuthorizationServerWellKnownMetadataUrl = joinUriParts(issuer, [wellKnownAuthorizationServerSuffix])
@@ -96,7 +96,7 @@ export function getAuthorizationServerMetadataFromList(
 
   if (!authorizationServerMetadata) {
     throw new Oauth2Error(
-      `Authorization server '${issuer}' not found in list of authorization servers. Availalbe authorization servers are ${authorizationServersMetadata
+      `Authorization server '${issuer}' not found in list of authorization servers. Available authorization servers are ${authorizationServersMetadata
         .map((as) => `'${as.issuer}'`)
         .join(', ')}`
     )
