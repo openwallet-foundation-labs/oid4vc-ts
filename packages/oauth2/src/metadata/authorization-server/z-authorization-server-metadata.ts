@@ -17,6 +17,7 @@ export const zAuthorizationServerMetadata = z
     token_endpoint_auth_methods_supported: z.optional(z.array(z.union([knownClientAuthenticationMethod, z.string()]))),
     authorization_endpoint: z.optional(zHttpsUrl),
     jwks_uri: z.optional(zHttpsUrl),
+    grant_types_supported: z.optional(z.array(z.string())),
 
     // RFC7636
     code_challenge_methods_supported: z.optional(z.array(z.string())),
