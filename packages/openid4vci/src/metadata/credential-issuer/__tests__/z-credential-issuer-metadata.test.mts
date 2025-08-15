@@ -149,14 +149,16 @@ describe('Credential Issuer Metadata', () => {
       'sd-jwt': {
         format: 'vc+sd-jwt',
         vct: 'vct-test-id',
-        display: [
-          {
-            name: 'hello',
-            logo: {
-              uri: 'https://logo.com',
+        credential_metadata: {
+          display: [
+            {
+              name: 'hello',
+              logo: {
+                uri: 'https://logo.com',
+              },
             },
-          },
-        ],
+          ],
+        },
       },
       'w3c-jwt-vc-json': {
         format: 'jwt_vc_json',
