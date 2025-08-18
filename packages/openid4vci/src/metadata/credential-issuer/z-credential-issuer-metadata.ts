@@ -29,6 +29,7 @@ import {
   zSdJwtDcFormatIdentifier,
   zSdJwtVcCredentialIssuerMetadataDraft14,
 } from '../../formats/credential'
+import { zSdJwtVcCredentialIssuerMetadataDraft16 } from '../../formats/credential/sd-jwt-vc/z-sd-jwt-vc'
 import { Openid4vciDraftVersion } from '../../version'
 import { zCredentialConfigurationSupportedCommon } from './z-credential-configuration-supported-common'
 
@@ -38,6 +39,7 @@ const allCredentialIssuerMetadataFormats = [
   zJwtVcJsonLdCredentialIssuerMetadata,
   zLdpVcCredentialIssuerMetadata,
   zJwtVcJsonCredentialIssuerMetadata,
+  zSdJwtVcCredentialIssuerMetadataDraft16,
   zSdJwtDcCredentialIssuerMetadataDraft15,
   zMsoMdocCredentialIssuerMetadataDraft15,
   zJwtVcJsonLdCredentialIssuerMetadataDraft15,

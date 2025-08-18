@@ -29,7 +29,7 @@ describe('Credential Issuer Metadata', () => {
 
     // Incorrect: sd-jwt without vct
     expect(parseResult.success).toBe(false)
-    expect(parseResult.error?.errors[0]).toEqual({
+    expect((parseResult.error?.errors[0] as ZodInvalidUnionIssue)?.unionErrors[0]?.issues[0]).toEqual({
       code: 'invalid_type',
       expected: 'string',
       received: 'undefined',

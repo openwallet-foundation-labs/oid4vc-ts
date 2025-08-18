@@ -13,6 +13,7 @@ import {
   zSdJwtVcCredentialIssuerMetadataDraft14,
   zSdJwtVcFormatIdentifier,
 } from '../formats/credential'
+import { zSdJwtVcCredentialIssuerMetadataDraft16 } from '../formats/credential/sd-jwt-vc/z-sd-jwt-vc'
 import { getCredentialConfigurationSupportedById } from '../metadata/credential-issuer/credential-issuer-metadata'
 import type { IssuerMetadataResult } from '../metadata/fetch-issuer-metadata'
 import type { CredentialRequestWithFormats } from './z-credential-request'
@@ -37,7 +38,10 @@ export function getCredentialRequestFormatPayloadForCredentialConfigurationId(
     options.credentialConfigurationId
   )
 
-  if (zIs(zSdJwtVcCredentialIssuerMetadataDraft14, credentialConfiguration)) {
+  if (
+    zIs(zSdJwtVcCredentialIssuerMetadataDraft16, credentialConfiguration) ||
+    zIs(zSdJwtVcCredentialIssuerMetadataDraft14, credentialConfiguration)
+  ) {
     return {
       format: credentialConfiguration.format,
       vct: credentialConfiguration.vct,
