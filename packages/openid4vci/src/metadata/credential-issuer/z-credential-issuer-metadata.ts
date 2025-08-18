@@ -54,24 +54,15 @@ export const allCredentialIssuerMetadataFormatIdentifiers = allCredentialIssuerM
   (format) => format.shape.format.value
 )
 
-export const zCredentialConfigurationSupportedWithFormats = zCredentialConfigurationSupportedCommon.transform(
-  (data, ctx) => {
+export const zCredentialConfigurationSupportedWithFormats = zCredentialConfigurationSupportedCommon
+  .passthrough()
+  .transform((data, ctx) => {
     // No additional validation for unknown formats
     if (!allCredentialIssuerMetadataFormatIdentifiers.includes(data.format as CredentialFormatIdentifier)) return data
 
-    const validators = allCredentialIssuerMetadataFormats.reduce(
-      (validators, formatValidator) => {
-        const format = formatValidator.shape.format.value
-
-        if (!validators[format]) {
-          validators[format] = []
-        }
-
-        validators[format].push(formatValidator)
-        return validators
-      },
-      {} as Record<CredentialFormatIdentifier, CredentialIssuerMetadataFormatValidator[]>
-    )[data.format as CredentialFormatIdentifier]
+    const validators = allCredentialIssuerMetadataFormats.filter(
+      (formatValidator) => formatValidator.shape.format.value === data.format
+    ) as CredentialIssuerMetadataFormatValidator[]
 
     const result = z
       // We use object and passthrough as otherwise the non-format specific properties will be stripped
@@ -79,19 +70,27 @@ export const zCredentialConfigurationSupportedWithFormats = zCredentialConfigura
       .passthrough()
       .and(
         validators.length > 1
-          ? z.union(validators as [CredentialIssuerMetadataFormatValidator, CredentialIssuerMetadataFormatValidator])
+          ? z.union(
+              validators as [
+                CredentialIssuerMetadataFormatValidator,
+                CredentialIssuerMetadataFormatValidator,
+                ...CredentialIssuerMetadataFormatValidator[],
+              ]
+            )
           : validators[0]
       )
       .safeParse(data)
+
     if (result.success) {
       return result.data as Simplify<typeof result.data & typeof data>
     }
+
     for (const issue of result.error.issues) {
       ctx.addIssue(issue)
     }
+
     return z.NEVER
-  }
-)
+  })
 
 type CredentialConfigurationSupportedCommon = z.infer<typeof zCredentialConfigurationSupportedCommon>
 export type CredentialConfigurationSupportedFormatSpecific = InferOutputUnion<typeof allCredentialIssuerMetadataFormats>
