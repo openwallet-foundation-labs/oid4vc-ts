@@ -3,12 +3,16 @@ import {
   zCredentialConfigurationSupportedClaimsDraft14,
   zMsoMdocIssuerMetadataClaimsDescription,
 } from '../../../metadata/credential-issuer/z-claims-description'
-import { zCredentialConfigurationSupportedCommonCredentialMetadata } from '../../../metadata/credential-issuer/z-credential-configuration-supported-common'
+import {
+  zCredentialConfigurationSupportedCommon,
+  zCredentialConfigurationSupportedCommonCredentialMetadata,
+  zCredentialConfigurationSupportedCommonDraft15,
+} from '../../../metadata/credential-issuer/z-credential-configuration-supported-common'
 
 export const zMsoMdocFormatIdentifier = z.literal('mso_mdoc')
 export type MsoMdocFormatIdentifier = z.infer<typeof zMsoMdocFormatIdentifier>
 
-export const zMsoMdocCredentialIssuerMetadata = z.object({
+export const zMsoMdocCredentialIssuerMetadata = zCredentialConfigurationSupportedCommon.extend({
   format: zMsoMdocFormatIdentifier,
   doctype: z.string(),
   credential_metadata: zCredentialConfigurationSupportedCommonCredentialMetadata
@@ -18,13 +22,13 @@ export const zMsoMdocCredentialIssuerMetadata = z.object({
     .optional(),
 })
 
-export const zMsoMdocCredentialIssuerMetadataDraft15 = z.object({
+export const zMsoMdocCredentialIssuerMetadataDraft15 = zCredentialConfigurationSupportedCommonDraft15.extend({
   format: zMsoMdocFormatIdentifier,
   doctype: z.string(),
   claims: z.array(zMsoMdocIssuerMetadataClaimsDescription).optional(),
 })
 
-export const zMsoMdocCredentialIssuerMetadataDraft14 = z.object({
+export const zMsoMdocCredentialIssuerMetadataDraft14 = zCredentialConfigurationSupportedCommonDraft15.extend({
   format: zMsoMdocFormatIdentifier,
   doctype: z.string(),
   claims: zCredentialConfigurationSupportedClaimsDraft14.optional(),

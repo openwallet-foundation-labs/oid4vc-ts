@@ -29,8 +29,12 @@ import {
   zSdJwtDcFormatIdentifier,
   zSdJwtVcCredentialIssuerMetadataDraft14,
 } from '../../formats/credential'
+import { zSdJwtVcCredentialIssuerMetadataDraft16 } from '../../formats/credential/sd-jwt-vc/z-sd-jwt-vc'
 import { Openid4vciDraftVersion } from '../../version'
-import { zCredentialConfigurationSupportedCommon } from './z-credential-configuration-supported-common'
+import {
+  zCredentialConfigurationSupportedCommon,
+  zCredentialConfigurationSupportedCommonDraft15,
+} from './z-credential-configuration-supported-common'
 
 const allCredentialIssuerMetadataFormats = [
   zSdJwtDcCredentialIssuerMetadata,
@@ -38,6 +42,7 @@ const allCredentialIssuerMetadataFormats = [
   zJwtVcJsonLdCredentialIssuerMetadata,
   zLdpVcCredentialIssuerMetadata,
   zJwtVcJsonCredentialIssuerMetadata,
+  zSdJwtVcCredentialIssuerMetadataDraft16,
   zSdJwtDcCredentialIssuerMetadataDraft15,
   zMsoMdocCredentialIssuerMetadataDraft15,
   zJwtVcJsonLdCredentialIssuerMetadataDraft15,
@@ -54,24 +59,18 @@ export const allCredentialIssuerMetadataFormatIdentifiers = allCredentialIssuerM
   (format) => format.shape.format.value
 )
 
-export const zCredentialConfigurationSupportedWithFormats = zCredentialConfigurationSupportedCommon.transform(
-  (data, ctx) => {
+export const zCredentialConfigurationSupportedWithFormats = z
+  .union([
+    zCredentialConfigurationSupportedCommon.passthrough(),
+    zCredentialConfigurationSupportedCommonDraft15.passthrough(),
+  ])
+  .transform((data, ctx) => {
     // No additional validation for unknown formats
     if (!allCredentialIssuerMetadataFormatIdentifiers.includes(data.format as CredentialFormatIdentifier)) return data
 
-    const validators = allCredentialIssuerMetadataFormats.reduce(
-      (validators, formatValidator) => {
-        const format = formatValidator.shape.format.value
-
-        if (!validators[format]) {
-          validators[format] = []
-        }
-
-        validators[format].push(formatValidator)
-        return validators
-      },
-      {} as Record<CredentialFormatIdentifier, CredentialIssuerMetadataFormatValidator[]>
-    )[data.format as CredentialFormatIdentifier]
+    const validators = allCredentialIssuerMetadataFormats.filter(
+      (formatValidator) => formatValidator.shape.format.value === data.format
+    ) as CredentialIssuerMetadataFormatValidator[]
 
     const result = z
       // We use object and passthrough as otherwise the non-format specific properties will be stripped
@@ -79,19 +78,27 @@ export const zCredentialConfigurationSupportedWithFormats = zCredentialConfigura
       .passthrough()
       .and(
         validators.length > 1
-          ? z.union(validators as [CredentialIssuerMetadataFormatValidator, CredentialIssuerMetadataFormatValidator])
+          ? z.union(
+              validators as [
+                CredentialIssuerMetadataFormatValidator,
+                CredentialIssuerMetadataFormatValidator,
+                ...CredentialIssuerMetadataFormatValidator[],
+              ]
+            )
           : validators[0]
       )
       .safeParse(data)
+
     if (result.success) {
       return result.data as Simplify<typeof result.data & typeof data>
     }
+
     for (const issue of result.error.issues) {
       ctx.addIssue(issue)
     }
+
     return z.NEVER
-  }
-)
+  })
 
 type CredentialConfigurationSupportedCommon = z.infer<typeof zCredentialConfigurationSupportedCommon>
 export type CredentialConfigurationSupportedFormatSpecific = InferOutputUnion<typeof allCredentialIssuerMetadataFormats>
@@ -101,13 +108,6 @@ export type CredentialConfigurationsSupportedWithFormats = Record<string, Creden
 
 export type CredentialConfigurationSupported = z.infer<typeof zCredentialConfigurationSupportedWithFormats>
 export type CredentialConfigurationsSupported = Record<string, CredentialConfigurationSupported>
-
-/**
- * Typing is a bit off on this one
- */
-export type CredentialIssuerMetadataDraft11 = Simplify<
-  CredentialIssuerMetadata & z.infer<typeof zCredentialIssuerMetadataWithDraft11>
->
 
 const zCredentialIssuerMetadataDisplayEntry = z
   .object({
@@ -158,7 +158,7 @@ const zCredentialIssuerMetadataDraft14Draft15Draft16 = z
 
 // Transforms credential supported to credential configuration supported format
 // Ignores unknown formats
-export const zCredentialConfigurationSupportedDraft11To14 = z
+export const zCredentialConfigurationSupportedDraft11To16 = z
   .object({
     id: z.string().optional(),
     format: z.string(),
@@ -183,39 +183,47 @@ export const zCredentialConfigurationSupportedDraft11To14 = z
           .passthrough()
       )
       .optional(),
+    claims: z.any().optional(),
   })
   .passthrough()
-  .transform(({ cryptographic_suites_supported, display, id, ...rest }) => ({
+  .transform(({ cryptographic_suites_supported, display, claims, id, ...rest }) => ({
     ...rest,
     ...(cryptographic_suites_supported
       ? { credential_signing_alg_values_supported: cryptographic_suites_supported }
       : {}),
-    ...(display
+    ...(claims || display
       ? {
-          display: display.map(({ logo, background_image, ...displayRest }) => ({
-            ...displayRest,
-            // url became uri and also required
-            // so if there's no url in the logo, we remove the whole logo object
-            ...(logo?.url
+          credential_metadata: {
+            ...(claims ? { claims } : {}),
+            ...(display
               ? {
-                  // TODO: we should add the other params from logo as well
-                  logo: {
-                    uri: logo.url,
-                  },
-                }
-              : {}),
+                  display: display.map(({ logo, background_image, ...displayRest }) => ({
+                    ...displayRest,
+                    // url became uri and also required
+                    // so if there's no url in the logo, we remove the whole logo object
+                    ...(logo?.url
+                      ? {
+                          // TODO: we should add the other params from logo as well
+                          logo: {
+                            uri: logo.url,
+                          },
+                        }
+                      : {}),
 
-            // TODO: we should add the other params from background_image as well
-            // url became uri and also required
-            // so if there's no url in the background_image, we remove the whole logo object
-            ...(background_image?.url
-              ? {
-                  background_image: {
-                    uri: background_image.url,
-                  },
+                    // TODO: we should add the other params from background_image as well
+                    // url became uri and also required
+                    // so if there's no url in the background_image, we remove the whole logo object
+                    ...(background_image?.url
+                      ? {
+                          background_image: {
+                            uri: background_image.url,
+                          },
+                        }
+                      : {}),
+                  })),
                 }
               : {}),
-          })),
+          },
         }
       : {}),
   }))
@@ -248,7 +256,7 @@ const zCredentialConfigurationSupportedDraft16To15 = zCredentialConfigurationSup
 
 // Transforms credential configuration supported to credentials_supported format
 // Ignores unknown formats
-const zCredentialConfigurationSupportedDraft14To11 = zCredentialConfigurationSupportedDraft16To15
+const zCredentialConfigurationSupportedDraft16To11 = zCredentialConfigurationSupportedDraft16To15
   .and(
     z
       .object({
@@ -333,13 +341,27 @@ export const zCredentialIssuerMetadataDraft11To16 = z
     z
       .object({
         // Update from v11 structure to v14 structure
-        credential_configurations_supported: z.record(z.string(), zCredentialConfigurationSupportedDraft11To14),
+        credential_configurations_supported: z.record(z.string(), zCredentialConfigurationSupportedDraft11To16),
       })
       .passthrough()
   )
   .pipe(zCredentialIssuerMetadataDraft14Draft15Draft16)
 
-export const zCredentialIssuerMetadataWithDraft11 = zCredentialIssuerMetadataDraft14Draft15Draft16
+/**
+ * Typing is a bit off on this one
+ */
+export type CredentialIssuerMetadataDraft11 = Simplify<
+  CredentialIssuerMetadata & {
+    authorization_server?: string
+    credentials_supported: z.infer<typeof zCredentialConfigurationSupportedDraft16To11>[]
+  }
+>
+
+export const zCredentialIssuerMetadataWithDraft11: z.ZodType<
+  CredentialIssuerMetadataDraft11,
+  z.ZodTypeDef,
+  z.input<typeof zCredentialIssuerMetadataDraft14Draft15Draft16>
+> = zCredentialIssuerMetadataDraft14Draft15Draft16
   .transform((issuerMetadata) => ({
     ...issuerMetadata,
     ...(issuerMetadata.authorization_servers ? { authorization_server: issuerMetadata.authorization_servers[0] } : {}),
@@ -350,7 +372,7 @@ export const zCredentialIssuerMetadataWithDraft11 = zCredentialIssuerMetadataDra
   }))
   .pipe(
     zCredentialIssuerMetadataDraft14Draft15Draft16.extend({
-      credentials_supported: z.array(zCredentialConfigurationSupportedDraft14To11),
+      credentials_supported: z.array(zCredentialConfigurationSupportedDraft16To11),
     })
   )
 

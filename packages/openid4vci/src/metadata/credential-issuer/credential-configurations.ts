@@ -5,7 +5,7 @@ import { Openid4vciError } from '../../error/Openid4vciError'
 import type { IssuerMetadataResult } from '../fetch-issuer-metadata'
 import {
   type CredentialConfigurationsSupported,
-  zCredentialConfigurationSupportedDraft11To14,
+  zCredentialConfigurationSupportedDraft11To16,
 } from './z-credential-issuer-metadata'
 
 export interface ExtractScopesForCredentialConfigurationIdsOptions {
@@ -62,7 +62,7 @@ export function extractScopesForCredentialConfigurationIds(
  * @throws if a credentials supported entry with invalid structure or format specific properties is passed
  */
 export function credentialsSupportedToCredentialConfigurationsSupported(
-  credentialsSupported: Array<z.input<typeof zCredentialConfigurationSupportedDraft11To14>>
+  credentialsSupported: Array<z.input<typeof zCredentialConfigurationSupportedDraft11To16>>
 ) {
   const credentialConfigurationsSupported: CredentialConfigurationsSupported = {}
 
@@ -74,7 +74,7 @@ export function credentialsSupportedToCredentialConfigurationsSupported(
       )
     }
 
-    const parseResult = zCredentialConfigurationSupportedDraft11To14.safeParse(credentialSupported)
+    const parseResult = zCredentialConfigurationSupportedDraft11To16.safeParse(credentialSupported)
     if (!parseResult.success) {
       throw new ValidationError(
         `Error transforming credential supported with id '${credentialSupported.id}' to credential configuration supported format`,

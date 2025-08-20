@@ -1,11 +1,15 @@
 import z from 'zod'
 import { zIssuerMetadataClaimsDescription } from '../../../metadata/credential-issuer/z-claims-description'
-import { zCredentialConfigurationSupportedCommonCredentialMetadata } from '../../../metadata/credential-issuer/z-credential-configuration-supported-common'
+import {
+  zCredentialConfigurationSupportedCommon,
+  zCredentialConfigurationSupportedCommonCredentialMetadata,
+  zCredentialConfigurationSupportedCommonDraft15,
+} from '../../../metadata/credential-issuer/z-credential-configuration-supported-common'
 
 export const zSdJwtDcFormatIdentifier = z.literal('dc+sd-jwt')
 export type SdJwtDcFormatIdentifier = z.infer<typeof zSdJwtDcFormatIdentifier>
 
-export const zSdJwtDcCredentialIssuerMetadata = z.object({
+export const zSdJwtDcCredentialIssuerMetadata = zCredentialConfigurationSupportedCommon.extend({
   vct: z.string(),
   format: zSdJwtDcFormatIdentifier,
   credential_metadata: zCredentialConfigurationSupportedCommonCredentialMetadata
@@ -15,7 +19,7 @@ export const zSdJwtDcCredentialIssuerMetadata = z.object({
     .optional(),
 })
 
-export const zSdJwtDcCredentialIssuerMetadataDraft15 = z.object({
+export const zSdJwtDcCredentialIssuerMetadataDraft15 = zCredentialConfigurationSupportedCommonDraft15.extend({
   vct: z.string(),
   format: zSdJwtDcFormatIdentifier,
   claims: z.array(zIssuerMetadataClaimsDescription).optional(),
