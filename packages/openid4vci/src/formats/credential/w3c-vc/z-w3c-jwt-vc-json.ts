@@ -1,6 +1,10 @@
 import z from 'zod'
 import { zIssuerMetadataClaimsDescription } from '../../../metadata/credential-issuer/z-claims-description'
-import { zCredentialConfigurationSupportedCommonCredentialMetadata } from '../../../metadata/credential-issuer/z-credential-configuration-supported-common'
+import {
+  zCredentialConfigurationSupportedCommon,
+  zCredentialConfigurationSupportedCommonCredentialMetadata,
+  zCredentialConfigurationSupportedCommonDraft15,
+} from '../../../metadata/credential-issuer/z-credential-configuration-supported-common'
 import { zW3cVcCredentialSubjectDraft14 } from './z-w3c-vc-common'
 
 export const zJwtVcJsonFormatIdentifier = z.literal('jwt_vc_json')
@@ -16,7 +20,7 @@ const zJwtVcJsonCredentialDefinitionDraft14 = zJwtVcJsonCredentialDefinition.ext
   credentialSubject: zW3cVcCredentialSubjectDraft14.optional(),
 })
 
-export const zJwtVcJsonCredentialIssuerMetadata = z.object({
+export const zJwtVcJsonCredentialIssuerMetadata = zCredentialConfigurationSupportedCommon.extend({
   format: zJwtVcJsonFormatIdentifier,
   credential_definition: zJwtVcJsonCredentialDefinition,
   credential_metadata: zCredentialConfigurationSupportedCommonCredentialMetadata
@@ -26,13 +30,13 @@ export const zJwtVcJsonCredentialIssuerMetadata = z.object({
     .optional(),
 })
 
-export const zJwtVcJsonCredentialIssuerMetadataDraft15 = z.object({
+export const zJwtVcJsonCredentialIssuerMetadataDraft15 = zCredentialConfigurationSupportedCommonDraft15.extend({
   format: zJwtVcJsonFormatIdentifier,
   credential_definition: zJwtVcJsonCredentialDefinition,
   claims: zIssuerMetadataClaimsDescription.optional(),
 })
 
-export const zJwtVcJsonCredentialIssuerMetadataDraft14 = z.object({
+export const zJwtVcJsonCredentialIssuerMetadataDraft14 = zCredentialConfigurationSupportedCommonDraft15.extend({
   format: zJwtVcJsonFormatIdentifier,
   credential_definition: zJwtVcJsonCredentialDefinitionDraft14,
   order: z.array(z.string()).optional(),

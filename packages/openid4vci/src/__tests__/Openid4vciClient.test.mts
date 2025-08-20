@@ -207,36 +207,42 @@ describe('Openid4vciClient', () => {
           format: 'vc+sd-jwt',
           cryptographic_binding_methods_supported: ['did:key', 'did:jwk', 'did:web'],
           credential_signing_alg_values_supported: ['EdDSA', 'ES256'],
-          display: [
-            {
-              name: 'Paradym Contributor',
-              description: 'Contributed to the Paradym Release',
-              background_color: '#5535ed',
-              text_color: '#ffffff',
-            },
-          ],
+          credential_metadata: {
+            display: [
+              {
+                name: 'Paradym Contributor',
+                description: 'Contributed to the Paradym Release',
+                background_color: '#5535ed',
+                text_color: '#ffffff',
+              },
+            ],
+          },
           vct: 'https://metadata.paradym.id/types/iuoQGyxlww-ParadymContributor',
         },
         clvi9a5od00127pap4obzoeuf: {
           format: 'vc+sd-jwt',
           cryptographic_binding_methods_supported: ['did:key', 'did:jwk', 'did:web'],
           credential_signing_alg_values_supported: ['EdDSA', 'ES256'],
-          display: [
-            {
-              name: 'Employee Badge',
-              description: 'Credential for employee badge',
-              background_color: '#000000',
-              background_image: { uri: 'https://github.com/animo.png' },
-              text_color: '#ffffff',
-            },
-          ],
+          credential_metadata: {
+            display: [
+              {
+                name: 'Employee Badge',
+                description: 'Credential for employee badge',
+                background_color: '#000000',
+                background_image: { uri: 'https://github.com/animo.png' },
+                text_color: '#ffffff',
+              },
+            ],
+          },
           vct: 'https://metadata.paradym.id/types/6fTEgFULv2-EmployeeBadge',
         },
         clx4z0auo00a6f0sibkutdqor: {
           format: 'vc+sd-jwt',
           cryptographic_binding_methods_supported: ['did:key', 'did:jwk', 'did:web'],
           credential_signing_alg_values_supported: ['EdDSA', 'ES256'],
-          display: [{ name: 'Direct issuance revocation', background_color: '#000000', text_color: '#ffffff' }],
+          credential_metadata: {
+            display: [{ name: 'Direct issuance revocation', background_color: '#000000', text_color: '#ffffff' }],
+          },
           vct: 'https://metadata.paradym.id/types/ULaVABcapZ-Heyo',
         },
       },

@@ -4,7 +4,6 @@ import type { CredentialFormatIdentifier } from '../../formats/credential'
 import type { Openid4vciDraftVersion } from '../../version'
 import {
   type CredentialConfigurationSupported,
-  type CredentialConfigurationSupportedFormatSpecific,
   type CredentialConfigurationSupportedWithFormats,
   type CredentialConfigurationsSupported,
   type CredentialConfigurationsSupportedWithFormats,
@@ -50,7 +49,7 @@ export function extractKnownCredentialConfigurationSupportedFormats(
 ): CredentialConfigurationsSupportedWithFormats {
   return Object.fromEntries(
     Object.entries(credentialConfigurationsSupported).filter(
-      (entry): entry is [string, CredentialConfigurationSupportedFormatSpecific] =>
+      (entry): entry is [string, CredentialConfigurationSupportedWithFormats] =>
         allCredentialIssuerMetadataFormatIdentifiers.includes(entry[1].format as CredentialFormatIdentifier)
     )
   )
