@@ -30,54 +30,58 @@ export const zCredentialConfigurationSupportedCommonCredentialMetadata = z.objec
   display: z.array(zCredentialConfigurationSupportedDisplayEntry).optional(),
 })
 
-export const zCredentialConfigurationSupportedCommon = z.object({
-  format: z.string(),
-  scope: z.string().optional(),
-  cryptographic_binding_methods_supported: z.array(z.string()).optional(),
-  credential_signing_alg_values_supported: z.array(z.string()).or(z.array(z.number())).optional(),
-  proof_types_supported: z
-    .record(
-      z.union([z.literal('jwt'), z.literal('attestation'), z.string()]),
-      z.object({
-        proof_signing_alg_values_supported: z.array(z.string()),
-        key_attestations_required: z
-          .object({
-            key_storage: zIso18045OrStringArray.optional(),
-            user_authentication: zIso18045OrStringArray.optional(),
-          })
-          .passthrough()
-          .optional(),
-      })
-    )
-    .optional(),
-  credential_metadata: zCredentialConfigurationSupportedCommonCredentialMetadata.optional(),
+export const zCredentialConfigurationSupportedCommon = z
+  .object({
+    format: z.string(),
+    scope: z.string().optional(),
+    cryptographic_binding_methods_supported: z.array(z.string()).optional(),
+    credential_signing_alg_values_supported: z.array(z.string()).or(z.array(z.number())).optional(),
+    proof_types_supported: z
+      .record(
+        z.union([z.literal('jwt'), z.literal('attestation'), z.string()]),
+        z.object({
+          proof_signing_alg_values_supported: z.array(z.string()),
+          key_attestations_required: z
+            .object({
+              key_storage: zIso18045OrStringArray.optional(),
+              user_authentication: zIso18045OrStringArray.optional(),
+            })
+            .passthrough()
+            .optional(),
+        })
+      )
+      .optional(),
+    credential_metadata: zCredentialConfigurationSupportedCommonCredentialMetadata.optional(),
 
-  // For typing purposes. Can be removed once we drop support for draft <= 15.
-  claims: z.optional(z.never()),
-})
+    // For typing purposes. Can be removed once we drop support for draft <= 15.
+    claims: z.optional(z.never()),
+  })
+  .passthrough()
 
-export const zCredentialConfigurationSupportedCommonDraft15 = z.object({
-  format: z.string(),
-  scope: z.string().optional(),
-  cryptographic_binding_methods_supported: z.array(z.string()).optional(),
-  credential_signing_alg_values_supported: z.array(z.string()).or(z.array(z.number())).optional(),
-  proof_types_supported: z
-    .record(
-      z.union([z.literal('jwt'), z.literal('attestation'), z.string()]),
-      z.object({
-        proof_signing_alg_values_supported: z.array(z.string()),
-        key_attestations_required: z
-          .object({
-            key_storage: zIso18045OrStringArray.optional(),
-            user_authentication: zIso18045OrStringArray.optional(),
-          })
-          .passthrough()
-          .optional(),
-      })
-    )
-    .optional(),
-  display: z.array(zCredentialConfigurationSupportedDisplayEntry).optional(),
+export const zCredentialConfigurationSupportedCommonDraft15 = z
+  .object({
+    format: z.string(),
+    scope: z.string().optional(),
+    cryptographic_binding_methods_supported: z.array(z.string()).optional(),
+    credential_signing_alg_values_supported: z.array(z.string()).or(z.array(z.number())).optional(),
+    proof_types_supported: z
+      .record(
+        z.union([z.literal('jwt'), z.literal('attestation'), z.string()]),
+        z.object({
+          proof_signing_alg_values_supported: z.array(z.string()),
+          key_attestations_required: z
+            .object({
+              key_storage: zIso18045OrStringArray.optional(),
+              user_authentication: zIso18045OrStringArray.optional(),
+            })
+            .passthrough()
+            .optional(),
+        })
+      )
+      .optional(),
+    display: z.array(zCredentialConfigurationSupportedDisplayEntry).optional(),
 
-  // For typing purposes.
-  credential_metadata: z.optional(z.never()),
-})
+    // For typing purposes.
+    credential_metadata: z.optional(z.never()),
+  })
+  .passthrough()
