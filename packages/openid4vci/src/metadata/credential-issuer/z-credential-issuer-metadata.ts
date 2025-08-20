@@ -31,7 +31,10 @@ import {
 } from '../../formats/credential'
 import { zSdJwtVcCredentialIssuerMetadataDraft16 } from '../../formats/credential/sd-jwt-vc/z-sd-jwt-vc'
 import { Openid4vciDraftVersion } from '../../version'
-import { zCredentialConfigurationSupportedCommon } from './z-credential-configuration-supported-common'
+import {
+  zCredentialConfigurationSupportedCommon,
+  zCredentialConfigurationSupportedCommonDraft15,
+} from './z-credential-configuration-supported-common'
 
 const allCredentialIssuerMetadataFormats = [
   zSdJwtDcCredentialIssuerMetadata,
@@ -56,8 +59,11 @@ export const allCredentialIssuerMetadataFormatIdentifiers = allCredentialIssuerM
   (format) => format.shape.format.value
 )
 
-export const zCredentialConfigurationSupportedWithFormats = zCredentialConfigurationSupportedCommon
-  .passthrough()
+export const zCredentialConfigurationSupportedWithFormats = z
+  .union([
+    zCredentialConfigurationSupportedCommon.passthrough(),
+    zCredentialConfigurationSupportedCommonDraft15.passthrough(),
+  ])
   .transform((data, ctx) => {
     // No additional validation for unknown formats
     if (!allCredentialIssuerMetadataFormatIdentifiers.includes(data.format as CredentialFormatIdentifier)) return data
@@ -102,13 +108,6 @@ export type CredentialConfigurationsSupportedWithFormats = Record<string, Creden
 
 export type CredentialConfigurationSupported = z.infer<typeof zCredentialConfigurationSupportedWithFormats>
 export type CredentialConfigurationsSupported = Record<string, CredentialConfigurationSupported>
-
-/**
- * Typing is a bit off on this one
- */
-export type CredentialIssuerMetadataDraft11 = Simplify<
-  CredentialIssuerMetadata & z.infer<typeof zCredentialIssuerMetadataWithDraft11>
->
 
 const zCredentialIssuerMetadataDisplayEntry = z
   .object({
@@ -348,7 +347,21 @@ export const zCredentialIssuerMetadataDraft11To16 = z
   )
   .pipe(zCredentialIssuerMetadataDraft14Draft15Draft16)
 
-export const zCredentialIssuerMetadataWithDraft11 = zCredentialIssuerMetadataDraft14Draft15Draft16
+/**
+ * Typing is a bit off on this one
+ */
+export type CredentialIssuerMetadataDraft11 = Simplify<
+  CredentialIssuerMetadata & {
+    authorization_server?: string
+    credentials_supported: z.infer<typeof zCredentialConfigurationSupportedDraft16To11>[]
+  }
+>
+
+export const zCredentialIssuerMetadataWithDraft11: z.ZodType<
+  CredentialIssuerMetadataDraft11,
+  z.ZodTypeDef,
+  z.input<typeof zCredentialIssuerMetadataDraft14Draft15Draft16>
+> = zCredentialIssuerMetadataDraft14Draft15Draft16
   .transform((issuerMetadata) => ({
     ...issuerMetadata,
     ...(issuerMetadata.authorization_servers ? { authorization_server: issuerMetadata.authorization_servers[0] } : {}),
