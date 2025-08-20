@@ -30,7 +30,7 @@ export const zSdJwtVcCredentialIssuerMetadataDraft14 = zCredentialConfigurationS
   order: z.optional(z.array(z.string())),
 })
 
-export const zSdJwtVcCredentialRequestFormatDraft14 = zCredentialConfigurationSupportedCommonDraft15.extend({
+export const zSdJwtVcCredentialRequestFormatDraft14 = z.object({
   format: zSdJwtVcFormatIdentifier,
   vct: z.string(),
   claims: z.optional(zCredentialConfigurationSupportedClaimsDraft14),

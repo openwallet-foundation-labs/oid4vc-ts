@@ -60,10 +60,7 @@ export const allCredentialIssuerMetadataFormatIdentifiers = allCredentialIssuerM
 )
 
 export const zCredentialConfigurationSupportedWithFormats = z
-  .union([
-    zCredentialConfigurationSupportedCommon.passthrough(),
-    zCredentialConfigurationSupportedCommonDraft15.passthrough(),
-  ])
+  .union([zCredentialConfigurationSupportedCommon, zCredentialConfigurationSupportedCommonDraft15])
   .transform((data, ctx) => {
     // No additional validation for unknown formats
     if (!allCredentialIssuerMetadataFormatIdentifiers.includes(data.format as CredentialFormatIdentifier)) return data
