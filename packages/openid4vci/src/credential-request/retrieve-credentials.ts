@@ -25,7 +25,7 @@ import {
   type DeferredCredentialResponse,
   zCredentialErrorResponse,
   zCredentialResponse,
-  type zDeferredCredentialResponse,
+  zDeferredCredentialResponse,
 } from './z-credential-response'
 
 interface RetrieveCredentialsBaseOptions {
@@ -331,7 +331,7 @@ export async function retrieveDeferredCredentials(
 
   // Try to parse the credential response
   const deferredCredentialResponseResult = isResponseContentType(ContentType.Json, resourceResponse.response)
-    ? zCredentialResponse.safeParse(await resourceResponse.response.clone().json())
+    ? zDeferredCredentialResponse.safeParse(await resourceResponse.response.clone().json())
     : undefined
   if (!deferredCredentialResponseResult?.success) {
     return {
