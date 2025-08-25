@@ -5,8 +5,8 @@ import {
   zJwtVcJsonCredentialRequestFormatDraft14,
   zJwtVcJsonLdCredentialRequestFormatDraft14,
   zLdpVcCredentialRequestFormatDraft14,
+  zLegacySdJwtVcCredentialRequestFormatDraft14,
   zMsoMdocCredentialRequestFormatDraft14,
-  zSdJwtVcCredentialRequestFormatDraft14,
 } from '../formats/credential'
 import {
   zJwtVcJsonCredentialRequestDraft11To14,
@@ -32,7 +32,7 @@ export const allCredentialRequestFormats = [
   zLdpVcCredentialRequestFormatDraft14,
   zJwtVcJsonLdCredentialRequestFormatDraft14,
   zJwtVcJsonCredentialRequestFormatDraft14,
-  zSdJwtVcCredentialRequestFormatDraft14,
+  zLegacySdJwtVcCredentialRequestFormatDraft14,
 ] as const
 
 export const allCredentialRequestFormatIdentifiers = allCredentialRequestFormats.map(

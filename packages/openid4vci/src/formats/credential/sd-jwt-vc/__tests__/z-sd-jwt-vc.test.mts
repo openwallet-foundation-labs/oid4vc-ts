@@ -1,13 +1,13 @@
 import { expect, test } from 'vitest'
-import { zSdJwtVcCredentialIssuerMetadataDraft14, zSdJwtVcFormatIdentifier } from '../z-sd-jwt-vc.js'
+import { zLegacySdJwtVcCredentialIssuerMetadataDraft14, zLegacySdJwtVcFormatIdentifier } from '../z-sd-jwt-vc.js'
 
 test('should parse sd-jwt-vc format identifier', () => {
-  expect(zSdJwtVcFormatIdentifier.safeParse('vc+sd-jwt')).toStrictEqual({
+  expect(zLegacySdJwtVcFormatIdentifier.safeParse('vc+sd-jwt')).toStrictEqual({
     data: 'vc+sd-jwt',
     success: true,
   })
 
-  expect(zSdJwtVcFormatIdentifier.safeParse('vc+sd-jwt2')).toStrictEqual({
+  expect(zLegacySdJwtVcFormatIdentifier.safeParse('vc+sd-jwt2')).toStrictEqual({
     error: expect.any(Error),
     success: false,
   })
@@ -15,7 +15,7 @@ test('should parse sd-jwt-vc format identifier', () => {
 
 test('should parse sd-jwt-vc credential issuer metadata', () => {
   expect(
-    zSdJwtVcCredentialIssuerMetadataDraft14.safeParse({
+    zLegacySdJwtVcCredentialIssuerMetadataDraft14.safeParse({
       format: 'vc+sd-jwt',
       scope: 'SD_JWT_VC_example_in_OpenID4VCI',
       cryptographic_binding_methods_supported: ['jwk'],

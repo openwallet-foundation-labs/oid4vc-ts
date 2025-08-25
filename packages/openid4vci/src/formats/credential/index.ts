@@ -1,6 +1,6 @@
 import type { MsoMdocFormatIdentifier } from './mso-mdoc/z-mso-mdoc'
 import type { SdJwtDcFormatIdentifier } from './sd-jwt-dc/z-sd-jwt-dc'
-import type { SdJwtVcFormatIdentifier } from './sd-jwt-vc/z-sd-jwt-vc'
+import type { LegacySdJwtVcFormatIdentifier } from './sd-jwt-vc/z-sd-jwt-vc'
 import type { JwtVcJsonFormatIdentifier } from './w3c-vc/z-w3c-jwt-vc-json'
 import type { JwtVcJsonLdFormatIdentifier } from './w3c-vc/z-w3c-jwt-vc-json-ld'
 import type { LdpVcFormatIdentifier } from './w3c-vc/z-w3c-ldp-vc'
@@ -15,12 +15,12 @@ export {
   zMsoMdocFormatIdentifier,
 } from './mso-mdoc/z-mso-mdoc'
 
-// vc+sd-jwt
+// Legacy vc+sd-jwt
 export {
-  type SdJwtVcFormatIdentifier,
-  zSdJwtVcCredentialIssuerMetadataDraft14,
-  zSdJwtVcCredentialRequestFormatDraft14,
-  zSdJwtVcFormatIdentifier,
+  type LegacySdJwtVcFormatIdentifier,
+  zLegacySdJwtVcCredentialIssuerMetadataDraft14,
+  zLegacySdJwtVcCredentialRequestFormatDraft14,
+  zLegacySdJwtVcFormatIdentifier,
 } from './sd-jwt-vc/z-sd-jwt-vc'
 
 // dc+sd-jwt
@@ -83,7 +83,7 @@ export {
 
 export type CredentialFormatIdentifier =
   | MsoMdocFormatIdentifier
-  | SdJwtVcFormatIdentifier
+  | LegacySdJwtVcFormatIdentifier
   | SdJwtDcFormatIdentifier
   | LdpVcFormatIdentifier
   | JwtVcJsonLdFormatIdentifier

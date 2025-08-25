@@ -7,13 +7,13 @@ import {
   zJwtVcJsonLdCredentialIssuerMetadataDraft14,
   zLdpVcCredentialIssuerMetadata,
   zLdpVcCredentialIssuerMetadataDraft14,
+  zLegacySdJwtVcCredentialIssuerMetadataDraft14,
+  zLegacySdJwtVcFormatIdentifier,
   zMsoMdocCredentialIssuerMetadata,
   zMsoMdocCredentialIssuerMetadataDraft14,
   zSdJwtDcCredentialIssuerMetadata,
-  zSdJwtVcCredentialIssuerMetadataDraft14,
-  zSdJwtVcFormatIdentifier,
 } from '../formats/credential'
-import { zSdJwtVcCredentialIssuerMetadataDraft16 } from '../formats/credential/sd-jwt-vc/z-sd-jwt-vc'
+import { zLegacySdJwtVcCredentialIssuerMetadataDraft16 } from '../formats/credential/sd-jwt-vc/z-sd-jwt-vc'
 import { zSdJwtW3VcCredentialIssuerMetadata } from '../formats/credential/w3c-vc/z-w3c-sd-jwt-vc'
 import { getCredentialConfigurationSupportedById } from '../metadata/credential-issuer/credential-issuer-metadata'
 import type { IssuerMetadataResult } from '../metadata/fetch-issuer-metadata'
@@ -40,8 +40,8 @@ export function getCredentialRequestFormatPayloadForCredentialConfigurationId(
   )
 
   if (
-    zIs(zSdJwtVcCredentialIssuerMetadataDraft16, credentialConfiguration) ||
-    zIs(zSdJwtVcCredentialIssuerMetadataDraft14, credentialConfiguration)
+    zIs(zLegacySdJwtVcCredentialIssuerMetadataDraft16, credentialConfiguration) ||
+    zIs(zLegacySdJwtVcCredentialIssuerMetadataDraft14, credentialConfiguration)
   ) {
     return {
       format: credentialConfiguration.format,
@@ -99,7 +99,7 @@ export function getCredentialRequestFormatPayloadForCredentialConfigurationId(
 
   if (zIs(zSdJwtDcCredentialIssuerMetadata, credentialConfiguration)) {
     throw new Openid4vciError(
-      `Credential configuration id '${options.credentialConfigurationId}' with format ${zSdJwtVcFormatIdentifier.value} does not support credential request based on 'format'. Use 'credential_configuration_id' directly.`
+      `Credential configuration id '${options.credentialConfigurationId}' with format ${zLegacySdJwtVcFormatIdentifier.value} does not support credential request based on 'format'. Use 'credential_configuration_id' directly.`
     )
   }
 

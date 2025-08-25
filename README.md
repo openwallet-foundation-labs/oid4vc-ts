@@ -55,7 +55,7 @@ An implementation of the [OpenID for Verifiable Credential Issuance](https://ope
 - Authorization Code Flow and Pre-Authorized Code Flow
 - Credential format profiles `vc+sd-jwt`, `dc+sd-jwt`, `mso_mdoc`, `jwt_vc_json`, `jwt_vc_json-ld`, and `ldp_vc` (only object validation, no credential implementation)
 - Proof type `jwt`
-- Draft 16, with backwards compatibility for draft 13 (ID1), and draft 11
+- Draft 16, with backwards compatibility for draft 14, draft 13 (ID1), and draft 11
 - Support presentation during issuance using Authorization Challenge and OpenID4VP.
 
 ```ts
