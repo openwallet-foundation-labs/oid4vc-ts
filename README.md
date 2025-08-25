@@ -55,7 +55,7 @@ An implementation of the [OpenID for Verifiable Credential Issuance](https://ope
 - Authorization Code Flow and Pre-Authorized Code Flow
 - Credential format profiles `vc+sd-jwt`, `dc+sd-jwt`, `mso_mdoc`, `jwt_vc_json`, `jwt_vc_json-ld`, and `ldp_vc` (only object validation, no credential implementation)
 - Proof type `jwt`
-- Draft 14, with backwards compatibility for draft 13 (ID1), and draft 11
+- Draft 16, with backwards compatibility for draft 14, draft 13 (ID1), and draft 11
 - Support presentation during issuance using Authorization Challenge and OpenID4VP.
 
 ```ts
@@ -72,9 +72,9 @@ import {
 An implementation of the [OpenID for Verifiable Presentations](https://openid.net/specs/openid-4-verifiable-presentations-1_0.html) specification.
 
 - Signed and unsigned requests
-- Support for respone mode `direct_post`, `direct_post.jwt`, `dc_api` and `dc_api.jwt`
+- Support for response mode `direct_post`, `direct_post.jwt`, `dc_api` and `dc_api.jwt`
 - No out of the box support for Presentation Exchange or DCQL, this needs to be provided using e.g. [dcql-ts](https://github.com/openwallet-foundation-labs/dcql-ts) or [PEX](https://github.com/Sphereon-Opensource/PEX).
-- Trnasaction Data
+- Transaction Data
 - Supports OpenID4VP Draft 18 to 24
 - Support for JWT Secured Authorization Request (JAR)
 - Support for JWT Secure Authorization Response Mode (JARM)

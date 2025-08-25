@@ -5,8 +5,8 @@ import {
   zJwtVcJsonCredentialRequestFormatDraft14,
   zJwtVcJsonLdCredentialRequestFormatDraft14,
   zLdpVcCredentialRequestFormatDraft14,
+  zLegacySdJwtVcCredentialRequestFormatDraft14,
   zMsoMdocCredentialRequestFormatDraft14,
-  zSdJwtVcCredentialRequestFormatDraft14,
 } from '../formats/credential'
 import {
   zJwtVcJsonCredentialRequestDraft11To14,
@@ -23,14 +23,16 @@ import {
   zLdpVcCredentialRequestDraft14To11,
   zLdpVcFormatIdentifier,
 } from '../formats/credential/w3c-vc/z-w3c-ldp-vc'
+import { zSdJwtW3VcCredentialRequestFormatDraft14 } from '../formats/credential/w3c-vc/z-w3c-sd-jwt-vc'
 import { zCredentialRequestCommon } from './z-credential-request-common'
 
 export const allCredentialRequestFormats = [
-  zSdJwtVcCredentialRequestFormatDraft14,
+  zSdJwtW3VcCredentialRequestFormatDraft14,
   zMsoMdocCredentialRequestFormatDraft14,
   zLdpVcCredentialRequestFormatDraft14,
   zJwtVcJsonLdCredentialRequestFormatDraft14,
   zJwtVcJsonCredentialRequestFormatDraft14,
+  zLegacySdJwtVcCredentialRequestFormatDraft14,
 ] as const
 
 export const allCredentialRequestFormatIdentifiers = allCredentialRequestFormats.map(
@@ -88,7 +90,8 @@ export const zCredentialRequestDraft14WithFormat = zCredentialRequestCommon
       // We use object and passthrough as otherwise the non-format specific properties will be stripped
       .object({})
       .passthrough()
-      .and(z.discriminatedUnion('format', allCredentialRequestFormats))
+      // FIXME(vc+sd-jwt): use discriminated union when dropping support for legacy vc+sd-jwt format.
+      .and(z.union(allCredentialRequestFormats))
       .safeParse(data)
     if (result.success) {
       return result.data as Simplify<typeof result.data & typeof data>

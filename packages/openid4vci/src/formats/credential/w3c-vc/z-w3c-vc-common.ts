@@ -28,7 +28,7 @@ export const zW3cVcCredentialSubjectDraft14 = z.record(z.string(), zClaimValueSc
 export const zW3cVcJsonLdCredentialDefinition = z
   .object({
     '@context': z.array(z.string()),
-    type: z.array(z.string()),
+    type: z.array(z.string()).nonempty(),
   })
   .passthrough()
 

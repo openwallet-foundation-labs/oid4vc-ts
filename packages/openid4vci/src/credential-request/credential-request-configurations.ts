@@ -37,7 +37,13 @@ export function getCredentialConfigurationsMatchingRequestFormat({
       }
 
       if (c.format === 'vc+sd-jwt' && r.format === c.format) {
-        return r.vct === c.vct
+        if (r.vct && c.vct) {
+          return r.vct === c.vct
+        }
+
+        if (c.credential_definition && r.credential_definition) {
+          return arrayEqualsIgnoreOrder(r.credential_definition.type, c.credential_definition.type)
+        }
       }
 
       if (c.format === 'mso_mdoc' && r.format === c.format) {

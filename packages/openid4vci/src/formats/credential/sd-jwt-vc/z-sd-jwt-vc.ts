@@ -6,32 +6,58 @@ import {
   zCredentialConfigurationSupportedCommonDraft15,
 } from '../../../metadata/credential-issuer/z-credential-configuration-supported-common'
 
-export const zSdJwtVcFormatIdentifier = z.literal('vc+sd-jwt')
-export type SdJwtVcFormatIdentifier = z.infer<typeof zSdJwtVcFormatIdentifier>
+/**
+ * @deprecated format has been deprecated in favor of "dc+sd-jwt" since Draft 23
+ * of the OpenID for Verifiable Presentations specification. Please update your
+ * implementations accordingly.
+ */
+export const zLegacySdJwtVcFormatIdentifier = z.literal('vc+sd-jwt')
 
-// This format no longer exists in Draft 16, but we need to keep it for compatibility
-// with the new credential_metadata structure. Otherwise, we would be outputting very
-// inconsistent metadata.
-export const zSdJwtVcCredentialIssuerMetadataDraft16 = zCredentialConfigurationSupportedCommon.extend({
+/**
+ * @deprecated format has been deprecated in favor of "dc+sd-jwt" since Draft 23
+ * of the OpenID for Verifiable Presentations specification. Please update your
+ * implementations accordingly.
+ */
+export type LegacySdJwtVcFormatIdentifier = z.infer<typeof zLegacySdJwtVcFormatIdentifier>
+
+/**
+ * @deprecated format has been deprecated in favor of "dc+sd-jwt" since Draft 23
+ * of the OpenID for Verifiable Presentations specification. Please update your
+ * implementations accordingly.
+ */
+export const zLegacySdJwtVcCredentialIssuerMetadataDraft16 = zCredentialConfigurationSupportedCommon.extend({
   vct: z.string(),
-  format: zSdJwtVcFormatIdentifier,
+  format: zLegacySdJwtVcFormatIdentifier,
   order: z.optional(z.array(z.string())),
   credential_metadata: zCredentialConfigurationSupportedCommonCredentialMetadata
     .extend({
       claims: z.array(zCredentialConfigurationSupportedClaimsDraft14).optional(),
     })
     .optional(),
+  credential_definition: z.optional(z.never()),
 })
 
-export const zSdJwtVcCredentialIssuerMetadataDraft14 = zCredentialConfigurationSupportedCommonDraft15.extend({
+/**
+ * @deprecated format has been deprecated in favor of "dc+sd-jwt" since Draft 23
+ * of the OpenID for Verifiable Presentations specification. Please update your
+ * implementations accordingly.
+ */
+export const zLegacySdJwtVcCredentialIssuerMetadataDraft14 = zCredentialConfigurationSupportedCommonDraft15.extend({
   vct: z.string(),
-  format: zSdJwtVcFormatIdentifier,
+  format: zLegacySdJwtVcFormatIdentifier,
   claims: z.optional(zCredentialConfigurationSupportedClaimsDraft14),
   order: z.optional(z.array(z.string())),
+  credential_definition: z.optional(z.never()),
 })
 
-export const zSdJwtVcCredentialRequestFormatDraft14 = z.object({
-  format: zSdJwtVcFormatIdentifier,
+/**
+ * @deprecated format has been deprecated in favor of "dc+sd-jwt" since Draft 23
+ * of the OpenID for Verifiable Presentations specification. Please update your
+ * implementations accordingly.
+ */
+export const zLegacySdJwtVcCredentialRequestFormatDraft14 = z.object({
+  format: zLegacySdJwtVcFormatIdentifier,
   vct: z.string(),
   claims: z.optional(zCredentialConfigurationSupportedClaimsDraft14),
+  credential_definition: z.optional(z.never()),
 })
