@@ -73,6 +73,14 @@ export {
   zJwtVcJsonFormatIdentifier,
 } from './w3c-vc/z-w3c-jwt-vc-json'
 
+// vc+sd-jwt
+export {
+  type SdJwtW3VcFormatIdentifier,
+  zSdJwtW3VcCredentialIssuerMetadata,
+  zSdJwtW3VcCredentialRequestFormatDraft14,
+  zSdJwtW3VcFormatIdentifier,
+} from './w3c-vc/z-w3c-sd-jwt-vc'
+
 export type CredentialFormatIdentifier =
   | MsoMdocFormatIdentifier
   | SdJwtVcFormatIdentifier

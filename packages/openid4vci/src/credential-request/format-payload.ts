@@ -14,6 +14,7 @@ import {
   zSdJwtVcFormatIdentifier,
 } from '../formats/credential'
 import { zSdJwtVcCredentialIssuerMetadataDraft16 } from '../formats/credential/sd-jwt-vc/z-sd-jwt-vc'
+import { zSdJwtW3VcCredentialIssuerMetadata } from '../formats/credential/w3c-vc/z-w3c-sd-jwt-vc'
 import { getCredentialConfigurationSupportedById } from '../metadata/credential-issuer/credential-issuer-metadata'
 import type { IssuerMetadataResult } from '../metadata/fetch-issuer-metadata'
 import type { CredentialRequestWithFormats } from './z-credential-request'
@@ -100,6 +101,15 @@ export function getCredentialRequestFormatPayloadForCredentialConfigurationId(
     throw new Openid4vciError(
       `Credential configuration id '${options.credentialConfigurationId}' with format ${zSdJwtVcFormatIdentifier.value} does not support credential request based on 'format'. Use 'credential_configuration_id' directly.`
     )
+  }
+
+  if (zIs(zSdJwtW3VcCredentialIssuerMetadata, credentialConfiguration)) {
+    return {
+      format: credentialConfiguration.format,
+      credential_definition: {
+        type: credentialConfiguration.credential_definition.type,
+      },
+    }
   }
 
   throw new Openid4vciError(

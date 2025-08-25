@@ -21,6 +21,7 @@ export const zSdJwtVcCredentialIssuerMetadataDraft16 = zCredentialConfigurationS
       claims: z.array(zCredentialConfigurationSupportedClaimsDraft14).optional(),
     })
     .optional(),
+  credential_definition: z.optional(z.never()),
 })
 
 export const zSdJwtVcCredentialIssuerMetadataDraft14 = zCredentialConfigurationSupportedCommonDraft15.extend({
@@ -28,10 +29,12 @@ export const zSdJwtVcCredentialIssuerMetadataDraft14 = zCredentialConfigurationS
   format: zSdJwtVcFormatIdentifier,
   claims: z.optional(zCredentialConfigurationSupportedClaimsDraft14),
   order: z.optional(z.array(z.string())),
+  credential_definition: z.optional(z.never()),
 })
 
 export const zSdJwtVcCredentialRequestFormatDraft14 = z.object({
   format: zSdJwtVcFormatIdentifier,
   vct: z.string(),
   claims: z.optional(zCredentialConfigurationSupportedClaimsDraft14),
+  credential_definition: z.optional(z.never()),
 })

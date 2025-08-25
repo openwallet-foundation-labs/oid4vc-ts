@@ -10,7 +10,11 @@ describe('Credential Configuration Types', () => {
     } as CredentialConfigurationSupportedWithFormats
 
     if (credentialConfiguration.format === 'vc+sd-jwt') {
-      const vct: string = credentialConfiguration.vct
+      if (credentialConfiguration.vct) {
+        const vct: string = credentialConfiguration.vct
+      } else if (credentialConfiguration.credential_definition) {
+        const type: string[] = credentialConfiguration.credential_definition.type
+      }
     }
 
     if (credentialConfiguration.format === 'jwt_vc_json-ld') {
