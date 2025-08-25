@@ -21,15 +21,16 @@ import {
   zLdpVcCredentialIssuerMetadataDraft14To11,
   zLdpVcCredentialIssuerMetadataDraft15,
   zLdpVcFormatIdentifier,
+  zLegacySdJwtVcCredentialIssuerMetadataDraft14,
   zMsoMdocCredentialIssuerMetadata,
   zMsoMdocCredentialIssuerMetadataDraft14,
   zMsoMdocCredentialIssuerMetadataDraft15,
   zSdJwtDcCredentialIssuerMetadata,
   zSdJwtDcCredentialIssuerMetadataDraft15,
   zSdJwtDcFormatIdentifier,
-  zSdJwtVcCredentialIssuerMetadataDraft14,
 } from '../../formats/credential'
-import { zSdJwtVcCredentialIssuerMetadataDraft16 } from '../../formats/credential/sd-jwt-vc/z-sd-jwt-vc'
+import { zLegacySdJwtVcCredentialIssuerMetadataDraft16 } from '../../formats/credential/sd-jwt-vc/z-sd-jwt-vc'
+import { zSdJwtW3VcCredentialIssuerMetadata } from '../../formats/credential/w3c-vc/z-w3c-sd-jwt-vc'
 import { Openid4vciDraftVersion } from '../../version'
 import {
   zCredentialConfigurationSupportedCommon,
@@ -42,14 +43,15 @@ const allCredentialIssuerMetadataFormats = [
   zJwtVcJsonLdCredentialIssuerMetadata,
   zLdpVcCredentialIssuerMetadata,
   zJwtVcJsonCredentialIssuerMetadata,
-  zSdJwtVcCredentialIssuerMetadataDraft16,
+  zSdJwtW3VcCredentialIssuerMetadata,
+  zLegacySdJwtVcCredentialIssuerMetadataDraft16,
   zSdJwtDcCredentialIssuerMetadataDraft15,
   zMsoMdocCredentialIssuerMetadataDraft15,
   zJwtVcJsonLdCredentialIssuerMetadataDraft15,
   zLdpVcCredentialIssuerMetadataDraft15,
   zJwtVcJsonCredentialIssuerMetadataDraft15,
   zMsoMdocCredentialIssuerMetadataDraft14,
-  zSdJwtVcCredentialIssuerMetadataDraft14,
+  zLegacySdJwtVcCredentialIssuerMetadataDraft14,
   zJwtVcJsonLdCredentialIssuerMetadataDraft14,
   zLdpVcCredentialIssuerMetadataDraft14,
   zJwtVcJsonCredentialIssuerMetadataDraft14,

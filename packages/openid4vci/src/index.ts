@@ -61,7 +61,7 @@ export type {
   JwtVcJsonLdFormatIdentifier,
   LdpVcFormatIdentifier,
   MsoMdocFormatIdentifier,
-  SdJwtVcFormatIdentifier,
+  LegacySdJwtVcFormatIdentifier,
   CredentialFormatIdentifier,
 } from './formats/credential'
 

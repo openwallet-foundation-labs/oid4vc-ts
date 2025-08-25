@@ -31,9 +31,10 @@ describe('Credential Issuer Metadata', () => {
     expect(parseResult.success).toBe(false)
     expect((parseResult.error?.errors[0] as ZodInvalidUnionIssue)?.unionErrors[0]?.issues[0]).toEqual({
       code: 'invalid_type',
-      expected: 'string',
+      // FIXME(vc+sd-jwt): fix expected to be 'string' when dropping support for legacy vc+sd-jwt format.
+      expected: 'object',
       received: 'undefined',
-      path: ['vct'],
+      path: ['credential_definition'],
       message: 'Required',
     })
 
