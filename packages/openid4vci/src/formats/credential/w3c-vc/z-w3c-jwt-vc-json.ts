@@ -12,7 +12,7 @@ export type JwtVcJsonFormatIdentifier = z.infer<typeof zJwtVcJsonFormatIdentifie
 
 const zJwtVcJsonCredentialDefinition = z
   .object({
-    type: z.array(z.string()),
+    type: z.array(z.string()).nonempty(),
   })
   .passthrough()
 
