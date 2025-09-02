@@ -4,9 +4,7 @@ import z from 'zod'
 import { type JarRequestObjectPayload, jwtAuthorizationRequestJwtHeaderTyp, signedAuthorizationRequestJwtHeaderTyp, zJarRequestObjectPayload } from '../z-jar-request-object'
 import { JarAuthorizationRequest, validateJarRequestParams } from '../z-jar-authorization-request'
 import { CallbackContext } from '../../callbacks'
-import { ClientAttestationJwtPayload } from '../../client-attestation/z-client-attestation'
-import { Jwk } from '../../common/jwk/z-jwk'
-import { JwtSignerWithJwk, zCompactJwt } from '../../common/jwt/z-jwt'
+import { JwtSigner, JwtSignerWithJwk, zCompactJwt } from '../../common/jwt/z-jwt'
 import { decodeJwt } from '../../common/jwt/decode-jwt'
 import { Oauth2ServerErrorResponseError } from '../../error/Oauth2ServerErrorResponseError'
 import { Oauth2ErrorCodes } from '../../common/z-oauth2-error'
@@ -24,7 +22,7 @@ export interface VerifyJarRequestOptions {
   }
   authorizationRequestJwt: string
   callbacks: Pick<CallbackContext, 'verifyJwt'>
-  clientAttestationPayload: ClientAttestationJwtPayload
+  jwtSigner: JwtSigner
 }
 
 export interface ParsedJarRequest {
@@ -75,7 +73,7 @@ export async function parseJarRequest(options: ParsedJarRequestOptions): Promise
  * @returns The verified authorization request parameters and metadata
  */
 export async function verifyJarRequest(options: VerifyJarRequestOptions): Promise<VerifiedJarRequest> {
-  const { jarRequestParams, authorizationRequestJwt, callbacks, clientAttestationPayload } = options
+  const { jarRequestParams, authorizationRequestJwt, callbacks, jwtSigner } = options
 
   /* Encryption is not supported */
   const requestObjectIsEncrypted = zCompactJwe.safeParse(authorizationRequestJwt).success
@@ -97,7 +95,7 @@ export async function verifyJarRequest(options: VerifyJarRequestOptions): Promis
   const { authorizationRequestPayload, signer, jwt } = await verifyJarRequestObject({
     authorizationRequestJwt,
     callbacks,
-    clientAttestationPayload
+    jwtSigner
   })
   if (!authorizationRequestPayload.client_id) {
     throw new Oauth2ServerErrorResponseError({
@@ -155,9 +153,9 @@ async function fetchJarRequestObject(options: {
 async function verifyJarRequestObject(options: {
   authorizationRequestJwt: string
   callbacks: Pick<CallbackContext, 'verifyJwt'>,
-  clientAttestationPayload: ClientAttestationJwtPayload
+  jwtSigner: JwtSigner
 }) {
-  const { authorizationRequestJwt, callbacks } = options
+  const { authorizationRequestJwt, callbacks, jwtSigner } = options
 
   const jwt = decodeJwt({ jwt: authorizationRequestJwt, payloadSchema: zJarRequestObjectPayload })
 
@@ -166,12 +164,7 @@ async function verifyJarRequestObject(options: {
     compact: authorizationRequestJwt,
     header: jwt.header,
     payload: jwt.payload,
-
-    signer: {
-      alg: jwt.header.alg,
-      method: 'jwk',
-      publicJwk: options.clientAttestationPayload.cnf.jwk,
-    },
+    signer: jwtSigner,
   })
 
   // Some existing deployments may alternatively be using both type 
