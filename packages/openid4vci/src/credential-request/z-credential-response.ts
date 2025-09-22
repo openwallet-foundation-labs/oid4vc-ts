@@ -5,7 +5,14 @@ const zCredentialEncoding = z.union([z.string(), z.record(z.string(), z.any())])
 
 const zBaseCredentialResponse = z
   .object({
-    credentials: z.optional(z.array(zCredentialEncoding)),
+    credentials: z
+      .union([
+        // Draft >= 15
+        z.array(z.object({ credential: zCredentialEncoding })),
+        // Draft < 15
+        z.array(zCredentialEncoding),
+      ])
+      .optional(),
     interval: z.number().int().positive().optional(),
     notification_id: z.string().optional(),
   })
