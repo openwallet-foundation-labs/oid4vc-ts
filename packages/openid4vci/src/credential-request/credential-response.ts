@@ -28,7 +28,7 @@ export interface CreateCredentialResponseOptions {
 }
 
 export function createCredentialResponse(options: CreateCredentialResponseOptions) {
-  const credentialResponse = parseWithErrorHandling(zCredentialResponse, {
+  return parseWithErrorHandling(zCredentialResponse, {
     c_nonce: options.cNonce,
     c_nonce_expires_in: options.cNonceExpiresInSeconds,
     credential: options.credential,
@@ -43,8 +43,6 @@ export function createCredentialResponse(options: CreateCredentialResponseOption
     format: options.credentialRequest.format?.format,
     ...options.additionalPayload,
   } satisfies CredentialResponse)
-
-  return credentialResponse
 }
 
 export type CreateDeferredCredentialResponseOptions = {
