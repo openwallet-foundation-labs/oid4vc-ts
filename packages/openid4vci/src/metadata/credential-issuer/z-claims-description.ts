@@ -1,19 +1,37 @@
 import z from 'zod'
 
 // Used up to draft 14
-export const zCredentialConfigurationSupportedClaimsDraft14 = z
+export const zCredentialConfigurationSupportedClaimsDescriptionDraft14 = z
   .object({
     mandatory: z.boolean().optional(),
     value_type: z.string().optional(),
     display: z
-      .object({
-        name: z.string().optional(),
-        locale: z.string().optional(),
-      })
-      .passthrough()
+      .array(
+        z
+          .object({
+            name: z.string().optional(),
+            locale: z.string().optional(),
+          })
+          .passthrough()
+      )
       .optional(),
   })
   .passthrough()
+
+export type CredentialConfigurationSupportedClaimsDraft14 = {
+  [key: string]:
+    | z.infer<typeof zCredentialConfigurationSupportedClaimsDescriptionDraft14>
+    | CredentialConfigurationSupportedClaimsDraft14
+}
+
+export const zCredentialConfigurationSupportedClaimsDraft14: z.ZodType<CredentialConfigurationSupportedClaimsDraft14> =
+  z.record(
+    z.string(),
+    z.union([
+      zCredentialConfigurationSupportedClaimsDescriptionDraft14,
+      z.lazy(() => zCredentialConfigurationSupportedClaimsDraft14),
+    ])
+  )
 
 const zClaimsDescriptionPath = z.array(z.union([z.string(), z.number().int().nonnegative(), z.null()])).nonempty()
 export type ClaimsDescriptionPath = z.infer<typeof zClaimsDescriptionPath>
