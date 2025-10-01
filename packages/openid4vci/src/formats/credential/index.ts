@@ -77,6 +77,7 @@ export {
 export {
   type SdJwtW3VcFormatIdentifier,
   zSdJwtW3VcCredentialIssuerMetadata,
+  zSdJwtW3VcCredentialIssuerMetadataDraft15,
   zSdJwtW3VcCredentialRequestFormatDraft14,
   zSdJwtW3VcFormatIdentifier,
 } from './w3c-vc/z-w3c-sd-jwt-vc'

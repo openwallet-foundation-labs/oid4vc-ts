@@ -30,7 +30,10 @@ import {
   zSdJwtDcFormatIdentifier,
 } from '../../formats/credential'
 import { zLegacySdJwtVcCredentialIssuerMetadataDraft16 } from '../../formats/credential/sd-jwt-vc/z-sd-jwt-vc'
-import { zSdJwtW3VcCredentialIssuerMetadata } from '../../formats/credential/w3c-vc/z-w3c-sd-jwt-vc'
+import {
+  zSdJwtW3VcCredentialIssuerMetadata,
+  zSdJwtW3VcCredentialIssuerMetadataDraft15,
+} from '../../formats/credential/w3c-vc/z-w3c-sd-jwt-vc'
 import { Openid4vciDraftVersion } from '../../version'
 import {
   zCredentialConfigurationSupportedCommon,
@@ -44,6 +47,7 @@ const allCredentialIssuerMetadataFormats = [
   zLdpVcCredentialIssuerMetadata,
   zJwtVcJsonCredentialIssuerMetadata,
   zSdJwtW3VcCredentialIssuerMetadata,
+  zSdJwtW3VcCredentialIssuerMetadataDraft15,
   zLegacySdJwtVcCredentialIssuerMetadataDraft16,
   zSdJwtDcCredentialIssuerMetadataDraft15,
   zMsoMdocCredentialIssuerMetadataDraft15,
