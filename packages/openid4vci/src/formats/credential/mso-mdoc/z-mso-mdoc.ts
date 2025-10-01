@@ -39,5 +39,5 @@ export const zMsoMdocCredentialRequestFormatDraft14 = z.object({
   format: zMsoMdocFormatIdentifier,
   doctype: z.string(),
   // Format based request is removed in Draft 15, so only old claims syntax supported.
-  claims: z.optional(zCredentialConfigurationSupportedClaimsDraft14),
+  claims: zCredentialConfigurationSupportedClaimsDraft14.optional(),
 })
