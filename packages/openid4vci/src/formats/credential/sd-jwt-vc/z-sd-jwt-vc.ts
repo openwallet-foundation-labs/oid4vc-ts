@@ -1,5 +1,8 @@
 import z from 'zod'
-import { zCredentialConfigurationSupportedClaimsDraft14 } from '../../../metadata/credential-issuer/z-claims-description'
+import {
+  zCredentialConfigurationSupportedClaimsDraft14,
+  zIssuerMetadataClaimsDescription,
+} from '../../../metadata/credential-issuer/z-claims-description'
 import {
   zCredentialConfigurationSupportedCommon,
   zCredentialConfigurationSupportedCommonCredentialMetadata,
@@ -31,7 +34,7 @@ export const zLegacySdJwtVcCredentialIssuerMetadataDraft16 = zCredentialConfigur
   order: z.optional(z.array(z.string())),
   credential_metadata: zCredentialConfigurationSupportedCommonCredentialMetadata
     .extend({
-      claims: z.array(zCredentialConfigurationSupportedClaimsDraft14).optional(),
+      claims: z.array(zIssuerMetadataClaimsDescription).optional(),
     })
     .optional(),
   credential_definition: z.optional(z.never()),
