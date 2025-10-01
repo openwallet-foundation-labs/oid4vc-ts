@@ -19,7 +19,7 @@ export const zJwtVcJsonLdCredentialIssuerMetadata = zCredentialConfigurationSupp
   credential_definition: zW3cVcJsonLdCredentialDefinition,
   credential_metadata: zCredentialConfigurationSupportedCommonCredentialMetadata
     .extend({
-      claims: zIssuerMetadataClaimsDescription.optional(),
+      claims: z.array(zIssuerMetadataClaimsDescription).optional(),
     })
     .optional(),
 })
@@ -27,7 +27,7 @@ export const zJwtVcJsonLdCredentialIssuerMetadata = zCredentialConfigurationSupp
 export const zJwtVcJsonLdCredentialIssuerMetadataDraft15 = zCredentialConfigurationSupportedCommonDraft15.extend({
   format: zJwtVcJsonLdFormatIdentifier,
   credential_definition: zW3cVcJsonLdCredentialDefinition,
-  claims: zIssuerMetadataClaimsDescription.optional(),
+  claims: z.array(zIssuerMetadataClaimsDescription).optional(),
 })
 
 export const zJwtVcJsonLdCredentialIssuerMetadataDraft14 = zCredentialConfigurationSupportedCommonDraft15.extend({
