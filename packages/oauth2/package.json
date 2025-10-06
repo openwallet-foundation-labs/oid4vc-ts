@@ -24,7 +24,7 @@
     }
   },
   "scripts": {
-    "build": "tsup src/index.ts --format cjs,esm --dts --clean --sourcemap"
+    "build": "tsdown src/index.ts --format cjs,esm --dts --sourcemap"
   },
   "dependencies": {
     "@openid4vc/utils": "workspace:*",

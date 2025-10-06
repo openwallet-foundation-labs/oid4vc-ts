@@ -1,51 +1,51 @@
 export {
   getOpenid4vpClientId,
-  GetOpenid4vpClientIdOptions,
+  type GetOpenid4vpClientIdOptions,
 } from './client-identifier-prefix/parse-client-identifier-prefix'
-export { zClientIdPrefix, ClientIdPrefix } from './client-identifier-prefix/z-client-id-prefix'
+export { zClientIdPrefix, type ClientIdPrefix } from './client-identifier-prefix/z-client-id-prefix'
 export {
   verifyJarmAuthorizationResponse,
   type VerifyJarmAuthorizationResponseOptions,
   JarmMode,
 } from './jarm/jarm-authorization-response/verify-jarm-authorization-response'
-export { zJarmClientMetadata, JarmClientMetadata } from './jarm/metadata/z-jarm-client-metadata'
+export { zJarmClientMetadata, type JarmClientMetadata } from './jarm/metadata/z-jarm-client-metadata'
 
 export { type Openid4vpVersionNumber, parseAuthorizationRequestVersion } from './version'
 export {
   createOpenid4vpAuthorizationRequest,
-  CreateOpenid4vpAuthorizationRequestOptions,
+  type CreateOpenid4vpAuthorizationRequestOptions,
 } from './authorization-request/create-authorization-request'
 export {
   parseOpenid4vpAuthorizationRequest,
-  ParseOpenid4vpAuthorizationRequestOptions,
+  type ParseOpenid4vpAuthorizationRequestOptions,
 } from './authorization-request/parse-authorization-request-params'
 export {
   resolveOpenid4vpAuthorizationRequest,
-  ResolveOpenid4vpAuthorizationRequestOptions,
-  ResolvedOpenid4vpAuthorizationRequest,
+  type ResolveOpenid4vpAuthorizationRequestOptions,
+  type ResolvedOpenid4vpAuthorizationRequest,
 } from './authorization-request/resolve-authorization-request'
 export type { Openid4vpAuthorizationRequest } from './authorization-request/z-authorization-request'
 export {
   validateOpenid4vpAuthorizationRequestPayload,
-  ValidateOpenid4vpAuthorizationRequestPayloadOptions,
-  WalletVerificationOptions,
+  type ValidateOpenid4vpAuthorizationRequestPayloadOptions,
+  type WalletVerificationOptions,
 } from './authorization-request/validate-authorization-request'
 export {
   createOpenid4vpAuthorizationResponse,
-  CreateOpenid4vpAuthorizationResponseOptions,
-  CreateOpenid4vpAuthorizationResponseResult,
+  type CreateOpenid4vpAuthorizationResponseOptions,
+  type CreateOpenid4vpAuthorizationResponseResult,
 } from './authorization-response/create-authorization-response'
 export {
   submitOpenid4vpAuthorizationResponse,
-  SubmitOpenid4vpAuthorizationResponseOptions,
+  type SubmitOpenid4vpAuthorizationResponseOptions,
 } from './authorization-response/submit-authorization-response'
 export {
   validateOpenid4vpAuthorizationResponsePayload,
-  ValidateOpenid4vpAuthorizationResponseOptions,
+  type ValidateOpenid4vpAuthorizationResponseOptions,
 } from './authorization-response/validate-authorization-response'
 export {
   parseTransactionData,
-  ParseTransactionDataOptions,
+  type ParseTransactionDataOptions,
 } from './transaction-data/parse-transaction-data'
 export type { TransactionDataEntry } from './transaction-data/z-transaction-data'
 export type {
@@ -61,18 +61,18 @@ export type { VpToken, VpTokenDcql, VpTokenPex, VpTokenPresentationEntry } from 
 
 export {
   parseOpenid4vpAuthorizationResponse,
-  ParseOpenid4vpAuthorizationResponseOptions,
-  ParsedOpenid4vpAuthorizationResponse,
+  type ParseOpenid4vpAuthorizationResponseOptions,
+  type ParsedOpenid4vpAuthorizationResponse,
 } from './authorization-response/parse-authorization-response'
 
 export { parseOpenid4VpAuthorizationResponsePayload } from './authorization-response/parse-authorization-response-payload'
 
 export {
   parseJarmAuthorizationResponse,
-  ParseJarmAuthorizationResponseOptions,
+  type ParseJarmAuthorizationResponseOptions,
 } from './authorization-response/parse-jarm-authorization-response'
 
-export {
+export type {
   ValidateOpenid4VpPexAuthorizationResponseResult,
   ValidateOpenid4VpDcqlAuthorizationResponseResult,
   ValidateOpenid4VpAuthorizationResponseResult,
@@ -82,7 +82,7 @@ export { Openid4vpClient } from './Openid4vpClient'
 export { Openid4vpVerifier } from './Openid4vpVerifier'
 export {
   zOpenid4vpAuthorizationResponse,
-  Openid4vpAuthorizationResponse,
+  type Openid4vpAuthorizationResponse,
 } from './authorization-response/z-authorization-response'
 
 export { isJarmResponseMode } from './jarm/jarm-response-mode'
@@ -95,26 +95,26 @@ export {
 
 export {
   zClientMetadata,
-  ClientMetadata,
+  type ClientMetadata,
 } from './models/z-client-metadata'
 
 export {
   zCredentialFormat,
-  CredentialFormat,
+  type CredentialFormat,
 } from './models/z-credential-formats'
 
 export {
   zProofFormat,
-  ProofFormat,
+  type ProofFormat,
 } from './models/z-proof-formats'
 
 export {
   zWalletMetadata,
-  WalletMetadata,
+  type WalletMetadata,
 } from './models/z-wallet-metadata'
 
 export {
   zVerifierAttestations,
-  VerifierAttestation,
-  VerifierAttestations,
+  type VerifierAttestation,
+  type VerifierAttestations,
 } from './models/z-verifier-attestations'

@@ -20,8 +20,8 @@ export type { AccessTokenProfileJwtPayload } from './access-token/z-access-token
 
 export {
   decodeJwt,
-  DecodeJwtOptions,
-  DecodeJwtResult,
+  type DecodeJwtOptions,
+  type DecodeJwtResult,
   jwtHeaderFromJwtSigner,
   jwtSignerFromJwt,
 } from './common/jwt/decode-jwt'
@@ -29,12 +29,12 @@ export {
 export type { JweEncryptor } from './common/jwt/z-jwt'
 
 export {
-  JwtSigner,
-  JwtSignerCustom,
-  JwtSignerDid,
-  JwtSignerJwk,
-  JwtSignerWithJwk,
-  JwtSignerX5c,
+  type JwtSigner,
+  type JwtSignerCustom,
+  type JwtSignerDid,
+  type JwtSignerJwk,
+  type JwtSignerWithJwk,
+  type JwtSignerX5c,
   zJwtHeader,
   zJwtPayload,
   zCompactJwt,
@@ -58,7 +58,7 @@ export type { RequestDpopOptions } from './dpop/dpop'
 export { InvalidFetchResponseError } from '@openid4vc/utils'
 export { Oauth2ClientAuthorizationChallengeError } from './error/Oauth2ClientAuthorizationChallengeError'
 export { Oauth2ClientErrorResponseError } from './error/Oauth2ClientErrorResponseError'
-export { Oauth2Error, Oauth2ErrorOptions } from './error/Oauth2Error'
+export { Oauth2Error, type Oauth2ErrorOptions } from './error/Oauth2Error'
 export { Oauth2JwtParseError } from './error/Oauth2JwtParseError'
 export { Oauth2JwtVerificationError } from './error/Oauth2JwtVerificationError'
 export {
@@ -85,7 +85,7 @@ export {
   getAuthorizationServerMetadataFromList,
 } from './metadata/authorization-server/authorization-server-metadata'
 export {
-  AuthorizationServerMetadata,
+  type AuthorizationServerMetadata,
   zAuthorizationServerMetadata,
   // Ideally we don't export this, but it's needed in openid4vci
 } from './metadata/authorization-server/z-authorization-server-metadata'
@@ -137,8 +137,8 @@ export type {
 } from './callbacks'
 
 export {
-  ClientAuthenticationCallback,
-  ClientAuthenticationCallbackOptions,
+  type ClientAuthenticationCallback,
+  type ClientAuthenticationCallbackOptions,
   clientAuthenticationClientSecretBasic,
   clientAuthenticationClientSecretPost,
   clientAuthenticationDynamic,
@@ -157,7 +157,7 @@ export { Oauth2AuthorizationServer, type Oauth2AuthorizationServerOptions } from
 export { Oauth2Client, type Oauth2ClientOptions } from './Oauth2Client'
 export { Oauth2ResourceServer, type Oauth2ResourceServerOptions } from './Oauth2ResourceServer'
 
-export { CreatePkceReturn, PkceCodeChallengeMethod } from './pkce'
+export { type CreatePkceReturn, PkceCodeChallengeMethod } from './pkce'
 
 export {
   type PreAuthorizedCodeGrantIdentifier,
@@ -171,9 +171,9 @@ export {
   authorizationCodeGrantIdentifier,
 } from './z-grant-type'
 
-export { JwtHeader, JwtPayload } from './common/jwt/z-jwt'
+export type { JwtHeader, JwtPayload } from './common/jwt/z-jwt'
 export { verifyJwt } from './common/jwt/verify-jwt'
 export { zJwkSet } from './common/jwk/z-jwk'
-export { decodeJwtHeader, DecodeJwtHeaderResult } from './common/jwt/decode-jwt-header'
+export { decodeJwtHeader, type DecodeJwtHeaderResult } from './common/jwt/decode-jwt-header'
 
 export { zAlgValueNotNone } from './common/z-common'

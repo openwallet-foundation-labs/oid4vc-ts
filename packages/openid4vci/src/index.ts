@@ -32,7 +32,7 @@ export {
   getCredentialConfigurationsMatchingRequestFormat,
 } from './credential-request/credential-request-configurations'
 
-export { Openid4vciError, Openid4vciErrorOptions } from './error/Openid4vciError'
+export { Openid4vciError, type Openid4vciErrorOptions } from './error/Openid4vciError'
 export { Openid4vciRetrieveCredentialsError } from './error/Openid4vciRetrieveCredentialsError'
 export { Openid4vciSendNotificationError } from './error/Openid4vciSendNotificationError'
 
