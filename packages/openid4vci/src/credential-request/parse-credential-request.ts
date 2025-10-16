@@ -9,15 +9,15 @@ import {
 import type { CredentialConfigurationSupportedWithFormats } from '../metadata/credential-issuer/z-credential-issuer-metadata'
 import type { IssuerMetadataResult } from '../metadata/fetch-issuer-metadata'
 import {
-  type CredentialRequest,
-  type CredentialRequestFormatSpecific,
   allCredentialRequestFormatIdentifiers,
   allCredentialRequestFormats,
+  type CredentialRequest,
+  type CredentialRequestFormatSpecific,
   zCredentialRequest,
 } from './z-credential-request'
 import {
-  type CredentialRequestProofsFormatSpecific,
   allCredentialRequestProofs,
+  type CredentialRequestProofsFormatSpecific,
   zCredentialRequestProofs,
 } from './z-credential-request-common'
 
@@ -83,7 +83,7 @@ export function parseCredentialRequest(options: ParseCredentialRequestOptions): 
     options.credentialRequest,
     'Error validating credential request'
   )
-  let proofs: CredentialRequestProofsFormatSpecific | undefined = undefined
+  let proofs: CredentialRequestProofsFormatSpecific | undefined
 
   // Try to parse the known proofs from the `proofs` object
   const knownProofs = zCredentialRequestProofs.strict().safeParse(credentialRequest.proofs)

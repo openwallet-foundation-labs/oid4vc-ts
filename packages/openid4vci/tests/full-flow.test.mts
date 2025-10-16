@@ -1,4 +1,7 @@
 import {
+  authorizationCodeGrantIdentifier,
+  calculateJwkThumbprint,
+  clientAuthenticationClientAttestationJwt,
   HashAlgorithm,
   type Jwk,
   type JwkSet,
@@ -6,25 +9,22 @@ import {
   Oauth2Client,
   Oauth2ResourceServer,
   PkceCodeChallengeMethod,
-  SupportedAuthenticationScheme,
-  authorizationCodeGrantIdentifier,
-  calculateJwkThumbprint,
-  clientAuthenticationClientAttestationJwt,
   preAuthorizedCodeGrantIdentifier,
+  SupportedAuthenticationScheme,
+  SupportedClientAuthenticationMethod,
 } from '@openid4vc/oauth2'
-import { SupportedClientAuthenticationMethod } from '@openid4vc/oauth2'
-import { ContentType, type HttpMethod, addSecondsToDate, decodeUtf8String, encodeToBase64Url } from '@openid4vc/utils'
-import { http, HttpResponse } from 'msw'
+import { addSecondsToDate, ContentType, decodeUtf8String, encodeToBase64Url, type HttpMethod } from '@openid4vc/utils'
+import { HttpResponse, http } from 'msw'
 import { setupServer } from 'msw/node'
 import { afterAll, afterEach, beforeAll, describe, expect, test } from 'vitest'
 import { getSignJwtCallback, parseXwwwFormUrlEncoded, callbacks as partialCallbacks } from '../../oauth2/tests/util.mjs'
 import {
   type CredentialConfigurationSupportedWithFormats,
+  extractScopesForCredentialConfigurationIds,
   Openid4vciClient,
   Openid4vciDraftVersion,
   Openid4vciIssuer,
   Openid4vciWalletProvider,
-  extractScopesForCredentialConfigurationIds,
 } from '../src/index.js'
 
 const dpopJwk = {

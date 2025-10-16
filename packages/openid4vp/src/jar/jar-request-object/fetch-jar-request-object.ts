@@ -1,5 +1,5 @@
 import { Oauth2ErrorCodes, Oauth2ServerErrorResponseError } from '@openid4vc/oauth2'
-import { ContentType, type Fetch, createFetcher, objectToQueryParams } from '@openid4vc/utils'
+import { ContentType, createFetcher, type Fetch, objectToQueryParams } from '@openid4vc/utils'
 import type { ClientIdPrefix } from '../../client-identifier-prefix/z-client-id-prefix'
 import type { WalletMetadata } from '../../models/z-wallet-metadata'
 
@@ -29,6 +29,7 @@ export async function fetchJarRequestObject(options: {
   let requestBody = wallet.metadata ? { wallet_metadata: wallet.metadata, wallet_nonce: wallet.nonce } : undefined
   if (requestBody?.wallet_metadata?.request_object_signing_alg_values_supported && clientIdPrefix === 'redirect_uri') {
     // This value indicates that the Client Identifier (without the prefix redirect_uri:) is the Verifier's Redirect URI (or Response URI when Response Mode direct_post is used). The Authorization Request MUST NOT be signed.
+    // biome-ignore lint/correctness/noUnusedVariables: no explanation
     const { request_object_signing_alg_values_supported, ...rest } = requestBody.wallet_metadata
     requestBody = { ...requestBody, wallet_metadata: { ...rest } }
   }

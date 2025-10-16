@@ -4,7 +4,7 @@ import { Oauth2ErrorCodes, type Oauth2ErrorResponse } from '../common/z-oauth2-e
 import { Oauth2ClientErrorResponseError } from '../error/Oauth2ClientErrorResponseError'
 import { Oauth2Error } from '../error/Oauth2Error'
 import type { Oauth2ResourceUnauthorizedError } from '../error/Oauth2ResourceUnauthorizedError'
-import { type RequestDpopOptions, extractDpopNonceFromHeaders } from './dpop'
+import { extractDpopNonceFromHeaders, type RequestDpopOptions } from './dpop'
 
 export async function authorizationServerRequestWithDpopRetry<T>(options: {
   dpop?: RequestDpopOptions

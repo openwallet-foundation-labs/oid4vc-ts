@@ -1,5 +1,4 @@
-import { type BaseSchema, ContentType, type Fetch, createZodFetcher } from '@openid4vc/utils'
-import { InvalidFetchResponseError } from '@openid4vc/utils'
+import { type BaseSchema, ContentType, createZodFetcher, type Fetch, InvalidFetchResponseError } from '@openid4vc/utils'
 import type z from 'zod'
 import { ValidationError } from '../../../utils/src/error/ValidationError'
 

@@ -19,7 +19,7 @@
     "changeset-version": "pnpm changeset version && pnpm style:fix"
   },
   "devDependencies": {
-    "@biomejs/biome": "^1.9.4",
+    "@biomejs/biome": "^2.2.6",
     "@changesets/cli": "^2.28.1",
     "msw": "^2.11.5",
     "tsdown": "^0.15.7",

@@ -118,7 +118,7 @@ export async function verifyResourceRequest(options: VerifyResourceRequestOption
 
         // If we found the active token.
         if (tokenPayload.active) break
-      } catch (error) {
+      } catch (_error) {
         // No-op?
       }
     }
@@ -132,7 +132,7 @@ export async function verifyResourceRequest(options: VerifyResourceRequestOption
     })
   }
 
-  let dpopJwk: Jwk | undefined = undefined
+  let dpopJwk: Jwk | undefined
   if (
     scheme === SupportedAuthenticationScheme.DPoP ||
     // two alternative methods to determine whether DPoP was used. As the user can

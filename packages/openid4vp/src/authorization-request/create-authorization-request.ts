@@ -1,18 +1,18 @@
 import { type CallbackContext, Oauth2Error } from '@openid4vc/oauth2'
-import { URL, URLSearchParams, objectToQueryParams, parseWithErrorHandling } from '@openid4vc/utils'
+import { objectToQueryParams, parseWithErrorHandling, URL, URLSearchParams } from '@openid4vc/utils'
 import {
   type CreateJarAuthorizationRequestOptions,
   createJarAuthorizationRequest,
 } from '../jar/create-jar-authorization-request'
 import {
-  type WalletVerificationOptions,
   validateOpenid4vpAuthorizationRequestPayload,
+  type WalletVerificationOptions,
 } from './validate-authorization-request'
 import { validateOpenid4vpAuthorizationRequestDcApiPayload } from './validate-authorization-request-dc-api'
 import { type Openid4vpAuthorizationRequest, zOpenid4vpAuthorizationRequest } from './z-authorization-request'
 import {
-  type Openid4vpAuthorizationRequestDcApi,
   isOpenid4vpAuthorizationRequestDcApi,
+  type Openid4vpAuthorizationRequestDcApi,
   zOpenid4vpAuthorizationRequestDcApi,
 } from './z-authorization-request-dc-api'
 

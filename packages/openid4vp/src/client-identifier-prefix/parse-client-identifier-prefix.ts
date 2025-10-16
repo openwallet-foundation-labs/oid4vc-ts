@@ -1,11 +1,15 @@
-import { Oauth2ErrorCodes, Oauth2ServerErrorResponseError } from '@openid4vc/oauth2'
-import { type CallbackContext, HashAlgorithm } from '@openid4vc/oauth2'
-import { URL, decodeBase64, encodeToBase64Url, zHttpsUrl } from '@openid4vc/utils'
+import {
+  type CallbackContext,
+  HashAlgorithm,
+  Oauth2ErrorCodes,
+  Oauth2ServerErrorResponseError,
+} from '@openid4vc/oauth2'
+import { decodeBase64, encodeToBase64Url, URL, zHttpsUrl } from '@openid4vc/utils'
 import type { Openid4vpAuthorizationRequest } from '../authorization-request/z-authorization-request'
 import {
-  type Openid4vpAuthorizationRequestDcApi,
   isOpenid4vpAuthorizationRequestDcApi,
   isOpenid4vpResponseModeDcApi,
+  type Openid4vpAuthorizationRequestDcApi,
 } from '../authorization-request/z-authorization-request-dc-api'
 import type { VerifiedJarRequest } from '../jar/handle-jar-request/verify-jar-request'
 import type { ClientMetadata } from '../models/z-client-metadata'

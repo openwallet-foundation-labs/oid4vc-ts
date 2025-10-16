@@ -8,22 +8,22 @@ import {
 import { fetchClientMetadata } from '../fetch-client-metadata'
 import { type VerifiedJarRequest, verifyJarRequest } from '../jar/handle-jar-request/verify-jar-request'
 import {
-  type JarAuthorizationRequest,
   isJarAuthorizationRequest,
+  type JarAuthorizationRequest,
   zJarAuthorizationRequest,
 } from '../jar/z-jar-authorization-request'
 import type { PexPresentationDefinition } from '../models/z-pex'
 import { type ParsedTransactionDataEntry, parseTransactionData } from '../transaction-data/parse-transaction-data'
 import { type Openid4vpVersionNumber, parseAuthorizationRequestVersion } from '../version'
 import {
-  type WalletVerificationOptions,
   validateOpenid4vpAuthorizationRequestPayload,
+  type WalletVerificationOptions,
 } from './validate-authorization-request'
 import { validateOpenid4vpAuthorizationRequestDcApiPayload } from './validate-authorization-request-dc-api'
 import { type Openid4vpAuthorizationRequest, zOpenid4vpAuthorizationRequest } from './z-authorization-request'
 import {
-  type Openid4vpAuthorizationRequestDcApi,
   isOpenid4vpAuthorizationRequestDcApi,
+  type Openid4vpAuthorizationRequestDcApi,
   zOpenid4vpAuthorizationRequestDcApi,
 } from './z-authorization-request-dc-api'
 

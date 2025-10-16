@@ -1,4 +1,4 @@
-import { type Fetch, URL, joinUriParts } from '@openid4vc/utils'
+import { type Fetch, joinUriParts, URL } from '@openid4vc/utils'
 import { Oauth2Error } from '../../error/Oauth2Error'
 import { fetchWellKnownMetadata } from '../fetch-well-known-metadata'
 import { type AuthorizationServerMetadata, zAuthorizationServerMetadata } from './z-authorization-server-metadata'

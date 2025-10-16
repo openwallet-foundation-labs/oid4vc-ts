@@ -1,4 +1,4 @@
-import { type FetchHeaders, dateToSeconds, parseWithErrorHandling } from '@openid4vc/utils'
+import { dateToSeconds, type FetchHeaders, parseWithErrorHandling } from '@openid4vc/utils'
 import type { CallbackContext } from '../callbacks'
 import { decodeJwt, jwtHeaderFromJwtSigner, jwtSignerFromJwt } from '../common/jwt/decode-jwt'
 import { verifyJwt } from '../common/jwt/verify-jwt'

@@ -1,24 +1,24 @@
 import {
   type AuthorizationCodeGrantIdentifier,
+  authorizationCodeGrantIdentifier,
   type CallbackContext,
+  getAuthorizationServerMetadataFromList,
   InvalidFetchResponseError,
   Oauth2Error,
   type PreAuthorizedCodeGrantIdentifier,
-  authorizationCodeGrantIdentifier,
-  getAuthorizationServerMetadataFromList,
   preAuthorizedCodeGrantIdentifier,
 } from '@openid4vc/oauth2'
 import {
   ContentType,
-  type Fetch,
-  URL,
-  URLSearchParams,
-  ValidationError,
   createZodFetcher,
   encodeToBase64Url,
+  type Fetch,
   getQueryParams,
   objectToQueryParams,
   parseWithErrorHandling,
+  URL,
+  URLSearchParams,
+  ValidationError,
 } from '@openid4vc/utils'
 import type z from 'zod'
 import type { IssuerMetadataResult } from '../metadata/fetch-issuer-metadata'
@@ -71,7 +71,7 @@ export async function resolveCredentialOffer(
 
     try {
       credentialOfferJson = JSON.parse(decodeURIComponent(parsedQueryParams.credential_offer))
-    } catch (error) {
+    } catch (_error) {
       throw new Oauth2Error(`Error parsing JSON from 'credential_offer' param in credential offer '${credentialOffer}'`)
     }
 

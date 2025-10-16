@@ -1,4 +1,4 @@
-import { type CallbackContext, Oauth2Error, decodeJwtHeader, zCompactJwe, zCompactJwt } from '@openid4vc/oauth2'
+import { type CallbackContext, decodeJwtHeader, Oauth2Error, zCompactJwe, zCompactJwt } from '@openid4vc/oauth2'
 import { parseWithErrorHandling } from '@openid4vc/utils'
 import z from 'zod'
 import type { Openid4vpAuthorizationRequest } from '../authorization-request/z-authorization-request'
