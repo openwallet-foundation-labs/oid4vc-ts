@@ -15,7 +15,7 @@ export const zKeyAttestationJwtHeader = z
         z.literal('key-attestation+jwt')
       ),
   })
-  .passthrough()
+  .loose()
   .refine(({ kid, jwk }) => jwk === undefined || kid === undefined, {
     message: `Both 'jwk' and 'kid' are defined. Only one is allowed`,
   })
@@ -38,9 +38,9 @@ export const zKeyAttestationJwtPayload = z
     attested_keys: z.array(zJwk),
     key_storage: z.optional(zIso18045OrStringArray),
     user_authentication: z.optional(zIso18045OrStringArray),
-    certification: z.optional(z.string().url()),
+    certification: z.optional(z.url()),
   })
-  .passthrough()
+  .loose()
 
 export const zKeyAttestationJwtPayloadForUse = <Use extends KeyAttestationJwtUse | undefined>(use?: Use) =>
   z
@@ -58,6 +58,6 @@ export const zKeyAttestationJwtPayloadForUse = <Use extends KeyAttestationJwtUse
       // REQUIRED when used within header of proof_type.jwt
       exp: use === 'proof_type.jwt' ? zInteger : z.optional(zInteger),
     })
-    .passthrough()
+    .loose()
 
 export type KeyAttestationJwtPayload = z.infer<typeof zKeyAttestationJwtPayload>

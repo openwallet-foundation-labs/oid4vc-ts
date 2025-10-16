@@ -16,13 +16,13 @@ export const zClientAttestationJwtPayload = z
       .object({
         jwk: zJwk,
       })
-      .passthrough(),
+      .loose(),
 
     // OID4VCI Wallet Attestation Extensions
     wallet_name: z.string().optional(),
-    wallet_link: z.string().url().optional(),
+    wallet_link: z.url().optional(),
   })
-  .passthrough()
+  .loose()
 export type ClientAttestationJwtPayload = z.infer<typeof zClientAttestationJwtPayload>
 
 export const zClientAttestationJwtHeader = z
@@ -30,7 +30,7 @@ export const zClientAttestationJwtHeader = z
     ...zJwtHeader.shape,
     typ: z.literal('oauth-client-attestation+jwt'),
   })
-  .passthrough()
+  .loose()
 
 export type ClientAttestationJwtHeader = z.infer<typeof zClientAttestationJwtHeader>
 
@@ -47,7 +47,7 @@ export const zClientAttestationPopJwtPayload = z
     jti: z.string(),
     nonce: z.optional(z.string()),
   })
-  .passthrough()
+  .loose()
 export type ClientAttestationPopJwtPayload = z.infer<typeof zClientAttestationPopJwtPayload>
 
 export const zClientAttestationPopJwtHeader = z
@@ -55,5 +55,5 @@ export const zClientAttestationPopJwtHeader = z
     ...zJwtHeader.shape,
     typ: z.literal('oauth-client-attestation-pop+jwt'),
   })
-  .passthrough()
+  .loose()
 export type ClientAttestationPopJwtHeader = z.infer<typeof zClientAttestationPopJwtHeader>

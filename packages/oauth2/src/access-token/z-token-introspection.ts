@@ -7,7 +7,7 @@ export const zTokenIntrospectionRequest = z
     token: z.string(),
     token_type_hint: z.optional(z.string()),
   })
-  .passthrough()
+  .loose()
 
 export type TokenIntrospectionRequest = z.infer<typeof zTokenIntrospectionRequest>
 
@@ -31,6 +31,6 @@ export const zTokenIntrospectionResponse = z
 
     cnf: z.optional(zJwtConfirmationPayload),
   })
-  .passthrough()
+  .loose()
 
 export type TokenIntrospectionResponse = z.infer<typeof zTokenIntrospectionResponse>

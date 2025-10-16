@@ -18,7 +18,7 @@ export const zCredentialRequestJwtProofTypeHeader = zJwtHeader
       typ: z.literal('openid4vci-proof+jwt'),
     })
   )
-  .passthrough()
+  .loose()
   .refine(({ kid, jwk }) => jwk === undefined || kid === undefined, {
     message: `Both 'jwk' and 'kid' are defined. Only one is allowed`,
   })
@@ -34,6 +34,6 @@ export const zCredentialRequestJwtProofTypePayload = z
     aud: zHttpsUrl,
     iat: zInteger,
   })
-  .passthrough()
+  .loose()
 
 export type CredentialRequestJwtProofTypePayload = z.infer<typeof zCredentialRequestJwtProofTypePayload>

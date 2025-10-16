@@ -15,7 +15,7 @@ export const zJarmAuthorizationResponse = z
     ...zJwtPayload.pick({ iss: true, aud: true, exp: true }).required().shape,
     state: z.optional(z.string()),
   })
-  .passthrough()
+  .loose()
 
 export type JarmAuthorizationResponse = z.infer<typeof zJarmAuthorizationResponse>
 
@@ -24,5 +24,5 @@ export const zJarmAuthorizationResponseEncryptedOnly = z
     ...zJwtPayload.shape,
     state: z.optional(z.string()),
   })
-  .passthrough()
+  .loose()
 export type JarmAuthorizationResponseEncryptedOnly = z.infer<typeof zJarmAuthorizationResponseEncryptedOnly>

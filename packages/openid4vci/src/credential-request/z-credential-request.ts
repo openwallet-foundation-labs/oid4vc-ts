@@ -73,7 +73,7 @@ const zCredentialRequestFormat = z
       .never({ message: "'credential_configuration_id' cannot be defined when 'format' is set." })
       .optional(),
   })
-  .passthrough()
+  .loose()
 
 export const zCredentialRequestDraft14WithFormat = zCredentialRequestCommon
   .and(zCredentialRequestFormat)
@@ -89,7 +89,7 @@ export const zCredentialRequestDraft14WithFormat = zCredentialRequestCommon
     const result = z
       // We use object and passthrough as otherwise the non-format specific properties will be stripped
       .object({})
-      .passthrough()
+      .loose()
       // FIXME(vc+sd-jwt): use discriminated union when dropping support for legacy vc+sd-jwt format.
       .and(z.union(allCredentialRequestFormats))
       .safeParse(data)
@@ -97,7 +97,11 @@ export const zCredentialRequestDraft14WithFormat = zCredentialRequestCommon
       return result.data as Simplify<typeof result.data & typeof data>
     }
     for (const issue of result.error.issues) {
-      ctx.addIssue(issue)
+      ctx.addIssue({
+        ...issue,
+        // FIXME: this used to work fine in zod 3
+        code: issue.code as 'custom',
+      })
     }
     return z.NEVER
   })
@@ -114,7 +118,7 @@ const zCredentialRequestDraft14 = z.union([
 
 export const zCredentialRequestDraft11To14 = zCredentialRequestCommon
   .and(zCredentialRequestFormat)
-  .transform((data, ctx) => {
+  .transform((data, ctx): unknown => {
     const formatSpecificTransformations = {
       [zLdpVcFormatIdentifier.value]: zLdpVcCredentialRequestDraft11To14,
       [zJwtVcJsonFormatIdentifier.value]: zJwtVcJsonCredentialRequestDraft11To14,
@@ -127,34 +131,46 @@ export const zCredentialRequestDraft11To14 = zCredentialRequestCommon
     const result = schema.safeParse(data)
     if (result.success) return result.data
     for (const issue of result.error.issues) {
-      ctx.addIssue(issue)
+      ctx.addIssue({
+        ...issue,
+        // FIXME: this used to work fine in zod 3
+        code: issue.code as 'custom',
+      })
     }
     return z.NEVER
   })
   .pipe(zCredentialRequestDraft14)
 
-export const zCredentialRequestDraft14To11 = zCredentialRequestDraft14
-  .refine(
-    (data): data is Exclude<typeof data, { credential_identifier: string }> => data.credential_identifier === undefined,
-    `'credential_identifier' is not supported in OpenID4VCI draft 11`
-  )
-  .transform((data, ctx) => {
-    const formatSpecificTransformations = {
-      [zLdpVcFormatIdentifier.value]: zLdpVcCredentialRequestDraft14To11,
-      [zJwtVcJsonFormatIdentifier.value]: zJwtVcJsonCredentialRequestDraft14To11,
-      [zJwtVcJsonLdFormatIdentifier.value]: zJwtVcJsonLdCredentialRequestDraft14To11,
-    } as const
-
-    if (!Object.keys(formatSpecificTransformations).includes(data.format)) return data
-
-    const schema = formatSpecificTransformations[data.format as keyof typeof formatSpecificTransformations]
-    const result = schema.safeParse(data)
-    if (result.success) return result.data
-    for (const issue of result.error.issues) {
-      ctx.addIssue(issue)
-    }
+export const zCredentialRequestDraft14To11 = zCredentialRequestDraft14.transform((data, ctx) => {
+  if (data.credential_identifier !== undefined) {
+    ctx.addIssue({
+      code: 'custom',
+      continue: false,
+      message: `'credential_identifier' is not supported in OpenID4VCI draft 11`,
+      path: ['credential_identifier'],
+    })
     return z.NEVER
-  })
+  }
+  const formatSpecificTransformations = {
+    [zLdpVcFormatIdentifier.value]: zLdpVcCredentialRequestDraft14To11,
+    [zJwtVcJsonFormatIdentifier.value]: zJwtVcJsonCredentialRequestDraft14To11,
+    [zJwtVcJsonLdFormatIdentifier.value]: zJwtVcJsonLdCredentialRequestDraft14To11,
+  } as const
+
+  if (!Object.keys(formatSpecificTransformations).includes(data.format)) return data
+
+  const schema = formatSpecificTransformations[data.format as keyof typeof formatSpecificTransformations]
+  const result = schema.safeParse(data)
+  if (result.success) return result.data
+  for (const issue of result.error.issues) {
+    ctx.addIssue({
+      ...issue,
+      // FIXME: this used to work fine in zod 3
+      code: issue.code as 'custom',
+    })
+  }
+  return z.NEVER
+})
 
 export const zCredentialRequest = z.union([
   zCredentialRequestDraft15,
@@ -170,7 +186,7 @@ export const zDeferredCredentialRequest = z.object({
       alg: z.string(),
       enc: z.string(),
     })
-    .passthrough()
+    .loose()
     .optional(),
 })
 

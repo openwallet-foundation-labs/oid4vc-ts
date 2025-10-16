@@ -9,7 +9,7 @@ import { zLegacyVpFormats, zVpFormatsSupported } from './z-vp-formats-supported'
 export const zClientMetadata = z
   .object({
     // Up until draft 22
-    jwks_uri: z.string().url().optional(),
+    jwks_uri: z.url().optional(),
     jwks: z.optional(zJwkSet),
 
     // Up until draft 26
@@ -26,5 +26,5 @@ export const zClientMetadata = z
     logo_uri: zHttpsUrl.optional(),
     client_name: z.string().optional(),
   })
-  .passthrough()
+  .loose()
 export type ClientMetadata = z.infer<typeof zClientMetadata>

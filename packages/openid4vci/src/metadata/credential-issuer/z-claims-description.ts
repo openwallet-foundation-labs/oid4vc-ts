@@ -12,11 +12,11 @@ export const zCredentialConfigurationSupportedClaimsDescriptionDraft14 = z
             name: z.string().optional(),
             locale: z.string().optional(),
           })
-          .passthrough()
+          .loose()
       )
       .optional(),
   })
-  .passthrough()
+  .loose()
 
 export type CredentialConfigurationSupportedClaimsDraft14 = {
   [key: string]:
@@ -33,7 +33,8 @@ export const zCredentialConfigurationSupportedClaimsDraft14: z.ZodType<Credentia
     ])
   )
 
-const zClaimsDescriptionPath = z.array(z.union([z.string(), z.number().int().nonnegative(), z.null()])).nonempty()
+const zClaimDescriptionPathValue = z.union([z.string(), z.number().int().nonnegative(), z.null()])
+const zClaimsDescriptionPath = z.tuple([zClaimDescriptionPathValue], zClaimDescriptionPathValue)
 export type ClaimsDescriptionPath = z.infer<typeof zClaimsDescriptionPath>
 
 const zMsoMdocClaimsDescriptionPath = z.tuple([z.string(), z.string()], {
@@ -53,11 +54,11 @@ export const zIssuerMetadataClaimsDescription = z
             name: z.string().optional(),
             locale: z.string().optional(),
           })
-          .passthrough()
+          .loose()
       )
       .optional(),
   })
-  .passthrough()
+  .loose()
 export type IssuerMetadataClaimsDescription = z.infer<typeof zIssuerMetadataClaimsDescription>
 
 export const zMsoMdocIssuerMetadataClaimsDescription = zIssuerMetadataClaimsDescription.extend({

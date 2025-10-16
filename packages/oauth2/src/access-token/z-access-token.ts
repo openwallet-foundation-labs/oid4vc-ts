@@ -15,7 +15,7 @@ export const zAccessTokenRequest = z.intersection(
 
       // Authorization code flow
       code: z.optional(z.string()),
-      redirect_uri: z.string().url().optional(),
+      redirect_uri: z.url().optional(),
 
       // Refresh token grant
       refresh_token: z.optional(z.string()),
@@ -31,14 +31,14 @@ export const zAccessTokenRequest = z.intersection(
         z.string(),
       ]),
     })
-    .passthrough(),
+    .loose(),
   z
     .object({
       tx_code: z.optional(z.string()),
       // user_pin is from OpenID4VCI draft 11
       user_pin: z.optional(z.string()),
     })
-    .passthrough()
+    .loose()
     .refine(({ tx_code, user_pin }) => !tx_code || !user_pin || user_pin === tx_code, {
       message: `If both 'tx_code' and 'user_pin' are present they must match`,
     })
@@ -74,11 +74,11 @@ export const zAccessTokenResponse = z
             // required when type is openid_credential (so we probably need a discriminator)
             // credential_identifiers: z.array(z.string()),
           })
-          .passthrough()
+          .loose()
       )
       .optional(),
   })
-  .passthrough()
+  .loose()
 
 export type AccessTokenResponse = z.infer<typeof zAccessTokenResponse>
 

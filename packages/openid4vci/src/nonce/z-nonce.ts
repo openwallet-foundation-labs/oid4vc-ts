@@ -6,5 +6,5 @@ export const zNonceResponse = z
     c_nonce: z.string(),
     c_nonce_expires_in: z.optional(zInteger),
   })
-  .passthrough()
+  .loose()
 export type NonceResponse = z.infer<typeof zNonceResponse>

@@ -43,10 +43,10 @@ export const zLdpVcCredentialIssuerMetadataDraft11 = z
     // Credential definition was spread on top level instead of a separatey property in v11
     // As well as using types instead of type
     '@context': z.array(z.string()),
-    types: z.array(z.string()),
+    types: z.tuple([z.string()], z.string()),
     credentialSubject: zW3cVcCredentialSubjectDraft14.optional(),
   })
-  .passthrough()
+  .loose()
 
 export const zLdpVcCredentialIssuerMetadataDraft11To14 = zLdpVcCredentialIssuerMetadataDraft11.transform(
   ({ '@context': context, types, credentialSubject, ...rest }) => ({
@@ -61,7 +61,7 @@ export const zLdpVcCredentialIssuerMetadataDraft11To14 = zLdpVcCredentialIssuerM
 )
 
 export const zLdpVcCredentialIssuerMetadataDraft14To11 = zLdpVcCredentialIssuerMetadataDraft14
-  .passthrough()
+  .loose()
   .transform(({ credential_definition: { type, ...credentialDefinition }, ...rest }) => ({
     ...rest,
     ...credentialDefinition,
@@ -80,11 +80,11 @@ const zLdpVcCredentialRequestDraft11 = z
     credential_definition: z.object({
       '@context': z.array(z.string()),
       // credential_definition was using types instead of type in v11
-      types: z.array(z.string()),
+      types: z.tuple([z.string()], z.string()),
       credentialSubject: zW3cVcCredentialSubjectDraft14.optional(),
     }),
   })
-  .passthrough()
+  .loose()
 
 export const zLdpVcCredentialRequestDraft11To14 = zLdpVcCredentialRequestDraft11.transform(
   ({ credential_definition: { types, ...restCredentialDefinition }, ...rest }) => ({
@@ -97,7 +97,7 @@ export const zLdpVcCredentialRequestDraft11To14 = zLdpVcCredentialRequestDraft11
 )
 
 export const zLdpVcCredentialRequestDraft14To11 = zLdpVcCredentialRequestFormatDraft14
-  .passthrough()
+  .loose()
   .transform(({ credential_definition: { type, ...restCredentialDefinition }, ...rest }) => ({
     ...rest,
     credential_definition: {

@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'vitest'
+import z from 'zod'
 import { zCredentialRequest, zCredentialRequestDraft11To14 } from '../z-credential-request.js'
 
 describe('Credential Request', () => {
@@ -33,24 +34,26 @@ describe('Credential Request', () => {
     })
 
     expect(parseResult.success).toBe(false)
-    expect(parseResult.error?.format()).toEqual({
-      _errors: [],
-      credential_configuration_id: {
-        _errors: ['Required'],
-      },
-      credential_identifier: {
-        _errors: [
-          "'credential_identifier' cannot be defined when 'credential_configuration_id' is set.",
-          "'credential_identifier' cannot be defined when 'format' is set.",
-          "'credential_identifier' cannot be defined when 'format' is set.",
-        ],
-      },
-      format: {
-        _errors: [
-          "'format' cannot be defined when 'credential_identifier' is set.",
-          "'format' cannot be defined when 'credential_configuration_id' is set.",
-          "'format' cannot be defined when 'credential_identifier' is set.",
-        ],
+    expect(parseResult.error ? z.treeifyError(parseResult.error) : undefined).toEqual({
+      errors: [],
+      properties: {
+        credential_configuration_id: {
+          errors: ['Invalid input: expected string, received undefined'],
+        },
+        credential_identifier: {
+          errors: [
+            "'credential_identifier' cannot be defined when 'credential_configuration_id' is set.",
+            "'credential_identifier' cannot be defined when 'format' is set.",
+            "'credential_identifier' cannot be defined when 'format' is set.",
+          ],
+        },
+        format: {
+          errors: [
+            "'format' cannot be defined when 'credential_identifier' is set.",
+            "'format' cannot be defined when 'credential_configuration_id' is set.",
+            "'format' cannot be defined when 'credential_identifier' is set.",
+          ],
+        },
       },
     })
   })
