@@ -14,32 +14,13 @@ export async function fetchAuthorizationServerMetadata(
   issuer: string,
   fetch?: Fetch
 ): Promise<AuthorizationServerMetadata | null> {
-  const openIdConfigurationWellKnownMetadataUrl = joinUriParts(issuer, [wellKnownOpenIdConfigurationServerSuffix])
-
   const parsedIssuerUrl = new URL(issuer)
 
+  const openIdConfigurationWellKnownMetadataUrl = joinUriParts(issuer, [wellKnownOpenIdConfigurationServerSuffix])
   const authorizationServerWellKnownMetadataUrl = joinUriParts(parsedIssuerUrl.origin, [
     wellKnownAuthorizationServerSuffix,
     parsedIssuerUrl.pathname,
   ])
-
-  // First try oauth-authorization-server
-  const authorizationServerResult = await fetchWellKnownMetadata(
-    authorizationServerWellKnownMetadataUrl,
-    zAuthorizationServerMetadata,
-    fetch
-  )
-
-  if (authorizationServerResult) {
-    if (authorizationServerResult.issuer !== issuer) {
-      // issuer param MUST match
-      throw new Oauth2Error(
-        `The 'issuer' parameter '${authorizationServerResult.issuer}' in the well known authorization server metadata at '${authorizationServerWellKnownMetadataUrl}' does not match the provided issuer '${issuer}'.`
-      )
-    }
-
-    return authorizationServerResult
-  }
 
   // NOTE: there is a difference in how to construct well-known OAuth2 and well-known openid
   // url. For OAuth you place `.well-known/oauth-authorization-server` between the origin and
@@ -47,43 +28,40 @@ export async function fetchAuthorizationServerMetadata(
   // host as well), and thus we use this as a last fallback if it's different for now (in case of subpath).
   const nonCompliantAuthorizationServerWellKnownMetadataUrl = joinUriParts(issuer, [wellKnownAuthorizationServerSuffix])
 
-  const alternativeAuthorizationServerResult =
-    nonCompliantAuthorizationServerWellKnownMetadataUrl !== authorizationServerWellKnownMetadataUrl
-      ? await fetchWellKnownMetadata(
-          nonCompliantAuthorizationServerWellKnownMetadataUrl,
-          zAuthorizationServerMetadata,
-          fetch
-        )
-      : undefined
-
-  if (alternativeAuthorizationServerResult) {
-    if (alternativeAuthorizationServerResult.issuer !== issuer) {
-      // issuer param MUST match
-      throw new Oauth2Error(
-        `The 'issuer' parameter '${alternativeAuthorizationServerResult.issuer}' in the well known authorization server metadata at '${nonCompliantAuthorizationServerWellKnownMetadataUrl}' does not match the provided issuer '${issuer}'.`
-      )
-    }
-
-    return alternativeAuthorizationServerResult
-  }
-
-  const openIdConfigurationResult = await fetchWellKnownMetadata(
-    openIdConfigurationWellKnownMetadataUrl,
+  // First try oauth-authorization-server
+  let authorizationServerResult = await fetchWellKnownMetadata(
+    authorizationServerWellKnownMetadataUrl,
     zAuthorizationServerMetadata,
     fetch
   )
 
-  // issuer param MUST match
-  if (openIdConfigurationResult) {
-    if (openIdConfigurationResult.issuer !== issuer) {
-      throw new Oauth2Error(
-        `The 'issuer' parameter '${openIdConfigurationResult.issuer}' in the well known openid configuration metadata at '${openIdConfigurationWellKnownMetadataUrl}' does not match the provided issuer '${issuer}'.`
-      )
-    }
-    return openIdConfigurationResult
+  if (
+    !authorizationServerResult &&
+    nonCompliantAuthorizationServerWellKnownMetadataUrl !== authorizationServerWellKnownMetadataUrl
+  ) {
+    authorizationServerResult = await fetchWellKnownMetadata(
+      nonCompliantAuthorizationServerWellKnownMetadataUrl,
+      zAuthorizationServerMetadata,
+      fetch
+    )
   }
 
-  return null
+  if (!authorizationServerResult) {
+    authorizationServerResult = await fetchWellKnownMetadata(
+      openIdConfigurationWellKnownMetadataUrl,
+      zAuthorizationServerMetadata,
+      fetch
+    )
+  }
+
+  if (authorizationServerResult && authorizationServerResult.issuer !== issuer) {
+    // issuer param MUST match
+    throw new Oauth2Error(
+      `The 'issuer' parameter '${authorizationServerResult.issuer}' in the well known authorization server metadata at '${authorizationServerWellKnownMetadataUrl}' does not match the provided issuer '${issuer}'.`
+    )
+  }
+
+  return authorizationServerResult
 }
 
 export function getAuthorizationServerMetadataFromList(
