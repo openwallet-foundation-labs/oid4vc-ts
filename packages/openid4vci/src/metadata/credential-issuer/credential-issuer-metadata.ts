@@ -1,14 +1,14 @@
-import { Oauth2Error, fetchWellKnownMetadata } from '@openid4vc/oauth2'
+import { fetchWellKnownMetadata, Oauth2Error } from '@openid4vc/oauth2'
 import { type Fetch, joinUriParts } from '@openid4vc/utils'
 import type { CredentialFormatIdentifier } from '../../formats/credential'
 import type { Openid4vciDraftVersion } from '../../version'
 import {
+  allCredentialIssuerMetadataFormatIdentifiers,
   type CredentialConfigurationSupported,
   type CredentialConfigurationSupportedWithFormats,
   type CredentialConfigurationsSupported,
   type CredentialConfigurationsSupportedWithFormats,
   type CredentialIssuerMetadata,
-  allCredentialIssuerMetadataFormatIdentifiers,
   zCredentialIssuerMetadataWithDraftVersion,
 } from './z-credential-issuer-metadata'
 

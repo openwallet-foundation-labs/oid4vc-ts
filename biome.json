@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.2.6/schema.json",
   "files": {
     "maxSize": 10000000
   },
@@ -24,9 +24,7 @@
       "allowComments": true
     }
   },
-  "organizeImports": {
-    "enabled": true
-  },
+  "assist": { "actions": { "source": { "organizeImports": "on" } } },
   "linter": {
     "enabled": true,
     "rules": {
@@ -35,7 +33,13 @@
         "noRestrictedGlobals": {
           "level": "error",
           "options": {
-            "deniedGlobals": ["URL", "URLSearchParams", "fetch", "Response", "Headers"]
+            "deniedGlobals": {
+              "URL": "URL should be imported from the @openid4vc/utils package.",
+              "URLSearchParams": "URLSearchParams should be imported from the @openid4vc/utils package.",
+              "fetch": "fetch should be imported from the @openid4vc/utils package.",
+              "Response": "Response should be imported from the @openid4vc/utils package.",
+              "Headers": "Headers should be imported from the @openid4vc/utils package."
+            }
           }
         }
       },
@@ -52,9 +56,12 @@
   },
   "overrides": [
     {
-      "include": ["*.test.ts", "**/tests/*", "*.test.mts"],
+      "includes": ["**/*.test.ts", "**/tests/**/*", "**/*.test.mts"],
       "linter": {
         "rules": {
+          "correctness": {
+            "noUnusedVariables": "off"
+          },
           "style": {
             "noRestrictedGlobals": {
               "level": "info",

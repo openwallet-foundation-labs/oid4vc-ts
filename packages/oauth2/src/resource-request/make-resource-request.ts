@@ -1,6 +1,6 @@
-import { type FetchRequestInit, type FetchResponse, type HttpMethod, createFetcher } from '@openid4vc/utils'
+import { createFetcher, type FetchRequestInit, type FetchResponse, type HttpMethod } from '@openid4vc/utils'
 import type { CallbackContext } from '../callbacks'
-import { type RequestDpopOptions, createDpopHeadersForRequest, extractDpopNonceFromHeaders } from '../dpop/dpop'
+import { createDpopHeadersForRequest, extractDpopNonceFromHeaders, type RequestDpopOptions } from '../dpop/dpop'
 import { shouldRetryResourceRequestWithDPoPNonce } from '../dpop/dpop-retry'
 import {
   Oauth2ResourceUnauthorizedError,

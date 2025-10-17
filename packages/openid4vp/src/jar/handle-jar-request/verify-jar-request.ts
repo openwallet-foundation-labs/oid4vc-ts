@@ -1,13 +1,13 @@
 import {
   type CallbackContext,
+  decodeJwt,
   type Jwk,
   type JwtSigner,
   type JwtSignerWithJwk,
+  jwtSignerFromJwt,
   Oauth2Error,
   Oauth2ErrorCodes,
   Oauth2ServerErrorResponseError,
-  decodeJwt,
-  jwtSignerFromJwt,
   verifyJwt,
   zCompactJwe,
   zCompactJwt,
@@ -137,10 +137,7 @@ export async function verifyJarRequest(options: VerifyJarRequestOptions): Promis
   }
 }
 
-async function decryptJarRequest(options: {
-  jwe: string
-  callbacks: Pick<CallbackContext, 'decryptJwe'>
-}) {
+async function decryptJarRequest(options: { jwe: string; callbacks: Pick<CallbackContext, 'decryptJwe'> }) {
   const { jwe, callbacks } = options
 
   const { header } = decodeJwt({ jwt: jwe })
@@ -223,7 +220,7 @@ async function verifyJarRequestObject(options: {
     signer: jwtSigner,
   })
 
-  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+  // biome-ignore lint/suspicious/noExplicitAny: no explanation
   const version = parseAuthorizationRequestVersion(jwt.payload as any)
   if (jwt.header.typ !== 'oauth-authz-req+jwt' && version >= 24) {
     throw new Oauth2ServerErrorResponseError({

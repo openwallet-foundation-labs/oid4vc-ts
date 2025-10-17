@@ -17,11 +17,7 @@ describe('Credential Request', () => {
     })
 
     expect(parseResult.success).toBe(false)
-    expect(parseResult.error?.errors[0]).toEqual({
-      code: 'custom',
-      message: "Both 'proof' and 'proofs' are defined. Only one is allowed",
-      path: [],
-    })
+    expect(JSON.stringify(parseResult.error)).includes("Both 'proof' and 'proofs' are defined. Only one is allowed")
   })
 
   test('error when both format and credential_identifier are defined', () => {

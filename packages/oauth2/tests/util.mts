@@ -8,7 +8,7 @@ import type { Jwk } from '../src/common/jwk/z-jwk.js'
 
 // Needed for Node 18 support with jose6. We can soon drop node18 support.
 if (process.versions.node.startsWith('18.')) {
-  // @ts-ignore
+  // @ts-expect-error
   globalThis.crypto = webcrypto
 }
 
@@ -41,7 +41,7 @@ export const callbacks = {
         verified: true,
         signerJwk: jwk,
       }
-    } catch (error) {
+    } catch (_error) {
       return {
         verified: false,
       }

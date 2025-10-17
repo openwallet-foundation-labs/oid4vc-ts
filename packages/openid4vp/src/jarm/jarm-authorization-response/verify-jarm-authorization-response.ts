@@ -1,10 +1,10 @@
 import {
   type CallbackContext,
-  type Jwk,
-  Oauth2Error,
   decodeJwt,
   decodeJwtHeader,
+  type Jwk,
   jwtSignerFromJwt,
+  Oauth2Error,
   zCompactJwe,
   zCompactJwt,
   zJwtHeader,
@@ -42,7 +42,7 @@ const decryptJarmAuthorizationResponseJwt = async (options: {
 }) => {
   const { jarmAuthorizationResponseJwt, callbacks, authorizationRequestPayload } = options
 
-  let encryptionJwk: Jwk | undefined = undefined
+  let encryptionJwk: Jwk | undefined
   const { header } = decodeJwtHeader({
     jwt: jarmAuthorizationResponseJwt,
   })

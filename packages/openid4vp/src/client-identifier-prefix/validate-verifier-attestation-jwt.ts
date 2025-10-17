@@ -1,14 +1,14 @@
 import {
   type CallbackContext,
+  decodeJwt,
   type Jwk,
   type JwtSigner,
+  jwtSignerFromJwt,
   Oauth2Error,
-  decodeJwt,
   verifyJwt,
   zJwk,
   zJwtHeader,
 } from '@openid4vc/oauth2'
-import { jwtSignerFromJwt } from '@openid4vc/oauth2'
 import z from 'zod'
 
 export interface VerifyAttestationOptions {

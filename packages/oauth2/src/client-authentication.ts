@@ -1,6 +1,4 @@
 import type { ContentType, FetchHeaders, HttpMethod } from '@openid4vc/utils'
-import type { AuthorizationServerMetadata } from './metadata/authorization-server/z-authorization-server-metadata'
-
 import { decodeUtf8String, encodeToBase64Url } from '@openid4vc/utils'
 import type { CallbackContext } from './callbacks'
 import { createClientAttestationPopJwt } from './client-attestation/client-attestation-pop'
@@ -9,6 +7,7 @@ import {
   oauthClientAttestationPopHeader,
 } from './client-attestation/z-client-attestation'
 import { Oauth2Error } from './error/Oauth2Error'
+import type { AuthorizationServerMetadata } from './metadata/authorization-server/z-authorization-server-metadata'
 import { preAuthorizedCodeGrantIdentifier } from './z-grant-type'
 
 export enum SupportedClientAuthenticationMethod {

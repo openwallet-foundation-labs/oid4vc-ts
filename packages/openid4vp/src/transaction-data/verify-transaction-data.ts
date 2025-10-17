@@ -4,7 +4,7 @@ import {
   Oauth2ErrorCodes,
   Oauth2ServerErrorResponseError,
 } from '@openid4vc/oauth2'
-import { type NonEmptyArray, decodeUtf8String, encodeToBase64Url } from '@openid4vc/utils'
+import { decodeUtf8String, encodeToBase64Url, type NonEmptyArray } from '@openid4vc/utils'
 import { type ParsedTransactionDataEntry, parseTransactionData } from './parse-transaction-data'
 
 export interface TransactionDataHashesCredentials {

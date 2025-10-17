@@ -5,7 +5,7 @@ import {
   Oauth2JwtVerificationError,
   Oauth2ServerErrorResponseError,
 } from '@openid4vc/oauth2'
-import { ValidationError, parseWithErrorHandling } from '@openid4vc/utils'
+import { parseWithErrorHandling, ValidationError } from '@openid4vc/utils'
 import type { VerifyClientAttestationOptions } from '../../oauth2/src/client-attestation/client-attestation'
 import { type CreateCredentialOfferOptions, createCredentialOffer } from './credential-offer/credential-offer'
 import {

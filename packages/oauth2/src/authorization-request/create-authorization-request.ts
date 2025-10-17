@@ -1,10 +1,15 @@
-import { ContentType, Headers, createZodFetcher, objectToQueryParams } from '@openid4vc/utils'
-import { InvalidFetchResponseError } from '@openid4vc/utils'
+import {
+  ContentType,
+  createZodFetcher,
+  Headers,
+  InvalidFetchResponseError,
+  objectToQueryParams,
+} from '@openid4vc/utils'
 import { ValidationError } from '../../../utils/src/error/ValidationError'
 import { type CallbackContext, HashAlgorithm } from '../callbacks'
 import { calculateJwkThumbprint } from '../common/jwk/jwk-thumbprint'
 import { zOauth2ErrorResponse } from '../common/z-oauth2-error'
-import { type RequestDpopOptions, createDpopHeadersForRequest, extractDpopNonceFromHeaders } from '../dpop/dpop'
+import { createDpopHeadersForRequest, extractDpopNonceFromHeaders, type RequestDpopOptions } from '../dpop/dpop'
 import { authorizationServerRequestWithDpopRetry } from '../dpop/dpop-retry'
 import { Oauth2ClientErrorResponseError } from '../error/Oauth2ClientErrorResponseError'
 import { Oauth2Error } from '../error/Oauth2Error'
@@ -107,7 +112,7 @@ export async function createAuthorizationRequestUrl(options: CreateAuthorization
     code_challenge: pkce?.codeChallenge,
     code_challenge_method: pkce?.codeChallengeMethod,
   }
-  let pushedAuthorizationRequest: PushedAuthorizationRequest | undefined = undefined
+  let pushedAuthorizationRequest: PushedAuthorizationRequest | undefined
   let dpop: RequestDpopOptions | undefined = options.dpop
 
   if (authorizationServerMetadata.require_pushed_authorization_requests || pushedAuthorizationRequestEndpoint) {
