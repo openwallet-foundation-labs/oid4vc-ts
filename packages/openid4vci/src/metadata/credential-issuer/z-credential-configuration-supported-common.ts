@@ -11,7 +11,7 @@ const zCredentialConfigurationSupportedDisplayEntry = z
         uri: z.string().optional(),
         alt_text: z.string().optional(),
       })
-      .passthrough()
+      .loose()
       .optional(),
     description: z.string().optional(),
     background_color: z.string().optional(),
@@ -20,11 +20,11 @@ const zCredentialConfigurationSupportedDisplayEntry = z
         // TODO: should be required, but paradym's metadata is wrong here.
         uri: z.string().optional(),
       })
-      .passthrough()
+      .loose()
       .optional(),
     text_color: z.string().optional(),
   })
-  .passthrough()
+  .loose()
 
 export const zCredentialConfigurationSupportedCommonCredentialMetadata = z.object({
   display: z.array(zCredentialConfigurationSupportedDisplayEntry).optional(),
@@ -46,7 +46,7 @@ export const zCredentialConfigurationSupportedCommon = z
               key_storage: zIso18045OrStringArray.optional(),
               user_authentication: zIso18045OrStringArray.optional(),
             })
-            .passthrough()
+            .loose()
             .optional(),
         })
       )
@@ -56,7 +56,7 @@ export const zCredentialConfigurationSupportedCommon = z
     // For typing purposes. Can be removed once we drop support for draft <= 15.
     claims: z.optional(z.never()),
   })
-  .passthrough()
+  .loose()
 
 export const zCredentialConfigurationSupportedCommonDraft15 = z
   .object({
@@ -74,7 +74,7 @@ export const zCredentialConfigurationSupportedCommonDraft15 = z
               key_storage: zIso18045OrStringArray.optional(),
               user_authentication: zIso18045OrStringArray.optional(),
             })
-            .passthrough()
+            .loose()
             .optional(),
         })
       )
@@ -84,4 +84,4 @@ export const zCredentialConfigurationSupportedCommonDraft15 = z
     // For typing purposes.
     credential_metadata: z.optional(z.never()),
   })
-  .passthrough()
+  .loose()

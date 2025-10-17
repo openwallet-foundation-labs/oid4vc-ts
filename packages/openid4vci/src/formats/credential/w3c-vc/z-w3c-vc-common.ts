@@ -11,11 +11,11 @@ const zCredentialSubjectLeafTypeDraft14 = z
             name: z.string().optional(),
             locale: z.string().optional(),
           })
-          .passthrough()
+          .loose()
       )
       .optional(),
   })
-  .passthrough()
+  .loose()
 
 const zClaimValueSchemaDraft14 = z.union([
   z.array(z.any()),
@@ -28,9 +28,9 @@ export const zW3cVcCredentialSubjectDraft14 = z.record(z.string(), zClaimValueSc
 export const zW3cVcJsonLdCredentialDefinition = z
   .object({
     '@context': z.array(z.string()),
-    type: z.array(z.string()).nonempty(),
+    type: z.tuple([z.string()], z.string()),
   })
-  .passthrough()
+  .loose()
 
 export const zW3cVcJsonLdCredentialDefinitionDraft14 = zW3cVcJsonLdCredentialDefinition.extend({
   credentialSubject: zW3cVcCredentialSubjectDraft14.optional(),

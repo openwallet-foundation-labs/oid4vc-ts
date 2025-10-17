@@ -9,7 +9,7 @@ export const zNotificationRequest = z
     event: zNotificationEvent,
     event_description: z.optional(z.string()),
   })
-  .passthrough()
+  .loose()
 
 export type NotificationRequest = z.infer<typeof zNotificationRequest>
 
@@ -17,5 +17,5 @@ export const zNotificationErrorResponse = z
   .object({
     error: z.enum(['invalid_notification_id', 'invalid_notification_request']),
   })
-  .passthrough()
+  .loose()
 export type NotificationErrorResponse = z.infer<typeof zNotificationErrorResponse>

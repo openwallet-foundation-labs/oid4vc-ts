@@ -3,12 +3,12 @@ import { z } from 'zod'
 export const zTransactionEntry = z
   .object({
     type: z.string(),
-    credential_ids: z.array(z.string()).nonempty(),
+    credential_ids: z.tuple([z.string()], z.string()),
 
     // SD-JWT VC specific
-    transaction_data_hashes_alg: z.array(z.string()).nonempty().optional(),
+    transaction_data_hashes_alg: z.tuple([z.string()], z.string()).optional(),
   })
-  .passthrough()
+  .loose()
 export type TransactionDataEntry = z.infer<typeof zTransactionEntry>
 
 export const zTransactionData = z.array(zTransactionEntry)

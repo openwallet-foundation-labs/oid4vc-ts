@@ -47,7 +47,7 @@ export async function resolveCredentialOffer(
 ): Promise<CredentialOfferObject> {
   const parsedQueryParams = getQueryParams(credentialOffer)
 
-  let credentialOfferParseResult: z.SafeParseReturnType<unknown, z.infer<typeof zCredentialOfferObject>>
+  let credentialOfferParseResult: z.ZodSafeParseResult<z.infer<typeof zCredentialOfferObject>>
 
   if (parsedQueryParams.credential_offer_uri) {
     const fetchWithZod = createZodFetcher(options?.fetch)

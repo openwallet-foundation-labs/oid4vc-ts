@@ -45,7 +45,7 @@ export const zAuthorizationServerMetadata = z
     // Attestation Based Client Auth (draft 5)
     client_attestation_pop_nonce_required: z.boolean().optional(),
   })
-  .passthrough()
+  .loose()
   .refine(
     ({
       introspection_endpoint_auth_methods_supported: methodsSupported,

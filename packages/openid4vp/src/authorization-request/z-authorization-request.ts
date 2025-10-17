@@ -16,21 +16,21 @@ export const zOpenid4vpAuthorizationRequest = z
     wallet_nonce: z.string().optional(),
     scope: z.string().optional(),
     presentation_definition: z
-      .record(z.any())
+      .record(z.string(), z.any())
       // for backwards compat
       .or(zStringToJson)
       .optional(),
     presentation_definition_uri: zHttpsUrl.optional(),
     dcql_query: z
-      .record(z.any())
+      .record(z.string(), z.any())
       // for backwards compat
       .or(zStringToJson)
       .optional(),
     client_metadata: zClientMetadata.optional(),
     client_metadata_uri: zHttpsUrl.optional(),
     state: z.string().optional(),
-    transaction_data: z.array(z.string().base64url()).optional(),
-    trust_chain: z.array(z.string()).nonempty().optional(),
+    transaction_data: z.array(z.base64url()).optional(),
+    trust_chain: z.tuple([z.string()], z.string()).optional(),
     client_id_scheme: z
       .enum([
         'pre-registered',
@@ -46,13 +46,12 @@ export const zOpenid4vpAuthorizationRequest = z
     verifier_attestations: zVerifierAttestations.optional(),
     verifier_info: zVerifierAttestations.optional(),
   })
-  .passthrough()
+  .loose()
 
 // Helps with parsing from an URI to a valid authorization request object
 export const zOpenid4vpAuthorizationRequestFromUriParams = z
-  .string()
   .url()
-  .transform((url) => Object.fromEntries(new URL(url).searchParams))
+  .transform((url): unknown => Object.fromEntries(new URL(url).searchParams))
   .pipe(
     z
       .object({
@@ -63,7 +62,7 @@ export const zOpenid4vpAuthorizationRequestFromUriParams = z
         verifier_attestations: zStringToJson.optional(),
         verifier_info: zStringToJson.optional(),
       })
-      .passthrough()
+      .loose()
   )
 
 export type Openid4vpAuthorizationRequest = z.infer<typeof zOpenid4vpAuthorizationRequest>

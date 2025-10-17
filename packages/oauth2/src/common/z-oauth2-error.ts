@@ -56,10 +56,10 @@ export enum Oauth2ErrorCodes {
 
 export const zOauth2ErrorResponse = z
   .object({
-    error: z.union([z.nativeEnum(Oauth2ErrorCodes), z.string()]),
+    error: z.union([z.enum(Oauth2ErrorCodes), z.string()]),
     error_description: z.string().optional(),
     error_uri: z.string().optional(),
   })
-  .passthrough()
+  .loose()
 
 export type Oauth2ErrorResponse = z.infer<typeof zOauth2ErrorResponse>

@@ -22,11 +22,13 @@ describe('Validation error', () => {
     })
 
     const error = new ValidationError('Validation failed', result.error)
-    expect(error.message).toMatchInlineSnapshot(`
-      "Validation failed
-      	- Required at "name"
-      	- Required at "age"
-      	- Invalid discriminator value. Expected 'a' | 'b' at "object.foo.bar.type""
+    expect(error.message).toMatchInlineSnapshot(`"Validation failed
+✖ Invalid input: expected string, received undefined
+  → at name
+✖ Invalid input: expected number, received undefined
+  → at age
+✖ Invalid input
+  → at object.foo.bar.type"
     `)
   })
 

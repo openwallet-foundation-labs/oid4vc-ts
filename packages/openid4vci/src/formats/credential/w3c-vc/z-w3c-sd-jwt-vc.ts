@@ -11,9 +11,9 @@ export type SdJwtW3VcFormatIdentifier = z.infer<typeof zSdJwtW3VcFormatIdentifie
 
 const zSdJwtW3VcCredentialDefinition = z
   .object({
-    type: z.array(z.string()).nonempty(),
+    type: z.tuple([z.string()], z.string()),
   })
-  .passthrough()
+  .loose()
 
 export const zSdJwtW3VcCredentialIssuerMetadata = zCredentialConfigurationSupportedCommon.extend({
   format: zSdJwtW3VcFormatIdentifier,

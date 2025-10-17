@@ -2,7 +2,7 @@ import z from 'zod'
 
 const zVerifierAttestation = z.object({
   format: z.string(),
-  data: z.record(z.unknown()).or(z.string()),
+  data: z.record(z.string(), z.unknown()).or(z.string()),
   credential_ids: z.array(z.string()).optional(),
 })
 
