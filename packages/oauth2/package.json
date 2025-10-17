@@ -1,7 +1,9 @@
 {
   "name": "@openid4vc/oauth2",
   "version": "0.2.0",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "license": "Apache-2.0",
   "exports": "./src/index.ts",
   "homepage": "https://github.com/openwallet-foundation-labs/oid4vc-ts/tree/main/packages/oauth2",
@@ -24,7 +26,7 @@
     }
   },
   "scripts": {
-    "build": "tsup src/index.ts --format cjs,esm --dts --clean --sourcemap"
+    "build": "tsdown src/index.ts --format cjs,esm --dts --sourcemap"
   },
   "dependencies": {
     "@openid4vc/utils": "workspace:*",

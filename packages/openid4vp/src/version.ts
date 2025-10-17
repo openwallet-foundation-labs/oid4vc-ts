@@ -1,8 +1,8 @@
 import { Oauth2ErrorCodes, Oauth2ServerErrorResponseError } from '@openid4vc/oauth2'
 import type { Openid4vpAuthorizationRequest } from './authorization-request/z-authorization-request'
 import {
-  type Openid4vpAuthorizationRequestDcApi,
   isOpenid4vpAuthorizationRequestDcApi,
+  type Openid4vpAuthorizationRequestDcApi,
 } from './authorization-request/z-authorization-request-dc-api'
 import { zClientIdPrefix } from './client-identifier-prefix/z-client-id-prefix'
 

@@ -1,7 +1,6 @@
-import type { HashAlgorithm, HashCallback } from '../../callbacks'
-
 import { decodeUtf8String, encodeToBase64Url, parseWithErrorHandling } from '@openid4vc/utils'
 import z from 'zod'
+import type { HashAlgorithm, HashCallback } from '../../callbacks'
 import type { Jwk } from './z-jwk'
 
 export const zJwkThumbprintComponents = z

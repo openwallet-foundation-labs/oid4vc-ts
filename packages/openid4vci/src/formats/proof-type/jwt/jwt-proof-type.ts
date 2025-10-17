@@ -1,16 +1,22 @@
-import { type JwtSigner, decodeJwt, isJwkInSet, jwtHeaderFromJwtSigner } from '@openid4vc/oauth2'
+import {
+  type CallbackContext,
+  decodeJwt,
+  isJwkInSet,
+  type JwtSigner,
+  jwtHeaderFromJwtSigner,
+  jwtSignerFromJwt,
+  verifyJwt,
+} from '@openid4vc/oauth2'
+import { dateToSeconds, parseWithErrorHandling } from '@openid4vc/utils'
+import { Openid4vciError } from '../../../error/Openid4vciError'
+import { type VerifyKeyAttestationJwtReturn, verifyKeyAttestationJwt } from '../../../key-attestation/key-attestation'
+import { zKeyAttestationJwtHeader, zKeyAttestationJwtPayload } from '../../../key-attestation/z-key-attestation'
 import {
   type CredentialRequestJwtProofTypeHeader,
   type CredentialRequestJwtProofTypePayload,
   zCredentialRequestJwtProofTypeHeader,
   zCredentialRequestJwtProofTypePayload,
 } from './z-jwt-proof-type'
-
-import { type CallbackContext, jwtSignerFromJwt, verifyJwt } from '@openid4vc/oauth2'
-import { dateToSeconds, parseWithErrorHandling } from '@openid4vc/utils'
-import { Openid4vciError } from '../../../error/Openid4vciError'
-import { type VerifyKeyAttestationJwtReturn, verifyKeyAttestationJwt } from '../../../key-attestation/key-attestation'
-import { zKeyAttestationJwtHeader, zKeyAttestationJwtPayload } from '../../../key-attestation/z-key-attestation'
 
 export interface CreateCredentialRequestJwtProofOptions {
   /**
@@ -150,7 +156,7 @@ export async function verifyCredentialRequestJwtProof(options: VerifyCredentialR
     now: options.now,
   })
 
-  let keyAttestationResult: VerifyKeyAttestationJwtReturn | undefined = undefined
+  let keyAttestationResult: VerifyKeyAttestationJwtReturn | undefined
   // Check the jwt is signed with an key from attested_keys in the key_attestation jwt
   if (header.key_attestation) {
     keyAttestationResult = await verifyKeyAttestationJwt({

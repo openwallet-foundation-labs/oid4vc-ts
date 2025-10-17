@@ -3,7 +3,7 @@ import { JsonParseError } from './error/JsonParseError'
 import { ValidationError } from './error/ValidationError'
 
 export type BaseSchema = z.ZodTypeAny
-// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+// biome-ignore lint/suspicious/noExplicitAny: no explanation
 export type InferOutputUnion<T extends readonly any[]> = {
   [K in keyof T]: z.infer<T[K]>
 }[number]
@@ -11,7 +11,7 @@ export type InferOutputUnion<T extends readonly any[]> = {
 export function stringToJsonWithErrorHandling(string: string, errorMessage?: string) {
   try {
     return JSON.parse(string)
-  } catch (error) {
+  } catch (_error) {
     throw new JsonParseError(errorMessage ?? 'Unable to parse string to JSON.', string)
   }
 }
@@ -24,7 +24,7 @@ export function parseIfJson<T>(data: T): T | Record<string, unknown> {
   try {
     // Try to parse the string as JSON
     return JSON.parse(data)
-  } catch (error) {}
+  } catch (_error) {}
 
   return data
 }

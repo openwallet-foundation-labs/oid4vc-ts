@@ -1,5 +1,5 @@
 import { type CallbackContext, Oauth2Error } from '@openid4vc/oauth2'
-import { ContentType, URL, createFetcher } from '@openid4vc/utils'
+import { ContentType, createFetcher, URL } from '@openid4vc/utils'
 
 interface JarmAuthorizationResponseSendOptions {
   authorizationRequestPayload: {

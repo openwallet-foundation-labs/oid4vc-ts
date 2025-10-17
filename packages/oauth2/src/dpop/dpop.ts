@@ -1,20 +1,19 @@
-import { type CallbackContext, HashAlgorithm } from '../callbacks'
-import { calculateJwkThumbprint } from '../common/jwk/jwk-thumbprint'
-import { decodeJwt } from '../common/jwt/decode-jwt'
-import { type JwtSignerJwk, zCompactJwt } from '../common/jwt/z-jwt'
-import { Oauth2Error } from '../error/Oauth2Error'
-
 import {
-  type FetchHeaders,
-  URL,
   dateToSeconds,
   decodeUtf8String,
   encodeToBase64Url,
+  type FetchHeaders,
   parseWithErrorHandling,
+  URL,
 } from '@openid4vc/utils'
+import { type CallbackContext, HashAlgorithm } from '../callbacks'
+import { calculateJwkThumbprint } from '../common/jwk/jwk-thumbprint'
+import { decodeJwt } from '../common/jwt/decode-jwt'
 import { verifyJwt } from '../common/jwt/verify-jwt'
+import { type JwtSignerJwk, zCompactJwt } from '../common/jwt/z-jwt'
 import type { RequestLike } from '../common/z-common'
 import { Oauth2ErrorCodes } from '../common/z-oauth2-error'
+import { Oauth2Error } from '../error/Oauth2Error'
 import { Oauth2ServerErrorResponseError } from '../error/Oauth2ServerErrorResponseError'
 import { type DpopJwtHeader, type DpopJwtPayload, zDpopJwtHeader, zDpopJwtPayload } from './z-dpop'
 
@@ -78,7 +77,7 @@ export interface CreateDpopJwtOptions {
 
 export async function createDpopJwt(options: CreateDpopJwtOptions) {
   // Calculate access token hash
-  let ath: string | undefined = undefined
+  let ath: string | undefined
   if (options.accessToken) {
     ath = encodeToBase64Url(await options.callbacks.hash(decodeUtf8String(options.accessToken), HashAlgorithm.Sha256))
   }

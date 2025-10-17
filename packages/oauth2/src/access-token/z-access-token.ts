@@ -1,6 +1,5 @@
-import z from 'zod'
-
 import { zHttpsUrl } from '@openid4vc/utils'
+import z from 'zod'
 import { zOauth2ErrorResponse } from '../common/z-oauth2-error'
 import {
   zAuthorizationCodeGrantIdentifier,

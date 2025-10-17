@@ -1,7 +1,6 @@
 import type { CallbackContext } from '@openid4vc/oauth2'
-import {} from './authorization-request/create-authorization-request'
-import { parseOpenid4vpAuthorizationRequest } from './authorization-request/parse-authorization-request-params'
 import type { ParseOpenid4vpAuthorizationRequestOptions } from './authorization-request/parse-authorization-request-params'
+import { parseOpenid4vpAuthorizationRequest } from './authorization-request/parse-authorization-request-params'
 import {
   type ResolveOpenid4vpAuthorizationRequestOptions,
   resolveOpenid4vpAuthorizationRequest,

@@ -1,8 +1,14 @@
-import { ContentType, Headers, createZodFetcher, objectToQueryParams, parseWithErrorHandling } from '@openid4vc/utils'
-import { InvalidFetchResponseError } from '@openid4vc/utils'
+import {
+  ContentType,
+  createZodFetcher,
+  Headers,
+  InvalidFetchResponseError,
+  objectToQueryParams,
+  parseWithErrorHandling,
+} from '@openid4vc/utils'
 import { ValidationError } from '../../../utils/src/error/ValidationError'
 import type { CallbackContext } from '../callbacks'
-import { type RequestDpopOptions, createDpopHeadersForRequest, extractDpopNonceFromHeaders } from '../dpop/dpop'
+import { createDpopHeadersForRequest, extractDpopNonceFromHeaders, type RequestDpopOptions } from '../dpop/dpop'
 import { authorizationServerRequestWithDpopRetry } from '../dpop/dpop-retry'
 import { Oauth2ClientErrorResponseError } from '../error/Oauth2ClientErrorResponseError'
 import type { AuthorizationServerMetadata } from '../metadata/authorization-server/z-authorization-server-metadata'

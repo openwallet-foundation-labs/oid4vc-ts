@@ -1,6 +1,5 @@
 import { type CallbackContext, Oauth2Error } from '@openid4vc/oauth2'
-import { ContentType, createFetcher } from '@openid4vc/utils'
-import { objectToQueryParams } from '@openid4vc/utils'
+import { ContentType, createFetcher, objectToQueryParams } from '@openid4vc/utils'
 import type { Openid4vpAuthorizationRequest } from '../authorization-request/z-authorization-request'
 import { jarmAuthorizationResponseSend } from '../jarm/jarm-authorizatino-response-send'
 import type { Openid4vpAuthorizationResponse } from './z-authorization-response'

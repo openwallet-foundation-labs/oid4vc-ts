@@ -4,8 +4,8 @@ const sanitize = (value: string) => (value.charAt(0) === '"' ? unquote(value) : 
 
 // lol dis
 const body =
-  // biome-ignore lint/suspicious/noControlCharactersInRegex: <explanation>
-  /((?:[a-zA-Z0-9._~+\/-]+=*(?:\s+|$))|[^\u0000-\u001F\u007F()<>@,;:\\"/?={}\[\]\u0020\u0009]+)(?:=([^\\"=\s,]+|"(?:[^"\\]|\\.)*"))?/g
+  // biome-ignore lint/suspicious/noControlCharactersInRegex: no explanation
+  /((?:[a-zA-Z0-9._~+/-]+=*(?:\s+|$))|[^\u0000-\u001F\u007F()<>@,;:\\"/?={}[\]\u0020\u0009]+)(?:=([^\\"=\s,]+|"(?:[^"\\]|\\.)*"))?/g
 
 export interface WwwAuthenticateHeaderChallenge {
   scheme: string
@@ -52,7 +52,7 @@ export function parseWwwAuthenticateHeader(str: string): WwwAuthenticateHeaderCh
   // Some well-known schemes to support-multi parsing
   const endsWithSchemeRegex = /, ?(Bearer|DPoP|Basic)$/
   const endsWithSchemeTest = endsWithSchemeRegex.exec(value)
-  let endsWithScheme: string | undefined = undefined
+  let endsWithScheme: string | undefined
   if (endsWithSchemeTest) {
     value = value.substring(0, value.length - endsWithSchemeTest[0].length)
     endsWithScheme = endsWithSchemeTest[1]

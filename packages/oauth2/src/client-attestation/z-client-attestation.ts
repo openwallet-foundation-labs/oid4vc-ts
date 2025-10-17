@@ -1,8 +1,7 @@
-import { zJwtHeader, zJwtPayload } from '../common/jwt/z-jwt'
-
 import { zHttpsUrl, zInteger } from '@openid4vc/utils'
 import z from 'zod'
 import { zJwk } from '../common/jwk/z-jwk'
+import { zJwtHeader, zJwtPayload } from '../common/jwt/z-jwt'
 
 export const zOauthClientAttestationHeader = z.literal('OAuth-Client-Attestation')
 export const oauthClientAttestationHeader = zOauthClientAttestationHeader.value

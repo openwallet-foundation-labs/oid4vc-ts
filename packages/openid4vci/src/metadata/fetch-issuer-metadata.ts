@@ -1,7 +1,7 @@
 import {
   type AuthorizationServerMetadata,
-  Oauth2Error,
   fetchAuthorizationServerMetadata,
+  Oauth2Error,
   zAuthorizationServerMetadata,
 } from '@openid4vc/oauth2'
 import type { Fetch } from '@openid4vc/utils'
