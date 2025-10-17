@@ -331,7 +331,11 @@ export async function retrieveDeferredCredentials(
 
   // Try to parse the credential response
   const deferredCredentialResponseResult = isResponseContentType(ContentType.Json, resourceResponse.response)
-    ? zDeferredCredentialResponse.safeParse(await resourceResponse.response.clone().json())
+    ? zDeferredCredentialResponse
+        .refine((response) => response.credentials || response.transaction_id === options.transactionId, {
+          error: `Transaction id in deferred credential response does not match transaction id in deferred credential request '${options.transactionId}'`,
+        })
+        .safeParse(await resourceResponse.response.clone().json())
     : undefined
   if (!deferredCredentialResponseResult?.success) {
     return {
