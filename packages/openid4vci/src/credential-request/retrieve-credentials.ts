@@ -70,7 +70,7 @@ export async function retrieveCredentialsWithCredentialConfigurationId(
 ) {
   if (
     options.issuerMetadata.originalDraftVersion !== Openid4vciDraftVersion.Draft15 &&
-    options.issuerMetadata.originalDraftVersion !== Openid4vciDraftVersion.Draft16
+    options.issuerMetadata.originalDraftVersion !== Openid4vciDraftVersion.V1
   ) {
     throw new Openid4vciError(
       'Requesting credentials based on credential configuration ID is not supported in OpenID4VCI below draft 15. Make sure to provide the format and format specific claims in the request.'
@@ -119,10 +119,10 @@ export interface RetrieveCredentialsWithFormatOptions extends RetrieveCredential
 export async function retrieveCredentialsWithFormat(options: RetrieveCredentialsWithFormatOptions) {
   if (
     options.issuerMetadata.originalDraftVersion === Openid4vciDraftVersion.Draft15 ||
-    options.issuerMetadata.originalDraftVersion === Openid4vciDraftVersion.Draft16
+    options.issuerMetadata.originalDraftVersion === Openid4vciDraftVersion.V1
   ) {
     throw new Openid4vciError(
-      'Requesting credentials based on format is not supported in OpenID4VCI draft 15. Provide the credential configuration id directly in the request.'
+      'Requesting credentials based on format is not supported on OpenID4VCI above draft 15. Provide the credential configuration id directly in the request.'
     )
   }
 
@@ -331,7 +331,11 @@ export async function retrieveDeferredCredentials(
 
   // Try to parse the credential response
   const deferredCredentialResponseResult = isResponseContentType(ContentType.Json, resourceResponse.response)
-    ? zDeferredCredentialResponse.safeParse(await resourceResponse.response.clone().json())
+    ? zDeferredCredentialResponse
+        .refine((response) => response.credentials || response.transaction_id === options.transactionId, {
+          error: `Transaction id in deferred credential response does not match transaction id in deferred credential request '${options.transactionId}'`,
+        })
+        .safeParse(await resourceResponse.response.clone().json())
     : undefined
   if (!deferredCredentialResponseResult?.success) {
     return {

@@ -28,7 +28,7 @@ export type LegacySdJwtVcFormatIdentifier = z.infer<typeof zLegacySdJwtVcFormatI
  * of the OpenID for Verifiable Presentations specification. Please update your
  * implementations accordingly.
  */
-export const zLegacySdJwtVcCredentialIssuerMetadataDraft16 = zCredentialConfigurationSupportedCommon.extend({
+export const zLegacySdJwtVcCredentialIssuerMetadataV1 = zCredentialConfigurationSupportedCommon.extend({
   vct: z.string(),
   format: zLegacySdJwtVcFormatIdentifier,
   order: z.optional(z.array(z.string())),
