@@ -14,5 +14,5 @@ export const zOpenid4vpAuthorizationResponse = z
     access_token: z.string().optional(),
     expires_in: z.coerce.number().optional(),
   })
-  .passthrough()
+  .loose()
 export type Openid4vpAuthorizationResponse = z.infer<typeof zOpenid4vpAuthorizationResponse>

@@ -11,7 +11,7 @@ export const zJarAuthorizationRequest = z
     request_uri_method: z.optional(z.string()),
     client_id: z.optional(z.string()),
   })
-  .passthrough()
+  .loose()
 export type JarAuthorizationRequest = z.infer<typeof zJarAuthorizationRequest>
 
 export function validateJarRequestParams(options: { jarRequestParams: JarAuthorizationRequest }) {

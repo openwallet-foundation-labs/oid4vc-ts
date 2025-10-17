@@ -14,7 +14,7 @@ export const zDpopJwtPayload = z
     // Only required when presenting in combination with access token
     ath: z.optional(z.string()),
   })
-  .passthrough()
+  .loose()
 export type DpopJwtPayload = z.infer<typeof zDpopJwtPayload>
 
 export const zDpopJwtHeader = z
@@ -23,5 +23,5 @@ export const zDpopJwtHeader = z
     typ: z.literal('dpop+jwt'),
     jwk: zJwk,
   })
-  .passthrough()
+  .loose()
 export type DpopJwtHeader = z.infer<typeof zDpopJwtHeader>

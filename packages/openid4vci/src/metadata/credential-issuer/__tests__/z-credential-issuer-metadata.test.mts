@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import type { ZodInvalidUnionIssue } from 'zod'
+import type { $ZodIssueInvalidUnion } from 'zod/v4/core'
 import { paradymDraft13 } from '../../../__tests__/__fixtures__/paradym.js'
 import {
   zCredentialConfigurationSupportedWithFormats,
@@ -29,13 +29,12 @@ describe('Credential Issuer Metadata', () => {
 
     // Incorrect: sd-jwt without vct
     expect(parseResult.success).toBe(false)
-    expect((parseResult.error?.errors[0] as ZodInvalidUnionIssue)?.unionErrors[0]?.issues[0]).toEqual({
+    expect((parseResult.error?.issues[0] as $ZodIssueInvalidUnion)?.errors[0][0]).toEqual({
       code: 'invalid_type',
       // FIXME(vc+sd-jwt): fix expected to be 'string' when dropping support for legacy vc+sd-jwt format.
       expected: 'object',
-      received: 'undefined',
       path: ['credential_definition'],
-      message: 'Required',
+      message: 'Invalid input: expected object, received undefined',
     })
 
     // Correct: mso mdoc with doctype
@@ -57,19 +56,18 @@ describe('Credential Issuer Metadata', () => {
       // doctype: 'org.iso.18013.5.1.mDL',
     })
     expect(parseResultMdoc.success).toEqual(false)
-    expect(parseResultMdoc.error?.errors[0]).toMatchObject({
+    expect(parseResultMdoc.error?.issues[0]).toMatchObject({
       code: 'invalid_union',
       message: 'Invalid input',
       path: [],
     })
 
-    expect((parseResultMdoc.error?.errors[0] as ZodInvalidUnionIssue).unionErrors[0].issues).toMatchObject([
+    expect((parseResultMdoc.error?.issues[0] as $ZodIssueInvalidUnion).errors[0]).toMatchObject([
       {
         code: 'invalid_type',
         expected: 'string',
-        received: 'undefined',
         path: ['doctype'],
-        message: 'Required',
+        message: 'Invalid input: expected string, received undefined',
       },
     ])
   })

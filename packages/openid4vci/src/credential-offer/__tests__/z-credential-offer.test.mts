@@ -95,7 +95,7 @@ describe('Credential Offer', () => {
     })
 
     expect(parseResult.success).toBe(false)
-    expect(parseResult.error?.errors).toMatchInlineSnapshot(`
+    expect(parseResult.error?.issues).toMatchInlineSnapshot(`
       [
         {
           "code": "invalid_type",
@@ -105,7 +105,6 @@ describe('Credential Offer', () => {
             "credentials",
             0,
           ],
-          "received": "object",
         },
       ]
     `)

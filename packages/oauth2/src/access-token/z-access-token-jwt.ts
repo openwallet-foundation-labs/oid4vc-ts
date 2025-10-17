@@ -7,7 +7,7 @@ export const zAccessTokenProfileJwtHeader = z
     ...zJwtHeader.shape,
     typ: z.enum(['application/at+jwt', 'at+jwt']),
   })
-  .passthrough()
+  .loose()
 export type AccessTokenProfileJwtHeader = z.infer<typeof zAccessTokenProfileJwtHeader>
 
 export const zAccessTokenProfileJwtPayload = z
@@ -26,6 +26,6 @@ export const zAccessTokenProfileJwtPayload = z
     // SHOULD be included in the authorization request contained it
     scope: z.optional(z.string()),
   })
-  .passthrough()
+  .loose()
 
 export type AccessTokenProfileJwtPayload = z.infer<typeof zAccessTokenProfileJwtPayload>

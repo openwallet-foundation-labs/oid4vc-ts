@@ -1,13 +1,12 @@
-import type { ZodError, z } from 'zod'
-import { formatZodError } from '../zod-error'
+import z, { type ZodError } from 'zod'
 
 export class ValidationError extends Error {
   public zodError: ZodError | undefined
 
-  constructor(message: string, zodError?: z.ZodError) {
+  constructor(message: string, zodError?: ZodError) {
     super(message)
 
-    const formattedError = formatZodError(zodError)
+    const formattedError = zodError ? z.prettifyError(zodError) : ''
     this.message = `${message}\n${formattedError}`
 
     Object.defineProperty(this, 'zodError', {

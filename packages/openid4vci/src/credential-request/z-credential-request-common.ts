@@ -12,7 +12,7 @@ const zCredentialRequestProofCommon = z
   .object({
     proof_type: z.string(),
   })
-  .passthrough()
+  .loose()
 
 export const allCredentialRequestProofs = [zCredentialRequestProofJwt, zCredentialRequestProofAttestation] as const
 
@@ -56,10 +56,10 @@ export const zCredentialRequestCommon = z
         alg: z.string(),
         enc: z.string(),
       })
-      .passthrough()
+      .loose()
       .optional(),
   })
-  .passthrough()
+  .loose()
   // It's not allowed to provide both proof and proofs
   .refine(({ proof, proofs }) => !(proof !== undefined && proofs !== undefined), {
     message: `Both 'proof' and 'proofs' are defined. Only one is allowed`,

@@ -6,5 +6,5 @@ export const zJarRequestObjectPayload = z
     ...zJwtPayload.shape,
     client_id: z.string(),
   })
-  .passthrough()
+  .loose()
 export type JarRequestObjectPayload = z.infer<typeof zJarRequestObjectPayload>

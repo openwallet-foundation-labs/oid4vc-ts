@@ -16,7 +16,7 @@ const zBaseCredentialResponse = z
     interval: z.number().int().positive().optional(),
     notification_id: z.string().optional(),
   })
-  .passthrough()
+  .loose()
 
 export const zCredentialResponse = zBaseCredentialResponse
   .extend({
@@ -26,27 +26,27 @@ export const zCredentialResponse = zBaseCredentialResponse
     c_nonce: z.string().optional(),
     c_nonce_expires_in: z.number().int().optional(),
   })
-  .passthrough()
+  .loose()
   .superRefine((value, ctx) => {
     const { credential, credentials, transaction_id, interval, notification_id } = value
 
     if ([credential, credentials, transaction_id].filter((i) => i !== undefined).length !== 1) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: 'custom',
         message: `Exactly one of 'credential', 'credentials', or 'transaction_id' MUST be defined.`,
       })
     }
 
     if (transaction_id && !interval) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: 'custom',
         message: `'interval' MUST be defined when 'transaction_id' is defined.`,
       })
     }
 
     if (notification_id && !(credentials || credential)) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: 'custom',
         message: `'notification_id' MUST NOT be defined when 'credential' or 'credentials' are not defined.`,
       })
     }
@@ -61,7 +61,7 @@ export const zCredentialErrorResponse = z
     c_nonce: z.string().optional(),
     c_nonce_expires_in: z.number().int().optional(),
   })
-  .passthrough()
+  .loose()
 
 export type CredentialErrorResponse = z.infer<typeof zCredentialErrorResponse>
 

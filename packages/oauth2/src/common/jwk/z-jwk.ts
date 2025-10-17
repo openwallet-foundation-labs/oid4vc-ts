@@ -24,7 +24,7 @@ export const zJwk = z
             r: z.optional(z.string()),
             t: z.optional(z.string()),
           })
-          .passthrough()
+          .loose()
       )
     ),
     p: z.optional(z.string()),
@@ -36,10 +36,10 @@ export const zJwk = z
     'x5t#S256': z.optional(z.string()),
     x5u: z.optional(z.string()),
   })
-  .passthrough()
+  .loose()
 
 export type Jwk = z.infer<typeof zJwk>
 
-export const zJwkSet = z.object({ keys: z.array(zJwk) }).passthrough()
+export const zJwkSet = z.object({ keys: z.array(zJwk) }).loose()
 
 export type JwkSet = z.infer<typeof zJwkSet>
