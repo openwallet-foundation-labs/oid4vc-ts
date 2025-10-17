@@ -13,15 +13,16 @@ const zBaseCredentialResponse = z
         z.array(zCredentialEncoding),
       ])
       .optional(),
-    interval: z.number().int().positive().optional(),
     notification_id: z.string().optional(),
+
+    transaction_id: z.string().optional(),
+    interval: z.number().int().positive().optional(),
   })
   .loose()
 
 export const zCredentialResponse = zBaseCredentialResponse
   .extend({
     credential: z.optional(zCredentialEncoding),
-    transaction_id: z.string().optional(),
 
     c_nonce: z.string().optional(),
     c_nonce_expires_in: z.number().int().optional(),
@@ -65,14 +66,29 @@ export const zCredentialErrorResponse = z
 
 export type CredentialErrorResponse = z.infer<typeof zCredentialErrorResponse>
 
-export const zDeferredCredentialResponse = zBaseCredentialResponse.refine(
-  (value) => {
-    const { credentials, interval } = value
-    return [credentials, interval].filter((i) => i !== undefined).length === 1
-  },
-  {
-    message: `Exactly one of 'credentials' or 'interval' MUST be defined.`,
+export const zDeferredCredentialResponse = zBaseCredentialResponse.superRefine((value, ctx) => {
+  const { credentials, transaction_id, interval, notification_id } = value
+
+  if ([credentials, transaction_id].filter((i) => i !== undefined).length !== 1) {
+    ctx.addIssue({
+      code: 'custom',
+      message: `Exactly one of 'credentials', or 'transaction_id' MUST be defined.`,
+    })
   }
-)
+
+  if (transaction_id && !interval) {
+    ctx.addIssue({
+      code: 'custom',
+      message: `'interval' MUST be defined when 'transaction_id' is defined.`,
+    })
+  }
+
+  if (notification_id && credentials) {
+    ctx.addIssue({
+      code: 'custom',
+      message: `'notification_id' MUST NOT be defined when 'credentials' is not defined.`,
+    })
+  }
+})
 
 export type DeferredCredentialResponse = z.infer<typeof zDeferredCredentialResponse>
