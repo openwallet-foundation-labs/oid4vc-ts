@@ -1,5 +1,5 @@
 import { fetchWellKnownMetadata, Oauth2Error } from '@openid4vc/oauth2'
-import { type Fetch, joinUriParts } from '@openid4vc/utils'
+import { type Fetch, joinUriParts, URL } from '@openid4vc/utils'
 import type { CredentialFormatIdentifier } from '../../formats/credential'
 import type { Openid4vciDraftVersion } from '../../version'
 import {
@@ -24,8 +24,20 @@ export async function fetchCredentialIssuerMetadata(
   credentialIssuerMetadata: CredentialIssuerMetadata
   originalDraftVersion: Openid4vciDraftVersion
 } | null> {
-  const wellKnownMetadataUrl = joinUriParts(credentialIssuer, [wellKnownCredentialIssuerSuffix])
-  const result = await fetchWellKnownMetadata(wellKnownMetadataUrl, zCredentialIssuerMetadataWithDraftVersion, fetch)
+  const parsedIssuerUrl = new URL(credentialIssuer)
+
+  const legacyWellKnownMetadataUrl = joinUriParts(credentialIssuer, [wellKnownCredentialIssuerSuffix])
+  const wellKnownMetadataUrl = joinUriParts(parsedIssuerUrl.origin, [
+    wellKnownCredentialIssuerSuffix,
+    parsedIssuerUrl.pathname,
+  ])
+
+  let result = await fetchWellKnownMetadata(wellKnownMetadataUrl, zCredentialIssuerMetadataWithDraftVersion, fetch)
+  // If the metadata is not available at the new URL, fetch it at the legacy URL
+  // The legacy url is the same if no subpath is used by the issuer
+  if (!result && legacyWellKnownMetadataUrl !== wellKnownMetadataUrl) {
+    result = await fetchWellKnownMetadata(legacyWellKnownMetadataUrl, zCredentialIssuerMetadataWithDraftVersion, fetch)
+  }
 
   // credential issuer param MUST match
   if (result && result.credentialIssuerMetadata.credential_issuer !== credentialIssuer) {
