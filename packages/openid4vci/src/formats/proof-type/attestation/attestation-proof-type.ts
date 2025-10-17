@@ -1,7 +1,7 @@
 import {
   type CreateKeyAttestationJwtOptions,
-  type VerifyKeyAttestationJwtOptions,
   createKeyAttestationJwt,
+  type VerifyKeyAttestationJwtOptions,
   verifyKeyAttestationJwt,
 } from '../../../key-attestation/key-attestation'
 

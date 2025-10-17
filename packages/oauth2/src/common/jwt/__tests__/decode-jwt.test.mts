@@ -57,7 +57,7 @@ FAILED: method did - kid in header must start with either 'did:' or '#' when 'is
       expect(
         jwtSignerFromJwt({
           header: {
-            // @ts-ignore
+            // @ts-expect-error
             jwk: { kid: 'kid' },
             alg: 'ES256',
           },
@@ -123,7 +123,7 @@ SUCCEEDED: method did`)
           header: {
             alg: 'ES256',
             kid: 'did:example.com#123',
-            // @ts-ignore
+            // @ts-expect-error
             jwk: {},
             trust_chain: [''],
             x5c: ['cert'],

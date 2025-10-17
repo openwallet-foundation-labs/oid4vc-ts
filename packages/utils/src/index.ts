@@ -1,19 +1,5 @@
-export {
-  Headers,
-  URL,
-  URLSearchParams,
-  type Fetch,
-  type FetchHeaders,
-  type FetchRequestInit,
-  type FetchResponse,
-} from './globals'
-
-export { InvalidFetchResponseError } from './error/InvalidFetchResponseError'
-export { JsonParseError } from './error/JsonParseError'
-export { ValidationError } from './error/ValidationError'
-
 export { arrayEqualsIgnoreOrder } from './array'
-export { getGlobalConfig, setGlobalConfig, type Oid4vcTsConfig } from './config'
+export { getGlobalConfig, type Oid4vcTsConfig, setGlobalConfig } from './config'
 export { ContentType, isContentType, isResponseContentType } from './content-type'
 export { addSecondsToDate, dateToSeconds } from './date'
 export {
@@ -23,18 +9,30 @@ export {
   encodeToBase64Url,
   encodeToUtf8String,
 } from './encoding'
-export { mergeDeep } from './object'
+export { InvalidFetchResponseError } from './error/InvalidFetchResponseError'
+export { JsonParseError } from './error/JsonParseError'
+export { ValidationError } from './error/ValidationError'
+export { createFetcher, createZodFetcher, type ZodFetcher } from './fetcher'
 export {
-  parseWithErrorHandling,
-  stringToJsonWithErrorHandling,
-  parseIfJson,
+  type Fetch,
+  type FetchHeaders,
+  type FetchRequestInit,
+  type FetchResponse,
+  Headers,
+  URL,
+  URLSearchParams,
+} from './globals'
+export { isObject, mergeDeep } from './object'
+export {
   type BaseSchema,
   type InferOutputUnion,
+  parseIfJson,
+  parseWithErrorHandling,
+  stringToJsonWithErrorHandling,
 } from './parse'
 export { joinUriParts } from './path'
-export type { Optional, OrPromise, Simplify, StringWithAutoCompletion, NonEmptyArray } from './type'
+export type { NonEmptyArray, Optional, OrPromise, Simplify, StringWithAutoCompletion } from './type'
 export { getQueryParams, objectToQueryParams } from './url'
-export { type ZodFetcher, createZodFetcher, createFetcher } from './fetcher'
 export {
   type HttpMethod,
   zHttpMethod,
@@ -43,11 +41,9 @@ export {
   zIs,
   zStringToJson,
 } from './validation'
-export { formatZodError } from './zod-error'
 export {
   encodeWwwAuthenticateHeader,
   parseWwwAuthenticateHeader,
   type WwwAuthenticateHeaderChallenge,
 } from './www-authenticate'
-
-export { isObject } from './object'
+export { formatZodError } from './zod-error'

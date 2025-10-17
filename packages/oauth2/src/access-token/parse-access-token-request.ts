@@ -6,10 +6,10 @@ import { extractDpopJwtFromHeaders } from '../dpop/dpop'
 import { Oauth2ServerErrorResponseError } from '../error/Oauth2ServerErrorResponseError'
 import {
   type AuthorizationCodeGrantIdentifier,
-  type PreAuthorizedCodeGrantIdentifier,
-  type RefreshTokenGrantIdentifier,
   authorizationCodeGrantIdentifier,
+  type PreAuthorizedCodeGrantIdentifier,
   preAuthorizedCodeGrantIdentifier,
+  type RefreshTokenGrantIdentifier,
   refreshTokenGrantIdentifier,
 } from '../z-grant-type'
 import { type AccessTokenRequest, zAccessTokenRequest } from './z-access-token'

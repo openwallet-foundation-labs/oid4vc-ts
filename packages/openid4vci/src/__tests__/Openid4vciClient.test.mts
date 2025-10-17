@@ -1,7 +1,7 @@
 import { type AuthorizationServerMetadata, decodeJwt, preAuthorizedCodeGrantIdentifier } from '@openid4vc/oauth2'
 import { clientAuthenticationAnonymous } from '@openid4vc/oauth2'
 import { parseWithErrorHandling } from '@openid4vc/utils'
-import { http, HttpResponse } from 'msw'
+import { HttpResponse, http } from 'msw'
 import { setupServer } from 'msw/node'
 import { afterAll, afterEach, beforeAll, describe, expect, test } from 'vitest'
 import { zAuthorizationChallengeRequest } from '../../../oauth2/src/authorization-challenge/z-authorization-challenge.js'

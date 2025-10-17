@@ -1,17 +1,17 @@
 import {
+  authorizationCodeGrantIdentifier,
   type CallbackContext,
   type CreateAuthorizationRequestUrlOptions,
   type CreatePkceReturn,
+  getAuthorizationServerMetadataFromList,
   Oauth2Client,
   Oauth2ClientAuthorizationChallengeError,
   Oauth2Error,
   Oauth2ErrorCodes,
+  preAuthorizedCodeGrantIdentifier,
   type RequestDpopOptions,
   type RetrieveAuthorizationCodeAccessTokenOptions,
   type RetrievePreAuthorizedCodeAccessTokenOptions,
-  authorizationCodeGrantIdentifier,
-  getAuthorizationServerMetadataFromList,
-  preAuthorizedCodeGrantIdentifier,
 } from '@openid4vc/oauth2'
 
 import {

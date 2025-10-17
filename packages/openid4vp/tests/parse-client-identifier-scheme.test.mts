@@ -20,7 +20,7 @@ describe('Correctly parses the client identifier', () => {
             method: 'federation',
             alg: '',
             kid: '',
-            // @ts-ignore
+            // @ts-expect-error
             publicJwk: {},
           },
         },
@@ -191,7 +191,7 @@ describe('Correctly parses the client identifier', () => {
             method: 'federation',
             kid: '',
             alg: '',
-            // @ts-ignore
+            // @ts-expect-error
             publicJwk: {},
           },
         },

@@ -2,8 +2,8 @@ import { decodeJwt } from '@openid4vc/oauth2'
 import { parseWithErrorHandling } from '@openid4vc/utils'
 import z from 'zod'
 import {
-  type JarAuthorizationRequest,
   isJarAuthorizationRequest,
+  type JarAuthorizationRequest,
   zJarAuthorizationRequest,
 } from '../jar/z-jar-authorization-request'
 import {
@@ -12,8 +12,8 @@ import {
   zOpenid4vpAuthorizationRequestFromUriParams,
 } from './z-authorization-request'
 import {
-  type Openid4vpAuthorizationRequestDcApi,
   isOpenid4vpAuthorizationRequestDcApi,
+  type Openid4vpAuthorizationRequestDcApi,
   zOpenid4vpAuthorizationRequestDcApi,
 } from './z-authorization-request-dc-api'
 

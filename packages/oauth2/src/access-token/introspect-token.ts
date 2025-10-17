@@ -1,10 +1,14 @@
-import { ContentType, createZodFetcher, objectToQueryParams, parseWithErrorHandling } from '@openid4vc/utils'
-import { InvalidFetchResponseError } from '@openid4vc/utils'
+import {
+  ContentType,
+  createZodFetcher,
+  Headers,
+  InvalidFetchResponseError,
+  objectToQueryParams,
+  parseWithErrorHandling,
+} from '@openid4vc/utils'
+import type { CallbackContext } from '../callbacks'
 import { Oauth2Error } from '../error/Oauth2Error'
 import type { AuthorizationServerMetadata } from '../metadata/authorization-server/z-authorization-server-metadata'
-
-import { Headers } from '@openid4vc/utils'
-import type { CallbackContext } from '../callbacks'
 import {
   type TokenIntrospectionRequest,
   zTokenIntrospectionRequest,

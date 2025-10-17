@@ -2,8 +2,8 @@ import {
   type CallbackContext,
   type JweEncryptor,
   type JwtSigner,
-  Oauth2Error,
   jwtHeaderFromJwtSigner,
+  Oauth2Error,
 } from '@openid4vc/oauth2'
 import type {
   JarmAuthorizationResponse,
