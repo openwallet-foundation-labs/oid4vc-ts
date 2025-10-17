@@ -13,7 +13,8 @@ jobs:
     name: Release Stable
     permissions:
       contents: write
-      id-token: write   # Needed for npm trusted publishing
+      id-token: write # Needed for npm trusted publishing
+      pull-requests: write
     outputs:
       published: ${{ steps.changesets.outputs.published }}
     steps:
@@ -28,9 +29,8 @@ jobs:
           node-version: 24
           cache: "pnpm"
 
-      # anchor to the smallest npm version supporting trusted publishing
       - name: Update npm
-        run: npm install -g npm@11.5.1
+        run: npm install -g npm@^11
 
       - name: Install Dependencies
         run: pnpm install --frozen-lockfile
@@ -63,7 +63,7 @@ jobs:
     if: always() && github.event_name == 'push' && needs.release-stable.outputs.published == 'false'
     permissions:
       contents: write
-      id-token: write   # Needed for npm trusted publishing
+      id-token: write # Needed for npm trusted publishing
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
@@ -76,9 +76,8 @@ jobs:
           node-version: 24
           cache: "pnpm"
 
-      # anchor to the smallest npm version supporting trusted publishing
       - name: Update npm
-        run: npm install -g npm@11.5.1
+        run: npm install -g npm@^11
 
       - name: Install Dependencies
         run: pnpm install --frozen-lockfile
