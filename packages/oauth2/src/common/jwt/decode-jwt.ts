@@ -39,6 +39,7 @@ export type DecodeJwtResult<
   header: InferSchemaOrDefaultOutput<HeaderSchema, typeof zJwtHeader>
   payload: InferSchemaOrDefaultOutput<PayloadSchema, typeof zJwtPayload>
   signature: string
+  compact: string
 }
 
 export function decodeJwt<
@@ -67,6 +68,7 @@ export function decodeJwt<
     header: header as InferSchemaOrDefaultOutput<HeaderSchema, typeof zJwtHeader>,
     payload: payload as InferSchemaOrDefaultOutput<PayloadSchema, typeof zJwtPayload>,
     signature: jwtParts[2],
+    compact: options.jwt,
   }
 }
 

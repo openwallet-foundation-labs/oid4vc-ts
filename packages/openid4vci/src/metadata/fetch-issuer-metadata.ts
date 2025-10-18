@@ -1,13 +1,17 @@
 import {
   type AuthorizationServerMetadata,
+  type CallbackContext,
   fetchAuthorizationServerMetadata,
   Oauth2Error,
   zAuthorizationServerMetadata,
 } from '@openid4vc/oauth2'
-import type { Fetch } from '@openid4vc/utils'
+
 import { parseWithErrorHandling } from '@openid4vc/utils'
 import type { Openid4vciDraftVersion } from '../version'
-import { fetchCredentialIssuerMetadata } from './credential-issuer/credential-issuer-metadata'
+import {
+  type CredentialIssuerMetadataSigned,
+  fetchCredentialIssuerMetadata,
+} from './credential-issuer/credential-issuer-metadata'
 import type { CredentialIssuerMetadata } from './credential-issuer/z-credential-issuer-metadata'
 
 export interface ResolveIssuerMetadataOptions {
@@ -28,14 +32,30 @@ export interface ResolveIssuerMetadataOptions {
   allowAuthorizationMetadataFromCredentialIssuerMetadata?: boolean
 
   /**
-   * Custom fetch implementation to use
+   * Callbacks for fetching the credential issur metadata.
+   * If no `verifyJwt` callback is provided, the request
+   * will not include the `application/jwt` Accept header
+   * for signed metadata.
    */
-  fetch?: Fetch
+  callbacks: Partial<Pick<CallbackContext, 'fetch' | 'verifyJwt'>>
+
+  /**
+   * Only used for verifying signed issuer metadata. If not provided
+   * current time will be used
+   */
+  now?: Date
 }
 
 export interface IssuerMetadataResult {
-  originalDraftVersion?: Openid4vciDraftVersion
+  originalDraftVersion: Openid4vciDraftVersion
   credentialIssuer: CredentialIssuerMetadata
+
+  /**
+   * Metadata about the signed credential issuer metadata,
+   * if the issuer metadata was signed
+   */
+  signedCredentialIssuer?: CredentialIssuerMetadataSigned
+
   authorizationServers: AuthorizationServerMetadata[]
 }
 
@@ -46,12 +66,15 @@ export async function resolveIssuerMetadata(
   const allowAuthorizationMetadataFromCredentialIssuerMetadata =
     options?.allowAuthorizationMetadataFromCredentialIssuerMetadata ?? true
 
-  const credentialIssuerMetadataWithDraftVersion = await fetchCredentialIssuerMetadata(credentialIssuer, options?.fetch)
+  const credentialIssuerMetadataWithDraftVersion = await fetchCredentialIssuerMetadata(credentialIssuer, {
+    callbacks: options?.callbacks,
+    now: options?.now,
+  })
   if (!credentialIssuerMetadataWithDraftVersion) {
     throw new Oauth2Error(`Well known credential issuer metadata for issuer '${credentialIssuer}' not found.`)
   }
 
-  const { credentialIssuerMetadata, originalDraftVersion } = credentialIssuerMetadataWithDraftVersion
+  const { credentialIssuerMetadata, originalDraftVersion, signed } = credentialIssuerMetadataWithDraftVersion
 
   // If no authoriation servers are defined, use the credential issuer as the authorization server
   const authorizationServers = credentialIssuerMetadata.authorization_servers ?? [credentialIssuer]
@@ -65,7 +88,10 @@ export async function resolveIssuerMetadata(
       continue
     }
 
-    let authorizationServerMetadata = await fetchAuthorizationServerMetadata(authorizationServer, options?.fetch)
+    let authorizationServerMetadata = await fetchAuthorizationServerMetadata(
+      authorizationServer,
+      options?.callbacks.fetch
+    )
     if (
       !authorizationServerMetadata &&
       authorizationServer === credentialIssuer &&
@@ -93,6 +119,8 @@ export async function resolveIssuerMetadata(
   return {
     originalDraftVersion,
     credentialIssuer: credentialIssuerMetadata,
+    signedCredentialIssuer: signed,
+
     authorizationServers: authoriationServersMetadata,
   }
 }

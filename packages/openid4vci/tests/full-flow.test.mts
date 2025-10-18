@@ -21,6 +21,7 @@ import { getSignJwtCallback, parseXwwwFormUrlEncoded, callbacks as partialCallba
 import {
   type CredentialConfigurationSupportedWithFormats,
   extractScopesForCredentialConfigurationIds,
+  type IssuerMetadataResult,
   Openid4vciClient,
   Openid4vciDraftVersion,
   Openid4vciIssuer,
@@ -120,7 +121,8 @@ const credentialIssuerMetadata = issuer.createCredentialIssuerMetadata({
 const issuerMetadata = {
   credentialIssuer: credentialIssuerMetadata,
   authorizationServers: [authorizationServerMetadata],
-}
+  originalDraftVersion: Openid4vciDraftVersion.Draft14,
+} satisfies IssuerMetadataResult
 
 describe('Full E2E test', () => {
   beforeAll(() => {

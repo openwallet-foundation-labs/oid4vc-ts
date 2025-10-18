@@ -72,7 +72,7 @@ export function createZodFetcher(fetcher?: Fetch): ZodFetcher {
       )
     }
 
-    if (expectedContentTypeArray.includes(ContentType.OAuthAuthorizationRequestJwt)) {
+    if (isResponseContentType([ContentType.OAuthAuthorizationRequestJwt, ContentType.Jwt], response)) {
       return {
         response,
         result: response.ok ? schema.safeParse(await response.text()) : undefined,

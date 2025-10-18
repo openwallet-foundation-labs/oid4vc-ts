@@ -1,5 +1,6 @@
 import {
   type CallbackContext,
+  type DecodeJwtResult,
   decodeJwt,
   type Jwk,
   type JwtSigner,
@@ -40,7 +41,7 @@ export interface VerifiedJarRequest {
   sendBy: 'value' | 'reference'
   decryptionJwk?: Jwk
   signer: JwtSignerWithJwk
-  jwt: ReturnType<typeof decodeJwt<undefined, typeof zJarRequestObjectPayload>>
+  jwt: DecodeJwtResult<undefined, typeof zJarRequestObjectPayload>
 }
 
 const zSignedAuthorizationRequestJwtHeaderTyp = z.literal('oauth-authz-req+jwt')

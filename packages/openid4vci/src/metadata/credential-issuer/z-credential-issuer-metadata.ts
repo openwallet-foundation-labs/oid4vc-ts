@@ -132,7 +132,7 @@ const zCredentialIssuerMetadataDisplayEntry = z
 export type CredentialIssuerMetadataDisplayEntry = z.infer<typeof zCredentialIssuerMetadataDisplayEntry>
 
 export type CredentialIssuerMetadata = z.infer<typeof zCredentialIssuerMetadataDraft14Draft15V1>
-const zCredentialIssuerMetadataDraft14Draft15V1 = z
+export const zCredentialIssuerMetadataDraft14Draft15V1 = z
   .object({
     credential_issuer: zHttpsUrl,
     authorization_servers: z.array(zHttpsUrl).optional(),
