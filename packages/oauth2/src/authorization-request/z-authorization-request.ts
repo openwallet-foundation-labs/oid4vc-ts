@@ -1,5 +1,6 @@
-import { zHttpsUrl } from '@openid4vc/utils'
+import { zHttpsUrl, zStringToJson } from '@openid4vc/utils'
 import z from 'zod'
+import { zAuthorizationDetailsEntryBase } from '../common/z-authorization-details'
 import { zOauth2ErrorResponse } from '../common/z-oauth2-error'
 
 // TODO: should create different request validations for different
@@ -13,6 +14,7 @@ export const zAuthorizationRequest = z
     redirect_uri: z.url().optional(),
     resource: z.optional(zHttpsUrl),
     scope: z.optional(z.string()),
+    authorization_details: z.array(zAuthorizationDetailsEntryBase).optional(),
 
     // DPoP jwk thumbprint
     dpop_jkt: z.optional(z.base64url()),
@@ -22,6 +24,11 @@ export const zAuthorizationRequest = z
   })
   .loose()
 export type AuthorizationRequest = z.infer<typeof zAuthorizationRequest>
+
+// We need to parse serialized JSON to an JSON object.
+export const zAuthorizationRequestParsedUriParamsToJson = z.looseObject({
+  authorization_details: zStringToJson.optional(),
+})
 
 export const zPushedAuthorizationRequest = z
   .object({

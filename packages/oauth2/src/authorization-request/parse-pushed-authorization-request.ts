@@ -3,7 +3,11 @@ import type { RequestLike } from '../common/z-common'
 import { Oauth2ErrorCodes } from '../common/z-oauth2-error'
 import { Oauth2ServerErrorResponseError } from '../error/Oauth2ServerErrorResponseError'
 import { type ParseAuthorizationRequestResult, parseAuthorizationRequest } from './parse-authorization-request'
-import { type AuthorizationRequest, zAuthorizationRequest } from './z-authorization-request'
+import {
+  type AuthorizationRequest,
+  zAuthorizationRequest,
+  zAuthorizationRequestParsedUriParamsToJson,
+} from './z-authorization-request'
 
 export interface ParsePushedAuthorizationRequestOptions {
   request: RequestLike
@@ -21,7 +25,10 @@ export interface ParsePushedAuthorizationRequestResult extends ParseAuthorizatio
 export function parsePushedAuthorizationRequest(
   options: ParsePushedAuthorizationRequestOptions
 ): ParsePushedAuthorizationRequestResult {
-  const parsedAuthorizationRequest = zAuthorizationRequest.safeParse(options.authorizationRequest)
+  const parsedAuthorizationRequest = zAuthorizationRequestParsedUriParamsToJson
+    .pipe(zAuthorizationRequest)
+    .safeParse(options.authorizationRequest)
+
   if (!parsedAuthorizationRequest.success) {
     throw new Oauth2ServerErrorResponseError({
       error: Oauth2ErrorCodes.InvalidRequest,

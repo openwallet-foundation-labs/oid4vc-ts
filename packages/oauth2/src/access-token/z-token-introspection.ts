@@ -1,6 +1,7 @@
 import { zInteger } from '@openid4vc/utils'
 import z from 'zod'
 import { zJwtConfirmationPayload } from '../common/jwt/z-jwt'
+import { zAuthorizationDetailsEntryBase } from '../common/z-authorization-details'
 
 export const zTokenIntrospectionRequest = z
   .object({
@@ -30,6 +31,10 @@ export const zTokenIntrospectionResponse = z
     jti: z.optional(z.string()),
 
     cnf: z.optional(zJwtConfirmationPayload),
+
+    // Authorization Details may be added to introspection response
+    // to allow a resource server to understand the authorizations
+    authorization_details: z.array(zAuthorizationDetailsEntryBase).optional(),
   })
   .loose()
 

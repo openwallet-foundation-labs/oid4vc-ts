@@ -44,6 +44,9 @@ export const zAuthorizationServerMetadata = z
 
     // Attestation Based Client Auth (draft 5)
     client_attestation_pop_nonce_required: z.boolean().optional(),
+
+    // RFC9396 - Rich Autorization Requests
+    authorization_details_types_supported: z.array(z.string()).optional(),
   })
   .loose()
   .refine(

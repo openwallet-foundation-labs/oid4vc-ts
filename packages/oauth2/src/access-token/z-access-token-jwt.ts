@@ -1,6 +1,7 @@
 import { zInteger } from '@openid4vc/utils'
 import z from 'zod'
 import { zJwtHeader, zJwtPayload } from '../common/jwt/z-jwt'
+import { zAuthorizationDetailsEntryBase } from '../common/z-authorization-details'
 
 export const zAccessTokenProfileJwtHeader = z
   .object({
@@ -25,6 +26,10 @@ export const zAccessTokenProfileJwtPayload = z
 
     // SHOULD be included in the authorization request contained it
     scope: z.optional(z.string()),
+
+    // Authorization Details may be added to jwt access token
+    // to allow a resource server to understand the authorizations
+    authorization_details: z.array(zAuthorizationDetailsEntryBase).optional(),
   })
   .loose()
 
