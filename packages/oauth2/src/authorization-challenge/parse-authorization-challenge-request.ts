@@ -3,6 +3,7 @@ import {
   type ParseAuthorizationRequestResult,
   parseAuthorizationRequest,
 } from '../authorization-request/parse-authorization-request'
+import { zAuthorizationRequestParsedUriParamsToJson } from '../authorization-request/z-authorization-request'
 import type { RequestLike } from '../common/z-common'
 import { Oauth2ErrorCodes } from '../common/z-oauth2-error'
 import { Oauth2ServerErrorResponseError } from '../error/Oauth2ServerErrorResponseError'
@@ -26,9 +27,11 @@ export interface ParseAuthorizationChallengeRequestResult extends ParseAuthoriza
 export function parseAuthorizationChallengeRequest(
   options: ParseAuthorizationChallengeRequestOptions
 ): ParseAuthorizationChallengeRequestResult {
-  const parsedAuthorizationChallengeRequest = zAuthorizationChallengeRequest.safeParse(
-    options.authorizationChallengeRequest
-  )
+  // First ensure we correctly transform the serialized entries to JSON
+  const parsedAuthorizationChallengeRequest = zAuthorizationRequestParsedUriParamsToJson
+    .pipe(zAuthorizationChallengeRequest)
+    .safeParse(options.authorizationChallengeRequest)
+
   if (!parsedAuthorizationChallengeRequest.success) {
     throw new Oauth2ServerErrorResponseError({
       error: Oauth2ErrorCodes.InvalidRequest,

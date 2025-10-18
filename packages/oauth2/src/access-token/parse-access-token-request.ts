@@ -12,7 +12,11 @@ import {
   type RefreshTokenGrantIdentifier,
   refreshTokenGrantIdentifier,
 } from '../z-grant-type'
-import { type AccessTokenRequest, zAccessTokenRequest } from './z-access-token'
+import {
+  type AccessTokenRequest,
+  zAccessTokenRequest,
+  zAccessTokenRequestParsedUriParamsToJson,
+} from './z-access-token'
 
 export interface ParsedAccessTokenPreAuthorizedCodeRequestGrant {
   grantType: PreAuthorizedCodeGrantIdentifier
@@ -78,7 +82,10 @@ export interface ParseAccessTokenRequestOptions {
  * that can be returned to the client.
  */
 export function parseAccessTokenRequest(options: ParseAccessTokenRequestOptions): ParseAccessTokenRequestResult {
-  const parsedAccessTokenRequest = zAccessTokenRequest.safeParse(options.accessTokenRequest)
+  const parsedAccessTokenRequest = zAccessTokenRequestParsedUriParamsToJson
+    .pipe(zAccessTokenRequest)
+    .safeParse(options.accessTokenRequest)
+
   if (!parsedAccessTokenRequest.success) {
     throw new Oauth2ServerErrorResponseError({
       error: Oauth2ErrorCodes.InvalidRequest,

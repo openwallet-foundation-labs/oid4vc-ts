@@ -52,6 +52,9 @@ export enum Oauth2ErrorCodes {
   InvalidRequestUriMethod = 'invalid_request_uri_method',
   InvalidTransactionData = 'invalid_transaction_data',
   WalletUnavailable = 'wallet_unavailable',
+
+  // Rich Authorization Requests
+  InvalidAuthorizationDetails = 'invalid_authorization_details',
 }
 
 export const zOauth2ErrorResponse = z

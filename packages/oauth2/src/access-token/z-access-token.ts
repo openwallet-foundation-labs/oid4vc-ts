@@ -1,5 +1,6 @@
-import { zHttpsUrl } from '@openid4vc/utils'
+import { zHttpsUrl, zStringToJson } from '@openid4vc/utils'
 import z from 'zod'
+import { zAuthorizationDetailsEntryBase } from '../common/z-authorization-details'
 import { zOauth2ErrorResponse } from '../common/z-oauth2-error'
 import {
   zAuthorizationCodeGrantIdentifier,
@@ -30,6 +31,8 @@ export const zAccessTokenRequest = z.intersection(
         // string makes the previous ones unnecessary, but it does help with error messages
         z.string(),
       ]),
+
+      authorization_details: z.array(zAuthorizationDetailsEntryBase).optional(),
     })
     .loose(),
   z
@@ -51,6 +54,11 @@ export const zAccessTokenRequest = z.intersection(
 )
 export type AccessTokenRequest = z.infer<typeof zAccessTokenRequest>
 
+// We need to parse serialized JSON to an JSON object.
+export const zAccessTokenRequestParsedUriParamsToJson = z.looseObject({
+  authorization_details: zStringToJson.optional(),
+})
+
 export const zAccessTokenResponse = z
   .object({
     access_token: z.string(),
@@ -66,17 +74,7 @@ export const zAccessTokenResponse = z
     c_nonce: z.optional(z.string()),
     c_nonce_expires_in: z.optional(z.number().int()),
 
-    // TODO: add additional params
-    authorization_details: z
-      .array(
-        z
-          .object({
-            // required when type is openid_credential (so we probably need a discriminator)
-            // credential_identifiers: z.array(z.string()),
-          })
-          .loose()
-      )
-      .optional(),
+    authorization_details: z.array(zAuthorizationDetailsEntryBase).optional(),
   })
   .loose()
 
