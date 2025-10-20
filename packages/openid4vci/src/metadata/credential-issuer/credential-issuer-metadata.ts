@@ -134,7 +134,7 @@ export async function fetchCredentialIssuerMetadata(
       verifyJwtCallback: options.callbacks.verifyJwt,
       now: options.now,
       signer,
-      errorMessage: 'signed credential issuer metadata jwt verificdation failed',
+      errorMessage: 'signed credential issuer metadata jwt verification failed',
     })
 
     const issuerMetadata = parseWithErrorHandling(
