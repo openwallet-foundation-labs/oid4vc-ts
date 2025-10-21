@@ -32,7 +32,9 @@ export async function fetchAuthorizationServerMetadata(
   let authorizationServerResult = await fetchWellKnownMetadata(
     authorizationServerWellKnownMetadataUrl,
     zAuthorizationServerMetadata,
-    fetch
+    {
+      fetch,
+    }
   )
 
   if (
@@ -42,7 +44,9 @@ export async function fetchAuthorizationServerMetadata(
     authorizationServerResult = await fetchWellKnownMetadata(
       nonCompliantAuthorizationServerWellKnownMetadataUrl,
       zAuthorizationServerMetadata,
-      fetch
+      {
+        fetch,
+      }
     )
   }
 
@@ -50,7 +54,9 @@ export async function fetchAuthorizationServerMetadata(
     authorizationServerResult = await fetchWellKnownMetadata(
       openIdConfigurationWellKnownMetadataUrl,
       zAuthorizationServerMetadata,
-      fetch
+      {
+        fetch,
+      }
     )
   }
 

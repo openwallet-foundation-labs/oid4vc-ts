@@ -165,6 +165,7 @@ describe('Oauth2AuthorizationServer', () => {
         sub: 'something',
       },
       signature: expect.any(String),
+      compact: expect.any(String),
     })
   })
 
@@ -306,6 +307,7 @@ describe('Oauth2AuthorizationServer', () => {
         sub: 'a9ad80ef-18b6-4087-9b88-55f5b14a33da',
       },
       signature: expect.any(String),
+      compact: expect.any(String),
     })
   })
 })

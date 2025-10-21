@@ -35,6 +35,10 @@ import {
 } from './formats/proof-type/jwt/jwt-proof-type'
 import { extractKnownCredentialConfigurationSupportedFormats } from './metadata/credential-issuer/credential-issuer-metadata'
 import {
+  type CreateSignedCredentialIssuerMetadataJwtOptions,
+  createSignedCredentialIssuerMetadataJwt,
+} from './metadata/credential-issuer/signed-credential-issuer-metadata'
+import {
   type CredentialIssuerMetadata,
   zCredentialIssuerMetadata,
   zCredentialIssuerMetadataWithDraft11,
@@ -71,6 +75,18 @@ export class Openid4vciIssuer {
       credentialIssuerMetadata,
       'Error validating credential issuer metadata'
     )
+  }
+
+  /**
+   * Validates credential issuer metadata structure is correct and creates signed credential issuer metadata JWT
+   */
+  public createSignedCredentialIssuerMetadataJwt(
+    options: Omit<CreateSignedCredentialIssuerMetadataJwtOptions, 'callbacks'>
+  ): Promise<string> {
+    return createSignedCredentialIssuerMetadataJwt({
+      callbacks: this.options.callbacks,
+      ...options,
+    })
   }
 
   public async createCredentialOffer(

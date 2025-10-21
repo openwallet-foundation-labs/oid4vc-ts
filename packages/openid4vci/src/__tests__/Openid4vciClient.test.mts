@@ -41,6 +41,9 @@ describe('Openid4vciClient', () => {
       http.get(`${paradymDraft13.credentialOfferObject.credential_issuer}/.well-known/openid-credential-issuer`, () =>
         HttpResponse.json(paradymDraft13.credentialIssuerMetadata)
       ),
+      http.get('https://agent.paradym.id/.well-known/openid-credential-issuer/oid4vci/draft-13-issuer', () =>
+        HttpResponse.text(undefined, { status: 404 })
+      ),
       http.get(`${paradymDraft13.credentialOfferObject.credential_issuer}/.well-known/openid-configuration`, () =>
         HttpResponse.text(undefined, { status: 404 })
       ),
@@ -124,6 +127,7 @@ describe('Openid4vciClient', () => {
         nonce: '463253917094869172078310',
       },
       signature: expect.any(String),
+      compact: expect.any(String),
     })
 
     const credentialResponse = await client.retrieveCredentials({
@@ -145,6 +149,9 @@ describe('Openid4vciClient', () => {
       ),
       http.get(`${paradymDraft11.credentialOfferObject.credential_issuer}/.well-known/openid-credential-issuer`, () =>
         HttpResponse.json(paradymDraft11.credentialIssuerMetadata)
+      ),
+      http.get('https://agent.paradym.id/.well-known/openid-credential-issuer/oid4vci/draft-11-issuer', () =>
+        HttpResponse.text(undefined, { status: 404 })
       ),
       http.get(`${paradymDraft11.credentialOfferObject.credential_issuer}/.well-known/openid-configuration`, () =>
         HttpResponse.text(undefined, { status: 404 })
@@ -293,6 +300,7 @@ describe('Openid4vciClient', () => {
         nonce: '463253917094869172078310',
       },
       signature: expect.any(String),
+      compact: expect.any(String),
     })
 
     const credentialResponse = await client.retrieveCredentials({
@@ -309,6 +317,9 @@ describe('Openid4vciClient', () => {
 
   test('receive a credential from bdr using draft 13', async () => {
     server.resetHandlers(
+      http.get(`https://demo.pid-issuer.bundesdruckerei.de/.well-known/openid-credential-issuer/c`, () =>
+        HttpResponse.json(undefined, { status: 404 })
+      ),
       http.get(`${bdrDraft13.credentialOfferObject.credential_issuer}/.well-known/openid-credential-issuer`, () =>
         HttpResponse.json(bdrDraft13.credentialIssuerMetadata)
       ),
@@ -358,6 +369,7 @@ describe('Openid4vciClient', () => {
             htm: 'POST',
           },
           signature: expect.any(String),
+          compact: expect.any(String),
         })
         expect(parseXwwwFormUrlEncoded(await request.text())).toEqual({
           client_id: 'some-random-client-id',
@@ -400,6 +412,7 @@ describe('Openid4vciClient', () => {
             ath: 'i5Jbpn1_j8TgO3O4K6Y9D_f9k1lkOPMqa0uCo8nIRd4',
           },
           signature: expect.any(String),
+          compact: expect.any(String),
         })
         expect(await request.json()).toEqual({
           format: 'vc+sd-jwt',
@@ -503,6 +516,7 @@ describe('Openid4vciClient', () => {
         nonce: 'sjNMiqyfmBeD1qioCVyqvS',
       },
       signature: expect.any(String),
+      compact: expect.any(String),
     })
 
     const credentialResponse = await client.retrieveCredentials({
@@ -678,6 +692,7 @@ describe('Openid4vciClient', () => {
         nonce: 'sjNMiqyfmBeD1qioCVyqvS',
       },
       signature: expect.any(String),
+      compact: expect.any(String),
     })
 
     const credentialResponse = await client.retrieveCredentials({
@@ -730,6 +745,7 @@ describe('Openid4vciClient', () => {
     expect(resolvedIssuerMetadata).toStrictEqual({
       originalDraftVersion: Openid4vciDraftVersion.Draft14,
       credentialIssuer: issuerMetadata,
+      signedCredentialIssuer: undefined,
       authorizationServers: [authorizationMetadata],
     })
 
@@ -762,6 +778,7 @@ describe('Openid4vciClient', () => {
       originalDraftVersion: Openid4vciDraftVersion.Draft14,
       credentialIssuer: issuerMetadata,
       authorizationServers: [authorizationMetadata],
+      signedCredentialIssuer: undefined,
     })
 
     server.resetHandlers(
@@ -793,6 +810,7 @@ describe('Openid4vciClient', () => {
     expect(resolvedIssuerMetadata3).toStrictEqual({
       originalDraftVersion: Openid4vciDraftVersion.Draft14,
       credentialIssuer: issuerMetadata,
+      signedCredentialIssuer: undefined,
       authorizationServers: [authorizationMetadata],
     })
 
@@ -826,6 +844,7 @@ describe('Openid4vciClient', () => {
     expect(resolvedIssuerMetadata4).toStrictEqual({
       originalDraftVersion: Openid4vciDraftVersion.Draft14,
       credentialIssuer: { ...issuerMetadata, token_endpoint: 'https://example.com/issuer-id/token' },
+      signedCredentialIssuer: undefined,
       authorizationServers: [
         {
           issuer: 'https://example.com/issuer-id',
