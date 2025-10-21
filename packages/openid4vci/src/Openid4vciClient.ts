@@ -475,7 +475,7 @@ export class Openid4vciClient {
 
     if (
       issuerMetadata.originalDraftVersion === Openid4vciDraftVersion.Draft15 ||
-      issuerMetadata.originalDraftVersion === Openid4vciDraftVersion.Draft16
+      issuerMetadata.originalDraftVersion === Openid4vciDraftVersion.V1
     ) {
       credentialResponse = await retrieveCredentialsWithCredentialConfigurationId({
         accessToken,
