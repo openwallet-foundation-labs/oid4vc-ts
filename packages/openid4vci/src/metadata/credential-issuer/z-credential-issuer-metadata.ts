@@ -1,4 +1,3 @@
-import { zCompactJwt } from '@openid4vc/oauth2'
 import { type InferOutputUnion, type Simplify, zHttpsUrl } from '@openid4vc/utils'
 import z from 'zod'
 import {
@@ -29,7 +28,7 @@ import {
   zSdJwtDcCredentialIssuerMetadataDraft15,
   zSdJwtDcFormatIdentifier,
 } from '../../formats/credential'
-import { zLegacySdJwtVcCredentialIssuerMetadataDraft16 } from '../../formats/credential/sd-jwt-vc/z-sd-jwt-vc'
+import { zLegacySdJwtVcCredentialIssuerMetadataV1 } from '../../formats/credential/sd-jwt-vc/z-sd-jwt-vc'
 import {
   zSdJwtW3VcCredentialIssuerMetadata,
   zSdJwtW3VcCredentialIssuerMetadataDraft15,
@@ -48,7 +47,7 @@ const allCredentialIssuerMetadataFormats = [
   zJwtVcJsonCredentialIssuerMetadata,
   zSdJwtW3VcCredentialIssuerMetadata,
   zSdJwtW3VcCredentialIssuerMetadataDraft15,
-  zLegacySdJwtVcCredentialIssuerMetadataDraft16,
+  zLegacySdJwtVcCredentialIssuerMetadataV1,
   zSdJwtDcCredentialIssuerMetadataDraft15,
   zMsoMdocCredentialIssuerMetadataDraft15,
   zJwtVcJsonLdCredentialIssuerMetadataDraft15,
@@ -132,8 +131,8 @@ const zCredentialIssuerMetadataDisplayEntry = z
   .loose()
 export type CredentialIssuerMetadataDisplayEntry = z.infer<typeof zCredentialIssuerMetadataDisplayEntry>
 
-export type CredentialIssuerMetadata = z.infer<typeof zCredentialIssuerMetadataDraft14Draft15Draft16>
-const zCredentialIssuerMetadataDraft14Draft15Draft16 = z
+export type CredentialIssuerMetadata = z.infer<typeof zCredentialIssuerMetadataDraft14Draft15V1>
+const zCredentialIssuerMetadataDraft14Draft15V1 = z
   .object({
     credential_issuer: zHttpsUrl,
     authorization_servers: z.array(zHttpsUrl).optional(),
@@ -157,7 +156,6 @@ const zCredentialIssuerMetadataDraft14Draft15Draft16 = z
       })
       .loose()
       .optional(),
-    signed_metadata: zCompactJwt.optional(),
     display: z.array(zCredentialIssuerMetadataDisplayEntry).optional(),
     credential_configurations_supported: z.record(z.string(), zCredentialConfigurationSupportedWithFormats),
   })
@@ -258,7 +256,7 @@ export const zCredentialConfigurationSupportedDraft11To16 = z
   .pipe(zCredentialConfigurationSupportedWithFormats)
 
 // Transforms credential configuration supported from draft 16 to draft 15
-const zCredentialConfigurationSupportedDraft16To15 = zCredentialConfigurationSupportedWithFormats.transform(
+const zCredentialConfigurationSupportedV1ToDraft15 = zCredentialConfigurationSupportedWithFormats.transform(
   ({ credential_metadata, ...rest }) => ({
     ...credential_metadata,
     ...rest,
@@ -267,7 +265,7 @@ const zCredentialConfigurationSupportedDraft16To15 = zCredentialConfigurationSup
 
 // Transforms credential configuration supported to credentials_supported format
 // Ignores unknown formats
-const zCredentialConfigurationSupportedDraft16To11 = zCredentialConfigurationSupportedDraft16To15
+const zCredentialConfigurationSupportedV1ToDraft11 = zCredentialConfigurationSupportedV1ToDraft15
   .and(
     z
       .object({
@@ -358,7 +356,7 @@ export const zCredentialIssuerMetadataDraft11To16 = z
       })
       .loose()
   )
-  .pipe(zCredentialIssuerMetadataDraft14Draft15Draft16)
+  .pipe(zCredentialIssuerMetadataDraft14Draft15V1)
 
 /**
  * Typing is a bit off on this one
@@ -366,11 +364,11 @@ export const zCredentialIssuerMetadataDraft11To16 = z
 export type CredentialIssuerMetadataDraft11 = Simplify<
   CredentialIssuerMetadata & {
     authorization_server?: string
-    credentials_supported: z.infer<typeof zCredentialConfigurationSupportedDraft16To11>[]
+    credentials_supported: z.infer<typeof zCredentialConfigurationSupportedV1ToDraft11>[]
   }
 >
 
-export const zCredentialIssuerMetadataWithDraft11 = zCredentialIssuerMetadataDraft14Draft15Draft16
+export const zCredentialIssuerMetadataWithDraft11 = zCredentialIssuerMetadataDraft14Draft15V1
   .transform((issuerMetadata) => ({
     ...issuerMetadata,
     ...(issuerMetadata.authorization_servers ? { authorization_server: issuerMetadata.authorization_servers[0] } : {}),
@@ -380,20 +378,20 @@ export const zCredentialIssuerMetadataWithDraft11 = zCredentialIssuerMetadataDra
     })),
   }))
   .pipe(
-    zCredentialIssuerMetadataDraft14Draft15Draft16.extend({
-      credentials_supported: z.array(zCredentialConfigurationSupportedDraft16To11),
+    zCredentialIssuerMetadataDraft14Draft15V1.extend({
+      credentials_supported: z.array(zCredentialConfigurationSupportedV1ToDraft11),
     })
   )
 
 export const zCredentialIssuerMetadata = z.union([
   // First prioritize draft 16/15/14 (and 13)
-  zCredentialIssuerMetadataDraft14Draft15Draft16,
+  zCredentialIssuerMetadataDraft14Draft15V1,
   // Then try parsing draft 11 and transform into draft 16
   zCredentialIssuerMetadataDraft11To16,
 ])
 
 export const zCredentialIssuerMetadataWithDraftVersion = z.union([
-  zCredentialIssuerMetadataDraft14Draft15Draft16.transform((credentialIssuerMetadata) => {
+  zCredentialIssuerMetadataDraft14Draft15V1.transform((credentialIssuerMetadata) => {
     const credentialConfigurations = Object.values(credentialIssuerMetadata.credential_configurations_supported)
 
     const isDraft15 = credentialConfigurations.some((configuration) => {
@@ -413,21 +411,20 @@ export const zCredentialIssuerMetadataWithDraftVersion = z.union([
       return false
     })
 
-    const isDraft16 = credentialConfigurations.some((configuration) => {
-      // Added in draft 16
-      return configuration.credential_metadata
-    })
+    // Added in draft 16, but since there's no other breaking changes
+    // we assume V1 is used when we detect V1
+    const isV1 = credentialConfigurations.some((configuration) => configuration.credential_metadata)
 
     return {
       credentialIssuerMetadata,
-      originalDraftVersion: isDraft16
-        ? Openid4vciDraftVersion.Draft16
+      originalDraftVersion: isV1
+        ? Openid4vciDraftVersion.V1
         : isDraft15
           ? Openid4vciDraftVersion.Draft15
           : Openid4vciDraftVersion.Draft14,
     }
   }),
-  // Then try parsing draft 11 and transform into draft 14
+  // Then try parsing draft 11 and transform into draft 16
   zCredentialIssuerMetadataDraft11To16.transform((credentialIssuerMetadata) => ({
     credentialIssuerMetadata,
     originalDraftVersion: Openid4vciDraftVersion.Draft11,
