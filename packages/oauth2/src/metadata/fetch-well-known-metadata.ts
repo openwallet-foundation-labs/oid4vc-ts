@@ -2,6 +2,20 @@ import { type BaseSchema, ContentType, createZodFetcher, type Fetch, InvalidFetc
 import type z from 'zod'
 import { ValidationError } from '../../../utils/src/error/ValidationError'
 
+export interface FetchWellKnownMetadataOptions {
+  /**
+   * Custom fetch implementation to use for fetching the metadata
+   */
+  fetch?: Fetch
+
+  /**
+   * The accepted content types. If not provided a default of `ContentType.Json`
+   * will be used. This will be used for the `Accept` header, as well as verified
+   * against the `Content-Type` response header.
+   */
+  acceptedContentType?: [ContentType, ...ContentType[]]
+}
+
 /**
  * Fetch well known metadata and validate the response.
  *
@@ -16,11 +30,13 @@ import { ValidationError } from '../../../utils/src/error/ValidationError'
 export async function fetchWellKnownMetadata<Schema extends BaseSchema>(
   wellKnownMetadataUrl: string,
   schema: Schema,
-  fetch?: Fetch
+  options?: FetchWellKnownMetadataOptions
 ): Promise<z.infer<Schema> | null> {
-  const fetcher = createZodFetcher(fetch)
+  const fetcher = createZodFetcher(options?.fetch)
 
-  const { result, response } = await fetcher(schema, ContentType.Json, wellKnownMetadataUrl)
+  const acceptedContentType = options?.acceptedContentType ?? [ContentType.Json]
+
+  const { result, response } = await fetcher(schema, acceptedContentType, wellKnownMetadataUrl)
   if (response.status === 404) {
     return null
   }

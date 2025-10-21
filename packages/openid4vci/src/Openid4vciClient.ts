@@ -83,7 +83,7 @@ export class Openid4vciClient {
 
   public async resolveIssuerMetadata(credentialIssuer: string): Promise<IssuerMetadataResult> {
     return resolveIssuerMetadata(credentialIssuer, {
-      fetch: this.options.callbacks.fetch,
+      callbacks: this.options.callbacks,
     })
   }
 
