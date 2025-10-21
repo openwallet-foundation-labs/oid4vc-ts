@@ -55,7 +55,7 @@ export type CreateDeferredCredentialResponseOptions = (
     }
   | {
       /**
-       * The `transaction_id` that was included in the
+       * The `transaction_id` used to identify the deferred issuance transaction.
        */
       transactionId: string
       interval: number
