@@ -171,6 +171,7 @@ export class Oauth2Client {
       callbacks: this.options.callbacks,
       pkceCodeVerifier: options.pkceCodeVerifier,
       dpop: options.dpop,
+      state: options.state,
     })
   }
 
