@@ -102,6 +102,7 @@ export class Oauth2Client {
           authorizationServerMetadata: options.authorizationServerMetadata,
           additionalRequestPayload: options.additionalRequestPayload,
           pkceCodeVerifier: pkce?.codeVerifier,
+          redirectUri: options.redirectUri,
           scope: options.scope,
           resource: options.resource,
           dpop: options.dpop,
