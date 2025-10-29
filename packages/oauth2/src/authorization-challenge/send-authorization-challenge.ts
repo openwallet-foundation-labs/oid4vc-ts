@@ -49,7 +49,7 @@ export interface SendAuthorizationChallengeRequestOptions {
   resource?: string
 
   /**
-   * Presentation during issuance sessios if credentials were presented
+   * Presentation during issuance session if credentials were presented
    * as part of an issuance session
    */
   presentationDuringIssuanceSession?: string
@@ -76,7 +76,7 @@ export interface SendAuthorizationChallengeRequestOptions {
  *
  * @throws {Oauth2ClientAuthorizationChallengeError} if the request failed and a {@link AuthorizationChallengeErrorResponse} is returned
  * @throws {InvalidFetchResponseError} if the request failed but no error response could be parsed
- * @throws {ValidationError} if a successful response was received but an error occured during verification of the {@link AuthorizationChallengeResponse}
+ * @throws {ValidationError} if a successful response was received but an error occurred during verification of the {@link AuthorizationChallengeResponse}
  */
 export async function sendAuthorizationChallengeRequest(options: SendAuthorizationChallengeRequestOptions) {
   const fetchWithZod = createZodFetcher(options.callbacks.fetch)
@@ -85,7 +85,7 @@ export async function sendAuthorizationChallengeRequest(options: SendAuthorizati
   const authorizationChallengeEndpoint = authorizationServerMetadata.authorization_challenge_endpoint
   if (!authorizationChallengeEndpoint) {
     throw new Oauth2Error(
-      `Unable to send authorization challange. Authorization server '${authorizationServerMetadata.issuer}' has no 'authorization_challenge_endpoint'`
+      `Unable to send authorization challenge. Authorization server '${authorizationServerMetadata.issuer}' has no 'authorization_challenge_endpoint'`
     )
   }
 

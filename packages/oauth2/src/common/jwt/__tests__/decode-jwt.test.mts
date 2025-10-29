@@ -37,7 +37,7 @@ describe('Decode JWT', () => {
         })
       ).toThrow(
         `Unable to extract signer method from jwt. Found 1 allowed signer method(s) but contained invalid configuration:
-FAILED: method did - kid in header starst with did that is different from did value in 'iss'`
+FAILED: method did - kid in header starts with did that is different from did value in 'iss'`
       )
     })
 
@@ -134,7 +134,7 @@ SUCCEEDED: method did`)
       ).toThrow(`Unable to extract signer method from jwt. Found 4 signer method(s) that are not allowed:
 SUCCEEDED: method x5c
 SUCCEEDED: method federation
-FAILED: method did - kid in header starst with did that is different from did value in 'iss'
+FAILED: method did - kid in header starts with did that is different from did value in 'iss'
 SUCCEEDED: method jwk`)
     })
 
