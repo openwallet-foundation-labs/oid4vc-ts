@@ -47,6 +47,11 @@ export interface CreateAuthorizationRequestUrlOptions {
   scope?: string
 
   /**
+   * State for the authorization request
+   */
+  state?: string
+
+  /**
    * The resource to which access is being requested. This can help the authorization
    * server in determining the resource server to handle the authorization request for
    */
@@ -109,6 +114,7 @@ export async function createAuthorizationRequestUrl(options: CreateAuthorization
     redirect_uri: options.redirectUri,
     resource: options.resource,
     scope: options.scope,
+    state: options.state,
     code_challenge: pkce?.codeChallenge,
     code_challenge_method: pkce?.codeChallengeMethod,
   }
@@ -197,7 +203,7 @@ async function pushAuthorizationRequest(options: PushAuthorizationRequestOptions
 
   if (options.authorizationRequest.request_uri) {
     throw new Oauth2Error(
-      `Authorization request contains 'request_uri' parameter. This is not allowed for pushed authorization reuqests.`
+      `Authorization request contains 'request_uri' parameter. This is not allowed for pushed authorization requests.`
     )
   }
 

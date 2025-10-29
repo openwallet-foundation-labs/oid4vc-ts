@@ -13,6 +13,7 @@ export const zAuthorizationRequest = z
     redirect_uri: z.url().optional(),
     resource: z.optional(zHttpsUrl),
     scope: z.optional(z.string()),
+    state: z.optional(z.string()),
 
     // DPoP jwk thumbprint
     dpop_jkt: z.optional(z.base64url()),
