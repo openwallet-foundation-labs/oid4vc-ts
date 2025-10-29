@@ -572,6 +572,7 @@ describe('Openid4vciClient', () => {
           expect(authorizationChallengeRequest).toEqual({
             client_id: 'some-random-client-id',
             scope: 'pid',
+            redirect_uri: 'https://example.com/redirect',
             code_challenge: expect.any(String),
             code_challenge_method: 'S256',
             resource: credentialOffer.credential_issuer,
