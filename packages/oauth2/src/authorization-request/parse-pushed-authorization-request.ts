@@ -25,7 +25,7 @@ export function parsePushedAuthorizationRequest(
   if (!parsedAuthorizationRequest.success) {
     throw new Oauth2ServerErrorResponseError({
       error: Oauth2ErrorCodes.InvalidRequest,
-      error_description: `Error occured during validation of pushed authorization request.\n${formatZodError(parsedAuthorizationRequest.error)}`,
+      error_description: `Error occurred during validation of pushed authorization request.\n${formatZodError(parsedAuthorizationRequest.error)}`,
     })
   }
 

@@ -22,7 +22,7 @@ export interface CreateAuthorizationChallengeResponseOptions {
 /**
  * Create an authorization challenge response
  *
- * @throws {ValidationError} if an error occured during verification of the {@link AuthorizationChallengeResponse}
+ * @throws {ValidationError} if an error occurred during verification of the {@link AuthorizationChallengeResponse}
  */
 export function createAuthorizationChallengeResponse(options: CreateAuthorizationChallengeResponseOptions) {
   const authorizationChallengeResponse = parseWithErrorHandling(zAuthorizationChallengeResponse, {
@@ -84,7 +84,7 @@ export interface CreateAuthorizationChallengeErrorResponseOptions {
 /**
  * Create an authorization challenge error response
  *
- * @throws {ValidationError} if an error occured during validation of the {@link AuthorizationChallengeErrorResponse}
+ * @throws {ValidationError} if an error occurred during validation of the {@link AuthorizationChallengeErrorResponse}
  */
 export function createAuthorizationChallengeErrorResponse(options: CreateAuthorizationChallengeErrorResponseOptions) {
   const authorizationChallengeErrorResponse = parseWithErrorHandling(zAuthorizationChallengeErrorResponse, {

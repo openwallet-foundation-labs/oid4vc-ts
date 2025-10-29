@@ -6,7 +6,7 @@ export class Openid4vciError extends Error {
   public readonly cause?: unknown
 
   public constructor(message?: string, options?: Openid4vciErrorOptions) {
-    const errorMessage = message ?? 'Unknown error occured.'
+    const errorMessage = message ?? 'Unknown error occurred.'
     const causeMessage =
       options?.cause instanceof Error ? ` ${options.cause.message}` : options?.cause ? ` ${options?.cause}` : ''
 
