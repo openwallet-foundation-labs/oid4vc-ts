@@ -49,6 +49,12 @@ export interface SendAuthorizationChallengeRequestOptions {
   resource?: string
 
   /**
+   * Redirect uri to include in the authorization challenge request. Maybe be used by the
+   * server when falling back to a PAR request.
+   */
+  redirectUri?: string
+
+  /**
    * Presentation during issuance session if credentials were presented
    * as part of an issuance session
    */
@@ -104,6 +110,7 @@ export async function sendAuthorizationChallengeRequest(options: SendAuthorizati
     ...options.additionalRequestPayload,
     auth_session: options.authSession,
     scope: options.scope,
+    redirect_uri: options.redirectUri,
     resource: options.resource,
     code_challenge: pkce?.codeChallenge,
     code_challenge_method: pkce?.codeChallengeMethod,
