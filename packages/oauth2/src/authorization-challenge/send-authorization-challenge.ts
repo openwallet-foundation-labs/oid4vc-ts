@@ -43,6 +43,11 @@ export interface SendAuthorizationChallengeRequestOptions {
   scope?: string
 
   /**
+   * State for the authorization challenge request
+   */
+  state?: string
+
+  /**
    * The resource to which access is being requested. This can help the authorization
    * server in determining the resource server to handle the authorization request for
    */
@@ -112,6 +117,7 @@ export async function sendAuthorizationChallengeRequest(options: SendAuthorizati
     scope: options.scope,
     redirect_uri: options.redirectUri,
     resource: options.resource,
+    state: options.state,
     code_challenge: pkce?.codeChallenge,
     code_challenge_method: pkce?.codeChallengeMethod,
     presentation_during_issuance_session: options.presentationDuringIssuanceSession,

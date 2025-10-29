@@ -106,6 +106,7 @@ export class Oauth2Client {
           scope: options.scope,
           resource: options.resource,
           dpop: options.dpop,
+          state: options.state,
         })
       } catch (error) {
         // In this case we resume with the normal auth flow
@@ -148,6 +149,7 @@ export class Oauth2Client {
       pkceCodeVerifier: pkce?.codeVerifier,
       resource: options.resource,
       dpop: options.dpop,
+      state: options.state,
     })
   }
 
