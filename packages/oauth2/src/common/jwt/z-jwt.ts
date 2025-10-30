@@ -105,6 +105,7 @@ export const zJwtPayload = z
     nbf: zInteger.optional(),
     nonce: z.string().optional(),
     jti: z.string().optional(),
+    sub: z.string().optional(),
 
     cnf: zJwtConfirmationPayload.optional(),
 
