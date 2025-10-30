@@ -7,7 +7,7 @@ import type { AuthorizationServerMetadata } from '../metadata/authorization-serv
 import { fetchJwks } from '../metadata/fetch-jwks-uri'
 import { zIdTokenJwtHeader, zIdTokenJwtPayload } from './z-id-token-jwt'
 
-export interface VerifyJwtIdTokenOptions {
+export interface VerifyIdTokenJwtOptions {
   /**
    * The compact id token.
    */
@@ -42,7 +42,7 @@ export interface VerifyJwtIdTokenOptions {
 /**
  * Verify an ID Token JWT.
  */
-export async function verifyJwtIdToken(options: VerifyJwtIdTokenOptions) {
+export async function verifyIdTokenJwt(options: VerifyIdTokenJwtOptions) {
   const { header, payload } = decodeJwt({
     jwt: options.idToken,
     headerSchema: zIdTokenJwtHeader,
