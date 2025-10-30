@@ -58,6 +58,8 @@ export { HashAlgorithm } from './callbacks'
 export {
   type CreateClientAttestationJwtOptions,
   createClientAttestationJwt,
+  VerifiedClientAttestationJwt,
+  verifyClientAttestationJwt,
 } from './client-attestation/client-attestation'
 export type { RequestClientAttestationOptions } from './client-attestation/client-attestation-pop'
 export type {
@@ -108,7 +110,7 @@ export {
   zJwtHeader,
   zJwtPayload,
 } from './common/jwt/z-jwt'
-export { zAlgValueNotNone } from './common/z-common'
+export { type RequestLike, zAlgValueNotNone } from './common/z-common'
 export {
   Oauth2ErrorCodes,
   type Oauth2ErrorResponse,
@@ -125,6 +127,7 @@ export {
   type WwwAuthenticateHeaderChallenge,
 } from './error/Oauth2ResourceUnauthorizedError'
 export { Oauth2ServerErrorResponseError } from './error/Oauth2ServerErrorResponseError'
+export * from './id-token'
 export {
   fetchAuthorizationServerMetadata,
   getAuthorizationServerMetadataFromList,
