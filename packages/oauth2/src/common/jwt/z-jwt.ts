@@ -99,7 +99,7 @@ export const zJwtConfirmationPayload = z
 export const zJwtPayload = z
   .object({
     iss: z.string().optional(),
-    aud: z.string().optional(),
+    aud: z.union([z.string(), z.array(z.string())]).optional(),
     iat: zInteger.optional(),
     exp: zInteger.optional(),
     nbf: zInteger.optional(),

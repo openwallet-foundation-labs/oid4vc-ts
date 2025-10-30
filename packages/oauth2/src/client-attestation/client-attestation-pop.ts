@@ -116,12 +116,6 @@ export async function verifyClientAttestationPopJwt(options: VerifyClientAttesta
     )
   }
 
-  if (payload.aud !== options.authorizationServer) {
-    throw new Oauth2Error(
-      `Client Attestation Pop jwt contains 'aud' value '${payload.aud}', but expected authorization server identifier '${options.authorizationServer}'`
-    )
-  }
-
   const { signer } = await verifyJwt({
     signer: {
       alg: header.alg,
@@ -132,6 +126,7 @@ export async function verifyClientAttestationPopJwt(options: VerifyClientAttesta
     header,
     expectedNonce: options.expectedNonce,
     payload,
+    expectedAudience: options.authorizationServer,
     compact: options.clientAttestationPopJwt,
     verifyJwtCallback: options.callbacks.verifyJwt,
     errorMessage: 'client attestation pop jwt verification failed',
