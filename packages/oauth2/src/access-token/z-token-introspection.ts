@@ -24,7 +24,7 @@ export const zTokenIntrospectionResponse = z
     nbf: z.optional(zInteger),
 
     sub: z.optional(z.string()),
-    aud: z.optional(z.string()),
+    aud: z.optional(z.union([z.string(), z.array(z.string())])),
 
     iss: z.optional(z.string()),
     jti: z.optional(z.string()),

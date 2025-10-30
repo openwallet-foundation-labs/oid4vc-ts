@@ -18,7 +18,10 @@ export const jarmAuthorizationResponseValidate = (options: {
   }
 
   // 3. The client obtains the aud element from the JWT and checks whether it matches the client id the client used to identify itself in the corresponding authorization request. If the check fails, the client MUST abort processing and refuse the response.
-  if (expectedClientId !== authorizationResponse.aud) {
+  if (
+    (Array.isArray(authorizationResponse.aud) && !authorizationResponse.aud.includes(expectedClientId)) ||
+    (typeof authorizationResponse.aud === 'string' && authorizationResponse.aud !== expectedClientId)
+  ) {
     throw new Oauth2Error(
       `Invalid 'aud' claim in JARM authorization response. Expected '${
         expectedClientId
@@ -29,6 +32,6 @@ export const jarmAuthorizationResponseValidate = (options: {
   // 4. The client checks the JWT's exp element to determine if the JWT is still valid. If the check fails, the client MUST abort processing and refuse the response.
   // 120 seconds clock skew
   if (authorizationResponse.exp !== undefined && authorizationResponse.exp < dateToSeconds()) {
-    throw new Oauth2Error('Jarm auth response is expired.')
+    throw new Oauth2Error('JARM auth response is expired.')
   }
 }

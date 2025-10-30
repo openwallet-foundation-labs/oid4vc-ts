@@ -116,8 +116,13 @@ export async function verifyJwt(options: VerifyJwtOptions): Promise<VerifyJwtRet
     throw new Oauth2JwtVerificationError(`${errorMessage} jwt 'exp' is in the past`)
   }
 
-  if (options.expectedAudience && options.expectedAudience !== options.payload.aud) {
-    throw new Oauth2JwtVerificationError(`${errorMessage} jwt 'aud' does not match expected value.`)
+  if (options.expectedAudience) {
+    if (
+      (Array.isArray(options.payload.aud) && !options.payload.aud.includes(options.expectedAudience)) ||
+      (typeof options.payload.aud === 'string' && options.payload.aud !== options.expectedAudience)
+    ) {
+      throw new Oauth2JwtVerificationError(`${errorMessage} jwt 'aud' does not match expected value.`)
+    }
   }
 
   if (options.expectedIssuer && options.expectedIssuer !== options.payload.iss) {
