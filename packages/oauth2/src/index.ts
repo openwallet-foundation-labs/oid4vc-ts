@@ -58,7 +58,7 @@ export { HashAlgorithm } from './callbacks'
 export {
   type CreateClientAttestationJwtOptions,
   createClientAttestationJwt,
-  VerifiedClientAttestationJwt,
+  type VerifiedClientAttestationJwt,
   verifyClientAttestationJwt,
 } from './client-attestation/client-attestation'
 export type { RequestClientAttestationOptions } from './client-attestation/client-attestation-pop'
