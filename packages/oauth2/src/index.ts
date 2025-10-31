@@ -53,6 +53,7 @@ export {
 export {
   zJarRequestObjectPayload,
   signedAuthorizationRequestJwtHeaderTyp,
+  jwtAuthorizationRequestJwtHeaderTyp
 } from "./jar/z-jar-request-object";
 export type { CreateJarAuthorizationRequestOptions } from './jar/create-jar-authorization-request';
 export { createJarAuthorizationRequest } from './jar/create-jar-authorization-request';
