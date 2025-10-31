@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import type { JarAuthorizationRequest } from '../jar/z-jar-authorization-request'
+import type { Openid4vpJarAuthorizationRequest } from '../jar/z-jar-authorization-request'
 import { type Openid4vpAuthorizationRequest, zOpenid4vpAuthorizationRequest } from './z-authorization-request'
 
 const zOpenid4vpResponseModeDcApi = z.enum(['dc_api', 'dc_api.jwt', 'w3c_dc_api.jwt', 'w3c_dc_api'])
@@ -40,7 +40,7 @@ export function isOpenid4vpResponseModeDcApi(
 }
 
 export function isOpenid4vpAuthorizationRequestDcApi(
-  request: Openid4vpAuthorizationRequest | Openid4vpAuthorizationRequestDcApi | JarAuthorizationRequest
+  request: Openid4vpAuthorizationRequest | Openid4vpAuthorizationRequestDcApi | Openid4vpJarAuthorizationRequest
 ): request is Openid4vpAuthorizationRequestDcApi {
   return isOpenid4vpResponseModeDcApi(request.response_mode)
 }
