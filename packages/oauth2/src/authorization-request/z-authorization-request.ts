@@ -2,6 +2,10 @@ import { zHttpsUrl } from '@openid4vc/utils'
 import z from 'zod'
 import { zOauth2ErrorResponse } from '../common/z-oauth2-error'
 
+export const zPushedAuthorizationRequestUriPrefix = z.literal('urn:ietf:params:oauth:request_uri:')
+export const pushedAuthorizationRequestUriPrefix = zPushedAuthorizationRequestUriPrefix.value
+export type PushedAuthorizationRequestUriPrefix = z.infer<typeof zPushedAuthorizationRequestUriPrefix>
+
 // TODO: should create different request validations for different
 // response types. Currently we basically only support `code`
 export const zAuthorizationRequest = z
