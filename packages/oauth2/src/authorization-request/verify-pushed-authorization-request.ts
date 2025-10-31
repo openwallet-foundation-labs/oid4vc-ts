@@ -1,3 +1,4 @@
+import { JwtSigner } from '../common/jwt/z-jwt'
 import { verifyJarRequest } from '../jar/handle-jar-request/verify-jar-request'
 import {
   type VerifyAuthorizationRequestOptions,
@@ -7,7 +8,10 @@ import {
 
 export type VerifyPushedAuthorizationRequestReturn = VerifyAuthorizationRequestReturn
 export interface VerifyPushedAuthorizationRequestOptions extends VerifyAuthorizationRequestOptions {
-  authorizationRequestJwt?: string
+  authorizationRequestJwt?: {
+    jwt: string,
+    signer: JwtSigner
+  }
 }
 
 export async function verifyPushedAuthorizationRequest(
@@ -16,16 +20,12 @@ export async function verifyPushedAuthorizationRequest(
   const { clientAttestation, dpop } = await verifyAuthorizationRequest(options)
 
   if(options.authorizationRequestJwt) {
-    const clientPayload = clientAttestation?.clientAttestation?.payload
-    if (!clientPayload) {
-      throw new Error('Missing client-attestation payload while verifying JAR')
-    }
 
     await verifyJarRequest({ 
-      authorizationRequestJwt: options.authorizationRequestJwt,
+      authorizationRequestJwt: options.authorizationRequestJwt.jwt,
       jarRequestParams: options.authorizationRequest, 
       callbacks: options.callbacks, 
-      clientAttestationPayload: clientPayload
+      jwtSigner: options.authorizationRequestJwt.signer
     })
   }
 
