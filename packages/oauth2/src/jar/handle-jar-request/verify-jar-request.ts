@@ -104,7 +104,7 @@ export async function verifyJarRequest(options: VerifyJarRequestOptions): Promis
     })
   }
 
-  // Expect the client_id from the jar request to match the payload, but only if we're not using DC API
+  // Expect the client_id from the jar request to match the payload
   if (
     jarRequestParams.client_id !== authorizationRequestPayload.client_id
   ) {
