@@ -20,13 +20,13 @@ export interface VerifyJarRequestOptions {
   jarRequestParams: {
     client_id?: string
   }
-  jwtRequestObject: string
+  authorizationRequestJwt: string
   callbacks: Pick<CallbackContext, 'verifyJwt'>
   clientAttestationPayload: ClientAttestationJwtPayload
 }
 
 export interface ParsedJarRequest {
-  jwtRequestObject: string
+  authorizationRequestJwt: string
   sendBy: 'value' | 'reference'
 }
 
@@ -53,14 +53,14 @@ export async function parseJarRequest(options: ParsedJarRequestOptions): Promise
 
   const sendBy = jarRequestParams.request ? 'value' : 'reference'
 
-  const jwtRequestObject =
+  const authorizationRequestJwt =
     jarRequestParams.request ??
     (await fetchJarRequestObject({
       requestUri: jarRequestParams.request_uri,
       fetch: callbacks.fetch,
     }))
 
-    return {sendBy, jwtRequestObject};
+    return {sendBy, authorizationRequestJwt};
   }
 
 
@@ -73,10 +73,10 @@ export async function parseJarRequest(options: ParsedJarRequestOptions): Promise
  * @returns The verified authorization request parameters and metadata
  */
 export async function verifyJarRequest(options: VerifyJarRequestOptions): Promise<VerifiedJarRequest> {
-  const { jarRequestParams, jwtRequestObject, callbacks, clientAttestationPayload } = options
+  const { jarRequestParams, authorizationRequestJwt, callbacks, clientAttestationPayload } = options
 
   /* Encryption is not supported */
-  const requestObjectIsEncrypted = zCompactJwe.safeParse(jwtRequestObject).success
+  const requestObjectIsEncrypted = zCompactJwe.safeParse(authorizationRequestJwt).success
   if (requestObjectIsEncrypted) {
     throw new Oauth2ServerErrorResponseError({
       error: Oauth2ErrorCodes.InvalidRequestObject,
@@ -84,7 +84,7 @@ export async function verifyJarRequest(options: VerifyJarRequestOptions): Promis
     })
   }
 
-  const requestIsSigned = zCompactJwt.safeParse(jwtRequestObject).success
+  const requestIsSigned = zCompactJwt.safeParse(authorizationRequestJwt).success
   if (!requestIsSigned) {
     throw new Oauth2ServerErrorResponseError({
       error: Oauth2ErrorCodes.InvalidRequestObject,
@@ -93,7 +93,7 @@ export async function verifyJarRequest(options: VerifyJarRequestOptions): Promis
   }
 
   const { authorizationRequestPayload, signer, jwt } = await verifyJarRequestObject({
-    jwtRequestObject,
+    authorizationRequestJwt,
     callbacks,
     clientAttestationPayload
   })
@@ -151,17 +151,17 @@ async function fetchJarRequestObject(options: {
 }
 
 async function verifyJarRequestObject(options: {
-  jwtRequestObject: string
+  authorizationRequestJwt: string
   callbacks: Pick<CallbackContext, 'verifyJwt'>,
   clientAttestationPayload: ClientAttestationJwtPayload
 }) {
-  const { jwtRequestObject, callbacks } = options
+  const { authorizationRequestJwt, callbacks } = options
 
-  const jwt = decodeJwt({ jwt: jwtRequestObject, payloadSchema: zJarRequestObjectPayload })
+  const jwt = decodeJwt({ jwt: authorizationRequestJwt, payloadSchema: zJarRequestObjectPayload })
 
   const { signer } = await verifyJwt({
     verifyJwtCallback: callbacks.verifyJwt,
-    compact: jwtRequestObject,
+    compact: authorizationRequestJwt,
     header: jwt.header,
     payload: jwt.payload,
 
