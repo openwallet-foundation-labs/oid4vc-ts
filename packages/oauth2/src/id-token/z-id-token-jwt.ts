@@ -14,7 +14,7 @@ export const zIdTokenJwtPayload = z
     ...zJwtPayload.shape,
     iss: z.string(),
     sub: z.string(),
-    aud: z.string(),
+    aud: z.union([z.string(), z.array(z.string())]),
     exp: zInteger,
     iat: zInteger,
     auth_time: zInteger.optional(),

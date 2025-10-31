@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest'
-import { jwtSignerFromJwt } from '../decode-jwt.js'
+import { decodeJwt, jwtSignerFromJwt } from '../decode-jwt.js'
+import { zJwtHeader, zJwtPayload } from '../z-jwt.js'
 
 describe('Decode JWT', () => {
   describe('jwtSignerFromJwt', () => {
@@ -150,6 +151,30 @@ SUCCEEDED: method jwk`)
       ).toThrow(
         `Unable to extract signer method from jwt. Found no signer methods and 'custom' signer method is not allowed.`
       )
+    })
+  })
+
+  describe('decodeJwt', () => {
+    test('array aud', () => {
+      const jwt = decodeJwt({
+        jwt: 'eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiYXVkIjpbImZvbyIsImJhciJdLCJuYW1lIjoiSm9obiBEb2UiLCJhZG1pbiI6dHJ1ZSwiaWF0IjoxNTE2MjM5MDIyfQ.ji0QSA0yyzq4NTh4kkbR0hrcJz0blM_6V2jyD5hHWTL6XR9kbQ6lCfV8qcpQncpA4dv-NRVZjvw4t7Jlf_EqDQ',
+        headerSchema: zJwtHeader,
+        payloadSchema: zJwtPayload,
+      })
+
+      expect(jwt).toMatchObject({
+        header: {
+          alg: 'EdDSA',
+          typ: 'JWT',
+        },
+        payload: {
+          sub: '1234567890',
+          aud: ['foo', 'bar'],
+          name: 'John Doe',
+          admin: true,
+          iat: 1516239022,
+        },
+      })
     })
   })
 })

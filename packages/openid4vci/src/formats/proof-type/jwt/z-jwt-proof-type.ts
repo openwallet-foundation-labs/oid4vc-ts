@@ -31,7 +31,7 @@ export type CredentialRequestJwtProofTypeHeader = z.infer<typeof zCredentialRequ
 export const zCredentialRequestJwtProofTypePayload = z
   .object({
     ...zJwtPayload.shape,
-    aud: zHttpsUrl,
+    aud: z.union([zHttpsUrl, z.array(zHttpsUrl)]),
     iat: zInteger,
   })
   .loose()

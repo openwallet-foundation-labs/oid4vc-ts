@@ -16,7 +16,7 @@ export const zAccessTokenProfileJwtPayload = z
     iss: z.string(),
     exp: zInteger,
     iat: zInteger,
-    aud: z.string(),
+    aud: z.union([z.string(), z.array(z.string())]),
     sub: z.string(),
 
     // REQUIRED according to RFC 9068, but OpenID4VCI allows anonymous access

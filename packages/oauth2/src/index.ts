@@ -36,14 +36,21 @@ export type {
   CreatePushedAuthorizationErrorResponseOptions,
   CreatePushedAuthorizationResponseOptions,
 } from './authorization-request/create-pushed-authorization-response'
-export type {
-  ParsePushedAuthorizationRequestOptions,
-  ParsePushedAuthorizationRequestResult,
+export {
+  type ParsePushedAuthorizationRequestOptions,
+  type ParsePushedAuthorizationRequestResult,
+  parsePushedAuthorizationRequestUriReferenceValue,
 } from './authorization-request/parse-pushed-authorization-request'
 export type {
   VerifyPushedAuthorizationRequestOptions,
   VerifyPushedAuthorizationRequestReturn,
 } from './authorization-request/verify-pushed-authorization-request'
+export {
+  type PushedAuthorizationRequestUriPrefix,
+  pushedAuthorizationRequestUriPrefix,
+  zPushedAuthorizationRequestUriPrefix,
+} from './authorization-request/z-authorization-request'
+export * from './authorization-response'
 export type { JarAuthorizationRequest } from './jar/z-jar-authorization-request';
 export type { JarRequestObjectPayload } from './jar/z-jar-request-object';
 export {

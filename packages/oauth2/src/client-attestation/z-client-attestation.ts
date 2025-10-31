@@ -42,7 +42,7 @@ export const zClientAttestationPopJwtPayload = z
     ...zJwtPayload.shape,
     iss: z.string(),
     exp: zInteger,
-    aud: zHttpsUrl,
+    aud: z.union([zHttpsUrl, z.array(zHttpsUrl)]),
 
     jti: z.string(),
     nonce: z.optional(z.string()),
