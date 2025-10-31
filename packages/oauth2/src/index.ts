@@ -39,7 +39,7 @@ export type {
 export {
   type ParsePushedAuthorizationRequestOptions,
   type ParsePushedAuthorizationRequestResult,
-  parsePushedAuthorizationRequestUri,
+  parsePushedAuthorizationRequestUriReferenceValue,
 } from './authorization-request/parse-pushed-authorization-request'
 export type {
   VerifyPushedAuthorizationRequestOptions,

@@ -47,7 +47,7 @@ export function parsePushedAuthorizationRequest(
   }
 }
 
-export interface ParsePushedAuthorizationRequestUriOptions {
+export interface ParsePushedAuthorizationRequestUriReferenceValueOptions {
   uri: string
 }
 
@@ -57,7 +57,9 @@ export interface ParsePushedAuthorizationRequestUriOptions {
  *
  * @throws {Oauth2ServerErrorResponseError}
  */
-export function parsePushedAuthorizationRequestUri(options: ParsePushedAuthorizationRequestUriOptions): string {
+export function parsePushedAuthorizationRequestUriReferenceValue(
+  options: ParsePushedAuthorizationRequestUriReferenceValueOptions
+): string {
   if (!options.uri.startsWith(pushedAuthorizationRequestUriPrefix)) {
     throw new Oauth2ServerErrorResponseError({
       error: Oauth2ErrorCodes.InvalidRequest,
