@@ -24,7 +24,7 @@ export function parseAuthorizationResponseRedirectUrl(
   const searchParams = Object.fromEntries(new URL(options.url).searchParams)
 
   const parsedAuthorizationResponse = z
-    .discriminatedUnion('error', [zAuthorizationErrorResponse, zAuthorizationResponse])
+    .union([zAuthorizationErrorResponse, zAuthorizationResponse])
     .safeParse(searchParams)
 
   if (!parsedAuthorizationResponse.success) {
