@@ -44,6 +44,7 @@ export type {
   VerifyPushedAuthorizationRequestOptions,
   VerifyPushedAuthorizationRequestReturn,
 } from './authorization-request/verify-pushed-authorization-request'
+export * from './authorization-response'
 export type {
   CallbackContext,
   DecryptJweCallback,
