@@ -1,14 +1,18 @@
-
-import { ContentType, type Fetch, createFetcher } from '@openid4vc/utils'
-import { type JarRequestObjectPayload, jwtAuthorizationRequestJwtHeaderTyp, signedAuthorizationRequestJwtHeaderTyp, zJarRequestObjectPayload } from '../z-jar-request-object'
-import { JarAuthorizationRequest, validateJarRequestParams } from '../z-jar-authorization-request'
-import { CallbackContext } from '../../callbacks'
-import { JwtSigner, JwtSignerWithJwk, zCompactJwt } from '../../common/jwt/z-jwt'
+import { ContentType, createFetcher, type Fetch } from '@openid4vc/utils'
+import type { CallbackContext } from '../../callbacks'
 import { decodeJwt } from '../../common/jwt/decode-jwt'
-import { Oauth2ServerErrorResponseError } from '../../error/Oauth2ServerErrorResponseError'
-import { Oauth2ErrorCodes } from '../../common/z-oauth2-error'
 import { verifyJwt } from '../../common/jwt/verify-jwt'
 import { zCompactJwe } from '../../common/jwt/z-jwe'
+import { type JwtSigner, type JwtSignerWithJwk, zCompactJwt } from '../../common/jwt/z-jwt'
+import { Oauth2ErrorCodes } from '../../common/z-oauth2-error'
+import { Oauth2ServerErrorResponseError } from '../../error/Oauth2ServerErrorResponseError'
+import { type JarAuthorizationRequest, validateJarRequestParams } from '../z-jar-authorization-request'
+import {
+  type JarRequestObjectPayload,
+  jwtAuthorizationRequestJwtHeaderTyp,
+  signedAuthorizationRequestJwtHeaderTyp,
+  zJarRequestObjectPayload,
+} from '../z-jar-request-object'
 
 export interface ParsedJarRequestOptions {
   jarRequestParams: JarAuthorizationRequest
@@ -47,8 +51,8 @@ export async function parseJarRequest(options: ParsedJarRequestOptions): Promise
 
   const jarRequestParams = {
     ...validateJarRequestParams(options),
-    ...options.jarRequestParams
-  } as JarAuthorizationRequest & ReturnType<typeof validateJarRequestParams>;
+    ...options.jarRequestParams,
+  } as JarAuthorizationRequest & ReturnType<typeof validateJarRequestParams>
 
   const sendBy = jarRequestParams.request ? 'value' : 'reference'
 
@@ -59,9 +63,8 @@ export async function parseJarRequest(options: ParsedJarRequestOptions): Promise
       fetch: callbacks.fetch,
     }))
 
-    return {sendBy, authorizationRequestJwt};
-  }
-
+  return { sendBy, authorizationRequestJwt }
+}
 
 /**
  * Verifies a JAR (JWT Secured Authorization Request) request by validating and verifying signatures.
@@ -94,7 +97,7 @@ export async function verifyJarRequest(options: VerifyJarRequestOptions): Promis
   const { authorizationRequestPayload, signer, jwt } = await verifyJarRequestObject({
     authorizationRequestJwt,
     callbacks,
-    jwtSigner
+    jwtSigner,
   })
   if (!authorizationRequestPayload.client_id) {
     throw new Oauth2ServerErrorResponseError({
@@ -104,9 +107,7 @@ export async function verifyJarRequest(options: VerifyJarRequestOptions): Promis
   }
 
   // Expect the client_id from the jar request to match the payload
-  if (
-    jarRequestParams.client_id !== authorizationRequestPayload.client_id
-  ) {
+  if (jarRequestParams.client_id !== authorizationRequestPayload.client_id) {
     throw new Oauth2ServerErrorResponseError({
       error: Oauth2ErrorCodes.InvalidRequest,
       error_description: 'client_id does not match the request object client_id.',
@@ -116,14 +117,11 @@ export async function verifyJarRequest(options: VerifyJarRequestOptions): Promis
   return {
     jwt,
     authorizationRequestPayload,
-    signer
+    signer,
   }
 }
 
-async function fetchJarRequestObject(options: {
-  requestUri: string
-  fetch?: Fetch
-}): Promise<string> {
+async function fetchJarRequestObject(options: { requestUri: string; fetch?: Fetch }): Promise<string> {
   const { requestUri, fetch } = options
 
   const response = await createFetcher(fetch)(requestUri, {
@@ -151,7 +149,7 @@ async function fetchJarRequestObject(options: {
 
 async function verifyJarRequestObject(options: {
   authorizationRequestJwt: string
-  callbacks: Pick<CallbackContext, 'verifyJwt'>,
+  callbacks: Pick<CallbackContext, 'verifyJwt'>
   jwtSigner: JwtSigner
 }) {
   const { authorizationRequestJwt, callbacks, jwtSigner } = options
@@ -167,8 +165,11 @@ async function verifyJarRequestObject(options: {
     signer: jwtSigner,
   })
 
-  // Some existing deployments may alternatively be using both type 
-  if (jwt.header.typ !== signedAuthorizationRequestJwtHeaderTyp && jwt.header.typ !== jwtAuthorizationRequestJwtHeaderTyp) {
+  // Some existing deployments may alternatively be using both type
+  if (
+    jwt.header.typ !== signedAuthorizationRequestJwtHeaderTyp &&
+    jwt.header.typ !== jwtAuthorizationRequestJwtHeaderTyp
+  ) {
     throw new Oauth2ServerErrorResponseError({
       error: Oauth2ErrorCodes.InvalidRequestObject,
       error_description: `Invalid Jar Request Object typ header. Expected "oauth-authz-req+jwt" or "jwt", received "${jwt.header.typ}".`,

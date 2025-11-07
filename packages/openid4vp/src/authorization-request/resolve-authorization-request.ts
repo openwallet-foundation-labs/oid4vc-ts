@@ -8,8 +8,8 @@ import {
 import { fetchClientMetadata } from '../fetch-client-metadata'
 import { type VerifiedJarRequest, verifyJarRequest } from '../jar/handle-jar-request/verify-jar-request'
 import {
-  type Openid4vpJarAuthorizationRequest,
   isJarAuthorizationRequest,
+  type Openid4vpJarAuthorizationRequest,
   zOpenid4vpJarAuthorizationRequest,
 } from '../jar/z-jar-authorization-request'
 import type { PexPresentationDefinition } from '../models/z-pex'

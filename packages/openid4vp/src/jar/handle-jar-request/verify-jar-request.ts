@@ -2,22 +2,21 @@ import {
   type CallbackContext,
   type DecodeJwtResult,
   decodeJwt,
+  type JarRequestObjectPayload,
   type Jwk,
   type JwtSigner,
   type JwtSignerWithJwk,
-  type JarRequestObjectPayload,
+  jwtSignerFromJwt,
   Oauth2Error,
   Oauth2ErrorCodes,
   Oauth2ServerErrorResponseError,
-  jwtSignerFromJwt,
+  signedAuthorizationRequestJwtHeaderTyp,
   validateJarRequestParams,
   verifyJwt,
   zCompactJwe,
   zCompactJwt,
   zJarRequestObjectPayload,
-  signedAuthorizationRequestJwtHeaderTyp
 } from '@openid4vc/oauth2'
-import z from 'zod'
 import { isOpenid4vpResponseModeDcApi } from '../../authorization-request/z-authorization-request-dc-api'
 import { getOpenid4vpClientId } from '../../client-identifier-prefix/parse-client-identifier-prefix'
 import {
@@ -28,7 +27,7 @@ import {
 import type { WalletMetadata } from '../../models/z-wallet-metadata'
 import { parseAuthorizationRequestVersion } from '../../version'
 import { fetchJarRequestObject } from '../jar-request-object/fetch-jar-request-object'
-import { type Openid4vpJarAuthorizationRequest } from '../z-jar-authorization-request'
+import type { Openid4vpJarAuthorizationRequest } from '../z-jar-authorization-request'
 
 export interface VerifyJarRequestOptions {
   jarRequestParams: Openid4vpJarAuthorizationRequest
@@ -56,12 +55,12 @@ export interface VerifiedJarRequest {
  * @returns The verified authorization request parameters and metadata
  */
 export async function verifyJarRequest(options: VerifyJarRequestOptions): Promise<VerifiedJarRequest> {
-  const { callbacks, wallet = {},  } = options
+  const { callbacks, wallet = {} } = options
 
   const jarRequestParams = {
     ...validateJarRequestParams(options),
-    ...options.jarRequestParams
-  } as Openid4vpJarAuthorizationRequest & ReturnType<typeof validateJarRequestParams>;
+    ...options.jarRequestParams,
+  } as Openid4vpJarAuthorizationRequest & ReturnType<typeof validateJarRequestParams>
 
   const sendBy = jarRequestParams.request ? 'value' : 'reference'
 

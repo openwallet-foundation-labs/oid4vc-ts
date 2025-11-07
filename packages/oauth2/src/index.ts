@@ -51,19 +51,6 @@ export {
   zPushedAuthorizationRequestUriPrefix,
 } from './authorization-request/z-authorization-request'
 export * from './authorization-response'
-export type { JarAuthorizationRequest } from './jar/z-jar-authorization-request';
-export type { JarRequestObjectPayload } from './jar/z-jar-request-object';
-export {
-  zJarAuthorizationRequest,
-  validateJarRequestParams,
-} from "./jar/z-jar-authorization-request";
-export {
-  zJarRequestObjectPayload,
-  signedAuthorizationRequestJwtHeaderTyp,
-  jwtAuthorizationRequestJwtHeaderTyp
-} from "./jar/z-jar-request-object";
-export type { CreateJarAuthorizationRequestOptions } from './jar/create-jar-authorization-request';
-export { createJarAuthorizationRequest } from './jar/create-jar-authorization-request';
 export type {
   CallbackContext,
   DecryptJweCallback,
@@ -148,6 +135,19 @@ export {
 } from './error/Oauth2ResourceUnauthorizedError'
 export { Oauth2ServerErrorResponseError } from './error/Oauth2ServerErrorResponseError'
 export * from './id-token'
+export type { CreateJarAuthorizationRequestOptions } from './jar/create-jar-authorization-request'
+export { createJarAuthorizationRequest } from './jar/create-jar-authorization-request'
+export type { JarAuthorizationRequest } from './jar/z-jar-authorization-request'
+export {
+  validateJarRequestParams,
+  zJarAuthorizationRequest,
+} from './jar/z-jar-authorization-request'
+export type { JarRequestObjectPayload } from './jar/z-jar-request-object'
+export {
+  jwtAuthorizationRequestJwtHeaderTyp,
+  signedAuthorizationRequestJwtHeaderTyp,
+  zJarRequestObjectPayload,
+} from './jar/z-jar-request-object'
 export {
   fetchAuthorizationServerMetadata,
   getAuthorizationServerMetadataFromList,

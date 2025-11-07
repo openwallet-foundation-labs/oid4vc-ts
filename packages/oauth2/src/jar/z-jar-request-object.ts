@@ -1,5 +1,5 @@
-import { zJwtPayload } from '../common/jwt/z-jwt'
 import { z } from 'zod'
+import { zJwtPayload } from '../common/jwt/z-jwt'
 
 export const zJarRequestObjectPayload = z
   .object({
@@ -8,7 +8,6 @@ export const zJarRequestObjectPayload = z
   })
   .loose()
 export type JarRequestObjectPayload = z.infer<typeof zJarRequestObjectPayload>
-
 
 const zSignedAuthorizationRequestJwtHeaderTyp = z.literal('oauth-authz-req+jwt')
 export const signedAuthorizationRequestJwtHeaderTyp = zSignedAuthorizationRequestJwtHeaderTyp.value
