@@ -1,3 +1,4 @@
+import { Buffer } from 'node:buffer'
 import { HashAlgorithm, Oauth2ErrorCodes, Oauth2ServerErrorResponseError } from '@openid4vc/oauth2'
 import { describe, expect, test } from 'vitest'
 import { callbacks } from '../../../oauth2/tests/util.mjs'
