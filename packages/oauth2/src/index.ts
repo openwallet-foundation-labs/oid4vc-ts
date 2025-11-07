@@ -135,6 +135,33 @@ export {
 } from './error/Oauth2ResourceUnauthorizedError'
 export { Oauth2ServerErrorResponseError } from './error/Oauth2ServerErrorResponseError'
 export * from './id-token'
+export type {
+  CreateInteractiveAuthorizationCodeResponseOptions,
+  CreateInteractiveAuthorizationErrorResponseOptions,
+  CreateInteractiveAuthorizationOpenid4vpInteractionOptions,
+  CreateInteractiveAuthorizationRedirectToWebInteractionOptions,
+} from './interactive-authorization/create-interactive-authorization-response'
+export type {
+  ParseInteractiveAuthorizationRequestOptions,
+  ParseInteractiveAuthorizationRequestResult,
+} from './interactive-authorization/parse-interactive-authorization-request'
+export type { SendInteractiveAuthorizationRequestOptions } from './interactive-authorization/send-interactive-authorization-request'
+export type {
+  VerifyInteractiveAuthorizationRequestOptions,
+  VerifyInteractiveAuthorizationRequestReturn,
+} from './interactive-authorization/verify-interactive-authorization-request'
+export {
+  type InteractiveAuthorizationCodeResponse,
+  InteractiveAuthorizationErrorCodes,
+  type InteractiveAuthorizationErrorResponse,
+  type InteractiveAuthorizationFollowUpRequest,
+  type InteractiveAuthorizationInteractionRequiredResponse,
+  type InteractiveAuthorizationRequest,
+  type InteractiveAuthorizationResponse,
+  type InteractiveAuthorizationResponseStatus,
+  type InteractiveAuthorizationType,
+  type Openid4vpRequest,
+} from './interactive-authorization/z-interactive-authorization'
 export type { CreateJarAuthorizationRequestOptions } from './jar/create-jar-authorization-request'
 export { createJarAuthorizationRequest } from './jar/create-jar-authorization-request'
 export type { JarAuthorizationRequest } from './jar/z-jar-authorization-request'

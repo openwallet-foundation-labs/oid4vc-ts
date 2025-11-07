@@ -47,6 +47,8 @@ import { Openid4vciDraftVersion } from './version'
 export enum AuthorizationFlow {
   Oauth2Redirect = 'Oauth2Redirect',
   PresentationDuringIssuance = 'PresentationDuringIssuance',
+  InteractiveAuthorizationOpenid4vp = 'InteractiveAuthorizationOpenid4vp',
+  InteractiveAuthorizationRedirectToWeb = 'InteractiveAuthorizationRedirectToWeb',
 }
 
 export interface Openid4vciClientOptions {
@@ -138,8 +140,69 @@ export class Openid4vciClient {
   }
 
   /**
+   * Retrieve authorization code using Interactive Authorization Endpoint after OpenID4VP presentation
+   *
+   * This method is used when the Interactive Authorization Endpoint requires an OpenID4VP presentation.
+   * After completing the presentation, call this method with the auth_session and the openid4vp_response.
+   *
+   * @param options - Options including auth_session and openid4vp_response
+   * @returns The authorization code
+   */
+  public async retrieveAuthorizationCodeUsingInteractiveAuthorization(options: {
+    authSession: string
+    openid4vpResponse?: string
+    credentialOffer: CredentialOfferObject
+    issuerMetadata: IssuerMetadataResult
+    dpop?: RequestDpopOptions
+  }) {
+    const authorizationCodeGrant = options.credentialOffer.grants?.[authorizationCodeGrantIdentifier]
+    if (!authorizationCodeGrant) {
+      throw new Oauth2Error(`Provided credential offer does not include the 'authorization_code' grant.`)
+    }
+
+    const authorizationServer = determineAuthorizationServerForCredentialOffer({
+      issuerMetadata: options.issuerMetadata,
+      grantAuthorizationServer: authorizationCodeGrant.authorization_server,
+    })
+
+    const authorizationServerMetadata = getAuthorizationServerMetadataFromList(
+      options.issuerMetadata.authorizationServers,
+      authorizationServer
+    )
+
+    if (!authorizationServerMetadata.interactive_authorization_endpoint) {
+      throw new Openid4vciError('Authorization server does not support interactive authorization endpoint')
+    }
+
+    const oauth2Client = new Oauth2Client({ callbacks: this.options.callbacks })
+
+    const { response, dpop } = await oauth2Client.sendInteractiveAuthorizationRequest({
+      authorizationServerMetadata,
+      request: {
+        auth_session: options.authSession,
+        openid4vp_response: options.openid4vpResponse,
+      },
+      dpop: options.dpop,
+    })
+
+    if (!response) {
+      throw new Openid4vciError('Interactive authorization request did not return a response')
+    }
+
+    if (response.status !== 'ok') {
+      throw new Openid4vciError(`Interactive authorization did not complete successfully: ${JSON.stringify(response)}`)
+    }
+
+    return {
+      authorizationCode: response.code,
+      dpop,
+    }
+  }
+
+  /**
    * Initiates authorization for credential issuance. It handles the following cases:
-   * - Authorization Challenge
+   * - Interactive Authorization Endpoint (OpenID4VCI 1.1)
+   * - Authorization Challenge (OAuth 2.0 First-Party Applications)
    * - Pushed Authorization Request
    * - Regular Authorization url
    *
