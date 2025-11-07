@@ -57,6 +57,7 @@ export {
   type GetOpenid4vpClientIdOptions,
   getOpenid4vpClientId,
 } from './client-identifier-prefix/parse-client-identifier-prefix'
+export { calculateX509HashClientIdPrefixValue } from './client-identifier-prefix/x509-hash'
 export { type ClientIdPrefix, zClientIdPrefix } from './client-identifier-prefix/z-client-id-prefix'
 export {
   JarmMode,

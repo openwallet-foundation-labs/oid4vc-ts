@@ -1,10 +1,5 @@
-import {
-  type CallbackContext,
-  HashAlgorithm,
-  Oauth2ErrorCodes,
-  Oauth2ServerErrorResponseError,
-} from '@openid4vc/oauth2'
-import { decodeBase64, encodeToBase64Url, URL, zHttpsUrl } from '@openid4vc/utils'
+import { type CallbackContext, Oauth2ErrorCodes, Oauth2ServerErrorResponseError } from '@openid4vc/oauth2'
+import { URL, zHttpsUrl } from '@openid4vc/utils'
 import type { Openid4vpAuthorizationRequest } from '../authorization-request/z-authorization-request'
 import {
   isOpenid4vpAuthorizationRequestDcApi,
@@ -14,6 +9,7 @@ import {
 import type { VerifiedJarRequest } from '../jar/handle-jar-request/verify-jar-request'
 import type { ClientMetadata } from '../models/z-client-metadata'
 import type { Openid4vpVersionNumber } from '../version'
+import { calculateX509HashClientIdPrefixValue } from './x509-hash'
 import {
   type ClientIdPrefix,
   type LegacyClientIdScheme,
@@ -507,9 +503,10 @@ export async function validateOpenid4vpClientId(
         }
       }
     } else if (clientIdPrefix === 'x509_hash') {
-      const x509Hash = encodeToBase64Url(
-        await options.callbacks.hash(decodeBase64(jar.signer.x5c[0]), HashAlgorithm.Sha256)
-      )
+      const x509Hash = await calculateX509HashClientIdPrefixValue({
+        hash: options.callbacks.hash,
+        x509Certificate: jar.signer.x5c[0],
+      })
 
       if (x509Hash !== clientIdIdentifier) {
         throw new Oauth2ServerErrorResponseError({
