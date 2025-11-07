@@ -37,9 +37,9 @@ const zClaimDescriptionPathValue = z.union([z.string(), z.number().int().nonnega
 const zClaimsDescriptionPath = z.tuple([zClaimDescriptionPathValue], zClaimDescriptionPathValue)
 export type ClaimsDescriptionPath = z.infer<typeof zClaimsDescriptionPath>
 
-const zMsoMdocClaimsDescriptionPath = z.tuple([z.string(), z.string()], {
+const zMsoMdocClaimsDescriptionPath = z.tuple([z.string(), z.string()], z.string(), {
   message:
-    'mso_mdoc claims description path MUST be an array with exactly two string elements, pointing to the namespace and element identifier within an mdoc credential',
+    'mso_mdoc claims description path MUST be an array with at least two string elements, pointing to the namespace and element identifier within an mdoc credential',
 })
 export type MsoMdocClaimsDescriptionPath = z.infer<typeof zMsoMdocClaimsDescriptionPath>
 
