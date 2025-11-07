@@ -154,7 +154,7 @@ async function decryptJarRequest(options: { jwe: string; callbacks: Pick<Callbac
   const decryptionResult = await callbacks.decryptJwe(jwe)
   if (!decryptionResult.decrypted) {
     throw new Oauth2ServerErrorResponseError({
-      error: 'invalid_request_object',
+      error: Oauth2ErrorCodes.InvalidRequestObject,
       error_description: 'Failed to decrypt jar request object.',
     })
   }

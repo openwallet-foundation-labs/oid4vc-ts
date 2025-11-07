@@ -1,13 +1,23 @@
 import type { JwtSigner } from '../common/jwt/z-jwt'
-import { verifyJarRequest } from '../jar/handle-jar-request/verify-jar-request'
+import { type VerifiedJarRequest, verifyJarRequest } from '../jar/handle-jar-request/verify-jar-request'
 import {
   type VerifyAuthorizationRequestOptions,
   type VerifyAuthorizationRequestReturn,
   verifyAuthorizationRequest,
 } from './verify-authorization-request'
 
-export type VerifyPushedAuthorizationRequestReturn = VerifyAuthorizationRequestReturn
+export interface VerifyPushedAuthorizationRequestReturn extends VerifyAuthorizationRequestReturn {
+  /**
+   * The verified JAR request, if `authorizationRequestJwt` was provided
+   */
+  jar?: VerifiedJarRequest
+}
+
 export interface VerifyPushedAuthorizationRequestOptions extends VerifyAuthorizationRequestOptions {
+  /**
+   * The authorization request JWT to verify. If this value was returned from `parsePushedAuthorizationRequest`
+   * you MUST provide this value to ensure the JWT is verified.
+   */
   authorizationRequestJwt?: {
     jwt: string
     signer: JwtSigner
@@ -17,10 +27,9 @@ export interface VerifyPushedAuthorizationRequestOptions extends VerifyAuthoriza
 export async function verifyPushedAuthorizationRequest(
   options: VerifyPushedAuthorizationRequestOptions
 ): Promise<VerifyPushedAuthorizationRequestReturn> {
-  const { clientAttestation, dpop } = await verifyAuthorizationRequest(options)
-
+  let jar: VerifiedJarRequest | undefined
   if (options.authorizationRequestJwt) {
-    await verifyJarRequest({
+    jar = await verifyJarRequest({
       authorizationRequestJwt: options.authorizationRequestJwt.jwt,
       jarRequestParams: options.authorizationRequest,
       callbacks: options.callbacks,
@@ -28,8 +37,11 @@ export async function verifyPushedAuthorizationRequest(
     })
   }
 
+  const { clientAttestation, dpop } = await verifyAuthorizationRequest(options)
+
   return {
     dpop,
     clientAttestation,
+    jar,
   }
 }

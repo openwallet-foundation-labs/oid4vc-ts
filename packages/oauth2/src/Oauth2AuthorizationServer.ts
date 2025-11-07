@@ -171,6 +171,11 @@ export class Oauth2AuthorizationServer {
     return await parsePushedAuthorizationRequest(options)
   }
 
+  /**
+   * Verify pushed authorization request.
+   *
+   * Make sure to provide the `authorizationRequestJwt` if this was returned in the `parsePushedAuthorizationRequest`
+   */
   public verifyPushedAuthorizationRequest(options: Omit<VerifyPushedAuthorizationRequestOptions, 'callbacks'>) {
     return verifyPushedAuthorizationRequest({
       ...options,

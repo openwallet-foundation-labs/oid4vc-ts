@@ -1,5 +1,6 @@
 import { zHttpsUrl } from '@openid4vc/utils'
 import { z } from 'zod'
+import { Oauth2ErrorCodes } from '../common/z-oauth2-error'
 import { Oauth2ServerErrorResponseError } from '../error/Oauth2ServerErrorResponseError'
 
 export const zJarAuthorizationRequest = z
@@ -8,7 +9,7 @@ export const zJarAuthorizationRequest = z
     request_uri: z.optional(zHttpsUrl),
     client_id: z.optional(z.string()),
   })
-  .passthrough()
+  .loose()
 export type JarAuthorizationRequest = z.infer<typeof zJarAuthorizationRequest>
 
 export function validateJarRequestParams(options: { jarRequestParams: JarAuthorizationRequest }) {
@@ -16,14 +17,14 @@ export function validateJarRequestParams(options: { jarRequestParams: JarAuthori
 
   if (jarRequestParams.request && jarRequestParams.request_uri) {
     throw new Oauth2ServerErrorResponseError({
-      error: 'invalid_request_object',
+      error: Oauth2ErrorCodes.InvalidRequestObject,
       error_description: 'request and request_uri cannot both be present in a JAR request',
     })
   }
 
   if (!jarRequestParams.request && !jarRequestParams.request_uri) {
     throw new Oauth2ServerErrorResponseError({
-      error: 'invalid_request_object',
+      error: Oauth2ErrorCodes.InvalidRequestObject,
       error_description: 'request or request_uri must be present',
     })
   }

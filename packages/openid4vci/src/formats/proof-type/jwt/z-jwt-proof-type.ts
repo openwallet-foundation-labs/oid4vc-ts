@@ -12,12 +12,10 @@ export const zCredentialRequestProofJwt = z.object({
 })
 
 export const zCredentialRequestJwtProofTypeHeader = zJwtHeader
-  .merge(
-    z.object({
-      key_attestation: z.optional(zCompactJwt),
-      typ: z.literal('openid4vci-proof+jwt'),
-    })
-  )
+  .extend({
+    key_attestation: z.optional(zCompactJwt),
+    typ: z.literal('openid4vci-proof+jwt'),
+  })
   .loose()
   .refine(({ kid, jwk }) => jwk === undefined || kid === undefined, {
     message: `Both 'jwk' and 'kid' are defined. Only one is allowed`,
