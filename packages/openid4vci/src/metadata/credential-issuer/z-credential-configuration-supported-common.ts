@@ -26,9 +26,11 @@ const zCredentialConfigurationSupportedDisplayEntry = z
   })
   .loose()
 
-export const zCredentialConfigurationSupportedCommonCredentialMetadata = z.object({
-  display: z.array(zCredentialConfigurationSupportedDisplayEntry).optional(),
-})
+export const zCredentialConfigurationSupportedCommonCredentialMetadata = z
+  .object({
+    display: z.array(zCredentialConfigurationSupportedDisplayEntry).optional(),
+  })
+  .loose()
 
 export const zCredentialConfigurationSupportedCommon = z
   .object({
@@ -54,7 +56,7 @@ export const zCredentialConfigurationSupportedCommon = z
     credential_metadata: zCredentialConfigurationSupportedCommonCredentialMetadata.optional(),
 
     // For typing purposes. Can be removed once we drop support for draft <= 15.
-    claims: z.optional(z.never()),
+    // claims: z.optional(z.never()),
   })
   .loose()
 
