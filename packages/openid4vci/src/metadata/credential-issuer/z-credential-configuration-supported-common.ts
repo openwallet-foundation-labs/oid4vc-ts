@@ -54,9 +54,6 @@ export const zCredentialConfigurationSupportedCommon = z
       )
       .optional(),
     credential_metadata: zCredentialConfigurationSupportedCommonCredentialMetadata.optional(),
-
-    // For typing purposes. Can be removed once we drop support for draft <= 15.
-    // claims: z.optional(z.never()),
   })
   .loose()
 
