@@ -2,6 +2,7 @@ import {
   type CallbackContext,
   type DecodeJwtResult,
   decodeJwt,
+  type JarRequestObjectPayload,
   type Jwk,
   type JwtSigner,
   type JwtSignerWithJwk,
@@ -9,11 +10,13 @@ import {
   Oauth2Error,
   Oauth2ErrorCodes,
   Oauth2ServerErrorResponseError,
+  signedAuthorizationRequestJwtHeaderTyp,
+  validateJarRequestParams,
   verifyJwt,
   zCompactJwe,
   zCompactJwt,
+  zJarRequestObjectPayload,
 } from '@openid4vc/oauth2'
-import z from 'zod'
 import { isOpenid4vpResponseModeDcApi } from '../../authorization-request/z-authorization-request-dc-api'
 import { getOpenid4vpClientId } from '../../client-identifier-prefix/parse-client-identifier-prefix'
 import {
@@ -24,11 +27,10 @@ import {
 import type { WalletMetadata } from '../../models/z-wallet-metadata'
 import { parseAuthorizationRequestVersion } from '../../version'
 import { fetchJarRequestObject } from '../jar-request-object/fetch-jar-request-object'
-import { type JarRequestObjectPayload, zJarRequestObjectPayload } from '../jar-request-object/z-jar-request-object'
-import { type JarAuthorizationRequest, validateJarRequestParams } from '../z-jar-authorization-request'
+import type { Openid4vpJarAuthorizationRequest } from '../z-jar-authorization-request'
 
 export interface VerifyJarRequestOptions {
-  jarRequestParams: JarAuthorizationRequest
+  jarRequestParams: Openid4vpJarAuthorizationRequest
   callbacks: Pick<CallbackContext, 'verifyJwt' | 'decryptJwe' | 'fetch'>
   wallet?: {
     metadata?: WalletMetadata
@@ -44,9 +46,6 @@ export interface VerifiedJarRequest {
   jwt: DecodeJwtResult<undefined, typeof zJarRequestObjectPayload>
 }
 
-const zSignedAuthorizationRequestJwtHeaderTyp = z.literal('oauth-authz-req+jwt')
-export const signedAuthorizationRequestJwtHeaderTyp = zSignedAuthorizationRequestJwtHeaderTyp.value
-
 /**
  * Verifies a JAR (JWT Secured Authorization Request) request by validating, decrypting, and verifying signatures.
  *
@@ -58,7 +57,10 @@ export const signedAuthorizationRequestJwtHeaderTyp = zSignedAuthorizationReques
 export async function verifyJarRequest(options: VerifyJarRequestOptions): Promise<VerifiedJarRequest> {
   const { callbacks, wallet = {} } = options
 
-  const jarRequestParams = validateJarRequestParams(options)
+  const jarRequestParams = {
+    ...validateJarRequestParams(options),
+    ...options.jarRequestParams,
+  } as Openid4vpJarAuthorizationRequest & ReturnType<typeof validateJarRequestParams>
 
   const sendBy = jarRequestParams.request ? 'value' : 'reference'
 
@@ -152,7 +154,7 @@ async function decryptJarRequest(options: { jwe: string; callbacks: Pick<Callbac
   const decryptionResult = await callbacks.decryptJwe(jwe)
   if (!decryptionResult.decrypted) {
     throw new Oauth2ServerErrorResponseError({
-      error: 'invalid_request_object',
+      error: Oauth2ErrorCodes.InvalidRequestObject,
       error_description: 'Failed to decrypt jar request object.',
     })
   }
@@ -223,7 +225,7 @@ async function verifyJarRequestObject(options: {
 
   // biome-ignore lint/suspicious/noExplicitAny: no explanation
   const version = parseAuthorizationRequestVersion(jwt.payload as any)
-  if (jwt.header.typ !== 'oauth-authz-req+jwt' && version >= 24) {
+  if (jwt.header.typ !== signedAuthorizationRequestJwtHeaderTyp && version >= 24) {
     throw new Oauth2ServerErrorResponseError({
       error: Oauth2ErrorCodes.InvalidRequestObject,
       error_description: `Invalid Jar Request Object typ header. Expected "oauth-authz-req+jwt", received "${jwt.header.typ}".`,

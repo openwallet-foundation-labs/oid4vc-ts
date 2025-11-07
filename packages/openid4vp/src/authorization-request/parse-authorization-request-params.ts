@@ -3,8 +3,8 @@ import { parseWithErrorHandling } from '@openid4vc/utils'
 import z from 'zod'
 import {
   isJarAuthorizationRequest,
-  type JarAuthorizationRequest,
-  zJarAuthorizationRequest,
+  type Openid4vpJarAuthorizationRequest,
+  zOpenid4vpJarAuthorizationRequest,
 } from '../jar/z-jar-authorization-request'
 import {
   type Openid4vpAuthorizationRequest,
@@ -20,7 +20,7 @@ import {
 export interface ParsedJarRequest {
   type: 'jar'
   provided: 'uri' | 'jwt' | 'params'
-  params: JarAuthorizationRequest
+  params: Openid4vpJarAuthorizationRequest
 }
 
 export interface ParsedOpenid4vpAuthorizationRequest {
@@ -65,7 +65,7 @@ export function parseOpenid4vpAuthorizationRequest(
   }
 
   const parsedRequest = parseWithErrorHandling(
-    z.union([zOpenid4vpAuthorizationRequest, zJarAuthorizationRequest, zOpenid4vpAuthorizationRequestDcApi]),
+    z.union([zOpenid4vpAuthorizationRequest, zOpenid4vpJarAuthorizationRequest, zOpenid4vpAuthorizationRequestDcApi]),
     params
   )
 

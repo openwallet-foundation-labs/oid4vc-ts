@@ -1,12 +1,8 @@
-import {
-  type CallbackContext,
-  type JweEncryptor,
-  type Jwk,
-  type JwtPayload,
-  type JwtSigner,
-  jwtHeaderFromJwtSigner,
-} from '@openid4vc/oauth2'
 import { addSecondsToDate, dateToSeconds } from '@openid4vc/utils'
+import type { CallbackContext } from '../callbacks'
+import type { Jwk } from '../common/jwk/z-jwk'
+import { jwtHeaderFromJwtSigner } from '../common/jwt/decode-jwt'
+import type { JweEncryptor, JwtPayload, JwtSigner } from '../common/jwt/z-jwt'
 import type { JarAuthorizationRequest } from './z-jar-authorization-request'
 
 export interface CreateJarAuthorizationRequestOptions {

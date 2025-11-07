@@ -9,8 +9,8 @@ import { fetchClientMetadata } from '../fetch-client-metadata'
 import { type VerifiedJarRequest, verifyJarRequest } from '../jar/handle-jar-request/verify-jar-request'
 import {
   isJarAuthorizationRequest,
-  type JarAuthorizationRequest,
-  zJarAuthorizationRequest,
+  type Openid4vpJarAuthorizationRequest,
+  zOpenid4vpJarAuthorizationRequest,
 } from '../jar/z-jar-authorization-request'
 import type { PexPresentationDefinition } from '../models/z-pex'
 import { type ParsedTransactionDataEntry, parseTransactionData } from '../transaction-data/parse-transaction-data'
@@ -31,7 +31,7 @@ export interface ResolveOpenid4vpAuthorizationRequestOptions {
   authorizationRequestPayload:
     | Openid4vpAuthorizationRequest
     | Openid4vpAuthorizationRequestDcApi
-    | JarAuthorizationRequest
+    | Openid4vpJarAuthorizationRequest
   wallet?: WalletVerificationOptions
   origin?: string
   disableOriginValidation?: boolean
@@ -67,7 +67,7 @@ export async function resolveOpenid4vpAuthorizationRequest(
     | (Openid4vpAuthorizationRequestDcApi & { presentation_definition_uri?: never })
 
   const parsed = parseWithErrorHandling(
-    z.union([zOpenid4vpAuthorizationRequestDcApi, zOpenid4vpAuthorizationRequest, zJarAuthorizationRequest]),
+    z.union([zOpenid4vpAuthorizationRequestDcApi, zOpenid4vpAuthorizationRequest, zOpenid4vpJarAuthorizationRequest]),
     options.authorizationRequestPayload,
     'Invalid authorization request. Could not parse openid4vp authorization request as openid4vp or jar auth request.'
   )

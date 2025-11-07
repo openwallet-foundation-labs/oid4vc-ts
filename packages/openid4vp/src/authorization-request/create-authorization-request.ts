@@ -1,9 +1,10 @@
-import { type CallbackContext, Oauth2Error } from '@openid4vc/oauth2'
-import { objectToQueryParams, parseWithErrorHandling, URL, URLSearchParams } from '@openid4vc/utils'
 import {
+  type CallbackContext,
   type CreateJarAuthorizationRequestOptions,
   createJarAuthorizationRequest,
-} from '../jar/create-jar-authorization-request'
+  Oauth2Error,
+} from '@openid4vc/oauth2'
+import { objectToQueryParams, parseWithErrorHandling, URL, URLSearchParams } from '@openid4vc/utils'
 import {
   validateOpenid4vpAuthorizationRequestPayload,
   type WalletVerificationOptions,
