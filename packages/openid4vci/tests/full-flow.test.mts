@@ -517,7 +517,6 @@ describe('Full E2E test', () => {
               method: request.method as HttpMethod,
               url: request.url,
             },
-            callbacks,
           })
 
         const verifiedParRequest = await authorizationServer.verifyPushedAuthorizationRequest({
