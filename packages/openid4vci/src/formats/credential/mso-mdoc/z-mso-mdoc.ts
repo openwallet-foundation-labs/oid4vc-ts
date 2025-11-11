@@ -15,6 +15,7 @@ export type MsoMdocFormatIdentifier = z.infer<typeof zMsoMdocFormatIdentifier>
 export const zMsoMdocCredentialIssuerMetadata = zCredentialConfigurationSupportedCommon.extend({
   format: zMsoMdocFormatIdentifier,
   doctype: z.string(),
+  credential_signing_alg_values_supported: z.array(z.number()).optional(),
   credential_metadata: zCredentialConfigurationSupportedCommonCredentialMetadata
     .extend({
       claims: z.array(zMsoMdocIssuerMetadataClaimsDescription).optional(),

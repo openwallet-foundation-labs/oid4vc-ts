@@ -4,7 +4,7 @@ import { paradymDraft13 } from '../../../__tests__/__fixtures__/paradym.js'
 import {
   zCredentialConfigurationSupportedWithFormats,
   zCredentialIssuerMetadata,
-  zCredentialIssuerMetadataDraft11To16,
+  zCredentialIssuerMetadataDraft11ToV1,
 } from '../z-credential-issuer-metadata.js'
 
 describe('Credential Issuer Metadata', () => {
@@ -203,7 +203,7 @@ describe('Credential Issuer Metadata', () => {
       },
     }
 
-    const parseResult = zCredentialIssuerMetadataDraft11To16.safeParse({
+    const parseResult = zCredentialIssuerMetadataDraft11ToV1.safeParse({
       credential_endpoint: 'https://credential-issuer.com/credential',
       credential_issuer: 'https://credential-issuer.com',
       credentials_supported,

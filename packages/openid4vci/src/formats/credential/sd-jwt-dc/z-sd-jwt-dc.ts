@@ -12,6 +12,7 @@ export type SdJwtDcFormatIdentifier = z.infer<typeof zSdJwtDcFormatIdentifier>
 export const zSdJwtDcCredentialIssuerMetadata = zCredentialConfigurationSupportedCommon.extend({
   vct: z.string(),
   format: zSdJwtDcFormatIdentifier,
+  credential_signing_alg_values_supported: z.array(z.string()).optional(),
   credential_metadata: zCredentialConfigurationSupportedCommonCredentialMetadata
     .extend({
       claims: z.array(zIssuerMetadataClaimsDescription).optional(),

@@ -163,7 +163,7 @@ export const zCredentialIssuerMetadataDraft14Draft15V1 = z
 
 // Transforms credential supported to credential configuration supported format
 // Ignores unknown formats
-export const zCredentialConfigurationSupportedDraft11To16 = z
+export const zCredentialConfigurationSupportedDraft11ToV1 = z
   .object({
     id: z.string().optional(),
     format: z.string(),
@@ -324,7 +324,7 @@ const zCredentialConfigurationSupportedV1ToDraft11 = zCredentialConfigurationSup
     ])
   )
 
-export const zCredentialIssuerMetadataDraft11To16 = z
+export const zCredentialIssuerMetadataDraft11ToV1 = z
   .object({
     authorization_server: z.string().optional(),
     credentials_supported: z.array(
@@ -352,7 +352,7 @@ export const zCredentialIssuerMetadataDraft11To16 = z
     z
       .object({
         // Update from v11 structure to v14 structure
-        credential_configurations_supported: z.record(z.string(), zCredentialConfigurationSupportedDraft11To16),
+        credential_configurations_supported: z.record(z.string(), zCredentialConfigurationSupportedDraft11ToV1),
       })
       .loose()
   )
@@ -387,7 +387,7 @@ export const zCredentialIssuerMetadata = z.union([
   // First prioritize draft 16/15/14 (and 13)
   zCredentialIssuerMetadataDraft14Draft15V1,
   // Then try parsing draft 11 and transform into draft 16
-  zCredentialIssuerMetadataDraft11To16,
+  zCredentialIssuerMetadataDraft11ToV1,
 ])
 
 export const zCredentialIssuerMetadataWithDraftVersion = z.union([
@@ -411,9 +411,15 @@ export const zCredentialIssuerMetadataWithDraftVersion = z.union([
       return false
     })
 
-    // Added in draft 16, but since there's no other breaking changes
     // we assume V1 is used when we detect V1
-    const isV1 = credentialConfigurations.some((configuration) => configuration.credential_metadata)
+    const isV1 = credentialConfigurations.some(
+      (configuration) =>
+        // Added in draft 16, but since there's no other breaking changes
+        configuration.credential_metadata ||
+        // Was changed to COSE algorithms in Draft 16 (which we detect as v1)
+        (configuration.format === 'mso_mdoc' &&
+          configuration.credential_signing_alg_values_supported?.some((supported) => typeof supported === 'number'))
+    )
 
     return {
       credentialIssuerMetadata,
@@ -425,7 +431,7 @@ export const zCredentialIssuerMetadataWithDraftVersion = z.union([
     }
   }),
   // Then try parsing draft 11 and transform into draft 16
-  zCredentialIssuerMetadataDraft11To16.transform((credentialIssuerMetadata) => ({
+  zCredentialIssuerMetadataDraft11ToV1.transform((credentialIssuerMetadata) => ({
     credentialIssuerMetadata,
     originalDraftVersion: Openid4vciDraftVersion.Draft11,
   })),
