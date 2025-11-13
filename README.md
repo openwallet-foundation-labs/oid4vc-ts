@@ -37,6 +37,7 @@ An implementation of the [OAuth 2.0 Authorization Framework](https://datatracker
 - [RFC 7662 - OAuth 2.0 Token Introspection](https://datatracker.ietf.org/doc/html/rfc7662)
 - [RFC 9068 JSON Web Token (JWT) Profile for OAuth 2.0 Access Tokens](https://datatracker.ietf.org/doc/html/rfc9068)
 - [RFC 8707 - Resource Indicators for OAuth 2.0](https://www.rfc-editor.org/rfc/rfc8707.html)
+- [OAuth 2.0 Attestation-Based Client Authentication](https://www.ietf.org/archive/id/draft-ietf-oauth-attestation-based-client-auth-07.html)
 
 ```ts
 import {
@@ -54,9 +55,11 @@ An implementation of the [OpenID for Verifiable Credential Issuance](https://ope
 
 - Authorization Code Flow and Pre-Authorized Code Flow
 - Credential format profiles `vc+sd-jwt`, `dc+sd-jwt`, `mso_mdoc`, `jwt_vc_json`, `jwt_vc_json-ld`, and `ldp_vc` (only object validation, no credential implementation)
-- Proof type `jwt`
-- Draft 16, with backwards compatibility for draft 14, draft 13 (ID1), and draft 11
+- Proof type `jwt` and `attestation`
+- V1.0 with backwards compatibility for draft 15, draft 14, draft 13 (ID1), and draft 11
 - Support presentation during issuance using Authorization Challenge and OpenID4VP.
+- Create and verify wallet attestations based on attestation-based client authentication.
+- Resolve and create signed credential issuer metadata
 
 ```ts
 import {
@@ -75,7 +78,7 @@ An implementation of the [OpenID for Verifiable Presentations](https://openid.ne
 - Support for response mode `direct_post`, `direct_post.jwt`, `dc_api` and `dc_api.jwt`
 - No out of the box support for Presentation Exchange or DCQL, this needs to be provided using e.g. [dcql-ts](https://github.com/openwallet-foundation-labs/dcql-ts) or [PEX](https://github.com/Sphereon-Opensource/PEX).
 - Transaction Data
-- Supports OpenID4VP Draft 18 to 24
+- V1.0 with backward compatibility until Draft 18
 - Support for JWT Secured Authorization Request (JAR)
 - Support for JWT Secure Authorization Response Mode (JARM)
 
