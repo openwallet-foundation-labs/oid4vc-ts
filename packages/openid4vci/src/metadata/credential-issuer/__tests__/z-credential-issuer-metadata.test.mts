@@ -199,7 +199,9 @@ describe('Credential Issuer Metadata', () => {
       'mso-mdoc': {
         format: 'mso_mdoc',
         doctype: 'some.doc.type',
-        credential_signing_alg_values_supported: ['EdDSA', 'ES256'],
+        // For mso_mdoc, JOSE algorithms are transformed to COSE numbers
+        // EdDSA -> -19 (Ed25519), ES256 -> -9 (ESP256)
+        credential_signing_alg_values_supported: [-19, -9],
       },
     }
 

@@ -1,3 +1,7 @@
+import {
+  fullySpecifiedCoseAlgorithmArrayToJwaSignatureAlgorithmArray,
+  jwaSignatureAlgorithmArrayToFullySpecifiedCoseAlgorithmArray,
+} from '@openid4vc/oauth2'
 import { type InferOutputUnion, type Simplify, zHttpsUrl } from '@openid4vc/utils'
 import z from 'zod'
 import {
@@ -24,6 +28,7 @@ import {
   zMsoMdocCredentialIssuerMetadata,
   zMsoMdocCredentialIssuerMetadataDraft14,
   zMsoMdocCredentialIssuerMetadataDraft15,
+  zMsoMdocFormatIdentifier,
   zSdJwtDcCredentialIssuerMetadata,
   zSdJwtDcCredentialIssuerMetadataDraft15,
   zSdJwtDcFormatIdentifier,
@@ -191,10 +196,17 @@ export const zCredentialConfigurationSupportedDraft11ToV1 = z
     claims: z.any().optional(),
   })
   .loose()
-  .transform(({ cryptographic_suites_supported, display, claims, id, ...rest }) => ({
+  .transform(({ cryptographic_suites_supported, display, claims, id, format, ...rest }) => ({
     ...rest,
+    format,
     ...(cryptographic_suites_supported
-      ? { credential_signing_alg_values_supported: cryptographic_suites_supported }
+      ? {
+          credential_signing_alg_values_supported:
+            // For mso_mdoc, transform JWA signature algorithm strings to fully-specified COSE algorithm numbers
+            format === zMsoMdocFormatIdentifier.value
+              ? jwaSignatureAlgorithmArrayToFullySpecifiedCoseAlgorithmArray(cryptographic_suites_supported)
+              : cryptographic_suites_supported,
+        }
       : {}),
     ...(claims || display
       ? {
@@ -274,10 +286,28 @@ const zCredentialConfigurationSupportedV1ToDraft11 = zCredentialConfigurationSup
       .loose()
   )
   .transform(
-    ({ id, credential_signing_alg_values_supported, display, proof_types_supported, scope, ...rest }): unknown => ({
+    ({
+      id,
+      credential_signing_alg_values_supported,
+      display,
+      proof_types_supported,
+      scope,
+      format,
+      ...rest
+    }): unknown => ({
       ...rest,
+      format,
       ...(credential_signing_alg_values_supported
-        ? { cryptographic_suites_supported: credential_signing_alg_values_supported }
+        ? {
+            cryptographic_suites_supported:
+              // For mso_mdoc, transform fully-specified COSE algorithm numbers to JWA signature algorithm strings
+              format === zMsoMdocFormatIdentifier.value &&
+              typeof credential_signing_alg_values_supported[0] === 'number'
+                ? fullySpecifiedCoseAlgorithmArrayToJwaSignatureAlgorithmArray(
+                    credential_signing_alg_values_supported as number[]
+                  )
+                : credential_signing_alg_values_supported,
+          }
         : {}),
       ...(display
         ? {
