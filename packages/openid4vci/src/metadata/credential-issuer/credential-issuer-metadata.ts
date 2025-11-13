@@ -20,11 +20,13 @@ import {
   type CredentialConfigurationsSupportedWithFormats,
   type CredentialIssuerMetadata,
   zCredentialIssuerMetadataWithDraftVersion,
+  zCredentialConfigurationSupportedWithFormats,
 } from './z-credential-issuer-metadata'
 import {
   zSignedCredentialIssuerMetadataHeader,
   zSignedCredentialIssuerMetadataPayload,
 } from './z-signed-credential-issuer-metadata'
+import { ZodError } from 'zod'
 
 const wellKnownCredentialIssuerSuffix = '.well-known/openid-credential-issuer'
 
@@ -184,8 +186,14 @@ export function extractKnownCredentialConfigurationSupportedFormats(
 ): CredentialConfigurationsSupportedWithFormats {
   return Object.fromEntries(
     Object.entries(credentialConfigurationsSupported).filter(
-      (entry): entry is [string, CredentialConfigurationSupportedWithFormats] =>
-        allCredentialIssuerMetadataFormatIdentifiers.includes(entry[1].format as CredentialFormatIdentifier)
+      (entry): entry is [string, CredentialConfigurationSupportedWithFormats] => {
+        // Type guard to ensure that the returned entries have known formats
+        const credentialConfiguration = zCredentialConfigurationSupportedWithFormats.safeParse(entry[1]) // Validate structure
+        if(!credentialConfiguration.success) {
+          return false;
+        }
+        return allCredentialIssuerMetadataFormatIdentifiers.includes(credentialConfiguration.data.format as CredentialFormatIdentifier)
+      }
     )
   )
 }
@@ -198,6 +206,15 @@ export function getCredentialConfigurationSupportedById<
   if (!configuration) {
     throw new Oauth2Error(
       `Credential configuration with id '${credentialConfigurationId}' not found in credential configurations supported.`
+    )
+  }
+
+  const validatedConfiguration = zCredentialConfigurationSupportedWithFormats.safeParse(configuration)
+  if (!validatedConfiguration.success) {
+    throw new Oauth2Error(
+      `Credential configuration with id '${credentialConfigurationId}' is not valid: ${new ZodError(
+        validatedConfiguration.error.issues
+      ).message}`
     )
   }
 
