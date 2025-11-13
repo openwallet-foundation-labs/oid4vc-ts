@@ -23,6 +23,7 @@ const zJwtVcJsonCredentialDefinitionDraft14 = zJwtVcJsonCredentialDefinition.ext
 export const zJwtVcJsonCredentialIssuerMetadata = zCredentialConfigurationSupportedCommon.extend({
   format: zJwtVcJsonFormatIdentifier,
   credential_definition: zJwtVcJsonCredentialDefinition,
+  credential_signing_alg_values_supported: z.array(z.string()).optional(),
   credential_metadata: zCredentialConfigurationSupportedCommonCredentialMetadata
     .extend({
       claims: z.array(zIssuerMetadataClaimsDescription).optional(),

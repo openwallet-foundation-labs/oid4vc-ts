@@ -62,7 +62,8 @@ export const zCredentialConfigurationSupportedCommonDraft15 = z
     format: z.string(),
     scope: z.string().optional(),
     cryptographic_binding_methods_supported: z.array(z.string()).optional(),
-    credential_signing_alg_values_supported: z.array(z.string()).or(z.array(z.number())).optional(),
+    // Up until draft 15 it was an array of strings
+    credential_signing_alg_values_supported: z.array(z.string()).optional(),
     proof_types_supported: z
       .record(
         z.union([z.literal('jwt'), z.literal('attestation'), z.string()]),

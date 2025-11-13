@@ -18,6 +18,7 @@ const zSdJwtW3VcCredentialDefinition = z
 export const zSdJwtW3VcCredentialIssuerMetadata = zCredentialConfigurationSupportedCommon.extend({
   format: zSdJwtW3VcFormatIdentifier,
   credential_definition: zSdJwtW3VcCredentialDefinition,
+  credential_signing_alg_values_supported: z.array(z.string()).optional(),
   credential_metadata: zCredentialConfigurationSupportedCommonCredentialMetadata
     .extend({
       claims: z.array(zIssuerMetadataClaimsDescription).optional(),

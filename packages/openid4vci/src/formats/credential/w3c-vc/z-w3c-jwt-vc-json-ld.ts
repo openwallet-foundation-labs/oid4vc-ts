@@ -17,6 +17,7 @@ export type JwtVcJsonLdFormatIdentifier = z.infer<typeof zJwtVcJsonLdFormatIdent
 export const zJwtVcJsonLdCredentialIssuerMetadata = zCredentialConfigurationSupportedCommon.extend({
   format: zJwtVcJsonLdFormatIdentifier,
   credential_definition: zW3cVcJsonLdCredentialDefinition,
+  credential_signing_alg_values_supported: z.array(z.string()).optional(),
   credential_metadata: zCredentialConfigurationSupportedCommonCredentialMetadata
     .extend({
       claims: z.array(zIssuerMetadataClaimsDescription).optional(),
@@ -40,7 +41,7 @@ export const zJwtVcJsonLdCredentialIssuerMetadataDraft11 = z
   .object({
     order: z.array(z.string()).optional(),
     format: zJwtVcJsonLdFormatIdentifier,
-    // Credential definition was spread on top level instead of a separatey property in v11
+    // Credential definition was spread on top level instead of a separate property in v11
     // As well as using types instead of type
     '@context': z.array(z.string()),
     types: z.tuple([z.string()], z.string()),

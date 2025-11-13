@@ -107,7 +107,7 @@ describe('Credential Configurations', () => {
         format: 'mso_mdoc',
         doctype: 'some-doc-type',
         cryptographic_binding_methods_supported: ['did:key'],
-        credential_signing_alg_values_supported: ['EdDSA'],
+        credential_signing_alg_values_supported: [-19],
         credential_metadata: {
           display: [
             {
