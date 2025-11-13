@@ -118,7 +118,7 @@ export type CoseAlgorithmIdentifier = keyof typeof COSE_TO_JWA_SIGNATURE_ALGORIT
 export type JwaSignatureAlgorithmIdentifier = `${JwaSignatureAlgorithm}`
 
 /**
- * Transform a JWA signature algorithm identifier to a fully-specified COSE algorithm identifier
+ * Transform a JWA signature algorithm identifier to an RFC 9864 fully-specified COSE algorithm identifier
  *
  * @param jwaAlg - JWA signature algorithm identifier (e.g., 'Ed25519', 'ES256')
  * @returns Fully-specified COSE algorithm identifier (e.g., -19, -9) or undefined if not mappable
@@ -136,7 +136,7 @@ export function jwaSignatureAlgorithmToFullySpecifiedCoseAlgorithm(
 }
 
 /**
- * Transform a COSE algorithm identifier to a JWA signature algorithm identifier
+ * Transform a COSE algorithm identifier (either RFC 9864 fully-specified, or polymorphic) to a JWA signature algorithm identifier
  *
  * @param coseAlg - COSE algorithm identifier (e.g., -19, -9)
  * @returns JWA signature algorithm identifier (e.g., 'Ed25519', 'ES256') or undefined if not mappable
@@ -155,7 +155,7 @@ export function fullySpecifiedCoseAlgorithmToJwaSignatureAlgorithm(
 }
 
 /**
- * Transform an array of JWA signature algorithm identifiers to fully-specified COSE algorithm identifiers.
+ * Transform an array of JWA signature algorithm identifiers to RFC 9864 fully-specified COSE algorithm identifiers.
  *
  * By default it filters out unmappable algorithms. You can also choose to throw an error when an unknown
  * algorithm is detected.
@@ -183,7 +183,7 @@ export function jwaSignatureAlgorithmArrayToFullySpecifiedCoseAlgorithmArray(
 }
 
 /**
- * Transform an array of COSE algorithm identifiers to JWA signature algorithm identifiers
+ * Transform an array of COSE algorithm identifiers (either RFC 9864 fully-specified or polymorphic) to JWA signature algorithm identifiers
  *
  * By default it filters out unmappable algorithms. You can also choose to throw an error when an unknown
  * algorithm is detected.
