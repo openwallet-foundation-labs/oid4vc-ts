@@ -157,7 +157,7 @@ export const zCredentialIssuerMetadataDraft14Draft15V1 = z
       .loose()
       .optional(),
     display: z.array(zCredentialIssuerMetadataDisplayEntry).optional(),
-    credential_configurations_supported: z.record(z.string(), zCredentialConfigurationSupportedWithFormats),
+    credential_configurations_supported: z.record(z.string(), zCredentialConfigurationSupportedCommon),
   })
   .loose()
 
