@@ -4,7 +4,7 @@ import { paradymDraft13 } from '../../../__tests__/__fixtures__/paradym.js'
 import {
   zCredentialConfigurationSupportedWithFormats,
   zCredentialIssuerMetadata,
-  zCredentialIssuerMetadataDraft11To16,
+  zCredentialIssuerMetadataDraft11ToV1,
 } from '../z-credential-issuer-metadata.js'
 
 describe('Credential Issuer Metadata', () => {
@@ -199,11 +199,13 @@ describe('Credential Issuer Metadata', () => {
       'mso-mdoc': {
         format: 'mso_mdoc',
         doctype: 'some.doc.type',
-        credential_signing_alg_values_supported: ['EdDSA', 'ES256'],
+        // For mso_mdoc, JOSE algorithms are transformed to COSE numbers
+        // EdDSA -> -19 (Ed25519), ES256 -> -9 (ESP256)
+        credential_signing_alg_values_supported: [-19, -9],
       },
     }
 
-    const parseResult = zCredentialIssuerMetadataDraft11To16.safeParse({
+    const parseResult = zCredentialIssuerMetadataDraft11ToV1.safeParse({
       credential_endpoint: 'https://credential-issuer.com/credential',
       credential_issuer: 'https://credential-issuer.com',
       credentials_supported,

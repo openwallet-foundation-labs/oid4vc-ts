@@ -1,3 +1,7 @@
+import {
+  fullySpecifiedCoseAlgorithmArrayToJwaSignatureAlgorithmArray,
+  jwaSignatureAlgorithmArrayToFullySpecifiedCoseAlgorithmArray,
+} from '@openid4vc/oauth2'
 import { type InferOutputUnion, type Simplify, zHttpsUrl } from '@openid4vc/utils'
 import z from 'zod'
 import {
@@ -24,6 +28,7 @@ import {
   zMsoMdocCredentialIssuerMetadata,
   zMsoMdocCredentialIssuerMetadataDraft14,
   zMsoMdocCredentialIssuerMetadataDraft15,
+  zMsoMdocFormatIdentifier,
   zSdJwtDcCredentialIssuerMetadata,
   zSdJwtDcCredentialIssuerMetadataDraft15,
   zSdJwtDcFormatIdentifier,
@@ -163,7 +168,7 @@ export const zCredentialIssuerMetadataDraft14Draft15V1 = z
 
 // Transforms credential supported to credential configuration supported format
 // Ignores unknown formats
-export const zCredentialConfigurationSupportedDraft11To16 = z
+export const zCredentialConfigurationSupportedDraft11ToV1 = z
   .object({
     id: z.string().optional(),
     format: z.string(),
@@ -191,10 +196,17 @@ export const zCredentialConfigurationSupportedDraft11To16 = z
     claims: z.any().optional(),
   })
   .loose()
-  .transform(({ cryptographic_suites_supported, display, claims, id, ...rest }) => ({
+  .transform(({ cryptographic_suites_supported, display, claims, id, format, ...rest }) => ({
     ...rest,
+    format,
     ...(cryptographic_suites_supported
-      ? { credential_signing_alg_values_supported: cryptographic_suites_supported }
+      ? {
+          credential_signing_alg_values_supported:
+            // For mso_mdoc, transform JWA signature algorithm strings to fully-specified COSE algorithm numbers
+            format === zMsoMdocFormatIdentifier.value
+              ? jwaSignatureAlgorithmArrayToFullySpecifiedCoseAlgorithmArray(cryptographic_suites_supported)
+              : cryptographic_suites_supported,
+        }
       : {}),
     ...(claims || display
       ? {
@@ -274,10 +286,28 @@ const zCredentialConfigurationSupportedV1ToDraft11 = zCredentialConfigurationSup
       .loose()
   )
   .transform(
-    ({ id, credential_signing_alg_values_supported, display, proof_types_supported, scope, ...rest }): unknown => ({
+    ({
+      id,
+      credential_signing_alg_values_supported,
+      display,
+      proof_types_supported,
+      scope,
+      format,
+      ...rest
+    }): unknown => ({
       ...rest,
+      format,
       ...(credential_signing_alg_values_supported
-        ? { cryptographic_suites_supported: credential_signing_alg_values_supported }
+        ? {
+            cryptographic_suites_supported:
+              // For mso_mdoc, transform fully-specified COSE algorithm numbers to JWA signature algorithm strings
+              format === zMsoMdocFormatIdentifier.value &&
+              typeof credential_signing_alg_values_supported[0] === 'number'
+                ? fullySpecifiedCoseAlgorithmArrayToJwaSignatureAlgorithmArray(
+                    credential_signing_alg_values_supported as number[]
+                  )
+                : credential_signing_alg_values_supported,
+          }
         : {}),
       ...(display
         ? {
@@ -324,7 +354,7 @@ const zCredentialConfigurationSupportedV1ToDraft11 = zCredentialConfigurationSup
     ])
   )
 
-export const zCredentialIssuerMetadataDraft11To16 = z
+export const zCredentialIssuerMetadataDraft11ToV1 = z
   .object({
     authorization_server: z.string().optional(),
     credentials_supported: z.array(
@@ -352,7 +382,7 @@ export const zCredentialIssuerMetadataDraft11To16 = z
     z
       .object({
         // Update from v11 structure to v14 structure
-        credential_configurations_supported: z.record(z.string(), zCredentialConfigurationSupportedDraft11To16),
+        credential_configurations_supported: z.record(z.string(), zCredentialConfigurationSupportedDraft11ToV1),
       })
       .loose()
   )
@@ -387,7 +417,7 @@ export const zCredentialIssuerMetadata = z.union([
   // First prioritize draft 16/15/14 (and 13)
   zCredentialIssuerMetadataDraft14Draft15V1,
   // Then try parsing draft 11 and transform into draft 16
-  zCredentialIssuerMetadataDraft11To16,
+  zCredentialIssuerMetadataDraft11ToV1,
 ])
 
 export const zCredentialIssuerMetadataWithDraftVersion = z.union([
@@ -411,9 +441,15 @@ export const zCredentialIssuerMetadataWithDraftVersion = z.union([
       return false
     })
 
-    // Added in draft 16, but since there's no other breaking changes
     // we assume V1 is used when we detect V1
-    const isV1 = credentialConfigurations.some((configuration) => configuration.credential_metadata)
+    const isV1 = credentialConfigurations.some(
+      (configuration) =>
+        // Added in draft 16, but since there's no other breaking changes
+        configuration.credential_metadata ||
+        // Was changed to COSE algorithms in Draft 16 (which we detect as v1)
+        (configuration.format === 'mso_mdoc' &&
+          configuration.credential_signing_alg_values_supported?.some((supported) => typeof supported === 'number'))
+    )
 
     return {
       credentialIssuerMetadata,
@@ -425,7 +461,7 @@ export const zCredentialIssuerMetadataWithDraftVersion = z.union([
     }
   }),
   // Then try parsing draft 11 and transform into draft 16
-  zCredentialIssuerMetadataDraft11To16.transform((credentialIssuerMetadata) => ({
+  zCredentialIssuerMetadataDraft11ToV1.transform((credentialIssuerMetadata) => ({
     credentialIssuerMetadata,
     originalDraftVersion: Openid4vciDraftVersion.Draft11,
   })),

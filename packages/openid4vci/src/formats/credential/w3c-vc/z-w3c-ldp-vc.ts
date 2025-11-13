@@ -17,6 +17,7 @@ export type LdpVcFormatIdentifier = z.infer<typeof zLdpVcFormatIdentifier>
 export const zLdpVcCredentialIssuerMetadata = zCredentialConfigurationSupportedCommon.extend({
   format: zLdpVcFormatIdentifier,
   credential_definition: zW3cVcJsonLdCredentialDefinition,
+  credential_signing_alg_values_supported: z.array(z.string()).optional(),
   credential_metadata: zCredentialConfigurationSupportedCommonCredentialMetadata
     .extend({
       claims: z.array(zIssuerMetadataClaimsDescription).optional(),
