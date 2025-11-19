@@ -12,6 +12,7 @@ import {
 import { ContentType, joinUriParts, parseWithErrorHandling, URL } from '@openid4vc/utils'
 import type { CredentialFormatIdentifier } from '../../formats/credential'
 import type { Openid4vciDraftVersion } from '../../version'
+import type { IssuerMetadataResult } from '../fetch-issuer-metadata'
 import {
   allCredentialIssuerMetadataFormatIdentifiers,
   type CredentialConfigurationSupported,
@@ -19,14 +20,13 @@ import {
   type CredentialConfigurationsSupported,
   type CredentialConfigurationsSupportedWithFormats,
   type CredentialIssuerMetadata,
-  zCredentialIssuerMetadataWithDraftVersion,
   zCredentialConfigurationSupportedWithFormats,
+  zCredentialIssuerMetadataWithDraftVersion,
 } from './z-credential-issuer-metadata'
 import {
   zSignedCredentialIssuerMetadataHeader,
   zSignedCredentialIssuerMetadataPayload,
 } from './z-signed-credential-issuer-metadata'
-import { IssuerMetadataResult } from '../fetch-issuer-metadata'
 
 const wellKnownCredentialIssuerSuffix = '.well-known/openid-credential-issuer'
 
@@ -190,10 +190,12 @@ export function extractKnownCredentialConfigurationSupportedFormats(
       (entry): entry is [string, CredentialConfigurationSupportedWithFormats] => {
         // Type guard to ensure that the returned entries have known formats
         const credentialConfiguration = zCredentialConfigurationSupportedWithFormats.safeParse(entry[1]) // Validate structure
-        if(!credentialConfiguration.success) {
-          return false;
+        if (!credentialConfiguration.success) {
+          return false
         }
-        return allCredentialIssuerMetadataFormatIdentifiers.includes(credentialConfiguration.data.format as CredentialFormatIdentifier)
+        return allCredentialIssuerMetadataFormatIdentifiers.includes(
+          credentialConfiguration.data.format as CredentialFormatIdentifier
+        )
       }
     )
   )
@@ -214,11 +216,11 @@ export function getKnownCredentialConfigurationSupportedById<
     )
   }
 
-  if (!issuerMetadata.knownCredentialConfigurations[credentialConfigurationId]) {
-    throw new Oauth2Error(
-      `Credential configuration with id '${credentialConfigurationId}' exists in Metadata, but is not valid`
-    )
-  }
+  parseWithErrorHandling(
+    zCredentialConfigurationSupportedWithFormats,
+    configuration,
+    `Credential configuration with id '${credentialConfigurationId}' is not valid`
+  )
 
   return configuration as Configurations extends CredentialConfigurationsSupportedWithFormats
     ? CredentialConfigurationSupportedWithFormats

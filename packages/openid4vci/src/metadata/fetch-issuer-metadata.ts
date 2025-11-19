@@ -13,7 +13,10 @@ import {
   extractKnownCredentialConfigurationSupportedFormats,
   fetchCredentialIssuerMetadata,
 } from './credential-issuer/credential-issuer-metadata'
-import type { CredentialConfigurationsSupportedWithFormats, CredentialIssuerMetadata } from './credential-issuer/z-credential-issuer-metadata'
+import type {
+  CredentialConfigurationsSupportedWithFormats,
+  CredentialIssuerMetadata,
+} from './credential-issuer/z-credential-issuer-metadata'
 
 export interface ResolveIssuerMetadataOptions {
   /**

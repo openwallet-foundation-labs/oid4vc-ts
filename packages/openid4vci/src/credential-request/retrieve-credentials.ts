@@ -78,10 +78,7 @@ export async function retrieveCredentialsWithCredentialConfigurationId(
   }
 
   // This ensures the credential configuration exists
-  getKnownCredentialConfigurationSupportedById(
-    options.issuerMetadata,
-    options.credentialConfigurationId
-  )
+  getKnownCredentialConfigurationSupportedById(options.issuerMetadata, options.credentialConfigurationId)
 
   const credentialRequest: CredentialRequest = {
     ...options.additionalRequestPayload,

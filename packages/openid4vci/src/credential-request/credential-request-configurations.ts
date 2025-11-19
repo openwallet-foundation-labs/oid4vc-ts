@@ -1,11 +1,7 @@
 import { arrayEqualsIgnoreOrder } from '@openid4vc/utils'
-import { extractKnownCredentialConfigurationSupportedFormats } from '../metadata/credential-issuer/credential-issuer-metadata'
-import type {
-  CredentialConfigurationsSupported,
-  CredentialConfigurationsSupportedWithFormats,
-} from '../metadata/credential-issuer/z-credential-issuer-metadata'
+import type { CredentialConfigurationsSupportedWithFormats } from '../metadata/credential-issuer/z-credential-issuer-metadata'
+import type { IssuerMetadataResult } from '../metadata/fetch-issuer-metadata'
 import type { CredentialRequestFormatSpecific } from './z-credential-request'
-import { IssuerMetadataResult } from '../metadata/fetch-issuer-metadata'
 
 export interface GetCredentialConfigurationsMatchingRequestFormatOptions {
   requestFormat: CredentialRequestFormatSpecific
@@ -17,7 +13,7 @@ export function getCredentialConfigurationsMatchingRequestFormat({
   issuerMetadata,
 }: GetCredentialConfigurationsMatchingRequestFormatOptions): CredentialConfigurationsSupportedWithFormats {
   // credential request format will only contain known formats
-  const knownCredentialConfigurations = issuerMetadata.knownCredentialConfigurations;
+  const knownCredentialConfigurations = issuerMetadata.knownCredentialConfigurations
 
   return Object.fromEntries(
     Object.entries(knownCredentialConfigurations).filter(([, credentialConfiguration]) => {

@@ -37,8 +37,6 @@ import {
   type CreateCredentialRequestJwtProofOptions,
   createCredentialRequestJwtProof,
 } from './formats/proof-type/jwt/jwt-proof-type'
-import { extractKnownCredentialConfigurationSupportedFormats } from './metadata/credential-issuer/credential-issuer-metadata'
-import type { CredentialIssuerMetadata } from './metadata/credential-issuer/z-credential-issuer-metadata'
 import { type IssuerMetadataResult, resolveIssuerMetadata } from './metadata/fetch-issuer-metadata'
 import { type RequestNonceOptions, requestNonce } from './nonce/nonce-request'
 import { type SendNotificationOptions, sendNotification } from './notification/notification'
@@ -63,10 +61,6 @@ export class Openid4vciClient {
     this.oauth2Client = new Oauth2Client({
       callbacks: this.options.callbacks,
     })
-  }
-
-  public getKnownCredentialConfigurationsSupported(credentialIssuerMetadata: CredentialIssuerMetadata) {
-    return credentialIssuerMetadata.credential_configurations_supported;
   }
 
   /**

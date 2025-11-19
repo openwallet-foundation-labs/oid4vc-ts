@@ -2,7 +2,6 @@ import { describe, expect, test } from 'vitest'
 import type { CredentialIssuerMetadata } from '../../metadata/credential-issuer/z-credential-issuer-metadata.js'
 import { Openid4vciDraftVersion } from '../../version.js'
 import { parseCredentialRequest } from '../parse-credential-request.js'
-import { CredentialConfigurationsSupportedWithFormats } from '../../../dist/index.cjs'
 
 const issuerMetadata = {
   credential_issuer: 'https://issuer.com',
@@ -27,7 +26,7 @@ describe('Parse Credential Request', () => {
             my_credential: {
               format: 'dc+sd-jwt',
               vct: 'hello',
-            }
+            },
           },
         },
         credentialRequest: {
@@ -55,7 +54,7 @@ describe('Parse Credential Request', () => {
             my_credential: {
               format: 'dc+sd-jwt',
               vct: 'hello',
-            }
+            },
           },
         },
         credentialRequest: {
@@ -99,7 +98,7 @@ describe('Parse Credential Request', () => {
             my_credential: {
               format: 'dc+sd-jwt',
               vct: 'hello',
-            }
+            },
           },
         },
         credentialRequest: {
@@ -143,7 +142,7 @@ describe('Parse Credential Request', () => {
             my_credential: {
               format: 'dc+sd-jwt',
               vct: 'hello',
-            }
+            },
           },
         },
         credentialRequest: {
@@ -187,7 +186,7 @@ describe('Parse Credential Request', () => {
             my_credential: {
               format: 'dc+sd-jwt',
               vct: 'hello',
-            }
+            },
           },
         },
         credentialRequest: {
@@ -255,7 +254,7 @@ describe('Parse Credential Request', () => {
             my_credential: {
               format: 'dc+sd-jwt',
               vct: 'hello',
-            }
+            },
           },
         },
         credentialRequest: {
@@ -323,7 +322,7 @@ describe('Parse Credential Request', () => {
             my_credential: {
               format: 'dc+sd-jwt',
               vct: 'hello',
-            }
+            },
           },
         },
         credentialRequest: {
@@ -388,7 +387,7 @@ describe('Parse Credential Request', () => {
             my_credential: {
               format: 'dc+sd-jwt',
               vct: 'hello',
-            }
+            },
           },
         },
         credentialRequest: {
@@ -427,7 +426,7 @@ describe('Parse Credential Request', () => {
             my_credential: {
               format: 'dc+sd-jwt',
               vct: 'hello',
-            }
+            },
           },
         },
         credentialRequest: {
@@ -464,7 +463,7 @@ describe('Parse Credential Request', () => {
             my_credential: {
               format: 'dc+sd-jwt',
               vct: 'hello',
-            }
+            },
           },
         },
         credentialRequest: {
@@ -501,7 +500,7 @@ describe('Parse Credential Request', () => {
             my_credential: {
               format: 'dc+sd-jwt',
               vct: 'hello',
-            }
+            },
           },
         },
         credentialRequest: {
@@ -536,7 +535,7 @@ describe('Parse Credential Request', () => {
             my_credential: {
               format: 'dc+sd-jwt',
               vct: 'hello',
-            }
+            },
           },
         },
         credentialRequest: {
@@ -575,7 +574,7 @@ describe('Parse Credential Request', () => {
             my_credential: {
               format: 'dc+sd-jwt',
               vct: 'hello',
-            }
+            },
           },
         },
         credentialRequest: {
@@ -611,7 +610,7 @@ describe('Parse Credential Request', () => {
             my_credential: {
               format: 'dc+sd-jwt',
               vct: 'hello',
-            }
+            },
           },
         },
         credentialRequest: {
@@ -674,7 +673,7 @@ describe('Parse Credential Request', () => {
             my_credential: {
               format: 'dc+sd-jwt',
               vct: 'hello',
-            }
+            },
           },
         },
         credentialRequest: {
@@ -742,7 +741,7 @@ describe('Parse Credential Request', () => {
             my_credential: {
               format: 'dc+sd-jwt',
               vct: 'hello',
-            }
+            },
           },
         },
         credentialRequest: {
