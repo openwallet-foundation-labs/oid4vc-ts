@@ -100,7 +100,7 @@ export function parseCredentialRequest(options: ParseCredentialRequestOptions): 
   }
 
   if (credentialRequest.credential_configuration_id) {
-    // This will throw an error if the credential configuration does not exist
+    // This will throw an error if the credential configuration does not exist or is not valid
     getKnownCredentialConfigurationSupportedById(
       options.issuerMetadata,
       credentialRequest.credential_configuration_id
