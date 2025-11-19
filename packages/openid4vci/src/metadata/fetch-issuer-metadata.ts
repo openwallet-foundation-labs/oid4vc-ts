@@ -59,6 +59,12 @@ export interface IssuerMetadataResult {
 
   authorizationServers: AuthorizationServerMetadata[]
 
+  /**
+   * Known credential configurations includes all the credential configurations with a known credential format
+   * that pass the validation requirements from the OpenID4VCI specification. Recognized formats that do not
+   * adhere to the format specific metadata requirements are not included, but also won't result in an error, to
+   * to still allow interacting with issuers using invalid metadata for specific configurations.
+   */
   knownCredentialConfigurations: CredentialConfigurationsSupportedWithFormats
 }
 
