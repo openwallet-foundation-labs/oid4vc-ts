@@ -8,13 +8,7 @@ import { HttpResponse, http } from 'msw'
 import { setupServer } from 'msw/node'
 import { afterAll, afterEach, beforeAll, describe, expect, test } from 'vitest'
 import { getSignJwtCallback, callbacks as partialCallbacks } from '../../oauth2/tests/util.mjs'
-import {
-  type CredentialConfigurationSupportedWithFormats,
-  type IssuerMetadataResult,
-  Openid4vciClient,
-  Openid4vciDraftVersion,
-  Openid4vciIssuer,
-} from '../src/index.js'
+import { type CredentialConfigurationSupportedWithFormats, Openid4vciClient, Openid4vciIssuer } from '../src/index.js'
 
 const credentialIssuerJwk = {
   kty: 'EC',
@@ -75,12 +69,6 @@ const credentialIssuerMetadata = issuer.createCredentialIssuerMetadata({
   credential_configurations_supported: credentialConfigurationsSupported,
   authorization_servers: [authorizationServerMetadata.issuer],
 })
-
-const issuerMetadata = {
-  credentialIssuer: credentialIssuerMetadata,
-  authorizationServers: [authorizationServerMetadata],
-  originalDraftVersion: Openid4vciDraftVersion.Draft14,
-} satisfies IssuerMetadataResult
 
 describe('Signed Credential Issuer Metadata', () => {
   beforeAll(() => {

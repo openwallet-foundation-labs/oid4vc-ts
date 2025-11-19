@@ -15,7 +15,6 @@ import type { Openid4vciDraftVersion } from '../../version'
 import type { IssuerMetadataResult } from '../fetch-issuer-metadata'
 import {
   allCredentialIssuerMetadataFormatIdentifiers,
-  type CredentialConfigurationSupported,
   type CredentialConfigurationSupportedWithFormats,
   type CredentialConfigurationsSupported,
   type CredentialConfigurationsSupportedWithFormats,
@@ -205,9 +204,10 @@ export function extractKnownCredentialConfigurationSupportedFormats(
  * Get a known credential configuration supported by its id, it will throw an error if the configuration
  * is not found or if its found but the credential configuration is invalid.
  */
-export function getKnownCredentialConfigurationSupportedById<
-  Configurations extends CredentialConfigurationsSupported | CredentialConfigurationsSupportedWithFormats,
->(issuerMetadata: IssuerMetadataResult, credentialConfigurationId: string) {
+export function getKnownCredentialConfigurationSupportedById(
+  issuerMetadata: IssuerMetadataResult,
+  credentialConfigurationId: string
+) {
   const configuration = issuerMetadata.credentialIssuer.credential_configurations_supported[credentialConfigurationId]
 
   if (!configuration) {
@@ -216,13 +216,13 @@ export function getKnownCredentialConfigurationSupportedById<
     )
   }
 
-  parseWithErrorHandling(
-    zCredentialConfigurationSupportedWithFormats,
-    configuration,
-    `Credential configuration with id '${credentialConfigurationId}' is not valid`
-  )
+  if (!issuerMetadata.knownCredentialConfigurations[credentialConfigurationId]) {
+    parseWithErrorHandling(
+      zCredentialConfigurationSupportedWithFormats,
+      configuration,
+      `Credential configuration with id '${credentialConfigurationId}' is not valid`
+    )
+  }
 
-  return configuration as Configurations extends CredentialConfigurationsSupportedWithFormats
-    ? CredentialConfigurationSupportedWithFormats
-    : CredentialConfigurationSupported
+  return issuerMetadata.knownCredentialConfigurations[credentialConfigurationId]
 }
