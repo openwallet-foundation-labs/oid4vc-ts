@@ -66,9 +66,7 @@ export class Openid4vciClient {
   }
 
   public getKnownCredentialConfigurationsSupported(credentialIssuerMetadata: CredentialIssuerMetadata) {
-    return extractKnownCredentialConfigurationSupportedFormats(
-      credentialIssuerMetadata.credential_configurations_supported
-    )
+    return credentialIssuerMetadata.credential_configurations_supported;
   }
 
   /**

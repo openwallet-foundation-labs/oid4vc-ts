@@ -4,7 +4,7 @@ import { attestationProofTypeIdentifier } from '../formats/proof-type/attestatio
 import { jwtProofTypeIdentifier } from '../formats/proof-type/jwt/z-jwt-proof-type'
 import {
   extractKnownCredentialConfigurationSupportedFormats,
-  getCredentialConfigurationSupportedById,
+  getKnownCredentialConfigurationSupportedById,
 } from '../metadata/credential-issuer/credential-issuer-metadata'
 import type { CredentialConfigurationSupportedWithFormats } from '../metadata/credential-issuer/z-credential-issuer-metadata'
 import type { IssuerMetadataResult } from '../metadata/fetch-issuer-metadata'
@@ -101,14 +101,12 @@ export function parseCredentialRequest(options: ParseCredentialRequestOptions): 
 
   if (credentialRequest.credential_configuration_id) {
     // This will throw an error if the credential configuration does not exist
-    getCredentialConfigurationSupportedById(
-      options.issuerMetadata.credentialIssuer.credential_configurations_supported,
+    getKnownCredentialConfigurationSupportedById(
+      options.issuerMetadata,
       credentialRequest.credential_configuration_id
     )
 
-    const credentialConfigurations = extractKnownCredentialConfigurationSupportedFormats(
-      options.issuerMetadata.credentialIssuer.credential_configurations_supported
-    )
+    const credentialConfigurations = options.issuerMetadata.knownCredentialConfigurations;
 
     return {
       credentialConfiguration: credentialConfigurations[credentialRequest.credential_configuration_id],

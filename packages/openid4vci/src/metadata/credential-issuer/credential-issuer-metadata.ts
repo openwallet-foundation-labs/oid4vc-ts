@@ -26,7 +26,7 @@ import {
   zSignedCredentialIssuerMetadataHeader,
   zSignedCredentialIssuerMetadataPayload,
 } from './z-signed-credential-issuer-metadata'
-import { ZodError } from 'zod'
+import { IssuerMetadataResult } from '../fetch-issuer-metadata'
 
 const wellKnownCredentialIssuerSuffix = '.well-known/openid-credential-issuer'
 
@@ -176,8 +176,9 @@ export async function fetchCredentialIssuerMetadata(
 
 /**
  * Extract credential configuration supported entries where the `format` is known to this
- * library. Should be ran only after verifying the credential issuer metadata structure, so
- * we can be certain that if the `format` matches the other format specific requirements are also met.
+ * library and the configuration validates correctly. Should be ran only after verifying
+ * the credential issuer metadata structure, so we can be certain that if the `format`
+ * matches the other format specific requirements are also met.
  *
  * Validation is done when resolving issuer metadata, or when calling `createIssuerMetadata`.
  */
@@ -198,10 +199,14 @@ export function extractKnownCredentialConfigurationSupportedFormats(
   )
 }
 
-export function getCredentialConfigurationSupportedById<
+/**
+ * Get a known credential configuration supported by its id, it will throw an error if the configuration
+ * is not found or if its found but the credential configuration is invalid.
+ */
+export function getKnownCredentialConfigurationSupportedById<
   Configurations extends CredentialConfigurationsSupported | CredentialConfigurationsSupportedWithFormats,
->(credentialConfigurations: Configurations, credentialConfigurationId: string) {
-  const configuration = credentialConfigurations[credentialConfigurationId]
+>(issuerMetadata: IssuerMetadataResult, credentialConfigurationId: string) {
+  const configuration = issuerMetadata.credentialIssuer.credential_configurations_supported[credentialConfigurationId]
 
   if (!configuration) {
     throw new Oauth2Error(
@@ -209,12 +214,9 @@ export function getCredentialConfigurationSupportedById<
     )
   }
 
-  const validatedConfiguration = zCredentialConfigurationSupportedWithFormats.safeParse(configuration)
-  if (!validatedConfiguration.success) {
+  if (!issuerMetadata.knownCredentialConfigurations[credentialConfigurationId]) {
     throw new Oauth2Error(
-      `Credential configuration with id '${credentialConfigurationId}' is not valid: ${new ZodError(
-        validatedConfiguration.error.issues
-      ).message}`
+      `Credential configuration with id '${credentialConfigurationId}' exists in Metadata, but is not valid`
     )
   }
 

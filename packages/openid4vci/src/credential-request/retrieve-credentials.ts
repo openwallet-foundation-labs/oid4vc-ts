@@ -9,7 +9,7 @@ import {
 } from '@openid4vc/oauth2'
 import { ContentType, isResponseContentType, parseWithErrorHandling } from '@openid4vc/utils'
 import { Openid4vciError } from '../error/Openid4vciError'
-import { getCredentialConfigurationSupportedById } from '../metadata/credential-issuer/credential-issuer-metadata'
+import { getKnownCredentialConfigurationSupportedById } from '../metadata/credential-issuer/credential-issuer-metadata'
 import type { IssuerMetadataResult } from '../metadata/fetch-issuer-metadata'
 import { Openid4vciDraftVersion } from '../version'
 import {
@@ -78,8 +78,8 @@ export async function retrieveCredentialsWithCredentialConfigurationId(
   }
 
   // This ensures the credential configuration exists
-  getCredentialConfigurationSupportedById(
-    options.issuerMetadata.credentialIssuer.credential_configurations_supported,
+  getKnownCredentialConfigurationSupportedById(
+    options.issuerMetadata,
     options.credentialConfigurationId
   )
 

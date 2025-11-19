@@ -122,6 +122,7 @@ const issuerMetadata = {
   credentialIssuer: credentialIssuerMetadata,
   authorizationServers: [authorizationServerMetadata],
   originalDraftVersion: Openid4vciDraftVersion.Draft14,
+  knownCredentialConfigurations: credentialConfigurationsSupported,
 } satisfies IssuerMetadataResult
 
 describe('Full E2E test', () => {
@@ -308,6 +309,7 @@ describe('Full E2E test', () => {
             authorizationServers: [],
             credentialIssuer: credentialIssuerMetadata,
             originalDraftVersion: Openid4vciDraftVersion.Draft14,
+            knownCredentialConfigurations: credentialConfigurationsSupported,
           },
           credentialRequest: credentialRequest as Record<string, unknown>,
         })
@@ -751,6 +753,7 @@ describe('Full E2E test', () => {
             authorizationServers: [],
             credentialIssuer: credentialIssuerMetadata,
             originalDraftVersion: Openid4vciDraftVersion.Draft14,
+            knownCredentialConfigurations: credentialConfigurationsSupported,
           },
           credentialRequest: credentialRequest as Record<string, unknown>,
         })
