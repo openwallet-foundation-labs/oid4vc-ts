@@ -10,9 +10,13 @@ import { parseWithErrorHandling } from '@openid4vc/utils'
 import type { Openid4vciDraftVersion } from '../version'
 import {
   type CredentialIssuerMetadataSigned,
+  extractKnownCredentialConfigurationSupportedFormats,
   fetchCredentialIssuerMetadata,
 } from './credential-issuer/credential-issuer-metadata'
-import type { CredentialIssuerMetadata } from './credential-issuer/z-credential-issuer-metadata'
+import type {
+  CredentialConfigurationsSupportedWithFormats,
+  CredentialIssuerMetadata,
+} from './credential-issuer/z-credential-issuer-metadata'
 
 export interface ResolveIssuerMetadataOptions {
   /**
@@ -57,6 +61,14 @@ export interface IssuerMetadataResult {
   signedCredentialIssuer?: CredentialIssuerMetadataSigned
 
   authorizationServers: AuthorizationServerMetadata[]
+
+  /**
+   * Known credential configurations includes all the credential configurations with a known credential format
+   * that pass the validation requirements from the OpenID4VCI specification. Recognized formats that do not
+   * adhere to the format specific metadata requirements are not included, but also won't result in an error, to
+   * to still allow interacting with issuers using invalid metadata for specific configurations.
+   */
+  knownCredentialConfigurations: CredentialConfigurationsSupportedWithFormats
 }
 
 export async function resolveIssuerMetadata(
@@ -116,11 +128,17 @@ export async function resolveIssuerMetadata(
     authoriationServersMetadata.push(authorizationServerMetadata)
   }
 
+  // Collect all known credential configurations with formats
+  const knownCredentialConfigurations = extractKnownCredentialConfigurationSupportedFormats(
+    credentialIssuerMetadata.credential_configurations_supported
+  )
+
   return {
     originalDraftVersion,
     credentialIssuer: credentialIssuerMetadata,
     signedCredentialIssuer: signed,
 
     authorizationServers: authoriationServersMetadata,
+    knownCredentialConfigurations,
   }
 }

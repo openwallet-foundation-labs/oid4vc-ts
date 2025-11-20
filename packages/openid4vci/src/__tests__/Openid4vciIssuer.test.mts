@@ -92,6 +92,7 @@ const issuerMetadata = {
     },
   ],
   originalDraftVersion: Openid4vciDraftVersion.Draft11,
+  knownCredentialConfigurations: {},
 } as const satisfies IssuerMetadataResult
 
 describe('Openid4vciIssuer', () => {
@@ -164,6 +165,7 @@ describe('Openid4vciIssuer', () => {
         authorizationServers: [],
         credentialIssuer: credentialIssuerMetadata,
         originalDraftVersion: Openid4vciDraftVersion.Draft14,
+        knownCredentialConfigurations: {},
       },
       credentialRequest: {
         format: 'vc+sd-jwt',

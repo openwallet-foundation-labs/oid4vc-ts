@@ -12,13 +12,14 @@ import {
 import { ContentType, joinUriParts, parseWithErrorHandling, URL } from '@openid4vc/utils'
 import type { CredentialFormatIdentifier } from '../../formats/credential'
 import type { Openid4vciDraftVersion } from '../../version'
+import type { IssuerMetadataResult } from '../fetch-issuer-metadata'
 import {
   allCredentialIssuerMetadataFormatIdentifiers,
-  type CredentialConfigurationSupported,
   type CredentialConfigurationSupportedWithFormats,
   type CredentialConfigurationsSupported,
   type CredentialConfigurationsSupportedWithFormats,
   type CredentialIssuerMetadata,
+  zCredentialConfigurationSupportedWithFormats,
   zCredentialIssuerMetadataWithDraftVersion,
 } from './z-credential-issuer-metadata'
 import {
@@ -174,8 +175,9 @@ export async function fetchCredentialIssuerMetadata(
 
 /**
  * Extract credential configuration supported entries where the `format` is known to this
- * library. Should be ran only after verifying the credential issuer metadata structure, so
- * we can be certain that if the `format` matches the other format specific requirements are also met.
+ * library and the configuration validates correctly. Should be ran only after verifying
+ * the credential issuer metadata structure, so we can be certain that if the `format`
+ * matches the other format specific requirements are also met.
  *
  * Validation is done when resolving issuer metadata, or when calling `createIssuerMetadata`.
  */
@@ -184,16 +186,29 @@ export function extractKnownCredentialConfigurationSupportedFormats(
 ): CredentialConfigurationsSupportedWithFormats {
   return Object.fromEntries(
     Object.entries(credentialConfigurationsSupported).filter(
-      (entry): entry is [string, CredentialConfigurationSupportedWithFormats] =>
-        allCredentialIssuerMetadataFormatIdentifiers.includes(entry[1].format as CredentialFormatIdentifier)
+      (entry): entry is [string, CredentialConfigurationSupportedWithFormats] => {
+        // Type guard to ensure that the returned entries have known formats
+        const credentialConfiguration = zCredentialConfigurationSupportedWithFormats.safeParse(entry[1]) // Validate structure
+        if (!credentialConfiguration.success) {
+          return false
+        }
+        return allCredentialIssuerMetadataFormatIdentifiers.includes(
+          credentialConfiguration.data.format as CredentialFormatIdentifier
+        )
+      }
     )
   )
 }
 
-export function getCredentialConfigurationSupportedById<
-  Configurations extends CredentialConfigurationsSupported | CredentialConfigurationsSupportedWithFormats,
->(credentialConfigurations: Configurations, credentialConfigurationId: string) {
-  const configuration = credentialConfigurations[credentialConfigurationId]
+/**
+ * Get a known credential configuration supported by its id, it will throw an error if the configuration
+ * is not found or if its found but the credential configuration is invalid.
+ */
+export function getKnownCredentialConfigurationSupportedById(
+  issuerMetadata: IssuerMetadataResult,
+  credentialConfigurationId: string
+) {
+  const configuration = issuerMetadata.credentialIssuer.credential_configurations_supported[credentialConfigurationId]
 
   if (!configuration) {
     throw new Oauth2Error(
@@ -201,7 +216,13 @@ export function getCredentialConfigurationSupportedById<
     )
   }
 
-  return configuration as Configurations extends CredentialConfigurationsSupportedWithFormats
-    ? CredentialConfigurationSupportedWithFormats
-    : CredentialConfigurationSupported
+  if (!issuerMetadata.knownCredentialConfigurations[credentialConfigurationId]) {
+    parseWithErrorHandling(
+      zCredentialConfigurationSupportedWithFormats,
+      configuration,
+      `Credential configuration with id '${credentialConfigurationId}' is not valid`
+    )
+  }
+
+  return issuerMetadata.knownCredentialConfigurations[credentialConfigurationId]
 }

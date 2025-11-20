@@ -15,7 +15,7 @@ import {
 } from '../formats/credential'
 import { zLegacySdJwtVcCredentialIssuerMetadataV1 } from '../formats/credential/sd-jwt-vc/z-sd-jwt-vc'
 import { zSdJwtW3VcCredentialIssuerMetadata } from '../formats/credential/w3c-vc/z-w3c-sd-jwt-vc'
-import { getCredentialConfigurationSupportedById } from '../metadata/credential-issuer/credential-issuer-metadata'
+import { getKnownCredentialConfigurationSupportedById } from '../metadata/credential-issuer/credential-issuer-metadata'
 import type { IssuerMetadataResult } from '../metadata/fetch-issuer-metadata'
 import type { CredentialRequestWithFormats } from './z-credential-request'
 
@@ -34,8 +34,8 @@ export interface GetCredentialRequestFormatPayloadForCredentialConfigurationIdOp
 export function getCredentialRequestFormatPayloadForCredentialConfigurationId(
   options: GetCredentialRequestFormatPayloadForCredentialConfigurationIdOptions
 ): CredentialRequestWithFormats {
-  const credentialConfiguration = getCredentialConfigurationSupportedById(
-    options.issuerMetadata.credentialIssuer.credential_configurations_supported,
+  const credentialConfiguration = getKnownCredentialConfigurationSupportedById(
+    options.issuerMetadata,
     options.credentialConfigurationId
   )
 

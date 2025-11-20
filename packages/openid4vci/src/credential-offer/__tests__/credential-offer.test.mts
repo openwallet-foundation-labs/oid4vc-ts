@@ -18,6 +18,7 @@ const issuerMetadata = {
     },
   },
   originalDraftVersion: Openid4vciDraftVersion.Draft14,
+  knownCredentialConfigurations: {},
 } as const satisfies IssuerMetadataResult
 
 describe('Credential Offer', () => {

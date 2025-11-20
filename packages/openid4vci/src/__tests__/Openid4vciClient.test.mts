@@ -748,6 +748,7 @@ describe('Openid4vciClient', () => {
       credentialIssuer: issuerMetadata,
       signedCredentialIssuer: undefined,
       authorizationServers: [authorizationMetadata],
+      knownCredentialConfigurations: {},
     })
 
     server.resetHandlers(
@@ -780,6 +781,7 @@ describe('Openid4vciClient', () => {
       credentialIssuer: issuerMetadata,
       authorizationServers: [authorizationMetadata],
       signedCredentialIssuer: undefined,
+      knownCredentialConfigurations: {},
     })
 
     server.resetHandlers(
@@ -813,6 +815,7 @@ describe('Openid4vciClient', () => {
       credentialIssuer: issuerMetadata,
       signedCredentialIssuer: undefined,
       authorizationServers: [authorizationMetadata],
+      knownCredentialConfigurations: {},
     })
 
     // Fallback to the issuer metadata if no authorization server metadata found
@@ -852,6 +855,7 @@ describe('Openid4vciClient', () => {
           token_endpoint: 'https://example.com/issuer-id/token',
         },
       ],
+      knownCredentialConfigurations: {},
     })
 
     server.resetHandlers(
@@ -893,5 +897,55 @@ describe('Openid4vciClient', () => {
     await expect(client.resolveIssuerMetadata(issuerMetadata.credential_issuer)).rejects.toThrow(
       "Well known authorization server metadata for authorization server 'https://example.com/issuer-id' not found, and could also not extract required values from the credential issuer metadata as a fallback."
     )
+
+    // Fetches issuer metadata if the credential configuration is invalid
+    const issuerMetadataInvalidCredentials = {
+      credential_issuer: 'https://example.com/issuer-id',
+      authorization_servers: ['https://example.com/issuer-id'],
+      credential_endpoint: 'https://example.com/issuer-id/credential',
+      credential_configurations_supported: {
+        'invalid-credential-configuration': {
+          format: 'jwt_vc_json-ld',
+          cryptographic_binding_methods_supported: ['did'],
+          credential_signing_alg_values_supported: ['EdDSA'],
+          credential_definition: {
+            type: ['VerifiableCredential', 'BankId'],
+          },
+        },
+      },
+    } satisfies CredentialIssuerMetadata
+
+    server.resetHandlers(
+      // New/correct syntax for issuer metadata
+      http.get('https://example.com/.well-known/openid-credential-issuer/issuer-id', () =>
+        HttpResponse.json(issuerMetadataInvalidCredentials)
+      ),
+      // Correct syntax for authorization server metadata
+      http.get('https://example.com/.well-known/oauth-authorization-server/issuer-id', () =>
+        HttpResponse.json(authorizationMetadata)
+      )
+    )
+
+    const clientInvalid = new Openid4vciClient({
+      callbacks: {
+        ...callbacks,
+        fetch,
+        signJwt: () => {
+          throw new Error('Not implemented')
+        },
+      },
+    })
+
+    // expect the "knownCredentialConfigurations" to be empty as the only credential configuration is invalid (@context is missing)
+    const resolvedIssuerMetadataInvalid = await clientInvalid.resolveIssuerMetadata(
+      issuerMetadataInvalidCredentials.credential_issuer
+    )
+    expect(resolvedIssuerMetadataInvalid).toStrictEqual({
+      originalDraftVersion: Openid4vciDraftVersion.Draft14,
+      credentialIssuer: issuerMetadataInvalidCredentials,
+      signedCredentialIssuer: undefined,
+      authorizationServers: [authorizationMetadata],
+      knownCredentialConfigurations: {},
+    })
   })
 })
