@@ -1,5 +1,24 @@
 # @openid4vc/utils
 
+## 0.3.0
+
+### Minor Changes
+
+- 70b9740: Add support for OpenID4VCI draft 15. It also includes improved support for client (wallet) attestations, and better support for server side verification.
+
+  Due to the changes between Draft 14 and Draft 15 and it's up to the caller of this library to handle the difference between the versions. Draft 11 is still supported based on Draft 14 syntax (and thus will be automatically converted).
+
+- fccae5c: chore: update to zod 4. Although the public API has not changed, it does impact the error messages and some of the error structures
+- 70b9740: fix typo in param from authorizationServerMetata to authorizationServerMetadata
+- 26451d7: Before this PR, all packages used Valibot for data validation.
+  We have now fully transitioned to Zod. This introduces obvious breaking changes for some packages that re-exported Valibot types or schemas for example.
+
+### Patch Changes
+
+- c29dd5a: fix: entry file in package.json for cjs to point to the correct file extension
+- 158fa8c: feat: support node 22 and 24
+- 3b9b88a: fix: create fetch wrapper that always calls toString on URLSearchParams as React Native does not encode this correctly while Node.JS does
+
 ## 0.2.0
 
 ## 0.1.4
