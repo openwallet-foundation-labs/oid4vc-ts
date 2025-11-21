@@ -39,6 +39,10 @@ export const zAuthorizationServerMetadata = z
     // FiPA (no RFC yet)
     authorization_challenge_endpoint: z.optional(zHttpsUrl),
 
+    // OpenID4VCI 1.1 - Interactive Authorization Endpoint
+    interactive_authorization_endpoint: z.optional(zHttpsUrl),
+    require_interactive_authorization_request: z.optional(z.boolean()),
+
     // From OpenID4VCI specification
     'pre-authorized_grant_anonymous_access_supported': z.optional(z.boolean()),
 
