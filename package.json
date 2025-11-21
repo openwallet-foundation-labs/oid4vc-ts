@@ -15,7 +15,7 @@
     "style:fix": "biome check --write --unsafe",
     "build": "pnpm -r build",
     "test": "vitest",
-    "release": "pnpm build && pnpm changeset publish --no-git-tag",
+    "release": "pnpm build && pnpm changeset publish --no-git-tag 2>&1 | tee changeset-publish.log",
     "changeset-version": "pnpm changeset version && pnpm style:fix"
   },
   "devDependencies": {
