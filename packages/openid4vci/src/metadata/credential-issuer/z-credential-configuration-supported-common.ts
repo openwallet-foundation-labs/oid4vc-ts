@@ -1,3 +1,4 @@
+import { zDataUrl, zHttpsUrl } from '@openid4vc/utils'
 import z from 'zod'
 import { zIso18045OrStringArray } from '../../key-attestation/z-key-attestation'
 
@@ -8,7 +9,7 @@ const zCredentialConfigurationSupportedDisplayEntry = z
     logo: z
       .object({
         // FIXME: make required again, but need to support draft 11 first
-        uri: z.string().optional(),
+        uri: zHttpsUrl.or(zDataUrl).optional(),
         alt_text: z.string().optional(),
       })
       .loose()
@@ -18,7 +19,7 @@ const zCredentialConfigurationSupportedDisplayEntry = z
     background_image: z
       .object({
         // TODO: should be required, but paradym's metadata is wrong here.
-        uri: z.string().optional(),
+        uri: zHttpsUrl.or(zDataUrl).optional(),
       })
       .loose()
       .optional(),

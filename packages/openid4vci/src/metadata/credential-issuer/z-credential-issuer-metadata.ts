@@ -2,7 +2,7 @@ import {
   fullySpecifiedCoseAlgorithmArrayToJwaSignatureAlgorithmArray,
   jwaSignatureAlgorithmArrayToFullySpecifiedCoseAlgorithmArray,
 } from '@openid4vc/oauth2'
-import { type InferOutputUnion, type Simplify, zHttpsUrl } from '@openid4vc/utils'
+import { type InferOutputUnion, type Simplify, zDataUrl, zHttpsUrl } from '@openid4vc/utils'
 import z from 'zod'
 import {
   type CredentialFormatIdentifier,
@@ -127,7 +127,7 @@ const zCredentialIssuerMetadataDisplayEntry = z
     logo: z
       .object({
         // FIXME: make required again, but need to support draft 11 first
-        uri: z.string().optional(),
+        uri: zHttpsUrl.or(zDataUrl).optional(),
         alt_text: z.string().optional(),
       })
       .loose()
@@ -179,13 +179,13 @@ export const zCredentialConfigurationSupportedDraft11ToV1 = z
           .object({
             logo: z
               .object({
-                url: z.url().optional(),
+                url: zHttpsUrl.or(zDataUrl).optional(),
               })
               .loose()
               .optional(),
             background_image: z
               .object({
-                url: z.url().optional(),
+                url: zHttpsUrl.or(zDataUrl).optional(),
               })
               .loose()
               .optional(),

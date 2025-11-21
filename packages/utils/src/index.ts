@@ -35,6 +35,7 @@ export type { NonEmptyArray, Optional, OrPromise, Simplify, StringWithAutoComple
 export { getQueryParams, objectToQueryParams } from './url'
 export {
   type HttpMethod,
+  zDataUrl,
   zHttpMethod,
   zHttpsUrl,
   zInteger,
