@@ -1,5 +1,17 @@
 # @openid4vc/openid4vci
 
+## 0.4.0
+
+### Minor Changes
+
+- dfa7819: Remove support for the CommonJS/CJS syntax. Since React Native bundles your code, the update to ESM should not cause issues. In addition all latest minor releases of Node 20+ support requiring ESM modules. This means that even if you project is still a CommonJS project, it can now depend on ESM modules. For this reason oid4vc-ts is now fully an ESM module.
+
+### Patch Changes
+
+- Updated dependencies [dfa7819]
+  - @openid4vc/oauth2@0.4.0
+  - @openid4vc/utils@0.4.0
+
 ## 0.3.0
 
 ### Minor Changes
