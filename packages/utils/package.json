@@ -13,20 +13,15 @@
     "directory": "packages/utils"
   },
   "publishConfig": {
-    "main": "./dist/index.cjs",
     "module": "./dist/index.mjs",
     "types": "./dist/index.d.mts",
     "exports": {
-      ".": {
-        "import": "./dist/index.mjs",
-        "require": "./dist/index.cjs",
-        "types": "./dist/index.d.mts"
-      },
+      ".": "./dist/index.mjs",
       "./package.json": "./package.json"
     }
   },
   "scripts": {
-    "build": "tsdown src/index.ts --format cjs,esm --dts --sourcemap"
+    "build": "tsdown src/index.ts --format esm --dts --sourcemap"
   },
   "dependencies": {
     "buffer": "catalog:",
