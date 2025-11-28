@@ -90,17 +90,32 @@ export async function fetchCredentialIssuerMetadata(
   // Either unsigned metadata or signed JWT
   const responseSchema = zCredentialIssuerMetadataWithDraftVersion.or(zCompactJwt)
 
-  let result = await fetchWellKnownMetadata(wellKnownMetadataUrl, responseSchema, {
-    fetch: options?.callbacks?.fetch,
-    acceptedContentType,
-  })
-  // If the metadata is not available at the new URL, fetch it at the legacy URL
-  // The legacy url is the same if no subpath is used by the issuer
-  if (!result && legacyWellKnownMetadataUrl !== wellKnownMetadataUrl) {
-    result = await fetchWellKnownMetadata(legacyWellKnownMetadataUrl, responseSchema, {
+  let result = null
+  let firstError = null
+
+  try {
+    result = await fetchWellKnownMetadata(wellKnownMetadataUrl, responseSchema, {
       fetch: options?.callbacks?.fetch,
       acceptedContentType,
     })
+  } catch (err) {
+    // An exception occurs if a CORS-policy blocks the request, i.e. because the URL is invalid due to the legacy path being used
+    // The legacy path should still be tried therefore we store the first error to rethrow it later if needed
+    firstError = err
+  }
+
+  // If the metadata is not available at the new URL, fetch it at the legacy URL
+  // The legacy url is the same if no subpath is used by the issuer
+  if (!result && legacyWellKnownMetadataUrl !== wellKnownMetadataUrl) {
+    try {
+      result = await fetchWellKnownMetadata(legacyWellKnownMetadataUrl, responseSchema, {
+        fetch: options?.callbacks?.fetch,
+        acceptedContentType,
+      })
+    } catch (err) {
+      // If the first attempt also errored, rethrow that original error; otherwise rethrow this one
+      throw firstError ?? err
+    }
   }
 
   let issuerMetadataWithVersion: FetchCredentialIssuerMetadataReturn | null = null
