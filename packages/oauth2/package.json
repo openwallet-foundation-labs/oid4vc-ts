@@ -1,6 +1,6 @@
 {
   "name": "@openid4vc/oauth2",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "files": [
     "dist"
   ],
@@ -13,20 +13,19 @@
     "directory": "packages/oauth2"
   },
   "publishConfig": {
-    "main": "./dist/index.cjs",
     "module": "./dist/index.mjs",
     "types": "./dist/index.d.mts",
     "exports": {
       ".": {
         "import": "./dist/index.mjs",
-        "require": "./dist/index.cjs",
+        "require": "./dist/index.mjs",
         "types": "./dist/index.d.mts"
       },
       "./package.json": "./package.json"
     }
   },
   "scripts": {
-    "build": "tsdown src/index.ts --format cjs,esm --dts --sourcemap"
+    "build": "tsdown src/index.ts --format esm --dts --sourcemap"
   },
   "dependencies": {
     "@openid4vc/utils": "workspace:*",

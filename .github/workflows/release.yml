@@ -19,7 +19,7 @@ jobs:
       published: ${{ env.PUBLISHED == 'true' }}
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - uses: pnpm/action-setup@v4
 
@@ -82,7 +82,7 @@ jobs:
       id-token: write # Needed for npm trusted publishing
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - uses: pnpm/action-setup@v4
 
