@@ -1,5 +1,13 @@
 # @openid4vc/openid4vci
 
+## 0.4.1
+
+### Patch Changes
+
+- 2ead756: fix(openid4vci): loosen type validation for `format` in credential request. Previously an error would be thrown if both `format` and `credential_configuration_id` were present. Some wallets use this to broaden compatibilty, so it makes sense to not throw on this
+  - @openid4vc/oauth2@0.4.1
+  - @openid4vc/utils@0.4.1
+
 ## 0.4.0
 
 ### Minor Changes
