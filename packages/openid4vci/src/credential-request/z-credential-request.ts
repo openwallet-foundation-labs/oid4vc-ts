@@ -43,7 +43,6 @@ export const allCredentialRequestFormatIdentifiers = allCredentialRequestFormats
 const zCredentialRequestCredentialConfigurationId = z.object({
   credential_configuration_id: z.string(),
 
-  format: z.never({ message: "'format' cannot be defined when 'credential_configuration_id' is set." }).optional(),
   credential_identifier: z
     .never({ message: "'credential_identifier' cannot be defined when 'credential_configuration_id' is set." })
     .optional(),
@@ -56,15 +55,14 @@ const zAuthorizationDetailsCredentialRequest = z.object({
   credential_configuration_id: z
     .never({ message: "'credential_configuration_id' cannot be defined when 'credential_identifier' is set." })
     .optional(),
-
-  // Cannot be present if credential identifier is present
-  format: z.never({ message: "'format' cannot be defined when 'credential_identifier' is set." }).optional(),
 })
 
 const zCredentialRequestFormat = z
   .object({
     format: z.string(),
 
+    // We add these nevers here so that if one of these is present, we will always use
+    // the new properties rather than the deprecated format
     credential_identifier: z
       .never({ message: "'credential_identifier' cannot be defined when 'format' is set." })
       .optional(),
