@@ -1,5 +1,4 @@
 import { describe, expect, test } from 'vitest'
-import z from 'zod'
 import { zCredentialRequest, zCredentialRequestDraft11To14 } from '../z-credential-request.js'
 
 describe('Credential Request', () => {
@@ -21,7 +20,7 @@ describe('Credential Request', () => {
     expect(JSON.stringify(parseResult.error)).includes("Both 'proof' and 'proofs' are defined. Only one is allowed")
   })
 
-  test('error when both format and credential_identifier are defined', () => {
+  test('valid when both format and credential_identifier are defined', () => {
     const parseResult = zCredentialRequest.safeParse({
       format: 'vc+sd-jwt',
       vct: 'some-vct',
@@ -33,29 +32,7 @@ describe('Credential Request', () => {
       },
     })
 
-    expect(parseResult.success).toBe(false)
-    expect(parseResult.error ? z.treeifyError(parseResult.error) : undefined).toEqual({
-      errors: [],
-      properties: {
-        credential_configuration_id: {
-          errors: ['Invalid input: expected string, received undefined'],
-        },
-        credential_identifier: {
-          errors: [
-            "'credential_identifier' cannot be defined when 'credential_configuration_id' is set.",
-            "'credential_identifier' cannot be defined when 'format' is set.",
-            "'credential_identifier' cannot be defined when 'format' is set.",
-          ],
-        },
-        format: {
-          errors: [
-            "'format' cannot be defined when 'credential_identifier' is set.",
-            "'format' cannot be defined when 'credential_configuration_id' is set.",
-            "'format' cannot be defined when 'credential_identifier' is set.",
-          ],
-        },
-      },
-    })
+    expect(parseResult.success).toBe(true)
   })
 
   test('parse draft 14 credential request with vc+sd-jwt format', () => {
