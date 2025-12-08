@@ -12,6 +12,7 @@ export {
 export { InvalidFetchResponseError } from './error/InvalidFetchResponseError'
 export { JsonParseError } from './error/JsonParseError'
 export { ValidationError } from './error/ValidationError'
+export { OpenId4VcError } from './error/OpenId4VcError'
 export { createFetcher, createZodFetcher, type ZodFetcher } from './fetcher'
 export {
   type Fetch,

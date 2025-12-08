@@ -1,7 +1,8 @@
 import { ContentType, isResponseContentType } from '../content-type'
 import type { FetchResponse } from '../globals'
+import { OpenId4VcError } from './OpenId4VcError'
 
-export class InvalidFetchResponseError extends Error {
+export class InvalidFetchResponseError extends OpenId4VcError {
   public readonly response: FetchResponse
 
   public constructor(
