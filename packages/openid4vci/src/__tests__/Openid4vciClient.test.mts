@@ -10,7 +10,7 @@ import { setupServer } from 'msw/node'
 import { afterAll, afterEach, beforeAll, describe, expect, test } from 'vitest'
 import { zAuthorizationChallengeRequest } from '../../../oauth2/src/authorization-challenge/z-authorization-challenge.js'
 import { callbacks, getSignJwtCallback, parseXwwwFormUrlEncoded } from '../../../oauth2/tests/util.mjs'
-import { Openid4vciDraftVersion } from '../index.js'
+import { Openid4vciVersion } from '../index.js'
 import { extractScopesForCredentialConfigurationIds } from '../metadata/credential-issuer/credential-configurations.js'
 import type { CredentialIssuerMetadata } from '../metadata/credential-issuer/z-credential-issuer-metadata.js'
 import { AuthorizationFlow, Openid4vciClient } from '../Openid4vciClient.js'
@@ -744,7 +744,7 @@ describe('Openid4vciClient', () => {
 
     const resolvedIssuerMetadata = await client.resolveIssuerMetadata(issuerMetadata.credential_issuer)
     expect(resolvedIssuerMetadata).toStrictEqual({
-      originalDraftVersion: Openid4vciDraftVersion.Draft14,
+      originalDraftVersion: Openid4vciVersion.Draft14,
       credentialIssuer: issuerMetadata,
       signedCredentialIssuer: undefined,
       authorizationServers: [authorizationMetadata],
@@ -777,7 +777,7 @@ describe('Openid4vciClient', () => {
 
     const resolvedIssuerMetadata2 = await client.resolveIssuerMetadata(issuerMetadata.credential_issuer)
     expect(resolvedIssuerMetadata2).toStrictEqual({
-      originalDraftVersion: Openid4vciDraftVersion.Draft14,
+      originalDraftVersion: Openid4vciVersion.Draft14,
       credentialIssuer: issuerMetadata,
       authorizationServers: [authorizationMetadata],
       signedCredentialIssuer: undefined,
@@ -811,7 +811,7 @@ describe('Openid4vciClient', () => {
 
     const resolvedIssuerMetadata3 = await client.resolveIssuerMetadata(issuerMetadata.credential_issuer)
     expect(resolvedIssuerMetadata3).toStrictEqual({
-      originalDraftVersion: Openid4vciDraftVersion.Draft14,
+      originalDraftVersion: Openid4vciVersion.Draft14,
       credentialIssuer: issuerMetadata,
       signedCredentialIssuer: undefined,
       authorizationServers: [authorizationMetadata],
@@ -846,7 +846,7 @@ describe('Openid4vciClient', () => {
 
     const resolvedIssuerMetadata4 = await client.resolveIssuerMetadata(issuerMetadata.credential_issuer)
     expect(resolvedIssuerMetadata4).toStrictEqual({
-      originalDraftVersion: Openid4vciDraftVersion.Draft14,
+      originalDraftVersion: Openid4vciVersion.Draft14,
       credentialIssuer: { ...issuerMetadata, token_endpoint: 'https://example.com/issuer-id/token' },
       signedCredentialIssuer: undefined,
       authorizationServers: [
@@ -941,7 +941,7 @@ describe('Openid4vciClient', () => {
       issuerMetadataInvalidCredentials.credential_issuer
     )
     expect(resolvedIssuerMetadataInvalid).toStrictEqual({
-      originalDraftVersion: Openid4vciDraftVersion.Draft14,
+      originalDraftVersion: Openid4vciVersion.Draft14,
       credentialIssuer: issuerMetadataInvalidCredentials,
       signedCredentialIssuer: undefined,
       authorizationServers: [authorizationMetadata],

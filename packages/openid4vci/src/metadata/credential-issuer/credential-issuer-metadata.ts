@@ -11,7 +11,7 @@ import {
 } from '@openid4vc/oauth2'
 import { ContentType, joinUriParts, OpenId4VcBaseError, parseWithErrorHandling, URL } from '@openid4vc/utils'
 import type { CredentialFormatIdentifier } from '../../formats/credential'
-import type { Openid4vciDraftVersion } from '../../version'
+import type { Openid4vciVersion } from '../../version'
 import type { IssuerMetadataResult } from '../fetch-issuer-metadata'
 import {
   allCredentialIssuerMetadataFormatIdentifiers,
@@ -59,7 +59,7 @@ export interface FetchCredentialIssuerMetadataReturn {
   /**
    * The original draft version of the credential issuer metadata
    */
-  originalDraftVersion: Openid4vciDraftVersion
+  originalDraftVersion: Openid4vciVersion
 
   /**
    * Metadata about the signed issuer metadata, if the metadata was signed.

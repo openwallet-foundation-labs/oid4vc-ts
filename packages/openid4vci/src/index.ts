@@ -76,4 +76,4 @@ export { AuthorizationFlow, Openid4vciClient, type Openid4vciClientOptions } fro
 export { Openid4vciIssuer, type Openid4vciIssuerOptions } from './Openid4vciIssuer'
 export { Openid4vciWalletProvider, type Openid4vciWalletProviderOptions } from './Openid4vciWalletProvider'
 
-export { Openid4vciDraftVersion } from './version'
+export { Openid4vciDraftVersion, Openid4vciVersion } from './version'

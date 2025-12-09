@@ -40,7 +40,7 @@ import {
 import { type IssuerMetadataResult, resolveIssuerMetadata } from './metadata/fetch-issuer-metadata'
 import { type RequestNonceOptions, requestNonce } from './nonce/nonce-request'
 import { type SendNotificationOptions, sendNotification } from './notification/notification'
-import { Openid4vciDraftVersion } from './version'
+import { Openid4vciVersion } from './version'
 
 export enum AuthorizationFlow {
   Oauth2Redirect = 'Oauth2Redirect',
@@ -466,8 +466,8 @@ export class Openid4vciClient {
     let credentialResponse: RetrieveCredentialsResponseNotOk | RetrieveCredentialsResponseOk
 
     if (
-      issuerMetadata.originalDraftVersion === Openid4vciDraftVersion.Draft15 ||
-      issuerMetadata.originalDraftVersion === Openid4vciDraftVersion.V1
+      issuerMetadata.originalDraftVersion === Openid4vciVersion.Draft15 ||
+      issuerMetadata.originalDraftVersion === Openid4vciVersion.V1
     ) {
       credentialResponse = await retrieveCredentialsWithCredentialConfigurationId({
         accessToken,

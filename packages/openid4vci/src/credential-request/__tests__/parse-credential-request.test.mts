@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import type { CredentialIssuerMetadata } from '../../metadata/credential-issuer/z-credential-issuer-metadata.js'
-import { Openid4vciDraftVersion } from '../../version.js'
+import { Openid4vciVersion } from '../../version.js'
 import { parseCredentialRequest } from '../parse-credential-request.js'
 
 const issuerMetadata = {
@@ -21,7 +21,7 @@ describe('Parse Credential Request', () => {
         issuerMetadata: {
           authorizationServers: [],
           credentialIssuer: issuerMetadata,
-          originalDraftVersion: Openid4vciDraftVersion.Draft15,
+          originalDraftVersion: Openid4vciVersion.Draft15,
           knownCredentialConfigurations: {
             my_credential: {
               format: 'dc+sd-jwt',
@@ -49,7 +49,7 @@ describe('Parse Credential Request', () => {
         issuerMetadata: {
           authorizationServers: [],
           credentialIssuer: issuerMetadata,
-          originalDraftVersion: Openid4vciDraftVersion.Draft15,
+          originalDraftVersion: Openid4vciVersion.Draft15,
           knownCredentialConfigurations: {
             my_credential: {
               format: 'dc+sd-jwt',
@@ -93,7 +93,7 @@ describe('Parse Credential Request', () => {
         issuerMetadata: {
           authorizationServers: [],
           credentialIssuer: issuerMetadata,
-          originalDraftVersion: Openid4vciDraftVersion.Draft14,
+          originalDraftVersion: Openid4vciVersion.Draft14,
           knownCredentialConfigurations: {
             my_credential: {
               format: 'dc+sd-jwt',
@@ -137,7 +137,7 @@ describe('Parse Credential Request', () => {
         issuerMetadata: {
           authorizationServers: [],
           credentialIssuer: issuerMetadata,
-          originalDraftVersion: Openid4vciDraftVersion.Draft14,
+          originalDraftVersion: Openid4vciVersion.Draft14,
           knownCredentialConfigurations: {
             my_credential: {
               format: 'dc+sd-jwt',
@@ -181,7 +181,7 @@ describe('Parse Credential Request', () => {
         issuerMetadata: {
           authorizationServers: [],
           credentialIssuer: issuerMetadata,
-          originalDraftVersion: Openid4vciDraftVersion.Draft14,
+          originalDraftVersion: Openid4vciVersion.Draft14,
           knownCredentialConfigurations: {
             my_credential: {
               format: 'dc+sd-jwt',
@@ -249,7 +249,7 @@ describe('Parse Credential Request', () => {
         issuerMetadata: {
           authorizationServers: [],
           credentialIssuer: issuerMetadata,
-          originalDraftVersion: Openid4vciDraftVersion.Draft14,
+          originalDraftVersion: Openid4vciVersion.Draft14,
           knownCredentialConfigurations: {
             my_credential: {
               format: 'dc+sd-jwt',
@@ -317,7 +317,7 @@ describe('Parse Credential Request', () => {
         issuerMetadata: {
           authorizationServers: [],
           credentialIssuer: issuerMetadata,
-          originalDraftVersion: Openid4vciDraftVersion.Draft14,
+          originalDraftVersion: Openid4vciVersion.Draft14,
           knownCredentialConfigurations: {
             my_credential: {
               format: 'dc+sd-jwt',
@@ -382,7 +382,7 @@ describe('Parse Credential Request', () => {
         issuerMetadata: {
           authorizationServers: [],
           credentialIssuer: issuerMetadata,
-          originalDraftVersion: Openid4vciDraftVersion.Draft14,
+          originalDraftVersion: Openid4vciVersion.Draft14,
           knownCredentialConfigurations: {
             my_credential: {
               format: 'dc+sd-jwt',
@@ -421,7 +421,7 @@ describe('Parse Credential Request', () => {
         issuerMetadata: {
           authorizationServers: [],
           credentialIssuer: issuerMetadata,
-          originalDraftVersion: Openid4vciDraftVersion.Draft14,
+          originalDraftVersion: Openid4vciVersion.Draft14,
           knownCredentialConfigurations: {
             my_credential: {
               format: 'dc+sd-jwt',
@@ -458,7 +458,7 @@ describe('Parse Credential Request', () => {
         issuerMetadata: {
           authorizationServers: [],
           credentialIssuer: issuerMetadata,
-          originalDraftVersion: Openid4vciDraftVersion.Draft14,
+          originalDraftVersion: Openid4vciVersion.Draft14,
           knownCredentialConfigurations: {
             my_credential: {
               format: 'dc+sd-jwt',
@@ -495,7 +495,7 @@ describe('Parse Credential Request', () => {
         issuerMetadata: {
           authorizationServers: [],
           credentialIssuer: issuerMetadata,
-          originalDraftVersion: Openid4vciDraftVersion.Draft14,
+          originalDraftVersion: Openid4vciVersion.Draft14,
           knownCredentialConfigurations: {
             my_credential: {
               format: 'dc+sd-jwt',
@@ -530,7 +530,7 @@ describe('Parse Credential Request', () => {
         issuerMetadata: {
           authorizationServers: [],
           credentialIssuer: issuerMetadata,
-          originalDraftVersion: Openid4vciDraftVersion.Draft14,
+          originalDraftVersion: Openid4vciVersion.Draft14,
           knownCredentialConfigurations: {
             my_credential: {
               format: 'dc+sd-jwt',
@@ -569,7 +569,7 @@ describe('Parse Credential Request', () => {
         issuerMetadata: {
           authorizationServers: [],
           credentialIssuer: issuerMetadata,
-          originalDraftVersion: Openid4vciDraftVersion.Draft14,
+          originalDraftVersion: Openid4vciVersion.Draft14,
           knownCredentialConfigurations: {
             my_credential: {
               format: 'dc+sd-jwt',
@@ -605,7 +605,7 @@ describe('Parse Credential Request', () => {
         issuerMetadata: {
           authorizationServers: [],
           credentialIssuer: issuerMetadata,
-          originalDraftVersion: Openid4vciDraftVersion.Draft14,
+          originalDraftVersion: Openid4vciVersion.Draft14,
           knownCredentialConfigurations: {
             my_credential: {
               format: 'dc+sd-jwt',
@@ -668,7 +668,7 @@ describe('Parse Credential Request', () => {
         issuerMetadata: {
           authorizationServers: [],
           credentialIssuer: issuerMetadata,
-          originalDraftVersion: Openid4vciDraftVersion.Draft14,
+          originalDraftVersion: Openid4vciVersion.Draft14,
           knownCredentialConfigurations: {
             my_credential: {
               format: 'dc+sd-jwt',
@@ -736,7 +736,7 @@ describe('Parse Credential Request', () => {
         issuerMetadata: {
           authorizationServers: [],
           credentialIssuer: issuerMetadata,
-          originalDraftVersion: Openid4vciDraftVersion.Draft11,
+          originalDraftVersion: Openid4vciVersion.Draft11,
           knownCredentialConfigurations: {
             my_credential: {
               format: 'dc+sd-jwt',

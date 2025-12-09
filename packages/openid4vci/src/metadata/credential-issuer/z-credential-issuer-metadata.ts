@@ -38,7 +38,7 @@ import {
   zSdJwtW3VcCredentialIssuerMetadata,
   zSdJwtW3VcCredentialIssuerMetadataDraft15,
 } from '../../formats/credential/w3c-vc/z-w3c-sd-jwt-vc'
-import { Openid4vciDraftVersion } from '../../version'
+import { Openid4vciVersion } from '../../version'
 import {
   zCredentialConfigurationSupportedCommon,
   zCredentialConfigurationSupportedCommonDraft15,
@@ -468,15 +468,15 @@ export const zCredentialIssuerMetadataWithDraftVersion = z.union([
     return {
       credentialIssuerMetadata,
       originalDraftVersion: isV1
-        ? Openid4vciDraftVersion.V1
+        ? Openid4vciVersion.V1
         : isDraft15
-          ? Openid4vciDraftVersion.Draft15
-          : Openid4vciDraftVersion.Draft14,
+          ? Openid4vciVersion.Draft15
+          : Openid4vciVersion.Draft14,
     }
   }),
   // Then try parsing draft 11 and transform into draft 16
   zCredentialIssuerMetadataDraft11ToV1.transform((credentialIssuerMetadata) => ({
     credentialIssuerMetadata,
-    originalDraftVersion: Openid4vciDraftVersion.Draft11,
+    originalDraftVersion: Openid4vciVersion.Draft11,
   })),
 ])
