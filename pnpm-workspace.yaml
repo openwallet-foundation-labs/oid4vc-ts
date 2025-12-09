@@ -3,5 +3,5 @@ packages:
 
 catalog:
   buffer: ^6.0.3
-  jose: ^6.1.2
+  jose: ^6.1.3
   zod: ^4.1.13
