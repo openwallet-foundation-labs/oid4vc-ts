@@ -88,9 +88,9 @@ export async function createOpenid4vpAuthorizationRequest(options: CreateOpenid4
   }
 
   if (jar) {
-    if (!jar.additionalJwtPayload?.aud) {
-      additionalJwtPayload = { ...jar.additionalJwtPayload, aud: jar.requestUri }
-    }
+    additionalJwtPayload = !jar.additionalJwtPayload?.aud
+      ? { ...jar.additionalJwtPayload, aud: jar.requestUri }
+      : jar.additionalJwtPayload
 
     const jarResult = await createJarAuthorizationRequest({
       ...jar,
