@@ -1,5 +1,14 @@
 # @openid4vc/openid4vp
 
+## 0.4.2
+
+### Patch Changes
+
+- f07e928: fix: actually pass `additionalJwtPayload` in openid4vp authorization request. Before in `createOpenid4vpAuthorizationRequest`, if `jar.additionalJwtPayload.aud` was undefined, the `additionalJwtPayload` was never passed the payload from the options.
+- Updated dependencies [05af867]
+  - @openid4vc/utils@0.4.2
+  - @openid4vc/oauth2@0.4.2
+
 ## 0.4.1
 
 ### Patch Changes

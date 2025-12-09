@@ -1,5 +1,18 @@
 # @openid4vc/openid4vci
 
+## 0.4.2
+
+### Patch Changes
+
+- 05af867: fix: add fallback handling when fetch request fails for metadata requests which have multiple URLs to be tried. It's impossible to e.g. detect a CORS exception,
+  so instead we try the other URLs in case of a fetch error, and only throw the error if all requests failed.
+
+  This is supported for both fetching credential issuer metadata and authorization server metadata.
+
+- Updated dependencies [05af867]
+  - @openid4vc/utils@0.4.2
+  - @openid4vc/oauth2@0.4.2
+
 ## 0.4.1
 
 ### Patch Changes
