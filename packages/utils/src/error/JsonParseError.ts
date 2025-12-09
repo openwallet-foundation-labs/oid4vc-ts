@@ -1,6 +1,6 @@
-import { OpenId4VcError } from "./OpenId4VcError";
+import { OpenId4VcBaseError } from './OpenId4VcBaseError'
 
-export class JsonParseError extends OpenId4VcError {
+export class JsonParseError extends OpenId4VcBaseError {
   public constructor(message: string, jsonString: string) {
     super(`${message}\n${jsonString}`)
   }
