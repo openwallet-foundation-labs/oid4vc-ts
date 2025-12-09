@@ -278,13 +278,23 @@ const zCredentialConfigurationSupportedV1ToDraft15 = zCredentialConfigurationSup
 // Transforms credential configuration supported to credentials_supported format
 // Ignores unknown formats
 const zCredentialConfigurationSupportedV1ToDraft11 = zCredentialConfigurationSupportedV1ToDraft15
-  .and(
-    z
-      .object({
-        id: z.string(),
+  .transform((configuration, ctx) => {
+    if (!configuration.id || typeof configuration.id !== 'string') {
+      ctx.addIssue({
+        code: 'invalid_type',
+        expected: 'string',
+        input: configuration.id,
+        path: ['id'],
+        message: 'Missing required id field',
       })
-      .loose()
-  )
+      return z.NEVER
+    }
+
+    return {
+      ...configuration,
+      id: configuration.id,
+    }
+  })
   .transform(
     ({
       id,
@@ -296,7 +306,8 @@ const zCredentialConfigurationSupportedV1ToDraft11 = zCredentialConfigurationSup
       ...rest
     }): unknown => ({
       ...rest,
-      format,
+      // vc+sd-jwt was changed to dc+sd-jwt in draft 15
+      format: format === 'dc+sd-jwt' ? 'vc+sd-jwt' : format,
       ...(credential_signing_alg_values_supported
         ? {
             cryptographic_suites_supported:
@@ -402,10 +413,13 @@ export const zCredentialIssuerMetadataWithDraft11 = zCredentialIssuerMetadataDra
   .transform((issuerMetadata) => ({
     ...issuerMetadata,
     ...(issuerMetadata.authorization_servers ? { authorization_server: issuerMetadata.authorization_servers[0] } : {}),
-    credentials_supported: Object.entries(issuerMetadata.credential_configurations_supported).map(([id, value]) => ({
-      ...value,
-      id,
-    })),
+    credentials_supported: Object.entries(issuerMetadata.credential_configurations_supported).map(
+      ([id, value]) =>
+        ({
+          ...value,
+          id,
+        }) as (typeof issuerMetadata)['credential_configurations_supported'][typeof id]
+    ),
   }))
   .pipe(
     zCredentialIssuerMetadataDraft14Draft15V1.extend({
