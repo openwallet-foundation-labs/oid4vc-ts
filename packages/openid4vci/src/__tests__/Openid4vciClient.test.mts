@@ -217,7 +217,7 @@ describe('Openid4vciClient', () => {
       display: [{ name: 'Animo', logo: { alt_text: 'Logo of Animo Solutions', url: 'https://github.com/animo.png' } }],
       credential_configurations_supported: {
         clv2gbawu000tfkrk5l067h1h: {
-          format: 'vc+sd-jwt',
+          format: 'dc+sd-jwt',
           cryptographic_binding_methods_supported: ['did:key', 'did:jwk', 'did:web'],
           credential_signing_alg_values_supported: ['EdDSA', 'ES256'],
           credential_metadata: {
@@ -233,7 +233,7 @@ describe('Openid4vciClient', () => {
           vct: 'https://metadata.paradym.id/types/iuoQGyxlww-ParadymContributor',
         },
         clvi9a5od00127pap4obzoeuf: {
-          format: 'vc+sd-jwt',
+          format: 'dc+sd-jwt',
           cryptographic_binding_methods_supported: ['did:key', 'did:jwk', 'did:web'],
           credential_signing_alg_values_supported: ['EdDSA', 'ES256'],
           credential_metadata: {
@@ -250,7 +250,7 @@ describe('Openid4vciClient', () => {
           vct: 'https://metadata.paradym.id/types/6fTEgFULv2-EmployeeBadge',
         },
         clx4z0auo00a6f0sibkutdqor: {
-          format: 'vc+sd-jwt',
+          format: 'dc+sd-jwt',
           cryptographic_binding_methods_supported: ['did:key', 'did:jwk', 'did:web'],
           credential_signing_alg_values_supported: ['EdDSA', 'ES256'],
           credential_metadata: {

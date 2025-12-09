@@ -119,7 +119,7 @@ describe('Credential Configurations', () => {
         },
       },
       'c3db5513-ae2b-46e9-8a0d-fbfd0ce52b6a': {
-        format: 'vc+sd-jwt',
+        format: 'dc+sd-jwt',
         vct: 'something',
         cryptographic_binding_methods_supported: ['did:key'],
         credential_signing_alg_values_supported: ['EdDSA'],

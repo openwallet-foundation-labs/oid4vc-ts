@@ -198,7 +198,7 @@ export const zCredentialConfigurationSupportedDraft11ToV1 = z
   .loose()
   .transform(({ cryptographic_suites_supported, display, claims, id, format, ...rest }) => ({
     ...rest,
-    format,
+    format: format === 'vc+sd-jwt' && rest.vct ? 'dc+sd-jwt' : format,
     ...(cryptographic_suites_supported
       ? {
           credential_signing_alg_values_supported:
