@@ -1,5 +1,18 @@
 # @openid4vc/openid4vci
 
+## 0.4.3
+
+### Patch Changes
+
+- 9ca7372: fix(openid4vci): allow number/null for nested mdoc path values. This allows to access nested claims in arrays, after the namespace and element
+- 5f901f0: fix: correctly transform the format identifiers vc+sd-jwt and dc+sd-jwt between different openid4vci (draft) versions
+- 6bbe2ee: fix: allow both credential and credentials to be present in credential response. This enables integration with issuers that return both for backwards compatibility
+- 5f901f0: chore: rename `OpenId4VciDraftVersion` to `OpenId4VciVersion`. `OpenId4VciDraftVersion` is deprecated, but has been kept for backwards compatibility
+- 5f901f0: fix(openid4vci): transform claims between object and array between drafts
+- 5f901f0: fix: transformation of credential issuer metadata to draft 11. An issue with the validation logic resulted in the v1 to draft 11 transformation logic to throw a validation error
+  - @openid4vc/oauth2@0.4.3
+  - @openid4vc/utils@0.4.3
+
 ## 0.4.2
 
 ### Patch Changes
