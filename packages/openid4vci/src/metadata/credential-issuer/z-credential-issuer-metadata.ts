@@ -297,6 +297,8 @@ const zCredentialConfigurationSupportedV1ToDraft11 = zCredentialConfigurationSup
     return {
       ...configuration,
       id: configuration.id,
+      // We remove claims when downgrading to draft 11
+      claims: undefined,
     }
   })
   .transform(
@@ -307,6 +309,7 @@ const zCredentialConfigurationSupportedV1ToDraft11 = zCredentialConfigurationSup
       proof_types_supported,
       scope,
       format,
+      claims,
       ...rest
     }): unknown => ({
       ...rest,
