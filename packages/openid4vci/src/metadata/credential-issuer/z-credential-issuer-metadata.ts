@@ -39,6 +39,7 @@ import {
   zSdJwtW3VcCredentialIssuerMetadataDraft15,
 } from '../../formats/credential/w3c-vc/z-w3c-sd-jwt-vc'
 import { Openid4vciVersion } from '../../version'
+import { claimsObjectToClaimsArray } from './credential-configurations'
 import {
   zCredentialConfigurationSupportedCommon,
   zCredentialConfigurationSupportedCommonDraft15,
@@ -193,7 +194,10 @@ export const zCredentialConfigurationSupportedDraft11ToV1 = z
           .loose()
       )
       .optional(),
-    claims: z.any().optional(),
+    claims: z
+      .any()
+      .transform((claims) => claimsObjectToClaimsArray(claims))
+      .optional(),
   })
   .loose()
   .transform(({ cryptographic_suites_supported, display, claims, id, format, ...rest }) => ({
