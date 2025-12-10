@@ -31,10 +31,12 @@ export const zCredentialResponse = zBaseCredentialResponse
   .superRefine((value, ctx) => {
     const { credential, credentials, transaction_id, interval, notification_id } = value
 
-    if ([credential, credentials, transaction_id].filter((i) => i !== undefined).length !== 1) {
+    // NOTE: we allow both credential and credentials to be present, to better work with
+    // issuers that return both for backwards compatibility
+    if ([credential || credentials, transaction_id].filter((i) => i !== undefined).length !== 1) {
       ctx.addIssue({
         code: 'custom',
-        message: `Exactly one of 'credential', 'credentials', or 'transaction_id' MUST be defined.`,
+        message: `Exactly one of 'credential'/'credentials', or 'transaction_id' MUST be defined.`,
       })
     }
 
