@@ -38,7 +38,8 @@ import {
   zSdJwtW3VcCredentialIssuerMetadata,
   zSdJwtW3VcCredentialIssuerMetadataDraft15,
 } from '../../formats/credential/w3c-vc/z-w3c-sd-jwt-vc'
-import { Openid4vciDraftVersion } from '../../version'
+import { Openid4vciVersion } from '../../version'
+import { claimsObjectToClaimsArray } from './credential-configurations'
 import {
   zCredentialConfigurationSupportedCommon,
   zCredentialConfigurationSupportedCommonDraft15,
@@ -193,12 +194,15 @@ export const zCredentialConfigurationSupportedDraft11ToV1 = z
           .loose()
       )
       .optional(),
-    claims: z.any().optional(),
+    claims: z
+      .any()
+      .transform((claims) => claimsObjectToClaimsArray(claims))
+      .optional(),
   })
   .loose()
   .transform(({ cryptographic_suites_supported, display, claims, id, format, ...rest }) => ({
     ...rest,
-    format,
+    format: format === 'vc+sd-jwt' && rest.vct ? 'dc+sd-jwt' : format,
     ...(cryptographic_suites_supported
       ? {
           credential_signing_alg_values_supported:
@@ -278,13 +282,25 @@ const zCredentialConfigurationSupportedV1ToDraft15 = zCredentialConfigurationSup
 // Transforms credential configuration supported to credentials_supported format
 // Ignores unknown formats
 const zCredentialConfigurationSupportedV1ToDraft11 = zCredentialConfigurationSupportedV1ToDraft15
-  .and(
-    z
-      .object({
-        id: z.string(),
+  .transform((configuration, ctx) => {
+    if (!configuration.id || typeof configuration.id !== 'string') {
+      ctx.addIssue({
+        code: 'invalid_type',
+        expected: 'string',
+        input: configuration.id,
+        path: ['id'],
+        message: 'Missing required id field',
       })
-      .loose()
-  )
+      return z.NEVER
+    }
+
+    return {
+      ...configuration,
+      id: configuration.id,
+      // We remove claims when downgrading to draft 11
+      claims: undefined,
+    }
+  })
   .transform(
     ({
       id,
@@ -293,10 +309,12 @@ const zCredentialConfigurationSupportedV1ToDraft11 = zCredentialConfigurationSup
       proof_types_supported,
       scope,
       format,
+      claims,
       ...rest
     }): unknown => ({
       ...rest,
-      format,
+      // vc+sd-jwt was changed to dc+sd-jwt in draft 15
+      format: format === 'dc+sd-jwt' ? 'vc+sd-jwt' : format,
       ...(credential_signing_alg_values_supported
         ? {
             cryptographic_suites_supported:
@@ -402,10 +420,13 @@ export const zCredentialIssuerMetadataWithDraft11 = zCredentialIssuerMetadataDra
   .transform((issuerMetadata) => ({
     ...issuerMetadata,
     ...(issuerMetadata.authorization_servers ? { authorization_server: issuerMetadata.authorization_servers[0] } : {}),
-    credentials_supported: Object.entries(issuerMetadata.credential_configurations_supported).map(([id, value]) => ({
-      ...value,
-      id,
-    })),
+    credentials_supported: Object.entries(issuerMetadata.credential_configurations_supported).map(
+      ([id, value]) =>
+        ({
+          ...value,
+          id,
+        }) as (typeof issuerMetadata)['credential_configurations_supported'][typeof id]
+    ),
   }))
   .pipe(
     zCredentialIssuerMetadataDraft14Draft15V1.extend({
@@ -454,15 +475,15 @@ export const zCredentialIssuerMetadataWithDraftVersion = z.union([
     return {
       credentialIssuerMetadata,
       originalDraftVersion: isV1
-        ? Openid4vciDraftVersion.V1
+        ? Openid4vciVersion.V1
         : isDraft15
-          ? Openid4vciDraftVersion.Draft15
-          : Openid4vciDraftVersion.Draft14,
+          ? Openid4vciVersion.Draft15
+          : Openid4vciVersion.Draft14,
     }
   }),
   // Then try parsing draft 11 and transform into draft 16
   zCredentialIssuerMetadataDraft11ToV1.transform((credentialIssuerMetadata) => ({
     credentialIssuerMetadata,
-    originalDraftVersion: Openid4vciDraftVersion.Draft11,
+    originalDraftVersion: Openid4vciVersion.Draft11,
   })),
 ])

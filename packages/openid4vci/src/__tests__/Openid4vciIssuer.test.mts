@@ -7,7 +7,7 @@ import { createCredentialRequestJwtProof } from '../formats/proof-type/jwt/jwt-p
 import { createKeyAttestationJwt } from '../key-attestation/key-attestation.js'
 import type { IssuerMetadataResult } from '../metadata/fetch-issuer-metadata.js'
 import { Openid4vciIssuer } from '../Openid4vciIssuer.js'
-import { Openid4vciDraftVersion } from '../version.js'
+import { Openid4vciVersion } from '../version.js'
 
 const credentialRequestProofJwk = {
   kty: 'EC',
@@ -91,7 +91,7 @@ const issuerMetadata = {
       token_endpoint: 'https://one.com/token',
     },
   ],
-  originalDraftVersion: Openid4vciDraftVersion.Draft11,
+  originalDraftVersion: Openid4vciVersion.Draft11,
   knownCredentialConfigurations: {},
 } as const satisfies IssuerMetadataResult
 
@@ -164,7 +164,7 @@ describe('Openid4vciIssuer', () => {
       issuerMetadata: {
         authorizationServers: [],
         credentialIssuer: credentialIssuerMetadata,
-        originalDraftVersion: Openid4vciDraftVersion.Draft14,
+        originalDraftVersion: Openid4vciVersion.Draft14,
         knownCredentialConfigurations: {},
       },
       credentialRequest: {

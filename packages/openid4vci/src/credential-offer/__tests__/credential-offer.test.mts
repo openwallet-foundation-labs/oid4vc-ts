@@ -2,7 +2,7 @@ import { authorizationCodeGrantIdentifier, preAuthorizedCodeGrantIdentifier } fr
 import { describe, expect, test } from 'vitest'
 import { callbacks } from '../../../../oauth2/tests/util.mjs'
 import type { IssuerMetadataResult } from '../../metadata/fetch-issuer-metadata.js'
-import { Openid4vciDraftVersion } from '../../version.js'
+import { Openid4vciVersion } from '../../version.js'
 import { createCredentialOffer } from '../credential-offer.js'
 
 const issuerMetadata = {
@@ -17,7 +17,7 @@ const issuerMetadata = {
       },
     },
   },
-  originalDraftVersion: Openid4vciDraftVersion.Draft14,
+  originalDraftVersion: Openid4vciVersion.Draft14,
   knownCredentialConfigurations: {},
 } as const satisfies IssuerMetadataResult
 

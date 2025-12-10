@@ -7,7 +7,7 @@ import {
 } from '@openid4vc/oauth2'
 
 import { parseWithErrorHandling } from '@openid4vc/utils'
-import type { Openid4vciDraftVersion } from '../version'
+import type { Openid4vciVersion } from '../version'
 import {
   type CredentialIssuerMetadataSigned,
   extractKnownCredentialConfigurationSupportedFormats,
@@ -51,7 +51,7 @@ export interface ResolveIssuerMetadataOptions {
 }
 
 export interface IssuerMetadataResult {
-  originalDraftVersion: Openid4vciDraftVersion
+  originalDraftVersion: Openid4vciVersion
   credentialIssuer: CredentialIssuerMetadata
 
   /**

@@ -146,7 +146,7 @@ describe('Credential Issuer Metadata', () => {
 
     const credential_configurations_supported = {
       'sd-jwt': {
-        format: 'vc+sd-jwt',
+        format: 'dc+sd-jwt',
         vct: 'vct-test-id',
         credential_metadata: {
           display: [
