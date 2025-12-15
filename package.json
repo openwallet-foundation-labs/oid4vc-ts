@@ -23,7 +23,7 @@
     "@changesets/cli": "^2.29.8",
     "@types/node": "^24.10.1",
     "msw": "^2.12.4",
-    "tsdown": "^0.17.1",
+    "tsdown": "^0.17.4",
     "typescript": "^5.9.3",
     "vitest": "^4.0.15"
   },
