@@ -19,13 +19,13 @@
     "changeset-version": "pnpm changeset version && pnpm style:fix"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.3.8",
+    "@biomejs/biome": "^2.3.10",
     "@changesets/cli": "^2.29.8",
     "@types/node": "^24.10.1",
     "msw": "^2.12.4",
     "tsdown": "^0.17.1",
     "typescript": "^5.9.3",
-    "vitest": "^4.0.15"
+    "vitest": "^4.0.16"
   },
   "engines": {
     "node": ">=18"
