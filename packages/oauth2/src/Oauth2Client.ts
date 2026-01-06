@@ -15,6 +15,11 @@ import {
   type CreateAuthorizationRequestUrlOptions,
   createAuthorizationRequestUrl,
 } from './authorization-request/create-authorization-request'
+import { type ParseAuthorizationResponseOptions, parseAuthorizationResponseRedirectUrl } from './authorization-response'
+import {
+  type VerifyAuthorizationResponseOptions,
+  verifyAuthorizationResponse,
+} from './authorization-response/verify-authorization-response'
 import type { CallbackContext } from './callbacks'
 import { SupportedClientAuthenticationMethod } from './client-authentication'
 import { Oauth2ErrorCodes } from './common/z-oauth2-error'
@@ -243,5 +248,19 @@ export class Oauth2Client {
 
   public async resourceRequest(options: ResourceRequestOptions) {
     return resourceRequest(options)
+  }
+
+  /**
+   * Parses an authorization response redirect URL into an authorization (error) response.
+   *
+   * Make sure to call `Oauth2Client.verifyAuthorizationResponse` after fetching the session
+   * based on the parsed response, to ensure the authorization response `iss` value is verified.
+   */
+  public parseAuthorizationResponseRedirectUrl(options: ParseAuthorizationResponseOptions) {
+    return parseAuthorizationResponseRedirectUrl(options)
+  }
+
+  public verifyAuthorizationResponse(options: VerifyAuthorizationResponseOptions) {
+    return verifyAuthorizationResponse(options)
   }
 }
