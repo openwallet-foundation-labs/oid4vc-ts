@@ -1,5 +1,16 @@
 # @openid4vc/openid4vp
 
+## 0.4.4
+
+### Patch Changes
+
+- 3f3cfe7: chore: better zod errors with more detail of nested errors
+- Updated dependencies [0bf46b7]
+- Updated dependencies [3f3cfe7]
+- Updated dependencies [3f3cfe7]
+  - @openid4vc/oauth2@0.4.4
+  - @openid4vc/utils@0.4.4
+
 ## 0.4.3
 
 ### Patch Changes
