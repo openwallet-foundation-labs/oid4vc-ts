@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "buffer": "catalog:",
-    "zod": "catalog:"
+    "zod": "catalog:",
+    "zod-validation-error": "catalog:"
   }
 }

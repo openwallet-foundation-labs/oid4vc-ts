@@ -74,6 +74,10 @@ export async function fetchAuthorizationServerMetadata(
     })
   }
 
+  if (!authorizationServerResult && firstError) {
+    throw firstError
+  }
+
   if (authorizationServerResult && authorizationServerResult.issuer !== issuer) {
     // issuer param MUST match
     throw new Oauth2Error(

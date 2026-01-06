@@ -34,7 +34,7 @@ describe('Credential Issuer Metadata', () => {
       // FIXME(vc+sd-jwt): fix expected to be 'string' when dropping support for legacy vc+sd-jwt format.
       expected: 'object',
       path: ['credential_definition'],
-      message: 'Invalid input: expected object, received undefined',
+      message: 'expected object, received undefined',
     })
 
     // Correct: mso mdoc with doctype
@@ -67,7 +67,7 @@ describe('Credential Issuer Metadata', () => {
         code: 'invalid_type',
         expected: 'string',
         path: ['doctype'],
-        message: 'Invalid input: expected string, received undefined',
+        message: 'expected string, received undefined',
       },
     ])
   })
