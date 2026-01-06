@@ -1,5 +1,11 @@
 # @openid4vc/utils
 
+## 0.4.4
+
+### Patch Changes
+
+- 3f3cfe7: chore: better zod errors with more detail of nested errors
+
 ## 0.4.3
 
 ## 0.4.2
