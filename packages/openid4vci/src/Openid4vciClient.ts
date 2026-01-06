@@ -8,10 +8,14 @@ import {
   Oauth2ClientAuthorizationChallengeError,
   Oauth2Error,
   Oauth2ErrorCodes,
+  type ParseAuthorizationResponseOptions,
+  parseAuthorizationResponseRedirectUrl,
   preAuthorizedCodeGrantIdentifier,
   type RequestDpopOptions,
   type RetrieveAuthorizationCodeAccessTokenOptions,
   type RetrievePreAuthorizedCodeAccessTokenOptions,
+  type VerifyAuthorizationResponseOptions,
+  verifyAuthorizationResponse,
 } from '@openid4vc/oauth2'
 
 import {
@@ -327,7 +331,28 @@ export class Openid4vciClient {
   }
 
   /**
-   * Convenience method around {@link Oauth2Client.retrieveAuthorizationCodeAccessTokenFrom}
+   * Parses the authorization (error) response redirect url, and verifies the
+   * 'iss' value based on the authorization server metadata.
+   *
+   * If you need values from the authorization response (e.g. state) to retrieve the
+   * authorization server metadata, you can manually import and call `parseAuthorizationResponseRedirectUrl` and
+   * `verifyAuthorizationResponse`.
+   */
+  public parseAndVerifyAuthorizationResponseRedirectUrl(
+    options: ParseAuthorizationResponseOptions & Omit<VerifyAuthorizationResponseOptions, 'authorizationResponse'>
+  ) {
+    const authorizationResponse = parseAuthorizationResponseRedirectUrl(options)
+
+    verifyAuthorizationResponse({
+      ...options,
+      authorizationResponse,
+    })
+
+    return authorizationResponse
+  }
+
+  /**
+   * Convenience method around {@link Oauth2Client.retrieveAuthorizationCodeAccessToken}
    * but specifically focused on a credential offer
    */
   public async retrieveAuthorizationCodeAccessTokenFromOffer({

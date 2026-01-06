@@ -44,6 +44,9 @@ export const zAuthorizationServerMetadata = z
 
     // Attestation Based Client Auth (draft 5)
     client_attestation_pop_nonce_required: z.boolean().optional(),
+
+    // RFC9207
+    authorization_response_iss_parameter_supported: z.boolean().optional(),
   })
   .loose()
   .refine(
