@@ -120,6 +120,10 @@ export async function fetchCredentialIssuerMetadata(
     }
   }
 
+  if (!result && firstError) {
+    throw firstError
+  }
+
   let issuerMetadataWithVersion: FetchCredentialIssuerMetadataReturn | null = null
 
   if (typeof result === 'string') {
