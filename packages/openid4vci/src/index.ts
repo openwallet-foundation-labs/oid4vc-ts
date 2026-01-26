@@ -23,6 +23,7 @@ export type {
   CredentialRequestWithFormats,
   DeferredCredentialRequest,
 } from './credential-request/z-credential-request'
+export type { CredentialResponseEncryption } from './credential-request/z-credential-request-common'
 export type {
   CredentialErrorResponse,
   CredentialResponse,

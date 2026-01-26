@@ -1,4 +1,3 @@
-import { zJwk } from '@openid4vc/oauth2'
 import type { InferOutputUnion, Simplify } from '@openid4vc/utils'
 import z from 'zod'
 import {
@@ -24,7 +23,7 @@ import {
   zLdpVcFormatIdentifier,
 } from '../formats/credential/w3c-vc/z-w3c-ldp-vc'
 import { zSdJwtW3VcCredentialRequestFormatDraft14 } from '../formats/credential/w3c-vc/z-w3c-sd-jwt-vc'
-import { zCredentialRequestCommon } from './z-credential-request-common'
+import { zCredentialRequestCommon, zCredentialResponseEncryption } from './z-credential-request-common'
 
 export const allCredentialRequestFormats = [
   zSdJwtW3VcCredentialRequestFormatDraft14,
@@ -178,14 +177,7 @@ export const zCredentialRequest = z.union([
 
 export const zDeferredCredentialRequest = z.object({
   transaction_id: z.string().nonempty(),
-  credential_response_encryption: z
-    .object({
-      jwk: zJwk,
-      alg: z.string(),
-      enc: z.string(),
-    })
-    .loose()
-    .optional(),
+  credential_response_encryption: zCredentialResponseEncryption.optional(),
 })
 
 type CredentialRequestCommon = z.infer<typeof zCredentialRequestCommon>
