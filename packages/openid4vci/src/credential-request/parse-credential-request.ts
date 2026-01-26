@@ -15,6 +15,7 @@ import {
 import {
   allCredentialRequestProofs,
   type CredentialRequestProofsFormatSpecific,
+  type CredentialResponseEncryption,
   zCredentialRequestProofs,
 } from './z-credential-request-common'
 
@@ -72,6 +73,16 @@ export interface ParseCredentialRequestReturn {
    * undefined you can still handle the request by using this object directly.
    */
   credentialRequest: CredentialRequest
+
+  /**
+   * If the request includes `credential_response_encryption`, this contains the
+   * encryption parameters the client expects the issuer to use for encrypting the response.
+   *
+   * When defined, the issuer should encrypt the credential response using the provided
+   * JWK, algorithm, and content encryption algorithm, and return it with
+   * `Content-Type: application/jwt`.
+   */
+  credentialResponseEncryption?: CredentialResponseEncryption
 }
 
 export function parseCredentialRequest(options: ParseCredentialRequestOptions): ParseCredentialRequestReturn {
@@ -96,6 +107,8 @@ export function parseCredentialRequest(options: ParseCredentialRequestOptions): 
     proofs = { [attestationProofTypeIdentifier]: [knownProof.data.attestation] }
   }
 
+  const credentialResponseEncryption = credentialRequest.credential_response_encryption
+
   if (credentialRequest.credential_configuration_id) {
     // This will throw an error if the credential configuration does not exist or is not valid
     getKnownCredentialConfigurationSupportedById(options.issuerMetadata, credentialRequest.credential_configuration_id)
@@ -107,6 +120,7 @@ export function parseCredentialRequest(options: ParseCredentialRequestOptions): 
       credentialConfigurationId: credentialRequest.credential_configuration_id,
       credentialRequest,
       proofs,
+      ...(credentialResponseEncryption && { credentialResponseEncryption }),
     }
   }
 
@@ -115,6 +129,7 @@ export function parseCredentialRequest(options: ParseCredentialRequestOptions): 
       credentialIdentifier: credentialRequest.credential_identifier,
       credentialRequest,
       proofs,
+      ...(credentialResponseEncryption && { credentialResponseEncryption }),
     }
   }
 
@@ -133,11 +148,13 @@ export function parseCredentialRequest(options: ParseCredentialRequestOptions): 
       ),
       credentialRequest,
       proofs,
+      ...(credentialResponseEncryption && { credentialResponseEncryption }),
     }
   }
 
   return {
     credentialRequest,
     proofs,
+    ...(credentialResponseEncryption && { credentialResponseEncryption }),
   }
 }

@@ -39,6 +39,16 @@ export type CredentialRequestProofsFormatSpecific = z.infer<typeof zCredentialRe
 export type CredentialRequestProofsWithFormat = CredentialRequestProofsCommon & CredentialRequestProofsFormatSpecific
 export type CredentialRequestProofs = z.infer<typeof zCredentialRequestProofs>
 
+export const zCredentialResponseEncryption = z
+  .object({
+    jwk: zJwk,
+    alg: z.string(),
+    enc: z.string(),
+  })
+  .loose()
+
+export type CredentialResponseEncryption = z.infer<typeof zCredentialResponseEncryption>
+
 export const zCredentialRequestCommon = z
   .object({
     proof: zCredentialRequestProof.optional(),
@@ -50,14 +60,7 @@ export const zCredentialRequestCommon = z
         })
     ),
 
-    credential_response_encryption: z
-      .object({
-        jwk: zJwk,
-        alg: z.string(),
-        enc: z.string(),
-      })
-      .loose()
-      .optional(),
+    credential_response_encryption: zCredentialResponseEncryption.optional(),
   })
   .loose()
   // It's not allowed to provide both proof and proofs
