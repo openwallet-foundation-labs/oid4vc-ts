@@ -22,7 +22,7 @@ import {
 } from '@openid4vc/utils'
 import type z from 'zod'
 import type { IssuerMetadataResult } from '../metadata/fetch-issuer-metadata'
-import { Openid4vciDraftVersion } from '../version'
+import { Openid4vciVersion } from '../version'
 import {
   type CredentialOfferAuthorizationCodeGrant,
   type CredentialOfferGrants,
@@ -208,7 +208,7 @@ export async function createCredentialOffer(
 
     // Draft 11 support
     const txCode = grants[preAuthorizedCodeGrantIdentifier].tx_code
-    if (txCode && options.issuerMetadata.originalDraftVersion === Openid4vciDraftVersion.Draft11) {
+    if (txCode && options.issuerMetadata.originalDraftVersion === Openid4vciVersion.Draft11) {
       grants[preAuthorizedCodeGrantIdentifier].user_pin_required = txCode !== undefined
     }
   }
@@ -231,7 +231,7 @@ export async function createCredentialOffer(
   } satisfies CredentialOfferObject)
 
   // Draft 11 support
-  if (options.issuerMetadata.originalDraftVersion === Openid4vciDraftVersion.Draft11) {
+  if (options.issuerMetadata.originalDraftVersion === Openid4vciVersion.Draft11) {
     credentialOfferObject.credentials = credentialOfferObject.credential_configuration_ids
   }
 

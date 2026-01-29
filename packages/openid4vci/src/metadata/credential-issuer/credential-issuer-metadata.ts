@@ -9,16 +9,17 @@ import {
   verifyJwt,
   zCompactJwt,
 } from '@openid4vc/oauth2'
-import { ContentType, joinUriParts, parseWithErrorHandling, URL } from '@openid4vc/utils'
+import { ContentType, joinUriParts, OpenId4VcBaseError, parseWithErrorHandling, URL } from '@openid4vc/utils'
 import type { CredentialFormatIdentifier } from '../../formats/credential'
-import type { Openid4vciDraftVersion } from '../../version'
+import type { Openid4vciVersion } from '../../version'
+import type { IssuerMetadataResult } from '../fetch-issuer-metadata'
 import {
   allCredentialIssuerMetadataFormatIdentifiers,
-  type CredentialConfigurationSupported,
   type CredentialConfigurationSupportedWithFormats,
   type CredentialConfigurationsSupported,
   type CredentialConfigurationsSupportedWithFormats,
   type CredentialIssuerMetadata,
+  zCredentialConfigurationSupportedWithFormats,
   zCredentialIssuerMetadataWithDraftVersion,
 } from './z-credential-issuer-metadata'
 import {
@@ -58,7 +59,7 @@ export interface FetchCredentialIssuerMetadataReturn {
   /**
    * The original draft version of the credential issuer metadata
    */
-  originalDraftVersion: Openid4vciDraftVersion
+  originalDraftVersion: Openid4vciVersion
 
   /**
    * Metadata about the signed issuer metadata, if the metadata was signed.
@@ -89,17 +90,38 @@ export async function fetchCredentialIssuerMetadata(
   // Either unsigned metadata or signed JWT
   const responseSchema = zCredentialIssuerMetadataWithDraftVersion.or(zCompactJwt)
 
-  let result = await fetchWellKnownMetadata(wellKnownMetadataUrl, responseSchema, {
-    fetch: options?.callbacks?.fetch,
-    acceptedContentType,
-  })
-  // If the metadata is not available at the new URL, fetch it at the legacy URL
-  // The legacy url is the same if no subpath is used by the issuer
-  if (!result && legacyWellKnownMetadataUrl !== wellKnownMetadataUrl) {
-    result = await fetchWellKnownMetadata(legacyWellKnownMetadataUrl, responseSchema, {
+  let result = null
+  let firstError = null
+
+  try {
+    result = await fetchWellKnownMetadata(wellKnownMetadataUrl, responseSchema, {
       fetch: options?.callbacks?.fetch,
       acceptedContentType,
     })
+  } catch (error) {
+    if (error instanceof OpenId4VcBaseError) throw error
+
+    // An exception occurs if a CORS-policy blocks the request, i.e. because the URL is invalid due to the legacy path being used
+    // The legacy path should still be tried therefore we store the first error to rethrow it later if needed
+    firstError = error
+  }
+
+  // If the metadata is not available at the new URL, fetch it at the legacy URL
+  // The legacy url is the same if no subpath is used by the issuer
+  if (!result && legacyWellKnownMetadataUrl !== wellKnownMetadataUrl) {
+    try {
+      result = await fetchWellKnownMetadata(legacyWellKnownMetadataUrl, responseSchema, {
+        fetch: options?.callbacks?.fetch,
+        acceptedContentType,
+      })
+    } catch (error) {
+      // If the first attempt also errored, rethrow that original error; otherwise rethrow this one
+      throw firstError ?? error
+    }
+  }
+
+  if (!result && firstError) {
+    throw firstError
   }
 
   let issuerMetadataWithVersion: FetchCredentialIssuerMetadataReturn | null = null
@@ -174,8 +196,9 @@ export async function fetchCredentialIssuerMetadata(
 
 /**
  * Extract credential configuration supported entries where the `format` is known to this
- * library. Should be ran only after verifying the credential issuer metadata structure, so
- * we can be certain that if the `format` matches the other format specific requirements are also met.
+ * library and the configuration validates correctly. Should be ran only after verifying
+ * the credential issuer metadata structure, so we can be certain that if the `format`
+ * matches the other format specific requirements are also met.
  *
  * Validation is done when resolving issuer metadata, or when calling `createIssuerMetadata`.
  */
@@ -184,16 +207,29 @@ export function extractKnownCredentialConfigurationSupportedFormats(
 ): CredentialConfigurationsSupportedWithFormats {
   return Object.fromEntries(
     Object.entries(credentialConfigurationsSupported).filter(
-      (entry): entry is [string, CredentialConfigurationSupportedWithFormats] =>
-        allCredentialIssuerMetadataFormatIdentifiers.includes(entry[1].format as CredentialFormatIdentifier)
+      (entry): entry is [string, CredentialConfigurationSupportedWithFormats] => {
+        // Type guard to ensure that the returned entries have known formats
+        const credentialConfiguration = zCredentialConfigurationSupportedWithFormats.safeParse(entry[1]) // Validate structure
+        if (!credentialConfiguration.success) {
+          return false
+        }
+        return allCredentialIssuerMetadataFormatIdentifiers.includes(
+          credentialConfiguration.data.format as CredentialFormatIdentifier
+        )
+      }
     )
   )
 }
 
-export function getCredentialConfigurationSupportedById<
-  Configurations extends CredentialConfigurationsSupported | CredentialConfigurationsSupportedWithFormats,
->(credentialConfigurations: Configurations, credentialConfigurationId: string) {
-  const configuration = credentialConfigurations[credentialConfigurationId]
+/**
+ * Get a known credential configuration supported by its id, it will throw an error if the configuration
+ * is not found or if its found but the credential configuration is invalid.
+ */
+export function getKnownCredentialConfigurationSupportedById(
+  issuerMetadata: IssuerMetadataResult,
+  credentialConfigurationId: string
+) {
+  const configuration = issuerMetadata.credentialIssuer.credential_configurations_supported[credentialConfigurationId]
 
   if (!configuration) {
     throw new Oauth2Error(
@@ -201,7 +237,13 @@ export function getCredentialConfigurationSupportedById<
     )
   }
 
-  return configuration as Configurations extends CredentialConfigurationsSupportedWithFormats
-    ? CredentialConfigurationSupportedWithFormats
-    : CredentialConfigurationSupported
+  if (!issuerMetadata.knownCredentialConfigurations[credentialConfigurationId]) {
+    parseWithErrorHandling(
+      zCredentialConfigurationSupportedWithFormats,
+      configuration,
+      `Credential configuration with id '${credentialConfigurationId}' is not valid`
+    )
+  }
+
+  return issuerMetadata.knownCredentialConfigurations[credentialConfigurationId]
 }

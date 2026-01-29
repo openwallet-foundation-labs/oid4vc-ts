@@ -9,9 +9,9 @@ import {
 } from '@openid4vc/oauth2'
 import { ContentType, isResponseContentType, parseWithErrorHandling } from '@openid4vc/utils'
 import { Openid4vciError } from '../error/Openid4vciError'
-import { getCredentialConfigurationSupportedById } from '../metadata/credential-issuer/credential-issuer-metadata'
+import { getKnownCredentialConfigurationSupportedById } from '../metadata/credential-issuer/credential-issuer-metadata'
 import type { IssuerMetadataResult } from '../metadata/fetch-issuer-metadata'
-import { Openid4vciDraftVersion } from '../version'
+import { Openid4vciVersion } from '../version'
 import {
   type CredentialRequest,
   type CredentialRequestWithFormats,
@@ -69,8 +69,8 @@ export async function retrieveCredentialsWithCredentialConfigurationId(
   options: RetrieveCredentialsWithCredentialConfigurationIdOptions
 ) {
   if (
-    options.issuerMetadata.originalDraftVersion !== Openid4vciDraftVersion.Draft15 &&
-    options.issuerMetadata.originalDraftVersion !== Openid4vciDraftVersion.V1
+    options.issuerMetadata.originalDraftVersion !== Openid4vciVersion.Draft15 &&
+    options.issuerMetadata.originalDraftVersion !== Openid4vciVersion.V1
   ) {
     throw new Openid4vciError(
       'Requesting credentials based on credential configuration ID is not supported in OpenID4VCI below draft 15. Make sure to provide the format and format specific claims in the request.'
@@ -78,10 +78,7 @@ export async function retrieveCredentialsWithCredentialConfigurationId(
   }
 
   // This ensures the credential configuration exists
-  getCredentialConfigurationSupportedById(
-    options.issuerMetadata.credentialIssuer.credential_configurations_supported,
-    options.credentialConfigurationId
-  )
+  getKnownCredentialConfigurationSupportedById(options.issuerMetadata, options.credentialConfigurationId)
 
   const credentialRequest: CredentialRequest = {
     ...options.additionalRequestPayload,
@@ -118,8 +115,8 @@ export interface RetrieveCredentialsWithFormatOptions extends RetrieveCredential
 
 export async function retrieveCredentialsWithFormat(options: RetrieveCredentialsWithFormatOptions) {
   if (
-    options.issuerMetadata.originalDraftVersion === Openid4vciDraftVersion.Draft15 ||
-    options.issuerMetadata.originalDraftVersion === Openid4vciDraftVersion.V1
+    options.issuerMetadata.originalDraftVersion === Openid4vciVersion.Draft15 ||
+    options.issuerMetadata.originalDraftVersion === Openid4vciVersion.V1
   ) {
     throw new Openid4vciError(
       'Requesting credentials based on format is not supported on OpenID4VCI above draft 15. Provide the credential configuration id directly in the request.'
@@ -187,7 +184,7 @@ async function retrieveCredentials(
 
   if (credentialRequest.proofs) {
     const { batch_credential_issuance } = options.issuerMetadata.credentialIssuer
-    if (options.issuerMetadata.originalDraftVersion === Openid4vciDraftVersion.Draft11) {
+    if (options.issuerMetadata.originalDraftVersion === Openid4vciVersion.Draft11) {
       throw new Oauth2Error(
         `Credential issuer '${options.issuerMetadata.credentialIssuer.credential_issuer}' does not support batch credential issuance using the 'proofs' request property. Only 'proof' is supported.`
       )
@@ -201,11 +198,11 @@ async function retrieveCredentials(
     }
   }
 
-  if (options.issuerMetadata.originalDraftVersion === Openid4vciDraftVersion.Draft11) {
+  if (options.issuerMetadata.originalDraftVersion === Openid4vciVersion.Draft11) {
     credentialRequest = parseWithErrorHandling(
       zCredentialRequestDraft14To11,
       credentialRequest,
-      `Error transforming credential request from ${Openid4vciDraftVersion.Draft14} to ${Openid4vciDraftVersion.Draft11}`
+      `Error transforming credential request from ${Openid4vciVersion.Draft14} to ${Openid4vciVersion.Draft11}`
     )
   }
 

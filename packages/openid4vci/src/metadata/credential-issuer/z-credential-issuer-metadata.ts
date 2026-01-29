@@ -1,4 +1,8 @@
-import { type InferOutputUnion, type Simplify, zHttpsUrl } from '@openid4vc/utils'
+import {
+  fullySpecifiedCoseAlgorithmArrayToJwaSignatureAlgorithmArray,
+  jwaSignatureAlgorithmArrayToFullySpecifiedCoseAlgorithmArray,
+} from '@openid4vc/oauth2'
+import { type InferOutputUnion, type Simplify, zDataUrl, zHttpsUrl } from '@openid4vc/utils'
 import z from 'zod'
 import {
   type CredentialFormatIdentifier,
@@ -24,6 +28,7 @@ import {
   zMsoMdocCredentialIssuerMetadata,
   zMsoMdocCredentialIssuerMetadataDraft14,
   zMsoMdocCredentialIssuerMetadataDraft15,
+  zMsoMdocFormatIdentifier,
   zSdJwtDcCredentialIssuerMetadata,
   zSdJwtDcCredentialIssuerMetadataDraft15,
   zSdJwtDcFormatIdentifier,
@@ -33,7 +38,8 @@ import {
   zSdJwtW3VcCredentialIssuerMetadata,
   zSdJwtW3VcCredentialIssuerMetadataDraft15,
 } from '../../formats/credential/w3c-vc/z-w3c-sd-jwt-vc'
-import { Openid4vciDraftVersion } from '../../version'
+import { Openid4vciVersion } from '../../version'
+import { claimsObjectToClaimsArray } from './credential-configurations'
 import {
   zCredentialConfigurationSupportedCommon,
   zCredentialConfigurationSupportedCommonDraft15,
@@ -122,7 +128,7 @@ const zCredentialIssuerMetadataDisplayEntry = z
     logo: z
       .object({
         // FIXME: make required again, but need to support draft 11 first
-        uri: z.string().optional(),
+        uri: zHttpsUrl.or(zDataUrl).optional(),
         alt_text: z.string().optional(),
       })
       .loose()
@@ -157,13 +163,13 @@ export const zCredentialIssuerMetadataDraft14Draft15V1 = z
       .loose()
       .optional(),
     display: z.array(zCredentialIssuerMetadataDisplayEntry).optional(),
-    credential_configurations_supported: z.record(z.string(), zCredentialConfigurationSupportedWithFormats),
+    credential_configurations_supported: z.record(z.string(), zCredentialConfigurationSupportedCommon),
   })
   .loose()
 
 // Transforms credential supported to credential configuration supported format
 // Ignores unknown formats
-export const zCredentialConfigurationSupportedDraft11To16 = z
+export const zCredentialConfigurationSupportedDraft11ToV1 = z
   .object({
     id: z.string().optional(),
     format: z.string(),
@@ -174,13 +180,13 @@ export const zCredentialConfigurationSupportedDraft11To16 = z
           .object({
             logo: z
               .object({
-                url: z.url().optional(),
+                url: zHttpsUrl.or(zDataUrl).optional(),
               })
               .loose()
               .optional(),
             background_image: z
               .object({
-                url: z.url().optional(),
+                url: zHttpsUrl.or(zDataUrl).optional(),
               })
               .loose()
               .optional(),
@@ -188,13 +194,23 @@ export const zCredentialConfigurationSupportedDraft11To16 = z
           .loose()
       )
       .optional(),
-    claims: z.any().optional(),
+    claims: z
+      .any()
+      .transform((claims) => claimsObjectToClaimsArray(claims))
+      .optional(),
   })
   .loose()
-  .transform(({ cryptographic_suites_supported, display, claims, id, ...rest }) => ({
+  .transform(({ cryptographic_suites_supported, display, claims, id, format, ...rest }) => ({
     ...rest,
+    format: format === 'vc+sd-jwt' && rest.vct ? 'dc+sd-jwt' : format,
     ...(cryptographic_suites_supported
-      ? { credential_signing_alg_values_supported: cryptographic_suites_supported }
+      ? {
+          credential_signing_alg_values_supported:
+            // For mso_mdoc, transform JWA signature algorithm strings to fully-specified COSE algorithm numbers
+            format === zMsoMdocFormatIdentifier.value
+              ? jwaSignatureAlgorithmArrayToFullySpecifiedCoseAlgorithmArray(cryptographic_suites_supported)
+              : cryptographic_suites_supported,
+        }
       : {}),
     ...(claims || display
       ? {
@@ -266,18 +282,50 @@ const zCredentialConfigurationSupportedV1ToDraft15 = zCredentialConfigurationSup
 // Transforms credential configuration supported to credentials_supported format
 // Ignores unknown formats
 const zCredentialConfigurationSupportedV1ToDraft11 = zCredentialConfigurationSupportedV1ToDraft15
-  .and(
-    z
-      .object({
-        id: z.string(),
+  .transform((configuration, ctx) => {
+    if (!configuration.id || typeof configuration.id !== 'string') {
+      ctx.addIssue({
+        code: 'invalid_type',
+        expected: 'string',
+        input: configuration.id,
+        path: ['id'],
+        message: 'Missing required id field',
       })
-      .loose()
-  )
+      return z.NEVER
+    }
+
+    return {
+      ...configuration,
+      id: configuration.id,
+      // We remove claims when downgrading to draft 11
+      claims: undefined,
+    }
+  })
   .transform(
-    ({ id, credential_signing_alg_values_supported, display, proof_types_supported, scope, ...rest }): unknown => ({
+    ({
+      id,
+      credential_signing_alg_values_supported,
+      display,
+      proof_types_supported,
+      scope,
+      format,
+      claims,
+      ...rest
+    }): unknown => ({
       ...rest,
+      // vc+sd-jwt was changed to dc+sd-jwt in draft 15
+      format: format === 'dc+sd-jwt' ? 'vc+sd-jwt' : format,
       ...(credential_signing_alg_values_supported
-        ? { cryptographic_suites_supported: credential_signing_alg_values_supported }
+        ? {
+            cryptographic_suites_supported:
+              // For mso_mdoc, transform fully-specified COSE algorithm numbers to JWA signature algorithm strings
+              format === zMsoMdocFormatIdentifier.value &&
+              typeof credential_signing_alg_values_supported[0] === 'number'
+                ? fullySpecifiedCoseAlgorithmArrayToJwaSignatureAlgorithmArray(
+                    credential_signing_alg_values_supported as number[]
+                  )
+                : credential_signing_alg_values_supported,
+          }
         : {}),
       ...(display
         ? {
@@ -324,7 +372,7 @@ const zCredentialConfigurationSupportedV1ToDraft11 = zCredentialConfigurationSup
     ])
   )
 
-export const zCredentialIssuerMetadataDraft11To16 = z
+export const zCredentialIssuerMetadataDraft11ToV1 = z
   .object({
     authorization_server: z.string().optional(),
     credentials_supported: z.array(
@@ -352,7 +400,7 @@ export const zCredentialIssuerMetadataDraft11To16 = z
     z
       .object({
         // Update from v11 structure to v14 structure
-        credential_configurations_supported: z.record(z.string(), zCredentialConfigurationSupportedDraft11To16),
+        credential_configurations_supported: z.record(z.string(), zCredentialConfigurationSupportedDraft11ToV1),
       })
       .loose()
   )
@@ -372,10 +420,13 @@ export const zCredentialIssuerMetadataWithDraft11 = zCredentialIssuerMetadataDra
   .transform((issuerMetadata) => ({
     ...issuerMetadata,
     ...(issuerMetadata.authorization_servers ? { authorization_server: issuerMetadata.authorization_servers[0] } : {}),
-    credentials_supported: Object.entries(issuerMetadata.credential_configurations_supported).map(([id, value]) => ({
-      ...value,
-      id,
-    })),
+    credentials_supported: Object.entries(issuerMetadata.credential_configurations_supported).map(
+      ([id, value]) =>
+        ({
+          ...value,
+          id,
+        }) as (typeof issuerMetadata)['credential_configurations_supported'][typeof id]
+    ),
   }))
   .pipe(
     zCredentialIssuerMetadataDraft14Draft15V1.extend({
@@ -387,7 +438,7 @@ export const zCredentialIssuerMetadata = z.union([
   // First prioritize draft 16/15/14 (and 13)
   zCredentialIssuerMetadataDraft14Draft15V1,
   // Then try parsing draft 11 and transform into draft 16
-  zCredentialIssuerMetadataDraft11To16,
+  zCredentialIssuerMetadataDraft11ToV1,
 ])
 
 export const zCredentialIssuerMetadataWithDraftVersion = z.union([
@@ -411,22 +462,28 @@ export const zCredentialIssuerMetadataWithDraftVersion = z.union([
       return false
     })
 
-    // Added in draft 16, but since there's no other breaking changes
     // we assume V1 is used when we detect V1
-    const isV1 = credentialConfigurations.some((configuration) => configuration.credential_metadata)
+    const isV1 = credentialConfigurations.some(
+      (configuration) =>
+        // Added in draft 16, but since there's no other breaking changes
+        configuration.credential_metadata ||
+        // Was changed to COSE algorithms in Draft 16 (which we detect as v1)
+        (configuration.format === 'mso_mdoc' &&
+          configuration.credential_signing_alg_values_supported?.some((supported) => typeof supported === 'number'))
+    )
 
     return {
       credentialIssuerMetadata,
       originalDraftVersion: isV1
-        ? Openid4vciDraftVersion.V1
+        ? Openid4vciVersion.V1
         : isDraft15
-          ? Openid4vciDraftVersion.Draft15
-          : Openid4vciDraftVersion.Draft14,
+          ? Openid4vciVersion.Draft15
+          : Openid4vciVersion.Draft14,
     }
   }),
   // Then try parsing draft 11 and transform into draft 16
-  zCredentialIssuerMetadataDraft11To16.transform((credentialIssuerMetadata) => ({
+  zCredentialIssuerMetadataDraft11ToV1.transform((credentialIssuerMetadata) => ({
     credentialIssuerMetadata,
-    originalDraftVersion: Openid4vciDraftVersion.Draft11,
+    originalDraftVersion: Openid4vciVersion.Draft11,
   })),
 ])

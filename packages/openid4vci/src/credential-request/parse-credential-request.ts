@@ -2,10 +2,7 @@ import { parseWithErrorHandling } from '@openid4vc/utils'
 import z from 'zod'
 import { attestationProofTypeIdentifier } from '../formats/proof-type/attestation/z-attestation-proof-type'
 import { jwtProofTypeIdentifier } from '../formats/proof-type/jwt/z-jwt-proof-type'
-import {
-  extractKnownCredentialConfigurationSupportedFormats,
-  getCredentialConfigurationSupportedById,
-} from '../metadata/credential-issuer/credential-issuer-metadata'
+import { getKnownCredentialConfigurationSupportedById } from '../metadata/credential-issuer/credential-issuer-metadata'
 import type { CredentialConfigurationSupportedWithFormats } from '../metadata/credential-issuer/z-credential-issuer-metadata'
 import type { IssuerMetadataResult } from '../metadata/fetch-issuer-metadata'
 import {
@@ -100,15 +97,10 @@ export function parseCredentialRequest(options: ParseCredentialRequestOptions): 
   }
 
   if (credentialRequest.credential_configuration_id) {
-    // This will throw an error if the credential configuration does not exist
-    getCredentialConfigurationSupportedById(
-      options.issuerMetadata.credentialIssuer.credential_configurations_supported,
-      credentialRequest.credential_configuration_id
-    )
+    // This will throw an error if the credential configuration does not exist or is not valid
+    getKnownCredentialConfigurationSupportedById(options.issuerMetadata, credentialRequest.credential_configuration_id)
 
-    const credentialConfigurations = extractKnownCredentialConfigurationSupportedFormats(
-      options.issuerMetadata.credentialIssuer.credential_configurations_supported
-    )
+    const credentialConfigurations = options.issuerMetadata.knownCredentialConfigurations
 
     return {
       credentialConfiguration: credentialConfigurations[credentialRequest.credential_configuration_id],

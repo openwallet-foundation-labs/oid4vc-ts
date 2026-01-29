@@ -1,4 +1,4 @@
-import { URL } from '@openid4vc/utils'
+import { URL, zHttpsUrl } from '@openid4vc/utils'
 import z from 'zod'
 import { zOauth2ErrorResponse } from '../common/z-oauth2-error'
 
@@ -6,6 +6,7 @@ export const zAuthorizationResponse = z
   .object({
     state: z.string().optional(),
     code: z.string().nonempty(),
+    iss: zHttpsUrl.optional(), // RFC 9207
 
     // This allows for discriminating between error and success responses.
     error: z.optional(z.never()),
@@ -23,6 +24,7 @@ export const zAuthorizationErrorResponse = z
   .object({
     ...zOauth2ErrorResponse.shape,
     state: z.string().optional(),
+    iss: zHttpsUrl.optional(), // RFC 9207
 
     // This allows for discriminating between error and success responses.
     code: z.optional(z.never()),

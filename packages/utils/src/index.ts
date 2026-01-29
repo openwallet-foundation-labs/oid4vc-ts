@@ -11,6 +11,7 @@ export {
 } from './encoding'
 export { InvalidFetchResponseError } from './error/InvalidFetchResponseError'
 export { JsonParseError } from './error/JsonParseError'
+export { OpenId4VcBaseError } from './error/OpenId4VcBaseError'
 export { ValidationError } from './error/ValidationError'
 export { createFetcher, createZodFetcher, type ZodFetcher } from './fetcher'
 export {
@@ -35,6 +36,7 @@ export type { NonEmptyArray, Optional, OrPromise, Simplify, StringWithAutoComple
 export { getQueryParams, objectToQueryParams } from './url'
 export {
   type HttpMethod,
+  zDataUrl,
   zHttpMethod,
   zHttpsUrl,
   zInteger,

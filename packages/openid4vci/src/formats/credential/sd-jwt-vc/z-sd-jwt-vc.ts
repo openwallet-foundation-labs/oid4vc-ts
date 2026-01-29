@@ -32,6 +32,7 @@ export const zLegacySdJwtVcCredentialIssuerMetadataV1 = zCredentialConfiguration
   vct: z.string(),
   format: zLegacySdJwtVcFormatIdentifier,
   order: z.optional(z.array(z.string())),
+  credential_signing_alg_values_supported: z.array(z.string()).optional(),
   credential_metadata: zCredentialConfigurationSupportedCommonCredentialMetadata
     .extend({
       claims: z.array(zIssuerMetadataClaimsDescription).optional(),

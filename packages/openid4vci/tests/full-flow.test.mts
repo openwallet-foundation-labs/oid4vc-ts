@@ -23,8 +23,8 @@ import {
   extractScopesForCredentialConfigurationIds,
   type IssuerMetadataResult,
   Openid4vciClient,
-  Openid4vciDraftVersion,
   Openid4vciIssuer,
+  Openid4vciVersion,
   Openid4vciWalletProvider,
 } from '../src/index.js'
 
@@ -94,6 +94,7 @@ const authorizationServerMetadata = authorizationServer.createAuthorizationServe
   pushed_authorization_request_endpoint: 'https://oauth2-auth-server.com/par',
   code_challenge_methods_supported: [PkceCodeChallengeMethod.S256],
   token_endpoint_auth_methods_supported: [SupportedClientAuthenticationMethod.ClientAttestationJwt],
+  authorization_response_iss_parameter_supported: true,
 })
 
 const credentialConfigurationsSupported = {
@@ -121,7 +122,8 @@ const credentialIssuerMetadata = issuer.createCredentialIssuerMetadata({
 const issuerMetadata = {
   credentialIssuer: credentialIssuerMetadata,
   authorizationServers: [authorizationServerMetadata],
-  originalDraftVersion: Openid4vciDraftVersion.Draft14,
+  originalDraftVersion: Openid4vciVersion.Draft14,
+  knownCredentialConfigurations: credentialConfigurationsSupported,
 } satisfies IssuerMetadataResult
 
 describe('Full E2E test', () => {
@@ -307,7 +309,8 @@ describe('Full E2E test', () => {
           issuerMetadata: {
             authorizationServers: [],
             credentialIssuer: credentialIssuerMetadata,
-            originalDraftVersion: Openid4vciDraftVersion.Draft14,
+            originalDraftVersion: Openid4vciVersion.Draft14,
+            knownCredentialConfigurations: credentialConfigurationsSupported,
           },
           credentialRequest: credentialRequest as Record<string, unknown>,
         })
@@ -517,7 +520,6 @@ describe('Full E2E test', () => {
               method: request.method as HttpMethod,
               url: request.url,
             },
-            callbacks,
           })
 
         const verifiedParRequest = await authorizationServer.verifyPushedAuthorizationRequest({
@@ -751,7 +753,8 @@ describe('Full E2E test', () => {
           issuerMetadata: {
             authorizationServers: [],
             credentialIssuer: credentialIssuerMetadata,
-            originalDraftVersion: Openid4vciDraftVersion.Draft14,
+            originalDraftVersion: Openid4vciVersion.Draft14,
+            knownCredentialConfigurations: credentialConfigurationsSupported,
           },
           credentialRequest: credentialRequest as Record<string, unknown>,
         })
@@ -883,6 +886,16 @@ describe('Full E2E test', () => {
       'https://oauth2-auth-server.com/authorize?request_uri=https%3A%2F%2Foauth2-auth-server.com%2Fauthorize%3Frequest_uri%3Durn%3Asomething&client_id=wallet'
     )
 
+    const authorizationResponse = client.parseAndVerifyAuthorizationResponseRedirectUrl({
+      authorizationServerMetadata,
+      url: `https://redirect.com?code=some-authorization-code&iss=${encodeURIComponent(authorizationServerMetadata.issuer)}`,
+    })
+
+    // This won't happen, but for typing
+    if (!authorizationResponse.code) {
+      throw new Error('Authorization response contains error')
+    }
+
     const {
       accessTokenResponse,
       authorizationServer: authorizationServerIdentifier,
@@ -890,7 +903,7 @@ describe('Full E2E test', () => {
     } = await client.retrieveAuthorizationCodeAccessTokenFromOffer({
       credentialOffer: resolvedCredentialOffer,
       issuerMetadata,
-      authorizationCode: 'some-authorization-code',
+      authorizationCode: authorizationResponse.code,
       pkceCodeVerifier: pkce?.codeVerifier,
       redirectUri: 'https://redirect-uri.com',
       // TODO: how to select the alg

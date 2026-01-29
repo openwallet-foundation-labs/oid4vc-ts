@@ -1,4 +1,4 @@
-import { type Fetch, joinUriParts, URL } from '@openid4vc/utils'
+import { type Fetch, joinUriParts, OpenId4VcBaseError, URL } from '@openid4vc/utils'
 import { Oauth2Error } from '../../error/Oauth2Error'
 import { fetchWellKnownMetadata } from '../fetch-well-known-metadata'
 import { type AuthorizationServerMetadata, zAuthorizationServerMetadata } from './z-authorization-server-metadata'
@@ -28,6 +28,8 @@ export async function fetchAuthorizationServerMetadata(
   // host as well), and thus we use this as a last fallback if it's different for now (in case of subpath).
   const nonCompliantAuthorizationServerWellKnownMetadataUrl = joinUriParts(issuer, [wellKnownAuthorizationServerSuffix])
 
+  let firstError: Error | null = null
+
   // First try oauth-authorization-server
   let authorizationServerResult = await fetchWellKnownMetadata(
     authorizationServerWellKnownMetadataUrl,
@@ -35,7 +37,13 @@ export async function fetchAuthorizationServerMetadata(
     {
       fetch,
     }
-  )
+  ).catch((error) => {
+    if (error instanceof OpenId4VcBaseError) throw error
+
+    // An exception occurs if a CORS-policy blocks the request, i.e. because the URL is invalid due to the legacy path being used
+    // The legacy path should still be tried therefore we store the first error to rethrow it later if needed
+    firstError = error
+  })
 
   if (
     !authorizationServerResult &&
@@ -47,7 +55,11 @@ export async function fetchAuthorizationServerMetadata(
       {
         fetch,
       }
-    )
+    ).catch((error) => {
+      // Similar to above, if there was a library error, we throw it.
+      // However in other cases we swallow it, we only keep the first error
+      if (error instanceof OpenId4VcBaseError) throw error
+    })
   }
 
   if (!authorizationServerResult) {
@@ -57,7 +69,13 @@ export async function fetchAuthorizationServerMetadata(
       {
         fetch,
       }
-    )
+    ).catch((error) => {
+      throw firstError ?? error
+    })
+  }
+
+  if (!authorizationServerResult && firstError) {
+    throw firstError
   }
 
   if (authorizationServerResult && authorizationServerResult.issuer !== issuer) {

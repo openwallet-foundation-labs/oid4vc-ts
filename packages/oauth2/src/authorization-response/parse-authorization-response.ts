@@ -9,7 +9,7 @@ import {
   zAuthorizationResponse,
 } from './z-authorization-response'
 
-export interface ParseAuthorizationRequestOptions {
+export interface ParseAuthorizationResponseOptions {
   url: string
 }
 
@@ -19,7 +19,7 @@ export interface ParseAuthorizationRequestOptions {
  * @throws {Oauth2ServerErrorResponseError}
  */
 export function parseAuthorizationResponseRedirectUrl(
-  options: ParseAuthorizationRequestOptions
+  options: ParseAuthorizationResponseOptions
 ): AuthorizationResponse | AuthorizationErrorResponse {
   const searchParams = Object.fromEntries(new URL(options.url).searchParams)
 

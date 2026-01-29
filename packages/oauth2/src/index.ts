@@ -91,6 +91,12 @@ export {
   clientAuthenticationNone,
   SupportedClientAuthenticationMethod,
 } from './client-authentication'
+export {
+  fullySpecifiedCoseAlgorithmArrayToJwaSignatureAlgorithmArray,
+  fullySpecifiedCoseAlgorithmToJwaSignatureAlgorithm,
+  jwaSignatureAlgorithmArrayToFullySpecifiedCoseAlgorithmArray,
+  jwaSignatureAlgorithmToFullySpecifiedCoseAlgorithm,
+} from './common/algorithm'
 export { type CalculateJwkThumbprintOptions, calculateJwkThumbprint } from './common/jwk/jwk-thumbprint'
 // TODO: should we move this to oauth2-utils?
 export { isJwkInSet } from './common/jwk/jwks'

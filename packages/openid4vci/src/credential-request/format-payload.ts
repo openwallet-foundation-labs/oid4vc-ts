@@ -15,8 +15,9 @@ import {
 } from '../formats/credential'
 import { zLegacySdJwtVcCredentialIssuerMetadataV1 } from '../formats/credential/sd-jwt-vc/z-sd-jwt-vc'
 import { zSdJwtW3VcCredentialIssuerMetadata } from '../formats/credential/w3c-vc/z-w3c-sd-jwt-vc'
-import { getCredentialConfigurationSupportedById } from '../metadata/credential-issuer/credential-issuer-metadata'
+import { getKnownCredentialConfigurationSupportedById } from '../metadata/credential-issuer/credential-issuer-metadata'
 import type { IssuerMetadataResult } from '../metadata/fetch-issuer-metadata'
+import { Openid4vciVersion } from '../version'
 import type { CredentialRequestWithFormats } from './z-credential-request'
 
 export interface GetCredentialRequestFormatPayloadForCredentialConfigurationIdOptions {
@@ -34,17 +35,20 @@ export interface GetCredentialRequestFormatPayloadForCredentialConfigurationIdOp
 export function getCredentialRequestFormatPayloadForCredentialConfigurationId(
   options: GetCredentialRequestFormatPayloadForCredentialConfigurationIdOptions
 ): CredentialRequestWithFormats {
-  const credentialConfiguration = getCredentialConfigurationSupportedById(
-    options.issuerMetadata.credentialIssuer.credential_configurations_supported,
+  const credentialConfiguration = getKnownCredentialConfigurationSupportedById(
+    options.issuerMetadata,
     options.credentialConfigurationId
   )
 
   if (
     zIs(zLegacySdJwtVcCredentialIssuerMetadataV1, credentialConfiguration) ||
-    zIs(zLegacySdJwtVcCredentialIssuerMetadataDraft14, credentialConfiguration)
+    zIs(zLegacySdJwtVcCredentialIssuerMetadataDraft14, credentialConfiguration) ||
+    (zIs(zSdJwtDcCredentialIssuerMetadata, credentialConfiguration) &&
+      (options.issuerMetadata.originalDraftVersion === Openid4vciVersion.Draft11 ||
+        options.issuerMetadata.originalDraftVersion === Openid4vciVersion.Draft14))
   ) {
     return {
-      format: credentialConfiguration.format,
+      format: 'vc+sd-jwt',
       vct: credentialConfiguration.vct,
     }
   }

@@ -1,5 +1,5 @@
 import { zJwkSet } from '@openid4vc/oauth2'
-import { zHttpsUrl } from '@openid4vc/utils'
+import { zDataUrl, zHttpsUrl } from '@openid4vc/utils'
 import { z } from 'zod'
 import { zJarmClientMetadata } from '../jarm/metadata/z-jarm-client-metadata'
 import { zLegacyVpFormats, zVpFormatsSupported } from './z-vp-formats-supported'
@@ -23,7 +23,7 @@ export const zClientMetadata = z
 
     ...zJarmClientMetadata.shape,
 
-    logo_uri: zHttpsUrl.optional(),
+    logo_uri: zHttpsUrl.or(zDataUrl).optional(),
     client_name: z.string().optional(),
   })
   .loose()
