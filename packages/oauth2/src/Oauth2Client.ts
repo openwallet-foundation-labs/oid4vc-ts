@@ -25,10 +25,6 @@ import { SupportedClientAuthenticationMethod } from './client-authentication'
 import { Oauth2ErrorCodes } from './common/z-oauth2-error'
 import { extractDpopNonceFromHeaders } from './dpop/dpop'
 import { Oauth2ClientAuthorizationChallengeError } from './error/Oauth2ClientAuthorizationChallengeError'
-import {
-  type SendInteractiveAuthorizationRequestOptions,
-  sendInteractiveAuthorizationRequest,
-} from './interactive-authorization/send-interactive-authorization-request'
 import { fetchAuthorizationServerMetadata } from './metadata/authorization-server/authorization-server-metadata'
 import type { AuthorizationServerMetadata } from './metadata/authorization-server/z-authorization-server-metadata'
 import { createPkce } from './pkce'
@@ -139,7 +135,7 @@ export class Oauth2Client {
             dpop: options.dpop
               ? {
                   ...options.dpop,
-                  nonce: dpopNonce,
+                  nonce: dpopNonce ?? undefined,
                 }
               : undefined,
             authorizationRequestUrl,
@@ -164,24 +160,6 @@ export class Oauth2Client {
 
   public sendAuthorizationChallengeRequest(options: Omit<SendAuthorizationChallengeRequestOptions, 'callbacks'>) {
     return sendAuthorizationChallengeRequest({
-      ...options,
-      callbacks: this.options.callbacks,
-    })
-  }
-
-  /**
-   * Send an Interactive Authorization Request
-   *
-   * This method sends a request to the Interactive Authorization Endpoint.
-   * Supports both initial requests and follow-up requests.
-   *
-   * @param options - Request options
-   * @returns The interactive authorization response and updated DPoP config
-   */
-  public async sendInteractiveAuthorizationRequest(
-    options: Omit<SendInteractiveAuthorizationRequestOptions, 'callbacks'>
-  ) {
-    return sendInteractiveAuthorizationRequest({
       ...options,
       callbacks: this.options.callbacks,
     })

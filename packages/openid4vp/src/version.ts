@@ -4,19 +4,29 @@ import {
   isOpenid4vpAuthorizationRequestDcApi,
   type Openid4vpAuthorizationRequestDcApi,
 } from './authorization-request/z-authorization-request-dc-api'
+import type { Openid4vpAuthorizationRequestIae } from './authorization-request/z-authorization-request-iae'
 import { zClientIdPrefix } from './client-identifier-prefix/z-client-id-prefix'
 
 /**
  * The Openid4vpVersionNumber
  *
- * 100 means 1.0 final, all others are draft versions
+ * 100 means 1.0 final
+ * 101 means 1.1 draft 1
+ * 110 will mean 1.1 final
+ * all others are pre-1.0 draft versions
  */
-export type Openid4vpVersionNumber = 18 | 19 | 20 | 21 | 22 | 23 | 24 | 25 | 26 | 27 | 28 | 100
+export type Openid4vpVersionNumber = 18 | 19 | 20 | 21 | 22 | 23 | 24 | 25 | 26 | 27 | 28 | 100 | 101
 
 export function parseAuthorizationRequestVersion(
-  request: Openid4vpAuthorizationRequest | Openid4vpAuthorizationRequestDcApi
+  request: Openid4vpAuthorizationRequest | Openid4vpAuthorizationRequestDcApi | Openid4vpAuthorizationRequestIae
 ): Openid4vpVersionNumber {
   const requirements: ['<' | '>=', Openid4vpVersionNumber][] = []
+
+  // 1.1 draft
+  if (request.response_mode === 'iae_post' || request.response_mode === 'iae_post.jwt') {
+    requirements.push(['>=', 101])
+  }
+
   // 29
   if (request.verifier_info) {
     requirements.push(['>=', 100])

@@ -1,8 +1,10 @@
-import type {
-  InteractiveAuthorizationCodeResponse,
-  InteractiveAuthorizationErrorResponse,
-  InteractiveAuthorizationInteractionRequiredResponse,
-  Openid4vpRequest,
+import { type Oauth2ErrorCodes, type Oauth2ErrorResponse, zOauth2ErrorResponse } from '@openid4vc/oauth2'
+import { parseWithErrorHandling, type StringWithAutoCompletion } from '@openid4vc/utils'
+import {
+  type InteractiveAuthorizationCodeResponse,
+  type InteractiveAuthorizationInteractionRequiredResponse,
+  zInteractiveAuthorizationCodeResponse,
+  zInteractiveAuthorizationInteractionRequiredResponse,
 } from './z-interactive-authorization.js'
 
 export interface CreateInteractiveAuthorizationCodeResponseOptions {
@@ -33,14 +35,12 @@ export interface CreateInteractiveAuthorizationCodeResponseOptions {
  * })
  * ```
  */
-export function createInteractiveAuthorizationCodeResponse(
-  options: CreateInteractiveAuthorizationCodeResponseOptions
-): InteractiveAuthorizationCodeResponse {
-  return {
+export function createInteractiveAuthorizationCodeResponse(options: CreateInteractiveAuthorizationCodeResponseOptions) {
+  return parseWithErrorHandling(zInteractiveAuthorizationCodeResponse, {
     status: 'ok',
     code: options.authorizationCode,
     ...options.additionalPayload,
-  }
+  } satisfies InteractiveAuthorizationCodeResponse)
 }
 
 export interface CreateInteractiveAuthorizationOpenid4vpInteractionOptions {
@@ -53,7 +53,7 @@ export interface CreateInteractiveAuthorizationOpenid4vpInteractionOptions {
    * The OpenID4VP Authorization Request to embed in the response
    * Can be either a signed request (with 'request' JWT) or unsigned request with inline parameters
    */
-  openid4vpRequest: Openid4vpRequest
+  openid4vpRequest: Record<string, unknown>
 
   /**
    * Optional additional fields to include in the response
@@ -96,14 +96,14 @@ export interface CreateInteractiveAuthorizationOpenid4vpInteractionOptions {
  */
 export function createInteractiveAuthorizationOpenid4vpInteraction(
   options: CreateInteractiveAuthorizationOpenid4vpInteractionOptions
-): InteractiveAuthorizationInteractionRequiredResponse {
-  return {
+) {
+  return parseWithErrorHandling(zInteractiveAuthorizationInteractionRequiredResponse, {
     status: 'require_interaction',
     type: 'openid4vp_presentation',
     auth_session: options.authSession,
     openid4vp_request: options.openid4vpRequest,
     ...options.additionalPayload,
-  }
+  } satisfies InteractiveAuthorizationInteractionRequiredResponse)
 }
 
 export interface CreateInteractiveAuthorizationRedirectToWebInteractionOptions {
@@ -150,23 +150,23 @@ export interface CreateInteractiveAuthorizationRedirectToWebInteractionOptions {
  */
 export function createInteractiveAuthorizationRedirectToWebInteraction(
   options: CreateInteractiveAuthorizationRedirectToWebInteractionOptions
-): InteractiveAuthorizationInteractionRequiredResponse {
-  return {
+) {
+  return parseWithErrorHandling(zInteractiveAuthorizationInteractionRequiredResponse, {
     status: 'require_interaction',
     type: 'redirect_to_web',
     auth_session: options.authSession,
     request_uri: options.requestUri,
     expires_in: options.expiresIn,
     ...options.additionalPayload,
-  }
+  } satisfies InteractiveAuthorizationInteractionRequiredResponse)
 }
 
 export interface CreateInteractiveAuthorizationErrorResponseOptions {
   /**
-   * The error code
-   * Can be standard OAuth2 error codes or 'missing_interaction_type'
+   * Error codes specific to interactive authorization are:
+   *  - @see Oauth2ErrorCodes.MissingInteractionType
    */
-  error: string
+  error: StringWithAutoCompletion<Oauth2ErrorCodes>
 
   /**
    * Optional human-readable error description
@@ -202,11 +202,11 @@ export interface CreateInteractiveAuthorizationErrorResponseOptions {
  */
 export function createInteractiveAuthorizationErrorResponse(
   options: CreateInteractiveAuthorizationErrorResponseOptions
-): InteractiveAuthorizationErrorResponse {
-  return {
+) {
+  return parseWithErrorHandling(zOauth2ErrorResponse, {
     error: options.error,
     error_description: options.errorDescription,
     error_uri: options.errorUri,
     ...options.additionalPayload,
-  }
+  } satisfies Oauth2ErrorResponse)
 }

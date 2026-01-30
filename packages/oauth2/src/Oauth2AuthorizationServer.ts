@@ -46,24 +46,6 @@ import { type VerifyClientAttestationOptions, verifyClientAttestation } from './
 import { Oauth2ErrorCodes } from './common/z-oauth2-error'
 import { type VerifyDpopJwtOptions, verifyDpopJwt } from './dpop/dpop'
 import {
-  type CreateInteractiveAuthorizationCodeResponseOptions,
-  type CreateInteractiveAuthorizationErrorResponseOptions,
-  type CreateInteractiveAuthorizationOpenid4vpInteractionOptions,
-  type CreateInteractiveAuthorizationRedirectToWebInteractionOptions,
-  createInteractiveAuthorizationCodeResponse,
-  createInteractiveAuthorizationErrorResponse,
-  createInteractiveAuthorizationOpenid4vpInteraction,
-  createInteractiveAuthorizationRedirectToWebInteraction,
-} from './interactive-authorization/create-interactive-authorization-response'
-import {
-  type ParseInteractiveAuthorizationRequestOptions,
-  parseInteractiveAuthorizationRequest,
-} from './interactive-authorization/parse-interactive-authorization-request'
-import {
-  type VerifyInteractiveAuthorizationRequestOptions,
-  verifyInteractiveAuthorizationRequest,
-} from './interactive-authorization/verify-interactive-authorization-request'
-import {
   type AuthorizationServerMetadata,
   zAuthorizationServerMetadata,
 } from './metadata/authorization-server/z-authorization-server-metadata'
@@ -252,67 +234,6 @@ export class Oauth2AuthorizationServer {
 
   public createAuthorizationChallengeErrorResponse(options: CreateAuthorizationChallengeErrorResponseOptions) {
     return createAuthorizationChallengeErrorResponse(options)
-  }
-
-  /**
-   * Parse an interactive authorization request
-   *
-   * Supports both initial and follow-up requests
-   */
-  public parseInteractiveAuthorizationRequest(options: ParseInteractiveAuthorizationRequestOptions) {
-    return parseInteractiveAuthorizationRequest(options)
-  }
-
-  /**
-   * Verify an interactive authorization request
-   *
-   * Verifies client attestation, DPoP, and authorization parameters
-   */
-  public verifyInteractiveAuthorizationRequest(
-    options: Omit<VerifyInteractiveAuthorizationRequestOptions, 'callbacks'>
-  ) {
-    return verifyInteractiveAuthorizationRequest({
-      ...options,
-      callbacks: this.options.callbacks,
-    })
-  }
-
-  /**
-   * Create an interactive authorization code response
-   *
-   * Indicates successful completion of the authorization process
-   */
-  public createInteractiveAuthorizationCodeResponse(options: CreateInteractiveAuthorizationCodeResponseOptions) {
-    return createInteractiveAuthorizationCodeResponse(options)
-  }
-
-  /**
-   * Create an interactive authorization response requesting an OpenID4VP presentation
-   *
-   * The wallet must present credentials via OpenID4VP before authorization can be granted
-   */
-  public createInteractiveAuthorizationOpenid4vpInteraction(
-    options: CreateInteractiveAuthorizationOpenid4vpInteractionOptions
-  ) {
-    return createInteractiveAuthorizationOpenid4vpInteraction(options)
-  }
-
-  /**
-   * Create an interactive authorization response requesting a redirect to web
-   *
-   * The authorization process must continue via interactions with the user in a web browser
-   */
-  public createInteractiveAuthorizationRedirectToWebInteraction(
-    options: CreateInteractiveAuthorizationRedirectToWebInteractionOptions
-  ) {
-    return createInteractiveAuthorizationRedirectToWebInteraction(options)
-  }
-
-  /**
-   * Create an interactive authorization error response
-   */
-  public createInteractiveAuthorizationErrorResponse(options: CreateInteractiveAuthorizationErrorResponseOptions) {
-    return createInteractiveAuthorizationErrorResponse(options)
   }
 
   public async verifyDpopJwt(options: Omit<VerifyDpopJwtOptions, 'callbacks'>) {

@@ -65,5 +65,11 @@ export const zAuthorizationServerMetadata = z
     },
     `Metadata value 'introspection_endpoint_auth_signing_alg_values_supported' must be defined if metadata 'introspection_endpoint_auth_methods_supported' value contains values 'private_key_jwt' or 'client_secret_jwt'`
   )
+  .refine(
+    // OpenID4VCI 1.1: require_interactive_authorization_request MUST NOT be present if interactive_authorization_endpoint is omitted
+    ({ require_interactive_authorization_request, interactive_authorization_endpoint }) =>
+      !require_interactive_authorization_request || interactive_authorization_endpoint !== undefined,
+    `Metadata value 'require_interactive_authorization_request' MUST NOT be present if 'interactive_authorization_endpoint' is omitted`
+  )
 
 export type AuthorizationServerMetadata = z.infer<typeof zAuthorizationServerMetadata>

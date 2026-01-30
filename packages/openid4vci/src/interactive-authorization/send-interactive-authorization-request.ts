@@ -1,14 +1,30 @@
-import { ContentType, createZodFetcher, Headers, objectToQueryParams } from '@openid4vc/utils'
-import type { CallbackContext } from '../callbacks.js'
-import { createDpopHeadersForRequest, extractDpopNonceFromHeaders, type RequestDpopOptions } from '../dpop/dpop.js'
-import { authorizationServerRequestWithDpopRetry } from '../dpop/dpop-retry.js'
-import { Oauth2Error } from '../error/Oauth2Error.js'
-import type { AuthorizationServerMetadata } from '../metadata/authorization-server/z-authorization-server-metadata.js'
-import type {
-  InteractiveAuthorizationFollowUpRequest,
-  InteractiveAuthorizationRequest,
+import {
+  type AuthorizationServerMetadata,
+  authorizationServerRequestWithDpopRetry,
+  type CallbackContext,
+  createDpopHeadersForRequest,
+  extractDpopNonceFromHeaders,
+  Oauth2Error,
+  type RequestDpopOptions,
+  zOauth2ErrorResponse,
+} from '@openid4vc/oauth2'
+import {
+  ContentType,
+  createZodFetcher,
+  Headers,
+  InvalidFetchResponseError,
+  objectToQueryParams,
+  parseWithErrorHandling,
+  ValidationError,
+} from '@openid4vc/utils'
+import { Openid4vciClientInteractiveAuthorizationError } from '../error/Openid4vciClientInteractiveAuthorizationError.js'
+import {
+  type InteractiveAuthorizationFollowUpRequest,
+  type InteractiveAuthorizationInitialRequest,
+  zInteractiveAuthorizationFollowUpRequest,
+  zInteractiveAuthorizationInitialRequest,
+  zInteractiveAuthorizationResponse,
 } from './z-interactive-authorization.js'
-import { zInteractiveAuthorizationResponse } from './z-interactive-authorization.js'
 
 export interface SendInteractiveAuthorizationRequestOptions {
   /**
@@ -25,7 +41,7 @@ export interface SendInteractiveAuthorizationRequestOptions {
    * The interactive authorization request parameters
    * Can be either an initial request or a follow-up request
    */
-  request: InteractiveAuthorizationRequest | InteractiveAuthorizationFollowUpRequest
+  request: InteractiveAuthorizationInitialRequest | InteractiveAuthorizationFollowUpRequest
 
   /**
    * Optional DPoP configuration for request binding
@@ -54,6 +70,9 @@ export interface SendInteractiveAuthorizationRequestOptions {
  * @param options - Configuration options for the request
  * @returns The interactive authorization response and updated DPoP config
  * @throws {Oauth2Error} if the authorization server doesn't support interactive authorization
+ * @throws {Openid4vciClientInteractiveAuthorizationError} if the request failed and an error response is returned
+ * @throws {InvalidFetchResponseError} if the request failed but no error response could be parsed
+ * @throws {ValidationError} if a successful response was received but an error occurred during verification
  *
  * @example Initial request
  * ```ts
@@ -92,6 +111,20 @@ export async function sendInteractiveAuthorizationRequest(options: SendInteracti
     )
   }
 
+  // Validate the request payload based on whether it's an initial or follow-up request
+  const isFollowUpRequest = options.request.auth_session
+  const interactiveAuthorizationRequest = isFollowUpRequest
+    ? parseWithErrorHandling(
+        zInteractiveAuthorizationFollowUpRequest,
+        options.request,
+        'Invalid interactive authorization follow-up request'
+      )
+    : parseWithErrorHandling(
+        zInteractiveAuthorizationInitialRequest,
+        options.request,
+        'Invalid interactive authorization request'
+      )
+
   return authorizationServerRequestWithDpopRetry({
     dpop: options.dpop,
     request: async (dpop) => {
@@ -119,14 +152,40 @@ export async function sendInteractiveAuthorizationRequest(options: SendInteracti
         interactiveAuthorizationEndpoint,
         {
           method: 'POST',
-          body: objectToQueryParams(options.request as Record<string, unknown>).toString(),
+          body: objectToQueryParams(interactiveAuthorizationRequest).toString(),
           headers,
         }
       )
 
+      if (!response.ok || !result) {
+        const interactiveAuthorizationErrorResponse = zOauth2ErrorResponse.safeParse(
+          await response
+            .clone()
+            .json()
+            .catch(() => null)
+        )
+        if (interactiveAuthorizationErrorResponse.success) {
+          throw new Openid4vciClientInteractiveAuthorizationError(
+            `Error requesting authorization from interactive authorization endpoint '${authorizationServerMetadata.interactive_authorization_endpoint}'. Received response with status ${response.status}`,
+            interactiveAuthorizationErrorResponse.data,
+            response
+          )
+        }
+
+        throw new InvalidFetchResponseError(
+          `Error requesting authorization from interactive authorization endpoint '${authorizationServerMetadata.interactive_authorization_endpoint}'. Received response with status ${response.status}`,
+          await response.clone().text(),
+          response
+        )
+      }
+
+      if (!result.success) {
+        throw new ValidationError('Error validating interactive authorization response', result.error)
+      }
+
       const dpopNonce = extractDpopNonceFromHeaders(response.headers) ?? undefined
       return {
-        response: result?.data,
+        interactiveAuthorizationResponse: result.data,
         dpop: dpop
           ? {
               ...dpop,

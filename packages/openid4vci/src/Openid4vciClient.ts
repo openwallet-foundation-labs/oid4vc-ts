@@ -2,7 +2,7 @@ import {
   authorizationCodeGrantIdentifier,
   type CallbackContext,
   type CreateAuthorizationRequestUrlOptions,
-  type CreatePkceReturn,
+  createPkce,
   getAuthorizationServerMetadataFromList,
   Oauth2Client,
   Oauth2ClientAuthorizationChallengeError,
@@ -17,7 +17,12 @@ import {
   type VerifyAuthorizationResponseOptions,
   verifyAuthorizationResponse,
 } from '@openid4vc/oauth2'
-
+import { objectToQueryParams } from '@openid4vc/utils'
+import {
+  AuthorizationFlow,
+  type AuthorizationFlowReturn,
+  type InitiateAuthorizationOptions,
+} from './authorization-flow.js'
 import {
   determineAuthorizationServerForCredentialOffer,
   resolveCredentialOffer,
@@ -41,17 +46,14 @@ import {
   type CreateCredentialRequestJwtProofOptions,
   createCredentialRequestJwtProof,
 } from './formats/proof-type/jwt/jwt-proof-type'
+import {
+  type SendInteractiveAuthorizationRequestOptions,
+  sendInteractiveAuthorizationRequest,
+} from './interactive-authorization/send-interactive-authorization-request.js'
 import { type IssuerMetadataResult, resolveIssuerMetadata } from './metadata/fetch-issuer-metadata'
 import { type RequestNonceOptions, requestNonce } from './nonce/nonce-request'
 import { type SendNotificationOptions, sendNotification } from './notification/notification'
 import { Openid4vciVersion } from './version'
-
-export enum AuthorizationFlow {
-  Oauth2Redirect = 'Oauth2Redirect',
-  PresentationDuringIssuance = 'PresentationDuringIssuance',
-  InteractiveAuthorizationOpenid4vp = 'InteractiveAuthorizationOpenid4vp',
-  InteractiveAuthorizationRedirectToWeb = 'InteractiveAuthorizationRedirectToWeb',
-}
 
 export interface Openid4vciClientOptions {
   /**
@@ -86,7 +88,9 @@ export class Openid4vciClient {
   }
 
   /**
-   * Retrieve an authorization code for a presentation during issuance session
+   * Retrieve an authorization code for a legacy presentation during issuance session
+   *
+   * This can only be called if the initiateAuthorization returned {@link AuthorizationFlow.PresentationDuringIssuance}.
    *
    * This can only be called if an authorization challenge was performed before and returned a
    * `presentation` parameter along with an `auth_session`. If the presentation response included
@@ -146,6 +150,7 @@ export class Openid4vciClient {
    */
   public async retrieveAuthorizationCodeUsingInteractiveAuthorization(options: {
     authSession: string
+
     openid4vpResponse?: string
     credentialOffer: CredentialOfferObject
     issuerMetadata: IssuerMetadataResult
@@ -170,9 +175,7 @@ export class Openid4vciClient {
       throw new Openid4vciError('Authorization server does not support interactive authorization endpoint')
     }
 
-    const oauth2Client = new Oauth2Client({ callbacks: this.options.callbacks })
-
-    const { response, dpop } = await oauth2Client.sendInteractiveAuthorizationRequest({
+    const { interactiveAuthorizationResponse, dpop } = await this.sendInteractiveAuthorizationRequest({
       authorizationServerMetadata,
       request: {
         auth_session: options.authSession,
@@ -181,55 +184,36 @@ export class Openid4vciClient {
       dpop: options.dpop,
     })
 
-    if (!response) {
-      throw new Openid4vciError('Interactive authorization request did not return a response')
-    }
-
-    if (response.status !== 'ok') {
-      throw new Openid4vciError(`Interactive authorization did not complete successfully: ${JSON.stringify(response)}`)
+    if (interactiveAuthorizationResponse.status !== 'ok') {
+      throw new Openid4vciError(
+        `Interactive authorization did not return status 'ok'. Received status '${interactiveAuthorizationResponse.status}'.`
+      )
     }
 
     return {
-      authorizationCode: response.code,
+      authorizationCode: interactiveAuthorizationResponse.code,
       dpop,
     }
   }
 
   /**
-   * Initiates authorization for credential issuance. It handles the following cases:
-   * - Interactive Authorization Endpoint (OpenID4VCI 1.1)
-   * - Authorization Challenge (OAuth 2.0 First-Party Applications)
+   * Initiates authorization for credential issuance. It handles the following cases (in order):
+   * - Interactive Authorization Endpoint (OpenID4VCI 1.1) - preferred method
+   * - Authorization Challenge (OAuth 2.0 First-Party Applications) - fallback
    * - Pushed Authorization Request
    * - Regular Authorization url
    *
-   * In case the authorization challenge request returns an error with `insufficient_authorization`
-   * with a `presentation` field it means the authorization server expects presentation of credentials
-   * before issuance of credentials. If this is the case, the value in `presentation` should be treated
-   * as an openid4vp authorization request and submitted to the verifier. Once the presentation response
-   * has been submitted, the RP will respond with a `presentation_during_issuance_session` parameter.
-   * Together with the `auth_session` parameter returned in this call you can retrieve an `authorization_code`
-   * using
+   * The Interactive Authorization Endpoint can return:
+   * - `status: 'require_interaction'` with type 'openid4vp_presentation' (requires OpenID4VP presentation)
+   * - `status: 'require_interaction'` with type 'redirect_to_web' (requires browser redirect)
+   *
+   * For Authorization Challenge (legacy), an error with `insufficient_authorization` and `presentation`
+   * field means the AS expects presentation of credentials before issuance. The value in `presentation`
+   * should be treated as an OpenID4VP authorization request. Once submitted, the RP will respond with
+   * a `presentation_during_issuance_session` parameter. Together with the `auth_session` you can
+   * retrieve an authorization code using {@link retrieveAuthorizationCodeUsingPresentation}.
    */
-  public async initiateAuthorization(
-    options: Omit<CreateAuthorizationRequestUrlOptions, 'callbacks' | 'authorizationServerMetadata'> & {
-      credentialOffer: CredentialOfferObject
-      issuerMetadata: IssuerMetadataResult
-    }
-  ): Promise<
-    // TODO: cleanup these types
-    | {
-        authorizationFlow: AuthorizationFlow.PresentationDuringIssuance
-        openid4vpRequestUrl: string
-        authSession: string
-        authorizationServer: string
-      }
-    | {
-        authorizationFlow: AuthorizationFlow.Oauth2Redirect
-        authorizationRequestUrl: string
-        authorizationServer: string
-        pkce?: CreatePkceReturn
-      }
-  > {
+  public async initiateAuthorization(options: InitiateAuthorizationOptions): Promise<AuthorizationFlowReturn> {
     if (!options.credentialOffer.grants?.[authorizationCodeGrantIdentifier]) {
       throw new Oauth2Error(`Provided credential offer does not include the 'authorization_code' grant.`)
     }
@@ -248,6 +232,86 @@ export class Openid4vciClient {
     const oauth2Client = new Oauth2Client({ callbacks: this.options.callbacks })
 
     try {
+      // Prefer Interactive Authorization Endpoint (IAE) - successor to authorization challenge
+      if (authorizationServerMetadata.interactive_authorization_endpoint) {
+        const pkce = authorizationServerMetadata.code_challenge_methods_supported
+          ? await createPkce({
+              allowedCodeChallengeMethods: authorizationServerMetadata.code_challenge_methods_supported,
+              callbacks: this.options.callbacks,
+              codeVerifier: options.pkceCodeVerifier,
+            })
+          : undefined
+
+        const result = await this.sendInteractiveAuthorizationRequest({
+          authorizationServerMetadata,
+          request: {
+            response_type: 'code',
+            client_id: options.clientId,
+            // For now we only support two hardcoded variants, future release can support
+            // custom types so the flow is extensible.
+            interaction_types_supported: ['redirect_to_web', 'openid4vp_presentation'].join(','),
+            scope: options.scope,
+            redirect_uri: options.redirectUri,
+            resource: options.resource,
+            state: options.state,
+            code_challenge: pkce?.codeChallenge,
+            code_challenge_method: pkce?.codeChallengeMethod,
+            ...options.additionalRequestPayload,
+          },
+          dpop: options.dpop,
+        })
+
+        const response = result.interactiveAuthorizationResponse
+
+        // Not supported at the moment, should not happen
+        if (response.status === 'ok') {
+          throw new Oauth2Error(
+            'Received a successful authorization code response from interactive authorization endpoint without authorization'
+          )
+        }
+
+        // If interaction is required (discriminated union provides type narrowing)
+        if (response.status === 'require_interaction') {
+          // Handle redirect_to_web interaction type
+          if (response.type === 'redirect_to_web') {
+            // Type is narrowed to InteractiveAuthorizationRedirectToWebResponse
+            // request_uri is guaranteed to be present
+            const authorizationRequestUrl = `${authorizationServerMetadata.authorization_endpoint}?${objectToQueryParams(
+              {
+                request_uri: response.request_uri,
+                client_id: options.clientId,
+              }
+            ).toString()}`
+
+            return {
+              authorizationFlow: AuthorizationFlow.Oauth2Redirect,
+              authorizationServer,
+              dpop: result.dpop,
+
+              authorizationRequestUrl,
+              pkce,
+            }
+          }
+
+          // Handle openid4vp_presentation interaction type
+          if (response.type === 'openid4vp_presentation') {
+            // Type is narrowed to InteractiveAuthorizationOpenid4vpPresentationResponse
+            // openid4vp_request is guaranteed to be present
+            return {
+              authorizationFlow: AuthorizationFlow.InteractiveAuthorizationOpenid4vp,
+              authorizationServer,
+              dpop: result.dpop,
+
+              openid4vpRequest: response.openid4vp_request,
+              authSession: response.auth_session,
+            }
+          }
+
+          // If require_interaction but no supported interaction type, fall back to normal flow
+          // This can happen if a custom interaction type is used that we don't handle
+        }
+      }
+
       const result = await oauth2Client.initiateAuthorization({
         clientId: options.clientId,
         pkceCodeVerifier: options.pkceCodeVerifier,
@@ -268,7 +332,7 @@ export class Openid4vciClient {
         authorizationServer: authorizationServerMetadata.issuer,
       }
     } catch (error) {
-      // Authorization server asks us to complete openid4vp request before issuance
+      // Handle Authorization Challenge presentation during issuance (legacy)
       if (
         error instanceof Oauth2ClientAuthorizationChallengeError &&
         error.errorResponse.error === Oauth2ErrorCodes.InsufficientAuthorization &&
@@ -654,4 +718,24 @@ export class Openid4vciClient {
 
     return notificationResponse
   }
+
+  /**
+   * Send an Interactive Authorization Request
+   *
+   * This method sends a request to the Interactive Authorization Endpoint.
+   * Supports both initial requests and follow-up requests.
+   *
+   * @param options - Request options
+   * @returns The interactive authorization response and updated DPoP config
+   */
+  public async sendInteractiveAuthorizationRequest(
+    options: Omit<SendInteractiveAuthorizationRequestOptions, 'callbacks'>
+  ) {
+    return sendInteractiveAuthorizationRequest({
+      ...options,
+      callbacks: this.options.callbacks,
+    })
+  }
 }
+
+export { AuthorizationFlow }
