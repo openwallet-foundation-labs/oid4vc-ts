@@ -59,39 +59,7 @@ export interface ResolveOpenid4vpAuthorizationRequestOptions {
    * Note that in the next breaking release, this will become required, to enforce
    * correct binding of response mode to session context
    */
-  responseMode?:
-    | {
-        /**
-         * Enforces the response is `iae` or `iae_post`, meaning the presentation
-         * is created as part of an issuance session.
-         */
-        type: 'iae'
-
-        /**
-         * The expectedUrl for the IAE session. Must always be provided, but will
-         * only be verified if the OpenID4VP request is signed (and thus MUST contain `expected_url`)
-         */
-        expectedUrl: string
-      }
-    | {
-        /**
-         * Enforces the response is `dc_api` or `dc_api.jwt` (including legacy support for `w3c_dc_api` and `w3c_dc_api.jwt`),
-         * meaning the presentation will be shared using the Digital Credentials API.
-         */
-        type: 'dc_api'
-
-        /**
-         * The expected origin for the DC API session. Must always be provided, but will
-         * only be verified if the OpenID4VP request is signed (and thus MUST contain `expected_origins`)
-         */
-        expectedOrigin: string
-      }
-    | {
-        /**
-         * Enforces the response is `direct_post` or `direct_post.jwt`
-         */
-        type: 'direct_post'
-      }
+  responseMode?: ExpectedResponseMode
 
   callbacks: Pick<CallbackContext, 'verifyJwt' | 'decryptJwe' | 'getX509CertificateMetadata' | 'fetch' | 'hash'>
 }
