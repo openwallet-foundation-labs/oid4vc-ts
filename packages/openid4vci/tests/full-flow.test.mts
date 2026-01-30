@@ -357,7 +357,7 @@ describe('Full E2E test', () => {
           },
         })
 
-        const credentialResponse = issuer.createCredentialResponse({
+        const { credentialResponse } = await issuer.createCredentialResponse({
           credential: 'some-credential',
           cNonce: 'd9457e7c-4cf7-461c-a8d0-94221ba865e7',
           cNonceExpiresInSeconds: 500,
@@ -801,7 +801,7 @@ describe('Full E2E test', () => {
           },
         })
 
-        const credentialResponse = issuer.createCredentialResponse({
+        const { credentialResponse } = await issuer.createCredentialResponse({
           credential: 'some-credential',
           cNonce: 'd9457e7c-4cf7-461c-a8d0-94221ba865e7',
           cNonceExpiresInSeconds: 500,
