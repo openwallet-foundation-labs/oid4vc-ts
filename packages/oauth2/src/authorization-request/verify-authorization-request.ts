@@ -20,7 +20,7 @@ export interface VerifyAuthorizationRequestDpop {
   required?: boolean
 
   /**
-   * The dpop jwt from the pushed authorization request.
+   * The dpop jwt from the pushed or interactive authorization request.
    *
    * If dpop is required, at least one of `jwt` or `jwkThumbprint` MUST
    * be provided. If both are provided, the jwk thumbprints are matched

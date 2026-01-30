@@ -38,6 +38,9 @@ export enum Oauth2ErrorCodes {
   UnsupportedCredentialType = 'unsupported_credential_type',
   UnsupportedCredentialFormat = 'unsupported_credential_format',
 
+  // OpenID4VCI Interactive Authorization
+  MissingInteractionType = 'missing_interaction_type',
+
   // Jar
   InvalidRequestUri = 'invalid_request_uri',
   InvalidRequestObject = 'invalid_request_object',

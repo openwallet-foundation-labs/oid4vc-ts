@@ -16,6 +16,11 @@ import {
   type Openid4vpAuthorizationRequestDcApi,
   zOpenid4vpAuthorizationRequestDcApi,
 } from './z-authorization-request-dc-api'
+import {
+  isOpenid4vpAuthorizationRequestIae,
+  type Openid4vpAuthorizationRequestIae,
+  zOpenid4vpAuthorizationRequestIae,
+} from './z-authorization-request-iae'
 
 export interface ParsedJarRequest {
   type: 'jar'
@@ -35,13 +40,23 @@ export interface ParsedOpenid4vpDcApiAuthorizationRequest {
   params: Openid4vpAuthorizationRequestDcApi
 }
 
+export interface ParsedOpenid4vpIaeAuthorizationRequest {
+  type: 'openid4vp_iae'
+  provided: 'uri' | 'jwt' | 'params'
+  params: Openid4vpAuthorizationRequestIae
+}
+
 export interface ParseOpenid4vpAuthorizationRequestOptions {
   authorizationRequest: string | Record<string, unknown>
 }
 
 export function parseOpenid4vpAuthorizationRequest(
   options: ParseOpenid4vpAuthorizationRequestOptions
-): ParsedOpenid4vpAuthorizationRequest | ParsedJarRequest | ParsedOpenid4vpDcApiAuthorizationRequest {
+):
+  | ParsedOpenid4vpAuthorizationRequest
+  | ParsedJarRequest
+  | ParsedOpenid4vpDcApiAuthorizationRequest
+  | ParsedOpenid4vpIaeAuthorizationRequest {
   const { authorizationRequest } = options
   let provided: 'uri' | 'jwt' | 'params' = 'params'
 
@@ -65,7 +80,12 @@ export function parseOpenid4vpAuthorizationRequest(
   }
 
   const parsedRequest = parseWithErrorHandling(
-    z.union([zOpenid4vpAuthorizationRequest, zOpenid4vpJarAuthorizationRequest, zOpenid4vpAuthorizationRequestDcApi]),
+    z.union([
+      zOpenid4vpAuthorizationRequest,
+      zOpenid4vpJarAuthorizationRequest,
+      zOpenid4vpAuthorizationRequestDcApi,
+      zOpenid4vpAuthorizationRequestIae,
+    ]),
     params
   )
 
@@ -80,6 +100,14 @@ export function parseOpenid4vpAuthorizationRequest(
   if (isOpenid4vpAuthorizationRequestDcApi(parsedRequest)) {
     return {
       type: 'openid4vp_dc_api',
+      provided,
+      params: parsedRequest,
+    }
+  }
+
+  if (isOpenid4vpAuthorizationRequestIae(parsedRequest)) {
+    return {
+      type: 'openid4vp_iae',
       provided,
       params: parsedRequest,
     }

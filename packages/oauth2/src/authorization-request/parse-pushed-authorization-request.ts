@@ -1,5 +1,5 @@
 import { formatZodError, parseWithErrorHandling } from '@openid4vc/utils'
-import z, { type ZodSafeParseResult } from 'zod'
+import z from 'zod'
 import type { CallbackContext } from '../callbacks'
 import { decodeJwt } from '../common/jwt/decode-jwt'
 import type { RequestLike } from '../common/z-common'
@@ -43,13 +43,13 @@ export async function parsePushedAuthorizationRequest(
     'Invalid authorization request. Could not parse authorization request or jar.'
   )
 
-  let parsedAuthorizationRequest: ZodSafeParseResult<AuthorizationRequest>
+  let authorizationRequest: AuthorizationRequest
   let authorizationRequestJwt: string | undefined
   if (isJarAuthorizationRequest(parsed)) {
     const parsedJar = await parseJarRequest({ jarRequestParams: parsed, callbacks: options.callbacks })
     const jwt = decodeJwt({ jwt: parsedJar.authorizationRequestJwt })
 
-    parsedAuthorizationRequest = zAuthorizationRequest.safeParse(jwt.payload)
+    const parsedAuthorizationRequest = zAuthorizationRequest.safeParse(jwt.payload)
     if (!parsedAuthorizationRequest.success) {
       throw new Oauth2ServerErrorResponseError({
         error: Oauth2ErrorCodes.InvalidRequest,
@@ -57,18 +57,12 @@ export async function parsePushedAuthorizationRequest(
       })
     }
 
+    authorizationRequest = parsedAuthorizationRequest.data
     authorizationRequestJwt = parsedJar.authorizationRequestJwt
   } else {
-    parsedAuthorizationRequest = zAuthorizationRequest.safeParse(options.authorizationRequest)
-    if (!parsedAuthorizationRequest.success) {
-      throw new Oauth2ServerErrorResponseError({
-        error: Oauth2ErrorCodes.InvalidRequest,
-        error_description: `Error occurred during validation of pushed authorization request.\n${formatZodError(parsedAuthorizationRequest.error)}`,
-      })
-    }
+    authorizationRequest = parsed
   }
 
-  const authorizationRequest = parsedAuthorizationRequest.data
   const { clientAttestation, dpop } = parseAuthorizationRequest({
     authorizationRequest,
     request: options.request,

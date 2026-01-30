@@ -6,6 +6,10 @@ import {
   isOpenid4vpResponseModeDcApi,
   type Openid4vpAuthorizationRequestDcApi,
 } from '../authorization-request/z-authorization-request-dc-api'
+import {
+  isOpenid4vpAuthorizationRequestIae,
+  type Openid4vpAuthorizationRequestIae,
+} from '../authorization-request/z-authorization-request-iae'
 import type { VerifiedJarRequest } from '../jar/handle-jar-request/verify-jar-request'
 import type { ClientMetadata } from '../models/z-client-metadata'
 import type { Openid4vpVersionNumber } from '../version'
@@ -276,7 +280,10 @@ export interface ValidateOpenid4vpClientIdParserConfig {
 }
 
 export interface ValidateOpenid4vpClientIdOptions {
-  authorizationRequestPayload: Openid4vpAuthorizationRequest | Openid4vpAuthorizationRequestDcApi
+  authorizationRequestPayload:
+    | Openid4vpAuthorizationRequest
+    | Openid4vpAuthorizationRequestDcApi
+    | Openid4vpAuthorizationRequestIae
   jar?: VerifiedJarRequest
   origin?: string
   callbacks: Pick<CallbackContext, 'getX509CertificateMetadata' | 'hash'>
@@ -473,7 +480,10 @@ export async function validateOpenid4vpClientId(
         })
       }
 
-      if (!isOpenid4vpAuthorizationRequestDcApi(authorizationRequestPayload)) {
+      if (
+        !isOpenid4vpAuthorizationRequestDcApi(authorizationRequestPayload) &&
+        !isOpenid4vpAuthorizationRequestIae(authorizationRequestPayload)
+      ) {
         const uri = authorizationRequestPayload.redirect_uri ?? authorizationRequestPayload.response_uri
         if (!uri || new URL(uri).hostname !== clientIdIdentifier) {
           throw new Oauth2ServerErrorResponseError({
@@ -492,7 +502,10 @@ export async function validateOpenid4vpClientId(
         })
       }
 
-      if (!isOpenid4vpAuthorizationRequestDcApi(authorizationRequestPayload)) {
+      if (
+        !isOpenid4vpAuthorizationRequestDcApi(authorizationRequestPayload) &&
+        !isOpenid4vpAuthorizationRequestIae(authorizationRequestPayload)
+      ) {
         const uri = authorizationRequestPayload.redirect_uri || authorizationRequestPayload.response_uri
         if (!uri || uri !== clientIdIdentifier) {
           throw new Oauth2ServerErrorResponseError({

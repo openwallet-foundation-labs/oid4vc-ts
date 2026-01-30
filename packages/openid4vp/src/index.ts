@@ -16,11 +16,23 @@ export {
   validateOpenid4vpAuthorizationRequestPayload,
   type WalletVerificationOptions,
 } from './authorization-request/validate-authorization-request'
+export {
+  type ValidateOpenid4vpAuthorizationRequestDcApiPayloadOptions,
+  validateOpenid4vpAuthorizationRequestDcApiPayload,
+} from './authorization-request/validate-authorization-request-dc-api'
+export {
+  type ValidateOpenid4vpAuthorizationRequestIaePayloadOptions,
+  validateOpenid4vpAuthorizationRequestIaePayload,
+} from './authorization-request/validate-authorization-request-iae'
 export type { Openid4vpAuthorizationRequest } from './authorization-request/z-authorization-request'
 export {
   isOpenid4vpAuthorizationRequestDcApi,
   type Openid4vpAuthorizationRequestDcApi,
 } from './authorization-request/z-authorization-request-dc-api'
+export {
+  isOpenid4vpAuthorizationRequestIae,
+  type Openid4vpAuthorizationRequestIae,
+} from './authorization-request/z-authorization-request-iae'
 export {
   type CreateOpenid4vpAuthorizationResponseOptions,
   type CreateOpenid4vpAuthorizationResponseResult,

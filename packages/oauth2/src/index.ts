@@ -37,18 +37,30 @@ export type {
   CreatePushedAuthorizationErrorResponseOptions,
   CreatePushedAuthorizationResponseOptions,
 } from './authorization-request/create-pushed-authorization-response'
+export type {
+  ParseAuthorizationRequestOptions,
+  ParseAuthorizationRequestResult,
+} from './authorization-request/parse-authorization-request'
+export { parseAuthorizationRequest } from './authorization-request/parse-authorization-request'
 export {
   type ParsePushedAuthorizationRequestOptions,
   type ParsePushedAuthorizationRequestResult,
   parsePushedAuthorizationRequestUriReferenceValue,
 } from './authorization-request/parse-pushed-authorization-request'
 export type {
+  VerifyAuthorizationRequestOptions,
+  VerifyAuthorizationRequestReturn,
+} from './authorization-request/verify-authorization-request'
+export { verifyAuthorizationRequest } from './authorization-request/verify-authorization-request'
+export type {
   VerifyPushedAuthorizationRequestOptions,
   VerifyPushedAuthorizationRequestReturn,
 } from './authorization-request/verify-pushed-authorization-request'
 export {
+  type AuthorizationRequest,
   type PushedAuthorizationRequestUriPrefix,
   pushedAuthorizationRequestUriPrefix,
+  zAuthorizationRequest,
   zPushedAuthorizationRequestUriPrefix,
 } from './authorization-request/z-authorization-request'
 export * from './authorization-response'
@@ -131,6 +143,8 @@ export {
   zOauth2ErrorResponse,
 } from './common/z-oauth2-error'
 export type { RequestDpopOptions } from './dpop/dpop'
+export { createDpopHeadersForRequest, extractDpopNonceFromHeaders } from './dpop/dpop'
+export { authorizationServerRequestWithDpopRetry } from './dpop/dpop-retry'
 export { Oauth2ClientAuthorizationChallengeError } from './error/Oauth2ClientAuthorizationChallengeError'
 export { Oauth2ClientErrorResponseError } from './error/Oauth2ClientErrorResponseError'
 export { Oauth2Error, type Oauth2ErrorOptions } from './error/Oauth2Error'
@@ -144,8 +158,16 @@ export { Oauth2ServerErrorResponseError } from './error/Oauth2ServerErrorRespons
 export * from './id-token'
 export type { CreateJarAuthorizationRequestOptions } from './jar/create-jar-authorization-request'
 export { createJarAuthorizationRequest } from './jar/create-jar-authorization-request'
+export type {
+  ParsedJarRequest,
+  ParsedJarRequestOptions,
+  VerifiedJarRequest,
+  VerifyJarRequestOptions,
+} from './jar/handle-jar-request/verify-jar-request'
+export { parseJarRequest, verifyJarRequest } from './jar/handle-jar-request/verify-jar-request'
 export type { JarAuthorizationRequest } from './jar/z-jar-authorization-request'
 export {
+  isJarAuthorizationRequest,
   validateJarRequestParams,
   zJarAuthorizationRequest,
 } from './jar/z-jar-authorization-request'
@@ -169,7 +191,7 @@ export { fetchWellKnownMetadata } from './metadata/fetch-well-known-metadata'
 export { Oauth2AuthorizationServer, type Oauth2AuthorizationServerOptions } from './Oauth2AuthorizationServer'
 export { Oauth2Client, type Oauth2ClientOptions } from './Oauth2Client'
 export { Oauth2ResourceServer, type Oauth2ResourceServerOptions } from './Oauth2ResourceServer'
-export { type CreatePkceReturn, PkceCodeChallengeMethod } from './pkce'
+export { type CreatePkceReturn, createPkce, PkceCodeChallengeMethod } from './pkce'
 export {
   type ResourceRequestOptions,
   type ResourceRequestResponseNotOk,
