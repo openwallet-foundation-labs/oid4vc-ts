@@ -1,5 +1,14 @@
 # @openid4vc/oauth2
 
+## 0.4.5
+
+### Patch Changes
+
+- 9c0ac58: fix: allow non-integer (decimal) numbers for JWT claims (iat/nbf/exp)
+- 4fb7574: feat: support retrieving client credentials access token
+- Updated dependencies [9c0ac58]
+  - @openid4vc/utils@0.4.5
+
 ## 0.4.4
 
 ### Patch Changes

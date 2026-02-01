@@ -1,5 +1,15 @@
 # @openid4vc/openid4vci
 
+## 0.4.5
+
+### Patch Changes
+
+- 9c0ac58: fix: allow non-integer (decimal) numbers for JWT claims (iat/nbf/exp)
+- Updated dependencies [9c0ac58]
+- Updated dependencies [4fb7574]
+  - @openid4vc/oauth2@0.4.5
+  - @openid4vc/utils@0.4.5
+
 ## 0.4.4
 
 ### Patch Changes
