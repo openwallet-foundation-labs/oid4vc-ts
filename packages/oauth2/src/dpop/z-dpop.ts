@@ -1,4 +1,4 @@
-import { zHttpMethod, zHttpsUrl, zInteger } from '@openid4vc/utils'
+import { zHttpMethod, zHttpsUrl, zNumericDate } from '@openid4vc/utils'
 import z from 'zod'
 import { zJwk } from '../common/jwk/z-jwk'
 import { zJwtHeader, zJwtPayload } from '../common/jwt/z-jwt'
@@ -6,7 +6,7 @@ import { zJwtHeader, zJwtPayload } from '../common/jwt/z-jwt'
 export const zDpopJwtPayload = z
   .object({
     ...zJwtPayload.shape,
-    iat: zInteger,
+    iat: zNumericDate,
     htu: zHttpsUrl,
     htm: zHttpMethod,
     jti: z.string(),

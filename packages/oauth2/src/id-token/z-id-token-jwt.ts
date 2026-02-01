@@ -1,4 +1,4 @@
-import { zInteger } from '@openid4vc/utils'
+import { zNumericDate } from '@openid4vc/utils'
 import z from 'zod'
 import { zJwtHeader, zJwtPayload } from '../common/jwt/z-jwt'
 
@@ -15,9 +15,9 @@ export const zIdTokenJwtPayload = z
     iss: z.string(),
     sub: z.string(),
     aud: z.union([z.string(), z.array(z.string())]),
-    exp: zInteger,
-    iat: zInteger,
-    auth_time: zInteger.optional(),
+    exp: zNumericDate,
+    iat: zNumericDate,
+    auth_time: zNumericDate.optional(),
     acr: z.string().optional(),
     amr: z.array(z.string()).optional(),
     azp: z.string().optional(),
@@ -52,7 +52,7 @@ export const zIdTokenJwtPayload = z
       })
       .loose()
       .optional(),
-    updated_at: zInteger.optional(),
+    updated_at: zNumericDate.optional(),
   })
   .loose()
 

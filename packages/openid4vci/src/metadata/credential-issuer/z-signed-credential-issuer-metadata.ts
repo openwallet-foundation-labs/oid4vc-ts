@@ -1,5 +1,5 @@
 import { zJwtHeader, zJwtPayload } from '@openid4vc/oauth2'
-import { zInteger } from '@openid4vc/utils'
+import { zNumericDate } from '@openid4vc/utils'
 import z from 'zod'
 import { zCredentialIssuerMetadataDraft14Draft15V1 } from './z-credential-issuer-metadata'
 
@@ -15,7 +15,7 @@ export type SignedCredentialIssuerMetadataHeader = z.infer<typeof zSignedCredent
 export const zSignedCredentialIssuerMetadataPayload = z
   .object({
     ...zJwtPayload.shape,
-    iat: zInteger,
+    iat: zNumericDate,
     sub: z.string(),
 
     // NOTE: we don't support older drafts below 14 for signed metadata
