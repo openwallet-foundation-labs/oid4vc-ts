@@ -1,4 +1,4 @@
-import { zInteger } from '@openid4vc/utils'
+import { zNumericDate } from '@openid4vc/utils'
 import z from 'zod'
 import { zJwtHeader, zJwtPayload } from '../common/jwt/z-jwt'
 
@@ -14,8 +14,8 @@ export const zAccessTokenProfileJwtPayload = z
   .object({
     ...zJwtPayload.shape,
     iss: z.string(),
-    exp: zInteger,
-    iat: zInteger,
+    exp: zNumericDate,
+    iat: zNumericDate,
     aud: z.union([z.string(), z.array(z.string())]),
     sub: z.string(),
 
