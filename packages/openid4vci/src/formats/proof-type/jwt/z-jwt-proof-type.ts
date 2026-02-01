@@ -1,5 +1,5 @@
 import { zCompactJwt, zJwtHeader, zJwtPayload } from '@openid4vc/oauth2'
-import { zHttpsUrl, zInteger } from '@openid4vc/utils'
+import { zHttpsUrl, zNumericDate } from '@openid4vc/utils'
 import z from 'zod'
 
 export const zJwtProofTypeIdentifier = z.literal('jwt')
@@ -30,7 +30,7 @@ export const zCredentialRequestJwtProofTypePayload = z
   .object({
     ...zJwtPayload.shape,
     aud: z.union([zHttpsUrl, z.array(zHttpsUrl)]),
-    iat: zInteger,
+    iat: zNumericDate,
   })
   .loose()
 

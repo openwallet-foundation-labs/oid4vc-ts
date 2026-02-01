@@ -176,5 +176,29 @@ SUCCEEDED: method jwk`)
         },
       })
     })
+
+    test('non-integer timestamps (RFC 7519 NumericDate compliance)', () => {
+      // JWT with non-integer iat, exp, and nbf values
+      // Payload: {"iss":"did:example:123","aud":"https://example.com","iat":1769780135.5225298,"exp":1769783735.5225298,"nbf":1769780135.5225298}
+      const jwt = decodeJwt({
+        jwt: 'eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJkaWQ6ZXhhbXBsZToxMjMiLCJhdWQiOiJodHRwczovL2V4YW1wbGUuY29tIiwiaWF0IjoxNzY5NzgwMTM1LjUyMjUyOTgsImV4cCI6MTc2OTc4MzczNS41MjI1Mjk4LCJuYmYiOjE3Njk3ODAxMzUuNTIyNTI5OH0.BXhRLNzuJn8xOCgPl9jTrX8xdqVxCy4PCB9vHbz8KZYwAhE2x-vXNq8x_4yFXG7jt__fIyT_vFPxHzQPcGFXBA',
+        headerSchema: zJwtHeader,
+        payloadSchema: zJwtPayload,
+      })
+
+      expect(jwt).toMatchObject({
+        header: {
+          alg: 'EdDSA',
+          typ: 'JWT',
+        },
+        payload: {
+          iss: 'did:example:123',
+          aud: 'https://example.com',
+          iat: 1769780135.5225298,
+          exp: 1769783735.5225298,
+          nbf: 1769780135.5225298,
+        },
+      })
+    })
   })
 })
