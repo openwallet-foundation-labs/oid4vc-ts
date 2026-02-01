@@ -25,16 +25,25 @@ export const zOpenid4vpAuthorizationRequestIae = zOpenid4vpAuthorizationRequestD
   .omit({
     response_mode: true,
     expected_origins: true,
+
+    presentation_definition: true,
   })
   .extend({
     response_mode: zOpenid4vpResponseModeIae,
+
+    // Required for IAE, no support for PEX
+    dcql_query: z.record(z.string(), z.any()),
 
     // OpenID4VCI 1.1 Interactive Authorization Endpoint - expected_url parameter
     // Used in signed requests to prevent replay attacks from malicious verifiers
     expected_url: z.string().optional(),
 
     // expected_url is used instead
-    expected_origins: z.never().optional(),
+    expected_origins: z
+      .never(
+        "The 'expected_origins' parameter MUST NOT be present when using Interactive Authorization response mode. "
+      )
+      .optional(),
   })
 
 export type Openid4vpAuthorizationRequestIae = z.infer<typeof zOpenid4vpAuthorizationRequestIae>

@@ -24,13 +24,11 @@ import { validateOpenid4vpAuthorizationRequestIaePayload } from './validate-auth
 import { type Openid4vpAuthorizationRequest, zOpenid4vpAuthorizationRequest } from './z-authorization-request'
 import {
   isOpenid4vpAuthorizationRequestDcApi,
-  isOpenid4vpResponseModeDcApi,
   type Openid4vpAuthorizationRequestDcApi,
   zOpenid4vpAuthorizationRequestDcApi,
 } from './z-authorization-request-dc-api'
 import {
   isOpenid4vpAuthorizationRequestIae,
-  isOpenid4vpResponseModeIae,
   type Openid4vpAuthorizationRequestIae,
   zOpenid4vpAuthorizationRequestIae,
 } from './z-authorization-request-iae'
@@ -44,22 +42,9 @@ export interface ResolveOpenid4vpAuthorizationRequestOptions {
   wallet?: WalletVerificationOptions
 
   /**
-   * @deprecated use `responseMode` with type `dc_api` instead.
-   */
-  origin?: string
-
-  /**
-   * @deprecated
-   */
-  disableOriginValidation?: boolean
-
-  /**
    * The response mode that is expected for the resolved presentation request.
-   *
-   * Note that in the next breaking release, this will become required, to enforce
-   * correct binding of response mode to session context
    */
-  responseMode?: ExpectedResponseMode
+  responseMode: ExpectedResponseMode
 
   callbacks: Pick<CallbackContext, 'verifyJwt' | 'decryptJwe' | 'getX509CertificateMetadata' | 'fetch' | 'hash'>
 }
@@ -89,7 +74,7 @@ export type ResolvedOpenid4vpAuthorizationRequest = {
 export async function resolveOpenid4vpAuthorizationRequest(
   options: ResolveOpenid4vpAuthorizationRequestOptions
 ): Promise<ResolvedOpenid4vpAuthorizationRequest> {
-  const { wallet, callbacks, origin, disableOriginValidation } = options
+  const { wallet, callbacks } = options
 
   let authorizationRequestPayload:
     | Openid4vpAuthorizationRequest
@@ -110,58 +95,33 @@ export async function resolveOpenid4vpAuthorizationRequest(
 
   let jar: VerifiedJarRequest | undefined
   if (isJarAuthorizationRequest(parsed)) {
-    jar = await verifyJarRequest({ jarRequestParams: parsed, callbacks, wallet })
+    jar = await verifyJarRequest({
+      jarRequestParams: parsed,
+      callbacks,
+      wallet,
+      // For IAE/DC API only request is allowed
+      allowRequestUri: options.responseMode.type === 'direct_post',
+    })
 
     const parsedJarAuthorizationRequestPayload = parseWithErrorHandling(
-      z.union([zOpenid4vpAuthorizationRequestDcApi, zOpenid4vpAuthorizationRequest]),
+      z.union([zOpenid4vpAuthorizationRequestDcApi, zOpenid4vpAuthorizationRequestIae, zOpenid4vpAuthorizationRequest]),
       jar.authorizationRequestPayload,
       'Invalid authorization request. Could not parse jar request payload as openid4vp auth request.'
     )
-
-    const responseMode =
-      options.responseMode ??
-      (isOpenid4vpResponseModeDcApi(parsedJarAuthorizationRequestPayload.response_mode)
-        ? ({ type: 'dc_api', expectedOrigin: origin } as ExpectedResponseMode)
-        : isOpenid4vpResponseModeIae(parsedJarAuthorizationRequestPayload.response_mode)
-          ? undefined
-          : { type: 'direct_post' })
-
-    if (!responseMode) {
-      throw new Oauth2Error(
-        'No responseMode provided. Passing responseMode is required for iae openid4vp requests, and will become required for all response modes in a future version.'
-      )
-    }
 
     authorizationRequestPayload = validateOpenId4vpAuthorizationRequestPayload({
       authorizationRequestPayload: parsedJarAuthorizationRequestPayload,
       wallet,
       jar: true,
-
-      disableOriginValidation,
-      responseMode,
+      responseMode: options.responseMode,
     })
   } else {
-    const responseMode =
-      options.responseMode ??
-      (isOpenid4vpResponseModeDcApi(parsed.response_mode)
-        ? ({ type: 'dc_api', expectedOrigin: origin } as ExpectedResponseMode)
-        : isOpenid4vpResponseModeIae(parsed.response_mode)
-          ? undefined
-          : { type: 'direct_post' })
-
-    if (!responseMode) {
-      throw new Oauth2Error(
-        'No responseMode provided. Passing responseMode is required for iae openid4vp requests, and will become required for all response modes in a future version.'
-      )
-    }
-
     authorizationRequestPayload = validateOpenId4vpAuthorizationRequestPayload({
       authorizationRequestPayload: parsed,
       wallet,
       jar: false,
 
-      responseMode,
-      disableOriginValidation,
+      responseMode: options.responseMode,
     })
   }
 
@@ -182,8 +142,9 @@ export async function resolveOpenid4vpAuthorizationRequest(
       client_metadata: clientMetadata,
     },
     jar,
+
     callbacks,
-    origin,
+    origin: options.responseMode.type === 'dc_api' ? options.responseMode.expectedOrigin : undefined,
     version,
   })
 
@@ -266,13 +227,8 @@ function validateOpenId4vpAuthorizationRequestPayload(options: {
   jar: boolean
 
   responseMode: ExpectedResponseMode
-
-  /**
-   * @deprecated
-   */
-  disableOriginValidation?: boolean
 }) {
-  const { authorizationRequestPayload, wallet, jar, responseMode, disableOriginValidation } = options
+  const { authorizationRequestPayload, wallet, jar, responseMode } = options
 
   if (isOpenid4vpAuthorizationRequestDcApi(authorizationRequestPayload)) {
     if (responseMode.type !== 'dc_api') {
@@ -284,7 +240,6 @@ function validateOpenId4vpAuthorizationRequestPayload(options: {
     validateOpenid4vpAuthorizationRequestDcApiPayload({
       params: authorizationRequestPayload,
       isJarRequest: jar,
-      disableOriginValidation,
       origin: responseMode.expectedOrigin,
     })
 

@@ -1,7 +1,7 @@
 import crypto, { webcrypto } from 'node:crypto'
 import { decodeBase64, encodeToUtf8String } from '@openid4vc/utils'
 import * as jose from 'jose'
-import { type CallbackContext, HashAlgorithm, type SignJwtCallback } from '../src/callbacks.js'
+import { type CallbackContext, HashAlgorithm, type SignJwtCallback, type VerifyJwtCallback } from '../src/callbacks.js'
 import { clientAuthenticationNone } from '../src/client-authentication.js'
 import { calculateJwkThumbprint } from '../src/common/jwk/jwk-thumbprint.js'
 import type { Jwk } from '../src/common/jwk/z-jwk.js'
@@ -16,18 +16,17 @@ export function parseXwwwFormUrlEncoded(text: string) {
   return Object.fromEntries(Array.from(new URLSearchParams(text).entries()))
 }
 
-export const callbacks = {
-  hash: (data, alg) => crypto.createHash(alg.replace('-', '').toLowerCase()).update(data).digest(),
-  generateRandom: (bytes) => crypto.randomBytes(bytes),
-  clientAuthentication: clientAuthenticationNone({
-    clientId: 'some-random-client-id',
-  }),
-  verifyJwt: async (signer, { compact, payload }) => {
+export function getVerifyJwtCallback({ publicJwks }: { publicJwks?: Jwk[] } = {}): VerifyJwtCallback {
+  return async (signer, { compact, payload }) => {
     let jwk: Jwk
     if (signer.method === 'did') {
       jwk = JSON.parse(encodeToUtf8String(decodeBase64(signer.didUrl.split('#')[0].replace('did:jwk:', ''))))
     } else if (signer.method === 'jwk') {
       jwk = signer.publicJwk
+    } else if (signer.method === 'federation') {
+      const _jwk = publicJwks?.find((jwk) => jwk.kid === signer.kid)
+      if (!_jwk) throw new Error(`No public jwk found for kid ${signer.kid}`)
+      jwk = _jwk
     } else {
       throw new Error('Signer method not supported')
     }
@@ -46,7 +45,16 @@ export const callbacks = {
         verified: false,
       }
     }
-  },
+  }
+}
+
+export const callbacks = {
+  hash: (data, alg) => crypto.createHash(alg.replace('-', '').toLowerCase()).update(data).digest(),
+  generateRandom: (bytes) => crypto.randomBytes(bytes),
+  clientAuthentication: clientAuthenticationNone({
+    clientId: 'some-random-client-id',
+  }),
+  verifyJwt: getVerifyJwtCallback(),
 } as const satisfies Partial<CallbackContext>
 
 export const getSignJwtCallback = (privateJwks: Jwk[]): SignJwtCallback => {
@@ -54,13 +62,18 @@ export const getSignJwtCallback = (privateJwks: Jwk[]): SignJwtCallback => {
     let jwk: Jwk
     if (signer.method === 'did') {
       jwk = JSON.parse(encodeToUtf8String(decodeBase64(signer.didUrl.split('#')[0].replace('did:jwk:', ''))))
+    } else if (signer.method === 'federation') {
+      const _jwk = privateJwks.find((jwk) => jwk.kid === signer.kid)
+      if (!_jwk) throw new Error(`No private jwk found for kid ${signer.kid}`)
+      const { d, ...publicJwk } = _jwk
+      jwk = publicJwk
     } else if (signer.method === 'jwk') {
       jwk = signer.publicJwk
     } else {
       throw new Error('Signer method not supported')
     }
 
-    const jwkThumprint = await calculateJwkThumbprint({
+    const jwkThumbprint = await calculateJwkThumbprint({
       jwk,
       hashAlgorithm: HashAlgorithm.Sha256,
       hashCallback: callbacks.hash,
@@ -72,7 +85,7 @@ export const getSignJwtCallback = (privateJwks: Jwk[]): SignJwtCallback => {
           hashAlgorithm: HashAlgorithm.Sha256,
           hashCallback: callbacks.hash,
           jwk,
-        })) === jwkThumprint
+        })) === jwkThumbprint
           ? jwk
           : undefined
       )

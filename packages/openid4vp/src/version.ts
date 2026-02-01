@@ -4,7 +4,10 @@ import {
   isOpenid4vpAuthorizationRequestDcApi,
   type Openid4vpAuthorizationRequestDcApi,
 } from './authorization-request/z-authorization-request-dc-api'
-import type { Openid4vpAuthorizationRequestIae } from './authorization-request/z-authorization-request-iae'
+import {
+  isOpenid4vpAuthorizationRequestIae,
+  type Openid4vpAuthorizationRequestIae,
+} from './authorization-request/z-authorization-request-iae'
 import { zClientIdPrefix } from './client-identifier-prefix/z-client-id-prefix'
 
 /**
@@ -23,7 +26,7 @@ export function parseAuthorizationRequestVersion(
   const requirements: ['<' | '>=', Openid4vpVersionNumber][] = []
 
   // 1.1 draft
-  if (request.response_mode === 'iae_post' || request.response_mode === 'iae_post.jwt') {
+  if (isOpenid4vpAuthorizationRequestIae(request)) {
     requirements.push(['>=', 101])
   }
 
@@ -38,7 +41,7 @@ export function parseAuthorizationRequestVersion(
   // 28
   if (
     request.client_metadata?.vp_formats_supported?.mso_mdoc?.deviceauth_alg_values ||
-    request.client_metadata?.vp_formats_supported?.mso_mdoc?.deviceauth_alg_values
+    request.client_metadata?.vp_formats_supported?.mso_mdoc?.issuerauth_alg_values
   ) {
     requirements.push(['>=', 28])
   }
@@ -187,7 +190,7 @@ export function parseAuthorizationRequestVersion(
   const highestPossibleVersion =
     lessThanVersions.length > 0
       ? (Math.max(Math.min(...lessThanVersions) - 1, 18) as Openid4vpVersionNumber)
-      : (100 as const) // Default to highest version
+      : (101 as const) // Default to highest version
 
   // Find the maximum version that satisfies all "greater than or equal to" constraints
   const lowestRequiredVersion =

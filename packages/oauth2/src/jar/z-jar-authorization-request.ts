@@ -12,8 +12,11 @@ export const zJarAuthorizationRequest = z
   .loose()
 export type JarAuthorizationRequest = z.infer<typeof zJarAuthorizationRequest>
 
-export function validateJarRequestParams(options: { jarRequestParams: JarAuthorizationRequest }) {
-  const { jarRequestParams } = options
+export function validateJarRequestParams(options: {
+  jarRequestParams: JarAuthorizationRequest
+  allowRequestUri?: boolean
+}) {
+  const { jarRequestParams, allowRequestUri = true } = options
 
   if (jarRequestParams.request && jarRequestParams.request_uri) {
     throw new Oauth2ServerErrorResponseError({
@@ -26,6 +29,13 @@ export function validateJarRequestParams(options: { jarRequestParams: JarAuthori
     throw new Oauth2ServerErrorResponseError({
       error: Oauth2ErrorCodes.InvalidRequestObject,
       error_description: 'request or request_uri must be present',
+    })
+  }
+
+  if (jarRequestParams.request_uri && !allowRequestUri) {
+    throw new Oauth2ServerErrorResponseError({
+      error: Oauth2ErrorCodes.InvalidRequestObject,
+      error_description: 'request_uri is not allowed',
     })
   }
 

@@ -42,7 +42,7 @@ export const validateOpenid4vpAuthorizationRequestIaePayload = (
   }
 
   if (params.expected_url && !disableExpectedUrlValidation) {
-    if (expectedUrl) {
+    if (!expectedUrl) {
       throw new Oauth2ServerErrorResponseError({
         error: Oauth2ErrorCodes.InvalidRequest,
         error_description: `Failed to validate the 'expected_url' of the authorization request. The 'expectedUrl' was not provided for validation.`,
