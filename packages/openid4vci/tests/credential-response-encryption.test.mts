@@ -260,6 +260,8 @@ describe('Credential Response Encryption', () => {
         },
         credentialResponseEncryption,
       })
-    ).rejects.toThrow()
+    ).rejects.toThrow(
+      "Encryption was requested via 'credential_response_encryption' but the credential response was not encrypted"
+    )
   })
 })

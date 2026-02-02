@@ -73,9 +73,12 @@ async function handleCredentialResponse<T, Schema extends z.ZodType<T>>(options:
     return { ok: true, data: parseResult.data }
   }
 
-  // If encryption was requested but response is not encrypted, return error
+  // If encryption was requested but response is not encrypted, that's an error
   if (credentialResponseEncryption) {
-    return { ok: false, parseResult: undefined }
+    throw new Openid4vciError(
+      `Encryption was requested via 'credential_response_encryption' but the ${responseType} was not encrypted. ` +
+        `Expected Content-Type 'application/jwt' but received '${response.headers.get('Content-Type')}'.`
+    )
   }
 
   // Try to parse the response (non-encrypted)
