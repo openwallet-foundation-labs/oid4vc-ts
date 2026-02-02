@@ -14,6 +14,7 @@ import { Oauth2ClientErrorResponseError } from '../error/Oauth2ClientErrorRespon
 import type { AuthorizationServerMetadata } from '../metadata/authorization-server/z-authorization-server-metadata'
 import {
   authorizationCodeGrantIdentifier,
+  clientCredentialsGrantIdentifier,
   preAuthorizedCodeGrantIdentifier,
   refreshTokenGrantIdentifier,
 } from '../z-grant-type'
@@ -152,6 +153,38 @@ export async function retrieveRefreshTokenAccessToken(
   const request = {
     grant_type: refreshTokenGrantIdentifier,
     refresh_token: options.refreshToken,
+    resource: options.resource,
+    ...options.additionalRequestPayload,
+  } satisfies AccessTokenRequest
+
+  return retrieveAccessToken({
+    authorizationServerMetadata: options.authorizationServerMetadata,
+    request,
+    dpop: options.dpop,
+    callbacks: options.callbacks,
+    resource: options.resource,
+  })
+}
+
+export interface RetrieveClientCredentialsAccessTokenOptions extends RetrieveAccessTokenBaseOptions {
+  /**
+   * The scope of the access request
+   */
+  scope?: string
+
+  /**
+   * Additional payload to include in the access token request. Items will be encoded and sent
+   * using x-www-form-urlencoded format. Nested items (JSON) will be stringified and url encoded.
+   */
+  additionalRequestPayload?: Record<string, unknown>
+}
+
+export async function retrieveClientCredentialsAccessToken(
+  options: RetrieveClientCredentialsAccessTokenOptions
+): Promise<RetrieveAccessTokenReturn> {
+  const request = {
+    grant_type: clientCredentialsGrantIdentifier,
+    scope: options.scope,
     resource: options.resource,
     ...options.additionalRequestPayload,
   } satisfies AccessTokenRequest

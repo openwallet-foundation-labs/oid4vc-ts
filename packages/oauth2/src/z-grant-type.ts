@@ -11,3 +11,7 @@ export type AuthorizationCodeGrantIdentifier = z.infer<typeof zAuthorizationCode
 export const zRefreshTokenGrantIdentifier = z.literal('refresh_token')
 export const refreshTokenGrantIdentifier = zRefreshTokenGrantIdentifier.value
 export type RefreshTokenGrantIdentifier = z.infer<typeof zRefreshTokenGrantIdentifier>
+
+export const zClientCredentialsGrantIdentifier = z.literal('client_credentials')
+export const clientCredentialsGrantIdentifier = zClientCredentialsGrantIdentifier.value
+export type ClientCredentialsGrantIdentifier = z.infer<typeof zClientCredentialsGrantIdentifier>

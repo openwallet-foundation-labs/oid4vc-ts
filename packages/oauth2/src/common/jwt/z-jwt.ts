@@ -1,4 +1,4 @@
-import { zInteger } from '@openid4vc/utils'
+import { zNumericDate } from '@openid4vc/utils'
 import z from 'zod'
 import { type Jwk, zJwk } from '../jwk/z-jwk'
 import { zAlgValueNotNone } from '../z-common'
@@ -100,9 +100,9 @@ export const zJwtPayload = z
   .object({
     iss: z.string().optional(),
     aud: z.union([z.string(), z.array(z.string())]).optional(),
-    iat: zInteger.optional(),
-    exp: zInteger.optional(),
-    nbf: zInteger.optional(),
+    iat: zNumericDate.optional(),
+    exp: zNumericDate.optional(),
+    nbf: zNumericDate.optional(),
     nonce: z.string().optional(),
     jti: z.string().optional(),
     sub: z.string().optional(),
