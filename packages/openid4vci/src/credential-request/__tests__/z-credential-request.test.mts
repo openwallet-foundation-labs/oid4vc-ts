@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { zCredentialRequest, zCredentialRequestDraft11To14 } from '../z-credential-request.js'
+import { zCredentialRequest, zCredentialRequestDraft11To14 } from '../z-credential-request'
 
 describe('Credential Request', () => {
   test('error when both proof and proofs are defined', () => {

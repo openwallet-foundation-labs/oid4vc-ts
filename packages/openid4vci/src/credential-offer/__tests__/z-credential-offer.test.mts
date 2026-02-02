@@ -1,6 +1,6 @@
 import { preAuthorizedCodeGrantIdentifier } from '@openid4vc/oauth2'
 import { describe, expect, test } from 'vitest'
-import { zCredentialOfferObject, zCredentialOfferObjectDraft11To14 } from '../z-credential-offer.js'
+import { zCredentialOfferObject, zCredentialOfferObjectDraft11To14 } from '../z-credential-offer'
 
 describe('Credential Offer', () => {
   test('parse draft 14 credential offer', () => {

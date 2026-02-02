@@ -137,7 +137,7 @@ export class Oauth2Client {
             dpop: options.dpop
               ? {
                   ...options.dpop,
-                  nonce: dpopNonce,
+                  nonce: dpopNonce ?? undefined,
                 }
               : undefined,
             authorizationRequestUrl,

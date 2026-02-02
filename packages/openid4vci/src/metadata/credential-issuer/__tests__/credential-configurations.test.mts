@@ -2,7 +2,7 @@ import { describe, expect, test } from 'vitest'
 import {
   claimsObjectToClaimsArray,
   credentialsSupportedToCredentialConfigurationsSupported,
-} from '../credential-configurations.js'
+} from '../credential-configurations'
 
 describe('Credential Configurations', () => {
   test('credentials supported to credential configurations supported', () => {

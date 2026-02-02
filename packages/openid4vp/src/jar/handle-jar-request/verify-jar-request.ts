@@ -18,6 +18,7 @@ import {
   zJarRequestObjectPayload,
 } from '@openid4vc/oauth2'
 import { isOpenid4vpResponseModeDcApi } from '../../authorization-request/z-authorization-request-dc-api'
+import { isOpenid4vpResponseModeIae } from '../../authorization-request/z-authorization-request-iae'
 import { getOpenid4vpClientId } from '../../client-identifier-prefix/parse-client-identifier-prefix'
 import {
   type ClientIdPrefix,
@@ -31,6 +32,18 @@ import type { Openid4vpJarAuthorizationRequest } from '../z-jar-authorization-re
 
 export interface VerifyJarRequestOptions {
   jarRequestParams: Openid4vpJarAuthorizationRequest
+
+  /**
+   * Whether to allow the JAR request to contain a remote
+   * `request_uri` parameter that should be fetched.
+   *
+   * If set to false and the JAR request contains a
+   * `request_uri` parameter the method will throw an error
+   *
+   * @default true
+   */
+  allowRequestUri?: boolean
+
   callbacks: Pick<CallbackContext, 'verifyJwt' | 'decryptJwe' | 'fetch'>
   wallet?: {
     metadata?: WalletMetadata
@@ -58,8 +71,8 @@ export async function verifyJarRequest(options: VerifyJarRequestOptions): Promis
   const { callbacks, wallet = {} } = options
 
   const jarRequestParams = {
-    ...validateJarRequestParams(options),
     ...options.jarRequestParams,
+    ...validateJarRequestParams(options),
   } as Openid4vpJarAuthorizationRequest & ReturnType<typeof validateJarRequestParams>
 
   const sendBy = jarRequestParams.request ? 'value' : 'reference'
@@ -111,9 +124,10 @@ export async function verifyJarRequest(options: VerifyJarRequestOptions): Promis
     })
   }
 
-  // Expect the client_id from the jar request to match the payload, but only if we're not using DC API
+  // Expect the client_id from the jar request to match the payload, but only if we're not using DC API / IAE
   if (
     !isOpenid4vpResponseModeDcApi(authorizationRequestPayload.response_mode) &&
+    !isOpenid4vpResponseModeIae(authorizationRequestPayload.response_mode) &&
     jarRequestParams.client_id !== authorizationRequestPayload.client_id
   ) {
     throw new Oauth2ServerErrorResponseError({
