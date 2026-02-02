@@ -3,13 +3,10 @@ import { HttpResponse, http } from 'msw'
 import { setupServer } from 'msw/node'
 import { afterAll, afterEach, beforeAll, describe, expect, test } from 'vitest'
 import { callbacks } from '../../../tests/util.mjs'
-import type { SignJwtCallback } from '../../callbacks.js'
-import { Oauth2ClientErrorResponseError } from '../../error/Oauth2ClientErrorResponseError.js'
-import type { AuthorizationServerMetadata } from '../../metadata/authorization-server/z-authorization-server-metadata.js'
-import { clientCredentialsGrantIdentifier } from '../../z-grant-type.js'
 import type { SignJwtCallback } from '../../callbacks'
 import { Oauth2ClientErrorResponseError } from '../../error/Oauth2ClientErrorResponseError'
 import type { AuthorizationServerMetadata } from '../../metadata/authorization-server/z-authorization-server-metadata'
+import { clientCredentialsGrantIdentifier } from '../../z-grant-type'
 import {
   type RetrieveClientCredentialsAccessTokenOptions,
   retrieveClientCredentialsAccessToken,
