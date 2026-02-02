@@ -140,11 +140,14 @@ describe('Full E2E openid4vp test', () => {
     const resolved = await resolveOpenid4vpAuthorizationRequest({
       authorizationRequestPayload,
       callbacks,
+      responseMode: {
+        type: 'direct_post',
+      },
     })
 
     expect(resolved).toEqual({
       transactionData: undefined,
-      version: 100,
+      version: 101,
       authorizationRequestPayload: {
         response_type: 'vp_token',
         client_id: 'client_id',

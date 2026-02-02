@@ -1,12 +1,12 @@
 import { describe, expect, test } from 'vitest'
-import { Oauth2Error } from '../../../error/Oauth2Error.js'
+import { Oauth2Error } from '../../../error/Oauth2Error'
 import {
   type CoseAlgorithmIdentifier,
   fullySpecifiedCoseAlgorithmArrayToJwaSignatureAlgorithmArray,
   fullySpecifiedCoseAlgorithmToJwaSignatureAlgorithm,
   jwaSignatureAlgorithmArrayToFullySpecifiedCoseAlgorithmArray,
   jwaSignatureAlgorithmToFullySpecifiedCoseAlgorithm,
-} from '../algorithm-transform.js'
+} from '../algorithm-transform'
 
 describe('algorithm-transform', () => {
   describe('jwaSignatureAlgorithmToFullySpecifiedCoseAlgorithm', () => {

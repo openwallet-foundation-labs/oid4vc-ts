@@ -1,18 +1,18 @@
 import { describe, expect, test } from 'vitest'
 import { callbacks, getSignJwtCallback } from '../../../tests/util.mjs'
-import { createDpopJwt } from '../../dpop/dpop.js'
-import type { AuthorizationServerMetadata } from '../../metadata/authorization-server/z-authorization-server-metadata.js'
-import { PkceCodeChallengeMethod } from '../../pkce.js'
+import { createDpopJwt } from '../../dpop/dpop'
+import type { AuthorizationServerMetadata } from '../../metadata/authorization-server/z-authorization-server-metadata'
+import { PkceCodeChallengeMethod } from '../../pkce'
 import {
   authorizationCodeGrantIdentifier,
   preAuthorizedCodeGrantIdentifier,
   refreshTokenGrantIdentifier,
-} from '../../z-grant-type.js'
+} from '../../z-grant-type'
 import {
   verifyAuthorizationCodeAccessTokenRequest,
   verifyPreAuthorizedCodeAccessTokenRequest,
   verifyRefreshTokenAccessTokenRequest,
-} from '../verify-access-token-request.js'
+} from '../verify-access-token-request'
 
 const request = {
   headers: new Headers(),

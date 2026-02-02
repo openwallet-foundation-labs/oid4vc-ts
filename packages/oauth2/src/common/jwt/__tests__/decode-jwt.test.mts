@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
-import { decodeJwt, jwtSignerFromJwt } from '../decode-jwt.js'
-import { zJwtHeader, zJwtPayload } from '../z-jwt.js'
+import { decodeJwt, jwtSignerFromJwt } from '../decode-jwt'
+import { zJwtHeader, zJwtPayload } from '../z-jwt'
 
 describe('Decode JWT', () => {
   describe('jwtSignerFromJwt', () => {

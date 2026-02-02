@@ -30,6 +30,7 @@ export type {
   DeferredCredentialResponse,
 } from './credential-request/z-credential-response'
 
+export { Openid4vciClientInteractiveAuthorizationError } from './error/Openid4vciClientInteractiveAuthorizationError'
 export { Openid4vciError, type Openid4vciErrorOptions } from './error/Openid4vciError'
 export { Openid4vciRetrieveCredentialsError } from './error/Openid4vciRetrieveCredentialsError'
 export { Openid4vciSendNotificationError } from './error/Openid4vciSendNotificationError'
@@ -46,6 +47,42 @@ export type {
   CredentialRequestJwtProofTypeHeader,
   CredentialRequestJwtProofTypePayload,
 } from './formats/proof-type/jwt/z-jwt-proof-type'
+export {
+  type CreateInteractiveAuthorizationCodeResponseOptions,
+  type CreateInteractiveAuthorizationErrorResponseOptions,
+  type CreateInteractiveAuthorizationOpenid4vpInteractionOptions,
+  type CreateInteractiveAuthorizationRedirectToWebInteractionOptions,
+  createInteractiveAuthorizationCodeResponse,
+  createInteractiveAuthorizationErrorResponse,
+  createInteractiveAuthorizationOpenid4vpInteraction,
+  createInteractiveAuthorizationRedirectToWebInteraction,
+} from './interactive-authorization/create-interactive-authorization-response'
+export {
+  InteractiveAuthorizationRequestType,
+  type ParseInteractiveAuthorizationFollowUpRequestResult,
+  type ParseInteractiveAuthorizationInitialRequestResult,
+  type ParseInteractiveAuthorizationRequestOptions,
+  parseInteractiveAuthorizationRequest,
+} from './interactive-authorization/parse-interactive-authorization-request'
+export {
+  type SendInteractiveAuthorizationRequestOptions,
+  sendInteractiveAuthorizationRequest,
+} from './interactive-authorization/send-interactive-authorization-request'
+export {
+  type VerifyInteractiveAuthorizationInitialRequestOptions,
+  type VerifyInteractiveAuthorizationInitialRequestReturn,
+  verifyInteractiveAuthorizationInitialRequest,
+} from './interactive-authorization/verify-interactive-authorization-request'
+export type {
+  InteractiveAuthorizationCodeResponse,
+  InteractiveAuthorizationFollowUpRequest,
+  InteractiveAuthorizationInitialRequest,
+  InteractiveAuthorizationInteractionRequiredResponse,
+  InteractiveAuthorizationOpenid4vpPresentationResponse,
+  InteractiveAuthorizationRedirectToWebResponse,
+  InteractiveAuthorizationRequest,
+  InteractiveAuthorizationResponse,
+} from './interactive-authorization/z-interactive-authorization'
 export {
   type CreateKeyAttestationJwtOptions,
   createKeyAttestationJwt,

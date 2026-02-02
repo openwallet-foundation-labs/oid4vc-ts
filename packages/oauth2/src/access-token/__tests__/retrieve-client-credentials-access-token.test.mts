@@ -7,11 +7,14 @@ import type { SignJwtCallback } from '../../callbacks.js'
 import { Oauth2ClientErrorResponseError } from '../../error/Oauth2ClientErrorResponseError.js'
 import type { AuthorizationServerMetadata } from '../../metadata/authorization-server/z-authorization-server-metadata.js'
 import { clientCredentialsGrantIdentifier } from '../../z-grant-type.js'
+import type { SignJwtCallback } from '../../callbacks'
+import { Oauth2ClientErrorResponseError } from '../../error/Oauth2ClientErrorResponseError'
+import type { AuthorizationServerMetadata } from '../../metadata/authorization-server/z-authorization-server-metadata'
 import {
   type RetrieveClientCredentialsAccessTokenOptions,
   retrieveClientCredentialsAccessToken,
-} from '../retrieve-access-token.js'
-import type { AccessTokenResponse } from '../z-access-token.js'
+} from '../retrieve-access-token'
+import type { AccessTokenResponse } from '../z-access-token'
 
 const server = setupServer()
 

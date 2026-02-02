@@ -19,7 +19,7 @@ describe('Version inference test', () => {
       response_type: 'vp_token',
     })
 
-    expect(version).toBe(100)
+    expect(version).toBe(101)
   })
 
   test('client_metadata_uri requires version below 21', () => {

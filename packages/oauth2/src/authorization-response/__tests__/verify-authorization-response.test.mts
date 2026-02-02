@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest'
-import { Oauth2ErrorCodes } from '../../common/z-oauth2-error.js'
-import { Oauth2ServerErrorResponseError } from '../../error/Oauth2ServerErrorResponseError.js'
-import { verifyAuthorizationResponse } from '../verify-authorization-response.js'
+import { Oauth2ErrorCodes } from '../../common/z-oauth2-error'
+import { Oauth2ServerErrorResponseError } from '../../error/Oauth2ServerErrorResponseError'
+import { verifyAuthorizationResponse } from '../verify-authorization-response'
 
 describe('verifyAuthorizationResponseIssuer', () => {
   const baseMetadata = {

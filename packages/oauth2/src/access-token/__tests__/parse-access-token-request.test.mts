@@ -1,12 +1,12 @@
 import type { AuthorizationServerMetadata } from '@openid4vc/oauth2'
 import { describe, expect, test } from 'vitest'
-import { Oauth2ServerErrorResponseError } from '../../error/Oauth2ServerErrorResponseError.js'
+import { Oauth2ServerErrorResponseError } from '../../error/Oauth2ServerErrorResponseError'
 import {
   authorizationCodeGrantIdentifier,
   preAuthorizedCodeGrantIdentifier,
   refreshTokenGrantIdentifier,
-} from '../../z-grant-type.js'
-import { parseAccessTokenRequest } from '../parse-access-token-request.js'
+} from '../../z-grant-type'
+import { parseAccessTokenRequest } from '../parse-access-token-request'
 
 const baseAuthorizationServerMetadata = {
   issuer: 'https://oauth2-auth-server.com',

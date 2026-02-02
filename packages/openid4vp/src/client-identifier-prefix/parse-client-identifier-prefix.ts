@@ -6,6 +6,11 @@ import {
   isOpenid4vpResponseModeDcApi,
   type Openid4vpAuthorizationRequestDcApi,
 } from '../authorization-request/z-authorization-request-dc-api'
+import {
+  isOpenid4vpAuthorizationRequestIae,
+  isOpenid4vpResponseModeIae,
+  type Openid4vpAuthorizationRequestIae,
+} from '../authorization-request/z-authorization-request-iae'
 import type { VerifiedJarRequest } from '../jar/handle-jar-request/verify-jar-request'
 import type { ClientMetadata } from '../models/z-client-metadata'
 import type { Openid4vpVersionNumber } from '../version'
@@ -118,7 +123,7 @@ export function getOpenid4vpClientId(options: GetOpenid4vpClientIdOptions): {
   clientIdIdentifier: string
 
   /**
-   * The client id prefix according to the latest verion of OpenID4VP. Older prefixes are
+   * The client id prefix according to the latest version of OpenID4VP. Older prefixes are
    * transformed into a singular value. Do not use this for checking the actual client id prefix
    * used, but can be used to understand which method is used.
    *
@@ -159,7 +164,7 @@ export function getOpenid4vpClientId(options: GetOpenid4vpClientIdOptions): {
     clientId: options.clientId,
   }
 
-  const version = options.version ?? 100
+  const version = options.version ?? 101
 
   // Handle DC API
   if (isOpenid4vpResponseModeDcApi(options.responseMode)) {
@@ -208,6 +213,9 @@ export function getOpenid4vpClientId(options: GetOpenid4vpClientIdOptions): {
     }
   }
 
+  // FIXME: it could be there's no client_id and IAE is used. For now we don't allow this
+  // See https://github.com/openid/OpenID4VCI/issues/701
+
   // If no DC API, client_id is required
   if (!options.clientId) {
     throw new Oauth2ServerErrorResponseError({
@@ -216,8 +224,8 @@ export function getOpenid4vpClientId(options: GetOpenid4vpClientIdOptions): {
     })
   }
 
-  // Handle legacy client id scheme
-  if (options.legacyClientIdScheme) {
+  // Handle legacy client id scheme (not allowed for IAE)
+  if (options.legacyClientIdScheme && !isOpenid4vpResponseModeIae(options.responseMode)) {
     const parsedClientIdPrefix = zLegacyClientIdSchemeToClientIdPrefix.safeParse(options.legacyClientIdScheme)
     if (!parsedClientIdPrefix.success) {
       throw new Oauth2ServerErrorResponseError({
@@ -276,7 +284,10 @@ export interface ValidateOpenid4vpClientIdParserConfig {
 }
 
 export interface ValidateOpenid4vpClientIdOptions {
-  authorizationRequestPayload: Openid4vpAuthorizationRequest | Openid4vpAuthorizationRequestDcApi
+  authorizationRequestPayload:
+    | Openid4vpAuthorizationRequest
+    | Openid4vpAuthorizationRequestDcApi
+    | Openid4vpAuthorizationRequestIae
   jar?: VerifiedJarRequest
   origin?: string
   callbacks: Pick<CallbackContext, 'getX509CertificateMetadata' | 'hash'>
@@ -305,6 +316,13 @@ export async function validateOpenid4vpClientId(
     origin,
   })
 
+  if (!parserConfigWithDefaults.supportedSchemes.includes(clientIdPrefix)) {
+    throw new Oauth2ServerErrorResponseError({
+      error: Oauth2ErrorCodes.InvalidRequest,
+      error_description: `Unsupported client identifier prefix. ${clientIdPrefix} is not supported.`,
+    })
+  }
+
   if (clientIdPrefix === 'pre-registered') {
     return {
       prefix: 'pre-registered',
@@ -312,13 +330,6 @@ export async function validateOpenid4vpClientId(
       effective: effectiveClientId,
       original,
     }
-  }
-
-  if (!parserConfigWithDefaults.supportedSchemes.includes(clientIdPrefix)) {
-    throw new Oauth2ServerErrorResponseError({
-      error: Oauth2ErrorCodes.InvalidRequest,
-      error_description: `Unsupported client identifier prefix. ${clientIdPrefix} is not supported.`,
-    })
   }
 
   if (clientIdPrefix === 'openid_federation') {
@@ -366,10 +377,13 @@ export async function validateOpenid4vpClientId(
       })
     }
 
-    if (isOpenid4vpAuthorizationRequestDcApi(authorizationRequestPayload)) {
+    if (
+      isOpenid4vpAuthorizationRequestDcApi(authorizationRequestPayload) ||
+      isOpenid4vpAuthorizationRequestIae(authorizationRequestPayload)
+    ) {
       throw new Oauth2ServerErrorResponseError({
         error: Oauth2ErrorCodes.InvalidRequest,
-        error_description: `The client identifier prefix 'redirect_uri' is not supported when using the dc_api response mode.`,
+        error_description: `The client identifier prefix 'redirect_uri' is not supported when using the ${authorizationRequestPayload.response_mode} response mode.`,
       })
     }
 
@@ -401,7 +415,7 @@ export async function validateOpenid4vpClientId(
     if (!jar) {
       throw new Oauth2ServerErrorResponseError({
         error: Oauth2ErrorCodes.InvalidRequest,
-        error_description: 'Using client identifier prefix "did" requires a signed JAR request.',
+        error_description: 'Using client identifier prefix "decentralized_identifier" requires a signed JAR request.',
       })
     }
 
@@ -473,7 +487,10 @@ export async function validateOpenid4vpClientId(
         })
       }
 
-      if (!isOpenid4vpAuthorizationRequestDcApi(authorizationRequestPayload)) {
+      if (
+        !isOpenid4vpAuthorizationRequestDcApi(authorizationRequestPayload) &&
+        !isOpenid4vpAuthorizationRequestIae(authorizationRequestPayload)
+      ) {
         const uri = authorizationRequestPayload.redirect_uri ?? authorizationRequestPayload.response_uri
         if (!uri || new URL(uri).hostname !== clientIdIdentifier) {
           throw new Oauth2ServerErrorResponseError({
@@ -492,7 +509,10 @@ export async function validateOpenid4vpClientId(
         })
       }
 
-      if (!isOpenid4vpAuthorizationRequestDcApi(authorizationRequestPayload)) {
+      if (
+        !isOpenid4vpAuthorizationRequestDcApi(authorizationRequestPayload) &&
+        !isOpenid4vpAuthorizationRequestIae(authorizationRequestPayload)
+      ) {
         const uri = authorizationRequestPayload.redirect_uri || authorizationRequestPayload.response_uri
         if (!uri || uri !== clientIdIdentifier) {
           throw new Oauth2ServerErrorResponseError({
@@ -527,6 +547,13 @@ export async function validateOpenid4vpClientId(
   }
 
   if (clientIdPrefix === 'origin') {
+    if (!isOpenid4vpAuthorizationRequestDcApi(authorizationRequestPayload)) {
+      throw new Oauth2ServerErrorResponseError({
+        error: Oauth2ErrorCodes.InvalidRequest,
+        error_description: `The client identifier prefix 'origin' is only supported when using a DC API response mode.`,
+      })
+    }
+
     return {
       prefix: clientIdPrefix,
       identifier: clientIdIdentifier,
