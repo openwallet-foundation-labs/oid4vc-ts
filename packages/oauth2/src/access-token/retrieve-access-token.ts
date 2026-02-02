@@ -11,9 +11,11 @@ import type { CallbackContext } from '../callbacks'
 import { createDpopHeadersForRequest, extractDpopNonceFromHeaders, type RequestDpopOptions } from '../dpop/dpop'
 import { authorizationServerRequestWithDpopRetry } from '../dpop/dpop-retry'
 import { Oauth2ClientErrorResponseError } from '../error/Oauth2ClientErrorResponseError'
+import { Oauth2Error } from '../error/Oauth2Error'
 import type { AuthorizationServerMetadata } from '../metadata/authorization-server/z-authorization-server-metadata'
 import {
   authorizationCodeGrantIdentifier,
+  getGrantTypesSupported,
   preAuthorizedCodeGrantIdentifier,
   refreshTokenGrantIdentifier,
 } from '../z-grant-type'
@@ -183,6 +185,13 @@ async function retrieveAccessToken(options: RetrieveAccessTokenOptions): Promise
     options.request,
     'Error validating access token request'
   )
+
+  const supportedGrantTypes = getGrantTypesSupported(options.authorizationServerMetadata.grant_types_supported)
+  if (!supportedGrantTypes.includes(accessTokenRequest.grant_type)) {
+    throw new Oauth2Error(
+      `The authorization server '${options.authorizationServerMetadata.issuer}' does not support the '${accessTokenRequest.grant_type}' grant type. Supported grant types are: ${supportedGrantTypes.join(', ')}`
+    )
+  }
 
   // For backwards compat with draft 11 (we send both)
   if (accessTokenRequest.tx_code) {

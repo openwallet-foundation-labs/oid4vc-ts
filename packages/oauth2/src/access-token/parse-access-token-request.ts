@@ -4,9 +4,11 @@ import type { RequestLike } from '../common/z-common'
 import { Oauth2ErrorCodes } from '../common/z-oauth2-error'
 import { extractDpopJwtFromHeaders } from '../dpop/dpop'
 import { Oauth2ServerErrorResponseError } from '../error/Oauth2ServerErrorResponseError'
+import type { AuthorizationServerMetadata } from '../metadata/authorization-server/z-authorization-server-metadata'
 import {
   type AuthorizationCodeGrantIdentifier,
   authorizationCodeGrantIdentifier,
+  getGrantTypesSupported,
   type PreAuthorizedCodeGrantIdentifier,
   preAuthorizedCodeGrantIdentifier,
   type RefreshTokenGrantIdentifier,
@@ -68,6 +70,13 @@ export interface ParseAccessTokenRequestOptions {
    * `x-www-url-form-urlencoded` body into an object (e.g. using `bodyParser.urlEncoded()` in express)
    */
   accessTokenRequest: Record<string, unknown>
+
+  /**
+   * Authorization server metadata. When provided, the grant type will be validated
+   * against `grant_types_supported`. If `grant_types_supported` is not set in the metadata,
+   * the default per RFC 8414 is `["authorization_code", "implicit"]`.
+   */
+  authorizationServerMetadata?: AuthorizationServerMetadata
 }
 
 /**
@@ -88,6 +97,16 @@ export function parseAccessTokenRequest(options: ParseAccessTokenRequestOptions)
 
   const accessTokenRequest = parsedAccessTokenRequest.data
   let grant: ParsedAccessTokenRequestGrant
+
+  if (options.authorizationServerMetadata) {
+    const supportedGrantTypes = getGrantTypesSupported(options.authorizationServerMetadata.grant_types_supported)
+    if (!supportedGrantTypes.includes(accessTokenRequest.grant_type)) {
+      throw new Oauth2ServerErrorResponseError({
+        error: Oauth2ErrorCodes.UnsupportedGrantType,
+        error_description: `The grant type '${accessTokenRequest.grant_type}' is not supported by the authorization server. Supported grant types are: ${supportedGrantTypes.join(', ')}`,
+      })
+    }
+  }
 
   if (accessTokenRequest.grant_type === preAuthorizedCodeGrantIdentifier) {
     if (!accessTokenRequest['pre-authorized_code']) {

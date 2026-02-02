@@ -51,7 +51,11 @@ describe('Openid4vciClient', () => {
         HttpResponse.text(undefined, { status: 404 })
       ),
       http.get('https://agent.paradym.id/.well-known/oauth-authorization-server/oid4vci/draft-13-issuer', () =>
-        HttpResponse.text(undefined, { status: 404 })
+        HttpResponse.json({
+          issuer: paradymDraft13.credentialIssuerMetadata.credential_issuer,
+          token_endpoint: paradymDraft13.credentialIssuerMetadata.token_endpoint,
+          grant_types_supported: [preAuthorizedCodeGrantIdentifier],
+        } satisfies AuthorizationServerMetadata)
       ),
       http.post(paradymDraft13.credentialIssuerMetadata.token_endpoint, async ({ request }) => {
         expect(parseXwwwFormUrlEncoded(await request.text())).toEqual({
@@ -160,7 +164,11 @@ describe('Openid4vciClient', () => {
         HttpResponse.text(undefined, { status: 404 })
       ),
       http.get('https://agent.paradym.id/.well-known/oauth-authorization-server/oid4vci/draft-11-issuer', () =>
-        HttpResponse.text(undefined, { status: 404 })
+        HttpResponse.json({
+          issuer: paradymDraft11.credentialIssuerMetadata.credential_issuer,
+          token_endpoint: paradymDraft11.credentialIssuerMetadata.token_endpoint,
+          grant_types_supported: [preAuthorizedCodeGrantIdentifier],
+        } satisfies AuthorizationServerMetadata)
       ),
       http.post(paradymDraft11.credentialIssuerMetadata.token_endpoint, async ({ request }) => {
         expect(parseXwwwFormUrlEncoded(await request.text())).toEqual({

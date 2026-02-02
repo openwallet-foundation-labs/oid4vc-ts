@@ -1,3 +1,4 @@
+import type { AuthorizationServerMetadata } from '@openid4vc/oauth2'
 import { describe, expect, test } from 'vitest'
 import { Oauth2ServerErrorResponseError } from '../../error/Oauth2ServerErrorResponseError.js'
 import {
@@ -6,6 +7,11 @@ import {
   refreshTokenGrantIdentifier,
 } from '../../z-grant-type.js'
 import { parseAccessTokenRequest } from '../parse-access-token-request.js'
+
+const baseAuthorizationServerMetadata = {
+  issuer: 'https://oauth2-auth-server.com',
+  token_endpoint: 'https://oauth2-auth-server.com/token',
+} satisfies AuthorizationServerMetadata
 
 describe('Parse Access Token Request', () => {
   test('handles invalid structure', () => {
@@ -251,4 +257,94 @@ describe('Parse Access Token Request', () => {
           'Request contains client attestation header, but the values are not valid client attestation and client attestation PoP header.',
       })
     ))
+
+  test('rejects grant type not in grant_types_supported', () => {
+    expect(() =>
+      parseAccessTokenRequest({
+        accessTokenRequest: {
+          grant_type: preAuthorizedCodeGrantIdentifier,
+          'pre-authorized_code': 'pre-auth',
+        },
+        request: {
+          headers: new Headers(),
+          method: 'POST',
+          url: 'https://request.com/token',
+        },
+        authorizationServerMetadata: {
+          ...baseAuthorizationServerMetadata,
+          grant_types_supported: [authorizationCodeGrantIdentifier],
+        },
+      })
+    ).toThrow(`The grant type '${preAuthorizedCodeGrantIdentifier}' is not supported by the authorization server`)
+  })
+
+  test('accepts grant type when in grant_types_supported', () => {
+    const result = parseAccessTokenRequest({
+      accessTokenRequest: {
+        grant_type: preAuthorizedCodeGrantIdentifier,
+        'pre-authorized_code': 'pre-auth',
+      },
+      request: {
+        headers: new Headers(),
+        method: 'POST',
+        url: 'https://request.com/token',
+      },
+      authorizationServerMetadata: {
+        ...baseAuthorizationServerMetadata,
+        grant_types_supported: [preAuthorizedCodeGrantIdentifier, authorizationCodeGrantIdentifier],
+      },
+    })
+
+    expect(result.grant.grantType).toBe(preAuthorizedCodeGrantIdentifier)
+  })
+
+  test('uses RFC 8414 default grant_types_supported when not specified in metadata', () => {
+    // authorization_code should be accepted (in default)
+    const result = parseAccessTokenRequest({
+      accessTokenRequest: {
+        grant_type: authorizationCodeGrantIdentifier,
+        code: 'auth-code',
+      },
+      request: {
+        headers: new Headers(),
+        method: 'POST',
+        url: 'https://request.com/token',
+      },
+      authorizationServerMetadata: baseAuthorizationServerMetadata,
+    })
+
+    expect(result.grant.grantType).toBe(authorizationCodeGrantIdentifier)
+
+    // pre-authorized_code should be rejected (not in default)
+    expect(() =>
+      parseAccessTokenRequest({
+        accessTokenRequest: {
+          grant_type: preAuthorizedCodeGrantIdentifier,
+          'pre-authorized_code': 'pre-auth',
+        },
+        request: {
+          headers: new Headers(),
+          method: 'POST',
+          url: 'https://request.com/token',
+        },
+        authorizationServerMetadata: baseAuthorizationServerMetadata,
+      })
+    ).toThrow(`The grant type '${preAuthorizedCodeGrantIdentifier}' is not supported by the authorization server`)
+  })
+
+  test('does not validate grant_types_supported when authorizationServerMetadata is not provided', () => {
+    const result = parseAccessTokenRequest({
+      accessTokenRequest: {
+        grant_type: preAuthorizedCodeGrantIdentifier,
+        'pre-authorized_code': 'pre-auth',
+      },
+      request: {
+        headers: new Headers(),
+        method: 'POST',
+        url: 'https://request.com/token',
+      },
+    })
+
+    expect(result.grant.grantType).toBe(preAuthorizedCodeGrantIdentifier)
+  })
 })
