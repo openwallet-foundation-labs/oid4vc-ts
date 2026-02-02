@@ -183,10 +183,10 @@ export {
 export {
   type AuthorizationCodeGrantIdentifier,
   authorizationCodeGrantIdentifier,
-  defaultGrantTypesSupported,
-  getGrantTypesSupported,
   type ClientCredentialsGrantIdentifier,
   clientCredentialsGrantIdentifier,
+  defaultGrantTypesSupported,
+  getGrantTypesSupported,
   type PreAuthorizedCodeGrantIdentifier,
   preAuthorizedCodeGrantIdentifier,
   type RefreshTokenGrantIdentifier,

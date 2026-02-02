@@ -15,8 +15,8 @@ import { Oauth2Error } from '../error/Oauth2Error'
 import type { AuthorizationServerMetadata } from '../metadata/authorization-server/z-authorization-server-metadata'
 import {
   authorizationCodeGrantIdentifier,
-  getGrantTypesSupported,
   clientCredentialsGrantIdentifier,
+  getGrantTypesSupported,
   preAuthorizedCodeGrantIdentifier,
   refreshTokenGrantIdentifier,
 } from '../z-grant-type'
