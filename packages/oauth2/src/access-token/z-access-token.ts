@@ -3,6 +3,7 @@ import z from 'zod'
 import { zOauth2ErrorResponse } from '../common/z-oauth2-error'
 import {
   zAuthorizationCodeGrantIdentifier,
+  zClientCredentialsGrantIdentifier,
   zPreAuthorizedCodeGrantIdentifier,
   zRefreshTokenGrantIdentifier,
 } from '../z-grant-type'
@@ -27,6 +28,7 @@ export const zAccessTokenRequest = z.intersection(
         zPreAuthorizedCodeGrantIdentifier,
         zAuthorizationCodeGrantIdentifier,
         zRefreshTokenGrantIdentifier,
+        zClientCredentialsGrantIdentifier,
         // string makes the previous ones unnecessary, but it does help with error messages
         z.string(),
       ]),

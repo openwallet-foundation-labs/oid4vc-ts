@@ -1,4 +1,4 @@
-import { zHttpsUrl, zInteger } from '@openid4vc/utils'
+import { zHttpsUrl, zNumericDate } from '@openid4vc/utils'
 import z from 'zod'
 import { zJwk } from '../common/jwk/z-jwk'
 import { zJwtHeader, zJwtPayload } from '../common/jwt/z-jwt'
@@ -11,7 +11,7 @@ export const zClientAttestationJwtPayload = z
     ...zJwtPayload.shape,
     iss: z.string(),
     sub: z.string(),
-    exp: zInteger,
+    exp: zNumericDate,
     cnf: z
       .object({
         jwk: zJwk,
@@ -41,7 +41,7 @@ export const zClientAttestationPopJwtPayload = z
   .object({
     ...zJwtPayload.shape,
     iss: z.string(),
-    exp: zInteger,
+    exp: zNumericDate,
     aud: z.union([zHttpsUrl, z.array(zHttpsUrl)]),
 
     jti: z.string(),

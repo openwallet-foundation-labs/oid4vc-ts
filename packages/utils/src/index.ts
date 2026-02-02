@@ -41,6 +41,7 @@ export {
   zHttpsUrl,
   zInteger,
   zIs,
+  zNumericDate,
   zStringToJson,
 } from './validation'
 export {
