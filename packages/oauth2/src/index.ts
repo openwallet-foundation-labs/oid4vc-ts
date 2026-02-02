@@ -8,6 +8,7 @@ export {
 } from '@openid4vc/utils'
 export type {
   RetrieveAuthorizationCodeAccessTokenOptions,
+  RetrieveClientCredentialsAccessTokenOptions,
   RetrievePreAuthorizedCodeAccessTokenOptions,
 } from './access-token/retrieve-access-token'
 export { SupportedAuthenticationScheme } from './access-token/verify-access-token'
@@ -184,11 +185,14 @@ export {
   authorizationCodeGrantIdentifier,
   defaultGrantTypesSupported,
   getGrantTypesSupported,
+  type ClientCredentialsGrantIdentifier,
+  clientCredentialsGrantIdentifier,
   type PreAuthorizedCodeGrantIdentifier,
   preAuthorizedCodeGrantIdentifier,
   type RefreshTokenGrantIdentifier,
   refreshTokenGrantIdentifier,
   zAuthorizationCodeGrantIdentifier,
+  zClientCredentialsGrantIdentifier,
   zPreAuthorizedCodeGrantIdentifier,
   zRefreshTokenGrantIdentifier,
 } from './z-grant-type'

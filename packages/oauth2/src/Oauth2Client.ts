@@ -1,9 +1,11 @@
 import { objectToQueryParams } from '@openid4vc/utils'
 import {
   type RetrieveAuthorizationCodeAccessTokenOptions,
+  type RetrieveClientCredentialsAccessTokenOptions,
   type RetrievePreAuthorizedCodeAccessTokenOptions,
   type RetrieveRefreshTokenAccessTokenOptions,
   retrieveAuthorizationCodeAccessToken,
+  retrieveClientCredentialsAccessToken,
   retrievePreAuthorizedCodeAccessToken,
   retrieveRefreshTokenAccessToken,
 } from './access-token/retrieve-access-token'
@@ -237,6 +239,25 @@ export class Oauth2Client {
     const result = await retrieveRefreshTokenAccessToken({
       authorizationServerMetadata,
       refreshToken,
+      additionalRequestPayload,
+      resource,
+      callbacks: this.options.callbacks,
+      dpop,
+    })
+
+    return result
+  }
+
+  public async retrieveClientCredentialsAccessToken({
+    authorizationServerMetadata,
+    additionalRequestPayload,
+    scope,
+    resource,
+    dpop,
+  }: Omit<RetrieveClientCredentialsAccessTokenOptions, 'callbacks'>) {
+    const result = await retrieveClientCredentialsAccessToken({
+      authorizationServerMetadata,
+      scope,
       additionalRequestPayload,
       resource,
       callbacks: this.options.callbacks,

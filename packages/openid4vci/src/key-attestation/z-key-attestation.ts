@@ -1,5 +1,5 @@
 import { zJwk, zJwtHeader, zJwtPayload } from '@openid4vc/oauth2'
-import { zInteger } from '@openid4vc/utils'
+import { zNumericDate } from '@openid4vc/utils'
 import z from 'zod'
 
 export type KeyAttestationJwtUse = 'proof_type.jwt' | 'proof_type.attestation'
@@ -33,7 +33,7 @@ export const zIso18045OrStringArray = z.array(z.union([zIso18045, z.string()]))
 export const zKeyAttestationJwtPayload = z
   .object({
     ...zJwtPayload.shape,
-    iat: zInteger,
+    iat: zNumericDate,
 
     attested_keys: z.array(zJwk),
     key_storage: z.optional(zIso18045OrStringArray),
@@ -56,7 +56,7 @@ export const zKeyAttestationJwtPayloadForUse = <Use extends KeyAttestationJwtUse
           : z.optional(z.string()),
 
       // REQUIRED when used within header of proof_type.jwt
-      exp: use === 'proof_type.jwt' ? zInteger : z.optional(zInteger),
+      exp: use === 'proof_type.jwt' ? zNumericDate : z.optional(zNumericDate),
     })
     .loose()
 

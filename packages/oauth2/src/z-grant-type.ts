@@ -25,3 +25,7 @@ export const defaultGrantTypesSupported = [authorizationCodeGrantIdentifier, 'im
 export function getGrantTypesSupported(grantTypesSupported: string[] | undefined): readonly string[] {
   return grantTypesSupported ?? defaultGrantTypesSupported
 }
+
+export const zClientCredentialsGrantIdentifier = z.literal('client_credentials')
+export const clientCredentialsGrantIdentifier = zClientCredentialsGrantIdentifier.value
+export type ClientCredentialsGrantIdentifier = z.infer<typeof zClientCredentialsGrantIdentifier>
