@@ -239,7 +239,7 @@ describe('Openid4vciIssuer', () => {
       },
     })
 
-    const credentialResponse = issuer.createCredentialResponse({
+    const { credentialResponse } = await issuer.createCredentialResponse({
       cNonce: 'some-new-nonce',
       cNonceExpiresInSeconds: 500,
       credential: 'the-credential',
