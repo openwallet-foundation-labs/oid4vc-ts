@@ -7,7 +7,14 @@ import {
   resourceRequest,
   type zOauth2ErrorResponse,
 } from '@openid4vc/oauth2'
-import { ContentType, isResponseContentType, parseWithErrorHandling } from '@openid4vc/utils'
+import {
+  ContentType,
+  type FetchResponse,
+  isResponseContentType,
+  parseWithErrorHandling,
+  stringToJsonWithErrorHandling,
+} from '@openid4vc/utils'
+import type z from 'zod'
 import { Openid4vciError } from '../error/Openid4vciError'
 import { getKnownCredentialConfigurationSupportedById } from '../metadata/credential-issuer/credential-issuer-metadata'
 import type { IssuerMetadataResult } from '../metadata/fetch-issuer-metadata'
@@ -19,7 +26,11 @@ import {
   zCredentialRequestDraft14To11,
   zDeferredCredentialRequest,
 } from './z-credential-request'
-import type { CredentialRequestProof, CredentialRequestProofs } from './z-credential-request-common'
+import type {
+  CredentialRequestProof,
+  CredentialRequestProofs,
+  CredentialResponseEncryption,
+} from './z-credential-request-common'
 import {
   type CredentialResponse,
   type DeferredCredentialResponse,
@@ -28,6 +39,60 @@ import {
   zDeferredCredentialResponse,
 } from './z-credential-response'
 
+/**
+ * Handles credential response by detecting content type, decrypting if needed, and parsing.
+ */
+async function handleCredentialResponse<T, Schema extends z.ZodType<T>>(options: {
+  response: FetchResponse
+  decryptJwe: CallbackContext['decryptJwe']
+  credentialResponseEncryption?: CredentialResponseEncryption
+  schema: Schema
+  responseType: string
+}): Promise<{ ok: true; data: T } | { ok: false; parseResult: ReturnType<Schema['safeParse']> | undefined }> {
+  const { response, decryptJwe, credentialResponseEncryption, schema, responseType } = options
+
+  // Check if the response is encrypted (Content-Type: application/jwt)
+  if (isResponseContentType(ContentType.Jwt, response)) {
+    const jwe = await response.clone().text()
+    const decryptResult = await decryptJwe(jwe)
+
+    if (!decryptResult.decrypted) {
+      return { ok: false, parseResult: undefined }
+    }
+
+    const jsonPayload = stringToJsonWithErrorHandling(
+      decryptResult.payload,
+      `Unable to parse decrypted ${responseType} as JSON`
+    )
+    const parseResult = schema.safeParse(jsonPayload) as ReturnType<Schema['safeParse']>
+
+    if (!parseResult.success) {
+      return { ok: false, parseResult }
+    }
+
+    return { ok: true, data: parseResult.data }
+  }
+
+  // If encryption was requested but response is not encrypted, that's an error
+  if (credentialResponseEncryption) {
+    throw new Openid4vciError(
+      `Encryption was requested via 'credential_response_encryption' but the ${responseType} was not encrypted. ` +
+        `Expected Content-Type 'application/jwt' but received '${response.headers.get('Content-Type')}'.`
+    )
+  }
+
+  // Try to parse the response (non-encrypted)
+  const parseResult = (
+    isResponseContentType(ContentType.Json, response) ? schema.safeParse(await response.clone().json()) : undefined
+  ) as ReturnType<Schema['safeParse']> | undefined
+
+  if (!parseResult?.success) {
+    return { ok: false, parseResult }
+  }
+
+  return { ok: true, data: parseResult.data }
+}
+
 interface RetrieveCredentialsBaseOptions {
   /**
    * Metadata of the credential issuer and authorization servers.
@@ -35,9 +100,9 @@ interface RetrieveCredentialsBaseOptions {
   issuerMetadata: IssuerMetadataResult
 
   /**
-   * Callback used in retrieve credentials endpoints
+   * Callbacks used in retrieve credentials endpoints.
    */
-  callbacks: Pick<CallbackContext, 'fetch' | 'generateRandom' | 'hash' | 'signJwt'>
+  callbacks: Pick<CallbackContext, 'fetch' | 'generateRandom' | 'hash' | 'signJwt' | 'decryptJwe'>
 
   /**
    * Access token authorized to retrieve the credential(s)
@@ -48,6 +113,15 @@ interface RetrieveCredentialsBaseOptions {
    * DPoP options
    */
   dpop?: RequestDpopOptions
+
+  /**
+   * Request encryption of the credential response. When provided, the client
+   * includes `credential_response_encryption` in the request and expects
+   * an encrypted JWE response.
+   *
+   * The `decryptJwe` callback must be provided to decrypt the response.
+   */
+  credentialResponseEncryption?: CredentialResponseEncryption
 }
 
 export interface RetrieveCredentialsWithCredentialConfigurationIdOptions extends RetrieveCredentialsBaseOptions {
@@ -86,6 +160,7 @@ export async function retrieveCredentialsWithCredentialConfigurationId(
     credential_configuration_id: options.credentialConfigurationId,
     proof: options.proof,
     proofs: options.proofs,
+    credential_response_encryption: options.credentialResponseEncryption,
   }
 
   return retrieveCredentials({
@@ -94,6 +169,7 @@ export async function retrieveCredentialsWithCredentialConfigurationId(
     issuerMetadata: options.issuerMetadata,
     accessToken: options.accessToken,
     dpop: options.dpop,
+    credentialResponseEncryption: options.credentialResponseEncryption,
   })
 }
 
@@ -129,6 +205,7 @@ export async function retrieveCredentialsWithFormat(options: RetrieveCredentials
 
     proof: options.proof,
     proofs: options.proofs,
+    credential_response_encryption: options.credentialResponseEncryption,
   }
 
   return retrieveCredentials({
@@ -137,6 +214,7 @@ export async function retrieveCredentialsWithFormat(options: RetrieveCredentials
     issuerMetadata: options.issuerMetadata,
     accessToken: options.accessToken,
     dpop: options.dpop,
+    credentialResponseEncryption: options.credentialResponseEncryption,
   })
 }
 
@@ -231,21 +309,25 @@ async function retrieveCredentials(
     }
   }
 
-  // Try to parse the credential response
-  const credentialResponseResult = isResponseContentType(ContentType.Json, resourceResponse.response)
-    ? zCredentialResponse.safeParse(await resourceResponse.response.clone().json())
-    : undefined
-  if (!credentialResponseResult?.success) {
+  const result = await handleCredentialResponse<CredentialResponse, typeof zCredentialResponse>({
+    response: resourceResponse.response,
+    decryptJwe: options.callbacks.decryptJwe,
+    credentialResponseEncryption: options.credentialResponseEncryption,
+    schema: zCredentialResponse,
+    responseType: 'credential response',
+  })
+
+  if (!result.ok) {
     return {
       ...resourceResponse,
       ok: false,
-      credentialResponseResult,
+      credentialResponseResult: result.parseResult,
     }
   }
 
   return {
     ...resourceResponse,
-    credentialResponse: credentialResponseResult.data,
+    credentialResponse: result.data,
   }
 }
 
@@ -296,6 +378,7 @@ export async function retrieveDeferredCredentials(
     zDeferredCredentialRequest,
     {
       transaction_id: options.transactionId,
+      credential_response_encryption: options.credentialResponseEncryption,
       ...options.additionalRequestPayload,
     },
     'Error validating deferred credential request'
@@ -326,24 +409,31 @@ export async function retrieveDeferredCredentials(
     }
   }
 
-  // Try to parse the credential response
-  const deferredCredentialResponseResult = isResponseContentType(ContentType.Json, resourceResponse.response)
-    ? zDeferredCredentialResponse
-        .refine((response) => response.credentials || response.transaction_id === options.transactionId, {
-          error: `Transaction id in deferred credential response does not match transaction id in deferred credential request '${options.transactionId}'`,
-        })
-        .safeParse(await resourceResponse.response.clone().json())
-    : undefined
-  if (!deferredCredentialResponseResult?.success) {
+  const deferredResponseSchema = zDeferredCredentialResponse.refine(
+    (response) => response.credentials || response.transaction_id === options.transactionId,
+    {
+      message: `Transaction id in deferred credential response does not match transaction id in deferred credential request '${options.transactionId}'`,
+    }
+  )
+
+  const result = await handleCredentialResponse<DeferredCredentialResponse, typeof deferredResponseSchema>({
+    response: resourceResponse.response,
+    decryptJwe: options.callbacks.decryptJwe,
+    credentialResponseEncryption: options.credentialResponseEncryption,
+    schema: deferredResponseSchema,
+    responseType: 'deferred credential response',
+  })
+
+  if (!result.ok) {
     return {
       ...resourceResponse,
       ok: false,
-      deferredCredentialResponseResult,
+      deferredCredentialResponseResult: result.parseResult,
     }
   }
 
   return {
     ...resourceResponse,
-    deferredCredentialResponse: deferredCredentialResponseResult.data,
+    deferredCredentialResponse: result.data,
   }
 }

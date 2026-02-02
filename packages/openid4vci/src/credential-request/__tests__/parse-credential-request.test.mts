@@ -84,6 +84,7 @@ describe('Parse Credential Request', () => {
           jwt: 'ey.ey.S',
         },
       },
+      credentialResponseEncryption: undefined,
     })
   })
 
@@ -128,6 +129,7 @@ describe('Parse Credential Request', () => {
           jwt: 'ey.ey.S',
         },
       },
+      credentialResponseEncryption: undefined,
     })
   })
 
@@ -172,6 +174,7 @@ describe('Parse Credential Request', () => {
           jwt: 'ey.ey.S',
         },
       },
+      credentialResponseEncryption: undefined,
     })
   })
 
@@ -240,6 +243,7 @@ describe('Parse Credential Request', () => {
           jwt: 'ey.ey.S',
         },
       },
+      credentialResponseEncryption: undefined,
     })
   })
 
@@ -308,6 +312,7 @@ describe('Parse Credential Request', () => {
           jwt: 'ey.ey.S',
         },
       },
+      credentialResponseEncryption: undefined,
     })
   })
 
@@ -373,6 +378,7 @@ describe('Parse Credential Request', () => {
           jwt: 'ey.ey.S',
         },
       },
+      credentialResponseEncryption: undefined,
     })
   })
 
@@ -412,6 +418,7 @@ describe('Parse Credential Request', () => {
           jwt: 'ey.ey.S',
         },
       },
+      credentialResponseEncryption: undefined,
     })
   })
 
@@ -449,6 +456,7 @@ describe('Parse Credential Request', () => {
           not_a_jwt: 'really',
         },
       },
+      credentialResponseEncryption: undefined,
     })
   })
 
@@ -486,6 +494,7 @@ describe('Parse Credential Request', () => {
           jwt: ['ey.ey.S', 'ey.ey.S'],
         },
       },
+      credentialResponseEncryption: undefined,
     })
   })
 
@@ -521,6 +530,7 @@ describe('Parse Credential Request', () => {
           not_a_jwt: [{ one: true }, { two: true }],
         },
       },
+      credentialResponseEncryption: undefined,
     })
   })
 
@@ -560,6 +570,7 @@ describe('Parse Credential Request', () => {
           jwt: 'ey.ey.S',
         },
       },
+      credentialResponseEncryption: undefined,
     })
   })
 
@@ -596,6 +607,7 @@ describe('Parse Credential Request', () => {
           jwt: ['ey.ey.S'],
         },
       },
+      credentialResponseEncryption: undefined,
     })
   })
 
@@ -659,6 +671,7 @@ describe('Parse Credential Request', () => {
           jwt: 'ey.ey.S',
         },
       },
+      credentialResponseEncryption: undefined,
     })
   })
 
@@ -727,6 +740,7 @@ describe('Parse Credential Request', () => {
           jwt: 'ey.ey.S',
         },
       },
+      credentialResponseEncryption: undefined,
     })
   })
 
@@ -795,6 +809,7 @@ describe('Parse Credential Request', () => {
           jwt: 'ey.ey.S',
         },
       },
+      credentialResponseEncryption: undefined,
     })
   })
 })

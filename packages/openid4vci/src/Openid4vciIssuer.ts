@@ -66,9 +66,9 @@ import { type CreateNonceResponseOptions, createNonceResponse } from './nonce/no
 
 export interface Openid4vciIssuerOptions {
   /**
-   * Callbacks required for the openid4vc issuer
+   * Callbacks required for the openid4vc issuer.
    */
-  callbacks: Omit<CallbackContext, 'decryptJwe' | 'encryptJwe'>
+  callbacks: Omit<CallbackContext, 'decryptJwe'>
 }
 
 export class Openid4vciIssuer {
@@ -262,16 +262,24 @@ export class Openid4vciIssuer {
 
   /**
    * @throws ValidationError - when validation of the credential response fails
+   * @throws Openid4vciError - when encryption is requested but no encryptJwe callback is available
    */
-  public createCredentialResponse(options: CreateCredentialResponseOptions) {
-    return createCredentialResponse(options)
+  public createCredentialResponse(options: Omit<CreateCredentialResponseOptions, 'callbacks'>) {
+    return createCredentialResponse({
+      ...options,
+      callbacks: options.credentialResponseEncryption ? { encryptJwe: this.options.callbacks.encryptJwe } : undefined,
+    })
   }
 
   /**
    * @throws ValidationError - when validation of the credential response fails
+   * @throws Openid4vciError - when encryption is requested but no encryptJwe callback is available
    */
-  public createDeferredCredentialResponse(options: CreateDeferredCredentialResponseOptions) {
-    return createDeferredCredentialResponse(options)
+  public createDeferredCredentialResponse(options: Omit<CreateDeferredCredentialResponseOptions, 'callbacks'>) {
+    return createDeferredCredentialResponse({
+      ...options,
+      callbacks: options.credentialResponseEncryption ? { encryptJwe: this.options.callbacks.encryptJwe } : undefined,
+    } as CreateDeferredCredentialResponseOptions)
   }
 
   /**

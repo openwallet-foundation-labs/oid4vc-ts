@@ -55,6 +55,18 @@ export const callbacks = {
     clientId: 'some-random-client-id',
   }),
   verifyJwt: getVerifyJwtCallback(),
+  encryptJwe: async (encryptor, payload) => {
+    const josePublicKey = await jose.importJWK(encryptor.publicJwk as jose.JWK, encryptor.alg)
+    const jwe = await new jose.CompactEncrypt(new TextEncoder().encode(payload))
+      .setProtectedHeader({ alg: encryptor.alg, enc: encryptor.enc })
+      .encrypt(josePublicKey)
+    return { jwe, encryptionJwk: encryptor.publicJwk }
+  },
+  decryptJwe: async (_jwe) => {
+    // Note: In real usage, you'd need the private key to decrypt.
+    // This is a placeholder that always returns decrypted: false for tests.
+    return { decrypted: false as const }
+  },
 } as const satisfies Partial<CallbackContext>
 
 export const getSignJwtCallback = (privateJwks: Jwk[]): SignJwtCallback => {
