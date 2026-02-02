@@ -41,16 +41,15 @@ import {
 
 /**
  * Handles credential response by detecting content type, decrypting if needed, and parsing.
- * Returns the parsed JSON payload or throws/returns error state.
  */
 async function handleCredentialResponse<T, Schema extends z.ZodType<T>>(options: {
   response: FetchResponse
   decryptJwe: CallbackContext['decryptJwe']
   credentialResponseEncryption?: CredentialResponseEncryption
   schema: Schema
-  errorContext: string
+  responseType: string
 }): Promise<{ ok: true; data: T } | { ok: false; parseResult: ReturnType<Schema['safeParse']> | undefined }> {
-  const { response, decryptJwe, credentialResponseEncryption, schema, errorContext } = options
+  const { response, decryptJwe, credentialResponseEncryption, schema, responseType } = options
 
   // Check if the response is encrypted (Content-Type: application/jwt)
   if (isResponseContentType(ContentType.Jwt, response)) {
@@ -63,7 +62,7 @@ async function handleCredentialResponse<T, Schema extends z.ZodType<T>>(options:
 
     const jsonPayload = stringToJsonWithErrorHandling(
       decryptResult.payload,
-      `Unable to parse decrypted ${errorContext} as JSON`
+      `Unable to parse decrypted ${responseType} as JSON`
     )
     const parseResult = schema.safeParse(jsonPayload) as ReturnType<Schema['safeParse']>
 
@@ -74,12 +73,9 @@ async function handleCredentialResponse<T, Schema extends z.ZodType<T>>(options:
     return { ok: true, data: parseResult.data }
   }
 
-  // If encryption was requested but response is not encrypted, that's an error
+  // If encryption was requested but response is not encrypted, return error
   if (credentialResponseEncryption) {
-    throw new Openid4vciError(
-      `Encryption was requested via 'credential_response_encryption' but the ${errorContext} was not encrypted. ` +
-        `Expected Content-Type 'application/jwt' but received '${response.headers.get('Content-Type')}'.`
-    )
+    return { ok: false, parseResult: undefined }
   }
 
   // Try to parse the response (non-encrypted)
@@ -315,7 +311,7 @@ async function retrieveCredentials(
     decryptJwe: options.callbacks.decryptJwe,
     credentialResponseEncryption: options.credentialResponseEncryption,
     schema: zCredentialResponse,
-    errorContext: 'credential response',
+    responseType: 'credential response',
   })
 
   if (!result.ok) {
@@ -422,7 +418,7 @@ export async function retrieveDeferredCredentials(
     decryptJwe: options.callbacks.decryptJwe,
     credentialResponseEncryption: options.credentialResponseEncryption,
     schema: deferredResponseSchema,
-    errorContext: 'deferred credential response',
+    responseType: 'deferred credential response',
   })
 
   if (!result.ok) {

@@ -120,7 +120,7 @@ export function parseCredentialRequest(options: ParseCredentialRequestOptions): 
       credentialConfigurationId: credentialRequest.credential_configuration_id,
       credentialRequest,
       proofs,
-      ...(credentialResponseEncryption && { credentialResponseEncryption }),
+      credentialResponseEncryption,
     }
   }
 
@@ -129,7 +129,7 @@ export function parseCredentialRequest(options: ParseCredentialRequestOptions): 
       credentialIdentifier: credentialRequest.credential_identifier,
       credentialRequest,
       proofs,
-      ...(credentialResponseEncryption && { credentialResponseEncryption }),
+      credentialResponseEncryption,
     }
   }
 
@@ -148,13 +148,13 @@ export function parseCredentialRequest(options: ParseCredentialRequestOptions): 
       ),
       credentialRequest,
       proofs,
-      ...(credentialResponseEncryption && { credentialResponseEncryption }),
+      credentialResponseEncryption,
     }
   }
 
   return {
     credentialRequest,
     proofs,
-    ...(credentialResponseEncryption && { credentialResponseEncryption }),
+    credentialResponseEncryption,
   }
 }
