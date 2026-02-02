@@ -1,9 +1,9 @@
 import { describe, expect, test } from 'vitest'
 import { callbacks, getSignJwtCallback } from '../../../../tests/util.mjs'
-import type { Jwk } from '../../jwk/z-jwk.js'
-import { jwtHeaderFromJwtSigner } from '../decode-jwt.js'
-import { verifyJwt } from '../verify-jwt.js'
-import type { JwtSigner } from '../z-jwt.js'
+import type { Jwk } from '../../jwk/z-jwk'
+import { jwtHeaderFromJwtSigner } from '../decode-jwt'
+import { verifyJwt } from '../verify-jwt'
+import type { JwtSigner } from '../z-jwt'
 
 const signerJwk = {
   kty: 'EC',

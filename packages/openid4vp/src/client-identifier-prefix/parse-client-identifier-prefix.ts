@@ -214,6 +214,7 @@ export function getOpenid4vpClientId(options: GetOpenid4vpClientIdOptions): {
   }
 
   // FIXME: it could be there's no client_id and IAE is used. For now we don't allow this
+  // See https://github.com/openid/OpenID4VCI/issues/701
 
   // If no DC API, client_id is required
   if (!options.clientId) {

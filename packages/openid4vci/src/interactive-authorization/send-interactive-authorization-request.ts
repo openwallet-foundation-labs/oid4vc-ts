@@ -17,14 +17,14 @@ import {
   parseWithErrorHandling,
   ValidationError,
 } from '@openid4vc/utils'
-import { Openid4vciClientInteractiveAuthorizationError } from '../error/Openid4vciClientInteractiveAuthorizationError.js'
+import { Openid4vciClientInteractiveAuthorizationError } from '../error/Openid4vciClientInteractiveAuthorizationError'
 import {
   type InteractiveAuthorizationFollowUpRequest,
   type InteractiveAuthorizationInitialRequest,
   zInteractiveAuthorizationFollowUpRequest,
   zInteractiveAuthorizationInitialRequest,
   zInteractiveAuthorizationResponse,
-} from './z-interactive-authorization.js'
+} from './z-interactive-authorization'
 
 export interface SendInteractiveAuthorizationRequestOptions {
   /**

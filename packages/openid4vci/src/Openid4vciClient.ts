@@ -22,7 +22,7 @@ import {
   AuthorizationFlow,
   type AuthorizationFlowReturn,
   type InitiateAuthorizationOptions,
-} from './authorization-flow.js'
+} from './authorization-flow'
 import {
   determineAuthorizationServerForCredentialOffer,
   resolveCredentialOffer,
@@ -49,7 +49,7 @@ import {
 import {
   type SendInteractiveAuthorizationRequestOptions,
   sendInteractiveAuthorizationRequest,
-} from './interactive-authorization/send-interactive-authorization-request.js'
+} from './interactive-authorization/send-interactive-authorization-request'
 import { type IssuerMetadataResult, resolveIssuerMetadata } from './metadata/fetch-issuer-metadata'
 import { type RequestNonceOptions, requestNonce } from './nonce/nonce-request'
 import { type SendNotificationOptions, sendNotification } from './notification/notification'

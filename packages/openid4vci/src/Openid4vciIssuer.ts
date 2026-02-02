@@ -42,15 +42,15 @@ import {
   createInteractiveAuthorizationErrorResponse,
   createInteractiveAuthorizationOpenid4vpInteraction,
   createInteractiveAuthorizationRedirectToWebInteraction,
-} from './interactive-authorization/create-interactive-authorization-response.js'
+} from './interactive-authorization/create-interactive-authorization-response'
 import {
   type ParseInteractiveAuthorizationRequestOptions,
   parseInteractiveAuthorizationRequest,
-} from './interactive-authorization/parse-interactive-authorization-request.js'
+} from './interactive-authorization/parse-interactive-authorization-request'
 import {
   type VerifyInteractiveAuthorizationInitialRequestOptions,
   verifyInteractiveAuthorizationInitialRequest,
-} from './interactive-authorization/verify-interactive-authorization-request.js'
+} from './interactive-authorization/verify-interactive-authorization-request'
 import { extractKnownCredentialConfigurationSupportedFormats } from './metadata/credential-issuer/credential-issuer-metadata'
 import {
   type CreateSignedCredentialIssuerMetadataJwtOptions,

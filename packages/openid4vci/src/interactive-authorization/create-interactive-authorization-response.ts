@@ -5,7 +5,7 @@ import {
   type InteractiveAuthorizationInteractionRequiredResponse,
   zInteractiveAuthorizationCodeResponse,
   zInteractiveAuthorizationInteractionRequiredResponse,
-} from './z-interactive-authorization.js'
+} from './z-interactive-authorization'
 
 export interface CreateInteractiveAuthorizationCodeResponseOptions {
   /**

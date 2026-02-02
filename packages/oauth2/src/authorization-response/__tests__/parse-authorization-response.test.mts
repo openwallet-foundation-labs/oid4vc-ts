@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { parseAuthorizationResponseRedirectUrl } from '../parse-authorization-response.js'
+import { parseAuthorizationResponseRedirectUrl } from '../parse-authorization-response'
 
 describe('Parse Authorization Response', () => {
   describe(`parseAuthorizationResponseRedirectUrl`, () => {

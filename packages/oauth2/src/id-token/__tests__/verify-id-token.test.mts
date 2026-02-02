@@ -3,11 +3,11 @@ import { HttpResponse, http } from 'msw'
 import { setupServer } from 'msw/node'
 import { afterAll, afterEach, beforeAll, describe, expect, test } from 'vitest'
 import { callbacks, getSignJwtCallback } from '../../../tests/util.mjs'
-import type { Jwk, JwkSet } from '../../common/jwk/z-jwk.js'
-import { jwtHeaderFromJwtSigner } from '../../common/jwt/decode-jwt.js'
-import type { JwtSigner } from '../../common/jwt/z-jwt.js'
-import type { AuthorizationServerMetadata } from '../../metadata/authorization-server/z-authorization-server-metadata.js'
-import { verifyIdTokenJwt } from '../verify-id-token.js'
+import type { Jwk, JwkSet } from '../../common/jwk/z-jwk'
+import { jwtHeaderFromJwtSigner } from '../../common/jwt/decode-jwt'
+import type { JwtSigner } from '../../common/jwt/z-jwt'
+import type { AuthorizationServerMetadata } from '../../metadata/authorization-server/z-authorization-server-metadata'
+import { verifyIdTokenJwt } from '../verify-id-token'
 
 const server = setupServer()
 

@@ -1,10 +1,10 @@
 import crypto, { webcrypto } from 'node:crypto'
 import { decodeBase64, encodeToUtf8String } from '@openid4vc/utils'
 import * as jose from 'jose'
-import { type CallbackContext, HashAlgorithm, type SignJwtCallback, type VerifyJwtCallback } from '../src/callbacks.js'
-import { clientAuthenticationNone } from '../src/client-authentication.js'
-import { calculateJwkThumbprint } from '../src/common/jwk/jwk-thumbprint.js'
-import type { Jwk } from '../src/common/jwk/z-jwk.js'
+import { type CallbackContext, HashAlgorithm, type SignJwtCallback, type VerifyJwtCallback } from '../src/callbacks'
+import { clientAuthenticationNone } from '../src/client-authentication'
+import { calculateJwkThumbprint } from '../src/common/jwk/jwk-thumbprint'
+import type { Jwk } from '../src/common/jwk/z-jwk'
 
 // Needed for Node 18 support with jose6. We can soon drop node18 support.
 if (process.versions.node.startsWith('18.')) {

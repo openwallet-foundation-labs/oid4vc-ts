@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { parsePushedAuthorizationRequestUriReferenceValue } from '../parse-pushed-authorization-request.js'
+import { parsePushedAuthorizationRequestUriReferenceValue } from '../parse-pushed-authorization-request'
 
 describe('Parse Pushed Authorization Response', () => {
   describe(`parsePushedAuthorizationRequestUriReferenceValue`, () => {
