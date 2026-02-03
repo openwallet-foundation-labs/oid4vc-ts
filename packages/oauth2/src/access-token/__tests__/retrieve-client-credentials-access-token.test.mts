@@ -6,6 +6,7 @@ import { callbacks } from '../../../tests/util.mjs'
 import type { SignJwtCallback } from '../../callbacks'
 import { Oauth2ClientErrorResponseError } from '../../error/Oauth2ClientErrorResponseError'
 import type { AuthorizationServerMetadata } from '../../metadata/authorization-server/z-authorization-server-metadata'
+import { clientCredentialsGrantIdentifier } from '../../z-grant-type'
 import {
   type RetrieveClientCredentialsAccessTokenOptions,
   retrieveClientCredentialsAccessToken,
@@ -18,6 +19,7 @@ const mockAuthorizationServerMetadata: AuthorizationServerMetadata = {
   issuer: 'https://auth.example.com',
   token_endpoint: 'https://auth.example.com/token',
   authorization_endpoint: 'https://auth.example.com/authorize',
+  grant_types_supported: [clientCredentialsGrantIdentifier],
 }
 
 // Mock signJwt callback that's not actually used in client credentials flow

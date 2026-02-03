@@ -207,6 +207,8 @@ export {
   authorizationCodeGrantIdentifier,
   type ClientCredentialsGrantIdentifier,
   clientCredentialsGrantIdentifier,
+  defaultGrantTypesSupported,
+  getGrantTypesSupported,
   type PreAuthorizedCodeGrantIdentifier,
   preAuthorizedCodeGrantIdentifier,
   type RefreshTokenGrantIdentifier,

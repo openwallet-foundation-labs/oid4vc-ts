@@ -95,6 +95,7 @@ const authorizationServerMetadata = authorizationServer.createAuthorizationServe
   code_challenge_methods_supported: [PkceCodeChallengeMethod.S256],
   token_endpoint_auth_methods_supported: [SupportedClientAuthenticationMethod.ClientAttestationJwt],
   authorization_response_iss_parameter_supported: true,
+  grant_types_supported: [authorizationCodeGrantIdentifier, preAuthorizedCodeGrantIdentifier],
 })
 
 const credentialConfigurationsSupported = {
