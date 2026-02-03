@@ -1,4 +1,4 @@
-import { zInteger } from '@openid4vc/utils'
+import { zNumericDate } from '@openid4vc/utils'
 import z from 'zod'
 import { type Jwk, zJwk } from '../jwk/z-jwk'
 import { zAlgValueNotNone } from '../z-common'
@@ -94,17 +94,18 @@ export const zJwtConfirmationPayload = z
     // RFC9449. jwk thumbprint of the dpop public key to which the access token is bound
     jkt: z.string().optional(),
   })
-  .passthrough()
+  .loose()
 
 export const zJwtPayload = z
   .object({
     iss: z.string().optional(),
-    aud: z.string().optional(),
-    iat: zInteger.optional(),
-    exp: zInteger.optional(),
-    nbf: zInteger.optional(),
+    aud: z.union([z.string(), z.array(z.string())]).optional(),
+    iat: zNumericDate.optional(),
+    exp: zNumericDate.optional(),
+    nbf: zNumericDate.optional(),
     nonce: z.string().optional(),
     jti: z.string().optional(),
+    sub: z.string().optional(),
 
     cnf: zJwtConfirmationPayload.optional(),
 
@@ -112,9 +113,9 @@ export const zJwtPayload = z
     status: z.record(z.string(), z.any()).optional(),
 
     // Reserved for OpenID Federation
-    trust_chain: z.array(z.string()).nonempty().optional(),
+    trust_chain: z.tuple([z.string()], z.string()).optional(),
   })
-  .passthrough()
+  .loose()
 
 export type JwtPayload = z.infer<typeof zJwtPayload>
 
@@ -128,8 +129,8 @@ export const zJwtHeader = z
     x5c: z.array(z.string()).optional(),
 
     // Reserved for OpenID Federation
-    trust_chain: z.array(z.string()).nonempty().optional(),
+    trust_chain: z.tuple([z.string()], z.string()).optional(),
   })
-  .passthrough()
+  .loose()
 
 export type JwtHeader = z.infer<typeof zJwtHeader>

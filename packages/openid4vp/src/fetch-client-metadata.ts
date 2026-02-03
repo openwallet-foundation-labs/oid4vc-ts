@@ -1,5 +1,5 @@
 import { Oauth2ErrorCodes, Oauth2ServerErrorResponseError } from '@openid4vc/oauth2'
-import { ContentType, type Fetch, createZodFetcher } from '@openid4vc/utils'
+import { ContentType, createZodFetcher, type Fetch } from '@openid4vc/utils'
 import { type ClientMetadata, zClientMetadata } from './models/z-client-metadata'
 
 export async function fetchClientMetadata(options: {

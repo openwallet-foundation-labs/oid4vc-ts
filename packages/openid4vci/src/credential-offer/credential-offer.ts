@@ -1,28 +1,28 @@
 import {
   type AuthorizationCodeGrantIdentifier,
+  authorizationCodeGrantIdentifier,
   type CallbackContext,
+  getAuthorizationServerMetadataFromList,
   InvalidFetchResponseError,
   Oauth2Error,
   type PreAuthorizedCodeGrantIdentifier,
-  authorizationCodeGrantIdentifier,
-  getAuthorizationServerMetadataFromList,
   preAuthorizedCodeGrantIdentifier,
 } from '@openid4vc/oauth2'
 import {
   ContentType,
-  type Fetch,
-  URL,
-  URLSearchParams,
-  ValidationError,
   createZodFetcher,
   encodeToBase64Url,
+  type Fetch,
   getQueryParams,
   objectToQueryParams,
   parseWithErrorHandling,
+  URL,
+  URLSearchParams,
+  ValidationError,
 } from '@openid4vc/utils'
 import type z from 'zod'
 import type { IssuerMetadataResult } from '../metadata/fetch-issuer-metadata'
-import { Openid4vciDraftVersion } from '../version'
+import { Openid4vciVersion } from '../version'
 import {
   type CredentialOfferAuthorizationCodeGrant,
   type CredentialOfferGrants,
@@ -47,7 +47,7 @@ export async function resolveCredentialOffer(
 ): Promise<CredentialOfferObject> {
   const parsedQueryParams = getQueryParams(credentialOffer)
 
-  let credentialOfferParseResult: z.SafeParseReturnType<unknown, z.infer<typeof zCredentialOfferObject>>
+  let credentialOfferParseResult: z.ZodSafeParseResult<z.infer<typeof zCredentialOfferObject>>
 
   if (parsedQueryParams.credential_offer_uri) {
     const fetchWithZod = createZodFetcher(options?.fetch)
@@ -71,7 +71,7 @@ export async function resolveCredentialOffer(
 
     try {
       credentialOfferJson = JSON.parse(decodeURIComponent(parsedQueryParams.credential_offer))
-    } catch (error) {
+    } catch (_error) {
       throw new Oauth2Error(`Error parsing JSON from 'credential_offer' param in credential offer '${credentialOffer}'`)
     }
 
@@ -208,7 +208,7 @@ export async function createCredentialOffer(
 
     // Draft 11 support
     const txCode = grants[preAuthorizedCodeGrantIdentifier].tx_code
-    if (txCode && options.issuerMetadata.originalDraftVersion === Openid4vciDraftVersion.Draft11) {
+    if (txCode && options.issuerMetadata.originalDraftVersion === Openid4vciVersion.Draft11) {
       grants[preAuthorizedCodeGrantIdentifier].user_pin_required = txCode !== undefined
     }
   }
@@ -231,7 +231,7 @@ export async function createCredentialOffer(
   } satisfies CredentialOfferObject)
 
   // Draft 11 support
-  if (options.issuerMetadata.originalDraftVersion === Openid4vciDraftVersion.Draft11) {
+  if (options.issuerMetadata.originalDraftVersion === Openid4vciVersion.Draft11) {
     credentialOfferObject.credentials = credentialOfferObject.credential_configuration_ids
   }
 

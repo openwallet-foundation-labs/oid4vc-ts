@@ -2,22 +2,20 @@ import { parseWithErrorHandling } from '@openid4vc/utils'
 import z from 'zod'
 import { attestationProofTypeIdentifier } from '../formats/proof-type/attestation/z-attestation-proof-type'
 import { jwtProofTypeIdentifier } from '../formats/proof-type/jwt/z-jwt-proof-type'
-import {
-  extractKnownCredentialConfigurationSupportedFormats,
-  getCredentialConfigurationSupportedById,
-} from '../metadata/credential-issuer/credential-issuer-metadata'
+import { getKnownCredentialConfigurationSupportedById } from '../metadata/credential-issuer/credential-issuer-metadata'
 import type { CredentialConfigurationSupportedWithFormats } from '../metadata/credential-issuer/z-credential-issuer-metadata'
 import type { IssuerMetadataResult } from '../metadata/fetch-issuer-metadata'
 import {
-  type CredentialRequest,
-  type CredentialRequestFormatSpecific,
   allCredentialRequestFormatIdentifiers,
   allCredentialRequestFormats,
+  type CredentialRequest,
+  type CredentialRequestFormatSpecific,
   zCredentialRequest,
 } from './z-credential-request'
 import {
-  type CredentialRequestProofsFormatSpecific,
   allCredentialRequestProofs,
+  type CredentialRequestProofsFormatSpecific,
+  type CredentialResponseEncryption,
   zCredentialRequestProofs,
 } from './z-credential-request-common'
 
@@ -75,6 +73,16 @@ export interface ParseCredentialRequestReturn {
    * undefined you can still handle the request by using this object directly.
    */
   credentialRequest: CredentialRequest
+
+  /**
+   * If the request includes `credential_response_encryption`, this contains the
+   * encryption parameters the client expects the issuer to use for encrypting the response.
+   *
+   * When defined, the issuer should encrypt the credential response using the provided
+   * JWK, algorithm, and content encryption algorithm, and return it with
+   * `Content-Type: application/jwt`.
+   */
+  credentialResponseEncryption?: CredentialResponseEncryption
 }
 
 export function parseCredentialRequest(options: ParseCredentialRequestOptions): ParseCredentialRequestReturn {
@@ -83,7 +91,7 @@ export function parseCredentialRequest(options: ParseCredentialRequestOptions): 
     options.credentialRequest,
     'Error validating credential request'
   )
-  let proofs: CredentialRequestProofsFormatSpecific | undefined = undefined
+  let proofs: CredentialRequestProofsFormatSpecific | undefined
 
   // Try to parse the known proofs from the `proofs` object
   const knownProofs = zCredentialRequestProofs.strict().safeParse(credentialRequest.proofs)
@@ -99,22 +107,20 @@ export function parseCredentialRequest(options: ParseCredentialRequestOptions): 
     proofs = { [attestationProofTypeIdentifier]: [knownProof.data.attestation] }
   }
 
-  if (credentialRequest.credential_configuration_id) {
-    // This will throw an error if the credential configuration does not exist
-    getCredentialConfigurationSupportedById(
-      options.issuerMetadata.credentialIssuer.credential_configurations_supported,
-      credentialRequest.credential_configuration_id
-    )
+  const credentialResponseEncryption = credentialRequest.credential_response_encryption
 
-    const credentialConfigurations = extractKnownCredentialConfigurationSupportedFormats(
-      options.issuerMetadata.credentialIssuer.credential_configurations_supported
-    )
+  if (credentialRequest.credential_configuration_id) {
+    // This will throw an error if the credential configuration does not exist or is not valid
+    getKnownCredentialConfigurationSupportedById(options.issuerMetadata, credentialRequest.credential_configuration_id)
+
+    const credentialConfigurations = options.issuerMetadata.knownCredentialConfigurations
 
     return {
       credentialConfiguration: credentialConfigurations[credentialRequest.credential_configuration_id],
       credentialConfigurationId: credentialRequest.credential_configuration_id,
       credentialRequest,
       proofs,
+      credentialResponseEncryption,
     }
   }
 
@@ -123,6 +129,7 @@ export function parseCredentialRequest(options: ParseCredentialRequestOptions): 
       credentialIdentifier: credentialRequest.credential_identifier,
       credentialRequest,
       proofs,
+      credentialResponseEncryption,
     }
   }
 
@@ -141,11 +148,13 @@ export function parseCredentialRequest(options: ParseCredentialRequestOptions): 
       ),
       credentialRequest,
       proofs,
+      credentialResponseEncryption,
     }
   }
 
   return {
     credentialRequest,
     proofs,
+    credentialResponseEncryption,
   }
 }

@@ -1,5 +1,5 @@
 import { describe, test } from 'vitest'
-import type { CredentialConfigurationSupportedWithFormats } from '../../../index.js'
+import type { CredentialConfigurationSupportedWithFormats } from '../../../index'
 
 describe('Credential Configuration Types', () => {
   // This is a type infer test, no actual code test
@@ -11,26 +11,26 @@ describe('Credential Configuration Types', () => {
 
     if (credentialConfiguration.format === 'vc+sd-jwt') {
       if (credentialConfiguration.vct) {
-        const vct: string = credentialConfiguration.vct
+        const _vct: string = credentialConfiguration.vct
       } else if (credentialConfiguration.credential_definition) {
-        const type: string[] = credentialConfiguration.credential_definition.type
+        const _type: string[] = credentialConfiguration.credential_definition.type
       }
     }
 
     if (credentialConfiguration.format === 'jwt_vc_json-ld') {
-      const context: string[] = credentialConfiguration.credential_definition['@context']
+      const _context: string[] = credentialConfiguration.credential_definition['@context']
     }
 
     if (credentialConfiguration.format === 'ldp_vc') {
-      const context: string[] = credentialConfiguration.credential_definition['@context']
+      const _context: string[] = credentialConfiguration.credential_definition['@context']
     }
 
     if (credentialConfiguration.format === 'jwt_vc_json') {
-      const type: string[] = credentialConfiguration.credential_definition.type
+      const _type: string[] = credentialConfiguration.credential_definition.type
     }
 
     if (credentialConfiguration.format === 'mso_mdoc') {
-      const doctype: string = credentialConfiguration.doctype
+      const _doctype: string = credentialConfiguration.doctype
     }
   })
 })

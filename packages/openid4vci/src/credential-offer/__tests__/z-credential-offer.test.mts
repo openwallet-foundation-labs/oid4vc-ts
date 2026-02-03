@@ -1,6 +1,6 @@
 import { preAuthorizedCodeGrantIdentifier } from '@openid4vc/oauth2'
 import { describe, expect, test } from 'vitest'
-import { zCredentialOfferObject, zCredentialOfferObjectDraft11To14 } from '../z-credential-offer.js'
+import { zCredentialOfferObject, zCredentialOfferObjectDraft11To14 } from '../z-credential-offer'
 
 describe('Credential Offer', () => {
   test('parse draft 14 credential offer', () => {
@@ -95,7 +95,7 @@ describe('Credential Offer', () => {
     })
 
     expect(parseResult.success).toBe(false)
-    expect(parseResult.error?.errors).toMatchInlineSnapshot(`
+    expect(parseResult.error?.issues).toMatchInlineSnapshot(`
       [
         {
           "code": "invalid_type",
@@ -105,7 +105,6 @@ describe('Credential Offer', () => {
             "credentials",
             0,
           ],
-          "received": "object",
         },
       ]
     `)

@@ -1,4 +1,3 @@
-// biome-ignore lint/style/useNodejsImportProtocol: also imported in other environments
 import { Buffer } from 'buffer'
 
 export function decodeUtf8String(string: string): Uint8Array {

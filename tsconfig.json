@@ -1,14 +1,15 @@
 {
   "compilerOptions": {
-    "module": "Node16",
+    "module": "es2022",
     "target": "ES2020",
+    "moduleResolution": "bundler",
     "declaration": true,
     "sourceMap": true,
     "strict": true,
     "skipLibCheck": true,
     "noEmitOnError": true,
     "lib": ["ES2020", "DOM.Iterable", "DOM"],
-    "types": [],
+    "types": ["node"],
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true
   },

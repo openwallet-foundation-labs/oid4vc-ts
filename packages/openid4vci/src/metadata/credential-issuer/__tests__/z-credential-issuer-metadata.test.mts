@@ -1,11 +1,11 @@
 import { describe, expect, test } from 'vitest'
-import type { ZodInvalidUnionIssue } from 'zod'
-import { paradymDraft13 } from '../../../__tests__/__fixtures__/paradym.js'
+import type { $ZodIssueInvalidUnion } from 'zod/v4/core'
+import { paradymDraft13 } from '../../../__tests__/__fixtures__/paradym'
 import {
   zCredentialConfigurationSupportedWithFormats,
   zCredentialIssuerMetadata,
-  zCredentialIssuerMetadataDraft11To16,
-} from '../z-credential-issuer-metadata.js'
+  zCredentialIssuerMetadataDraft11ToV1,
+} from '../z-credential-issuer-metadata'
 
 describe('Credential Issuer Metadata', () => {
   test('should parse credential configurations supported with format', () => {
@@ -29,13 +29,12 @@ describe('Credential Issuer Metadata', () => {
 
     // Incorrect: sd-jwt without vct
     expect(parseResult.success).toBe(false)
-    expect((parseResult.error?.errors[0] as ZodInvalidUnionIssue)?.unionErrors[0]?.issues[0]).toEqual({
+    expect((parseResult.error?.issues[0] as $ZodIssueInvalidUnion)?.errors[0][0]).toEqual({
       code: 'invalid_type',
       // FIXME(vc+sd-jwt): fix expected to be 'string' when dropping support for legacy vc+sd-jwt format.
       expected: 'object',
-      received: 'undefined',
       path: ['credential_definition'],
-      message: 'Required',
+      message: 'expected object, received undefined',
     })
 
     // Correct: mso mdoc with doctype
@@ -57,19 +56,18 @@ describe('Credential Issuer Metadata', () => {
       // doctype: 'org.iso.18013.5.1.mDL',
     })
     expect(parseResultMdoc.success).toEqual(false)
-    expect(parseResultMdoc.error?.errors[0]).toMatchObject({
+    expect(parseResultMdoc.error?.issues[0]).toMatchObject({
       code: 'invalid_union',
       message: 'Invalid input',
       path: [],
     })
 
-    expect((parseResultMdoc.error?.errors[0] as ZodInvalidUnionIssue).unionErrors[0].issues).toMatchObject([
+    expect((parseResultMdoc.error?.issues[0] as $ZodIssueInvalidUnion).errors[0]).toMatchObject([
       {
         code: 'invalid_type',
         expected: 'string',
-        received: 'undefined',
         path: ['doctype'],
-        message: 'Required',
+        message: 'expected string, received undefined',
       },
     ])
   })
@@ -148,7 +146,7 @@ describe('Credential Issuer Metadata', () => {
 
     const credential_configurations_supported = {
       'sd-jwt': {
-        format: 'vc+sd-jwt',
+        format: 'dc+sd-jwt',
         vct: 'vct-test-id',
         credential_metadata: {
           display: [
@@ -201,11 +199,13 @@ describe('Credential Issuer Metadata', () => {
       'mso-mdoc': {
         format: 'mso_mdoc',
         doctype: 'some.doc.type',
-        credential_signing_alg_values_supported: ['EdDSA', 'ES256'],
+        // For mso_mdoc, JOSE algorithms are transformed to COSE numbers
+        // EdDSA -> -19 (Ed25519), ES256 -> -9 (ESP256)
+        credential_signing_alg_values_supported: [-19, -9],
       },
     }
 
-    const parseResult = zCredentialIssuerMetadataDraft11To16.safeParse({
+    const parseResult = zCredentialIssuerMetadataDraft11ToV1.safeParse({
       credential_endpoint: 'https://credential-issuer.com/credential',
       credential_issuer: 'https://credential-issuer.com',
       credentials_supported,

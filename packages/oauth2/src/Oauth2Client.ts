@@ -1,9 +1,11 @@
 import { objectToQueryParams } from '@openid4vc/utils'
 import {
   type RetrieveAuthorizationCodeAccessTokenOptions,
+  type RetrieveClientCredentialsAccessTokenOptions,
   type RetrievePreAuthorizedCodeAccessTokenOptions,
   type RetrieveRefreshTokenAccessTokenOptions,
   retrieveAuthorizationCodeAccessToken,
+  retrieveClientCredentialsAccessToken,
   retrievePreAuthorizedCodeAccessToken,
   retrieveRefreshTokenAccessToken,
 } from './access-token/retrieve-access-token'
@@ -15,6 +17,11 @@ import {
   type CreateAuthorizationRequestUrlOptions,
   createAuthorizationRequestUrl,
 } from './authorization-request/create-authorization-request'
+import { type ParseAuthorizationResponseOptions, parseAuthorizationResponseRedirectUrl } from './authorization-response'
+import {
+  type VerifyAuthorizationResponseOptions,
+  verifyAuthorizationResponse,
+} from './authorization-response/verify-authorization-response'
 import type { CallbackContext } from './callbacks'
 import { SupportedClientAuthenticationMethod } from './client-authentication'
 import { Oauth2ErrorCodes } from './common/z-oauth2-error'
@@ -102,9 +109,11 @@ export class Oauth2Client {
           authorizationServerMetadata: options.authorizationServerMetadata,
           additionalRequestPayload: options.additionalRequestPayload,
           pkceCodeVerifier: pkce?.codeVerifier,
+          redirectUri: options.redirectUri,
           scope: options.scope,
           resource: options.resource,
           dpop: options.dpop,
+          state: options.state,
         })
       } catch (error) {
         // In this case we resume with the normal auth flow
@@ -128,7 +137,7 @@ export class Oauth2Client {
             dpop: options.dpop
               ? {
                   ...options.dpop,
-                  nonce: dpopNonce,
+                  nonce: dpopNonce ?? undefined,
                 }
               : undefined,
             authorizationRequestUrl,
@@ -147,6 +156,7 @@ export class Oauth2Client {
       pkceCodeVerifier: pkce?.codeVerifier,
       resource: options.resource,
       dpop: options.dpop,
+      state: options.state,
     })
   }
 
@@ -168,6 +178,7 @@ export class Oauth2Client {
       callbacks: this.options.callbacks,
       pkceCodeVerifier: options.pkceCodeVerifier,
       dpop: options.dpop,
+      state: options.state,
     })
   }
 
@@ -237,7 +248,40 @@ export class Oauth2Client {
     return result
   }
 
+  public async retrieveClientCredentialsAccessToken({
+    authorizationServerMetadata,
+    additionalRequestPayload,
+    scope,
+    resource,
+    dpop,
+  }: Omit<RetrieveClientCredentialsAccessTokenOptions, 'callbacks'>) {
+    const result = await retrieveClientCredentialsAccessToken({
+      authorizationServerMetadata,
+      scope,
+      additionalRequestPayload,
+      resource,
+      callbacks: this.options.callbacks,
+      dpop,
+    })
+
+    return result
+  }
+
   public async resourceRequest(options: ResourceRequestOptions) {
     return resourceRequest(options)
+  }
+
+  /**
+   * Parses an authorization response redirect URL into an authorization (error) response.
+   *
+   * Make sure to call `Oauth2Client.verifyAuthorizationResponse` after fetching the session
+   * based on the parsed response, to ensure the authorization response `iss` value is verified.
+   */
+  public parseAuthorizationResponseRedirectUrl(options: ParseAuthorizationResponseOptions) {
+    return parseAuthorizationResponseRedirectUrl(options)
+  }
+
+  public verifyAuthorizationResponse(options: VerifyAuthorizationResponseOptions) {
+    return verifyAuthorizationResponse(options)
   }
 }

@@ -9,10 +9,11 @@ describe('Validation error', () => {
       age: z.number(),
       object: z.object({
         foo: z.object({
-          bar: z.discriminatedUnion('type', [
-            z.object({ type: z.literal('a'), a: z.string() }),
-            z.object({ type: z.literal('b'), b: z.number() }),
-          ]),
+          bar: z.discriminatedUnion(
+            'type',
+            [z.object({ type: z.literal('a'), a: z.string() }), z.object({ type: z.literal('b'), b: z.number() })],
+            { error: `Expected type to be one of 'a' | 'b'` }
+          ),
         }),
       }),
     })
@@ -24,9 +25,9 @@ describe('Validation error', () => {
     const error = new ValidationError('Validation failed', result.error)
     expect(error.message).toMatchInlineSnapshot(`
       "Validation failed
-      	- Required at "name"
-      	- Required at "age"
-      	- Invalid discriminator value. Expected 'a' | 'b' at "object.foo.bar.type""
+      ✖ Expected string, received undefined at "name"
+      ✖ Expected number, received undefined at "age"
+      ✖ Expected type to be one of 'a' | 'b' at "object.foo.bar.type""
     `)
   })
 

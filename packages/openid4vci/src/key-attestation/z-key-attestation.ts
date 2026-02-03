@@ -1,5 +1,5 @@
 import { zJwk, zJwtHeader, zJwtPayload } from '@openid4vc/oauth2'
-import { zInteger } from '@openid4vc/utils'
+import { zNumericDate } from '@openid4vc/utils'
 import z from 'zod'
 
 export type KeyAttestationJwtUse = 'proof_type.jwt' | 'proof_type.attestation'
@@ -15,7 +15,7 @@ export const zKeyAttestationJwtHeader = z
         z.literal('key-attestation+jwt')
       ),
   })
-  .passthrough()
+  .loose()
   .refine(({ kid, jwk }) => jwk === undefined || kid === undefined, {
     message: `Both 'jwk' and 'kid' are defined. Only one is allowed`,
   })
@@ -33,14 +33,14 @@ export const zIso18045OrStringArray = z.array(z.union([zIso18045, z.string()]))
 export const zKeyAttestationJwtPayload = z
   .object({
     ...zJwtPayload.shape,
-    iat: zInteger,
+    iat: zNumericDate,
 
     attested_keys: z.array(zJwk),
     key_storage: z.optional(zIso18045OrStringArray),
     user_authentication: z.optional(zIso18045OrStringArray),
-    certification: z.optional(z.string().url()),
+    certification: z.optional(z.url()),
   })
-  .passthrough()
+  .loose()
 
 export const zKeyAttestationJwtPayloadForUse = <Use extends KeyAttestationJwtUse | undefined>(use?: Use) =>
   z
@@ -56,8 +56,8 @@ export const zKeyAttestationJwtPayloadForUse = <Use extends KeyAttestationJwtUse
           : z.optional(z.string()),
 
       // REQUIRED when used within header of proof_type.jwt
-      exp: use === 'proof_type.jwt' ? zInteger : z.optional(zInteger),
+      exp: use === 'proof_type.jwt' ? zNumericDate : z.optional(zNumericDate),
     })
-    .passthrough()
+    .loose()
 
 export type KeyAttestationJwtPayload = z.infer<typeof zKeyAttestationJwtPayload>

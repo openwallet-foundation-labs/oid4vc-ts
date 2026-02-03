@@ -39,13 +39,20 @@ export const zAuthorizationServerMetadata = z
     // FiPA (no RFC yet)
     authorization_challenge_endpoint: z.optional(zHttpsUrl),
 
+    // OpenID4VCI 1.1 - Interactive Authorization Endpoint
+    interactive_authorization_endpoint: z.optional(zHttpsUrl),
+    require_interactive_authorization_request: z.optional(z.boolean()),
+
     // From OpenID4VCI specification
     'pre-authorized_grant_anonymous_access_supported': z.optional(z.boolean()),
 
     // Attestation Based Client Auth (draft 5)
     client_attestation_pop_nonce_required: z.boolean().optional(),
+
+    // RFC9207
+    authorization_response_iss_parameter_supported: z.boolean().optional(),
   })
-  .passthrough()
+  .loose()
   .refine(
     ({
       introspection_endpoint_auth_methods_supported: methodsSupported,
@@ -57,6 +64,12 @@ export const zAuthorizationServerMetadata = z
       return algValuesSupported !== undefined && algValuesSupported.length > 0
     },
     `Metadata value 'introspection_endpoint_auth_signing_alg_values_supported' must be defined if metadata 'introspection_endpoint_auth_methods_supported' value contains values 'private_key_jwt' or 'client_secret_jwt'`
+  )
+  .refine(
+    // OpenID4VCI 1.1: require_interactive_authorization_request MUST NOT be present if interactive_authorization_endpoint is omitted
+    ({ require_interactive_authorization_request, interactive_authorization_endpoint }) =>
+      !require_interactive_authorization_request || interactive_authorization_endpoint !== undefined,
+    `Metadata value 'require_interactive_authorization_request' MUST NOT be present if 'interactive_authorization_endpoint' is omitted`
   )
 
 export type AuthorizationServerMetadata = z.infer<typeof zAuthorizationServerMetadata>

@@ -12,7 +12,7 @@ const zCredentialRequestProofCommon = z
   .object({
     proof_type: z.string(),
   })
-  .passthrough()
+  .loose()
 
 export const allCredentialRequestProofs = [zCredentialRequestProofJwt, zCredentialRequestProofAttestation] as const
 
@@ -39,6 +39,16 @@ export type CredentialRequestProofsFormatSpecific = z.infer<typeof zCredentialRe
 export type CredentialRequestProofsWithFormat = CredentialRequestProofsCommon & CredentialRequestProofsFormatSpecific
 export type CredentialRequestProofs = z.infer<typeof zCredentialRequestProofs>
 
+export const zCredentialResponseEncryption = z
+  .object({
+    jwk: zJwk,
+    alg: z.string(),
+    enc: z.string(),
+  })
+  .loose()
+
+export type CredentialResponseEncryption = z.infer<typeof zCredentialResponseEncryption>
+
 export const zCredentialRequestCommon = z
   .object({
     proof: zCredentialRequestProof.optional(),
@@ -50,16 +60,9 @@ export const zCredentialRequestCommon = z
         })
     ),
 
-    credential_response_encryption: z
-      .object({
-        jwk: zJwk,
-        alg: z.string(),
-        enc: z.string(),
-      })
-      .passthrough()
-      .optional(),
+    credential_response_encryption: zCredentialResponseEncryption.optional(),
   })
-  .passthrough()
+  .loose()
   // It's not allowed to provide both proof and proofs
   .refine(({ proof, proofs }) => !(proof !== undefined && proofs !== undefined), {
     message: `Both 'proof' and 'proofs' are defined. Only one is allowed`,

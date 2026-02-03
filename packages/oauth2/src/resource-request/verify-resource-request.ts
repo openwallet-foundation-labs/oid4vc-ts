@@ -118,7 +118,7 @@ export async function verifyResourceRequest(options: VerifyResourceRequestOption
 
         // If we found the active token.
         if (tokenPayload.active) break
-      } catch (error) {
+      } catch (_error) {
         // No-op?
       }
     }
@@ -132,7 +132,7 @@ export async function verifyResourceRequest(options: VerifyResourceRequestOption
     })
   }
 
-  let dpopJwk: Jwk | undefined = undefined
+  let dpopJwk: Jwk | undefined
   if (
     scheme === SupportedAuthenticationScheme.DPoP ||
     // two alternative methods to determine whether DPoP was used. As the user can
@@ -186,7 +186,7 @@ export async function verifyResourceRequest(options: VerifyResourceRequestOption
     } catch (error) {
       const errorMessage = error instanceof Oauth2Error ? error.message : 'Error verifying DPoP jwt'
       throw new Oauth2ResourceUnauthorizedError(
-        `Error occured during verification of jwt profile access token: ${error instanceof Error ? error.message : error}`,
+        `Error occurred during verification of jwt profile access token: ${error instanceof Error ? error.message : error}`,
         {
           scheme,
           error: Oauth2ErrorCodes.InvalidDpopProof,

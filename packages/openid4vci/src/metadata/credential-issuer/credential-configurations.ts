@@ -4,8 +4,12 @@ import type z from 'zod'
 import { Openid4vciError } from '../../error/Openid4vciError'
 import type { IssuerMetadataResult } from '../fetch-issuer-metadata'
 import {
+  type IssuerMetadataClaimsDescription,
+  zCredentialConfigurationSupportedClaimsDraft14,
+} from './z-claims-description'
+import {
   type CredentialConfigurationsSupported,
-  zCredentialConfigurationSupportedDraft11To16,
+  zCredentialConfigurationSupportedDraft11ToV1,
 } from './z-credential-issuer-metadata'
 
 export interface ExtractScopesForCredentialConfigurationIdsOptions {
@@ -62,7 +66,7 @@ export function extractScopesForCredentialConfigurationIds(
  * @throws if a credentials supported entry with invalid structure or format specific properties is passed
  */
 export function credentialsSupportedToCredentialConfigurationsSupported(
-  credentialsSupported: Array<z.input<typeof zCredentialConfigurationSupportedDraft11To16>>
+  credentialsSupported: Array<z.input<typeof zCredentialConfigurationSupportedDraft11ToV1>>
 ) {
   const credentialConfigurationsSupported: CredentialConfigurationsSupported = {}
 
@@ -74,7 +78,7 @@ export function credentialsSupportedToCredentialConfigurationsSupported(
       )
     }
 
-    const parseResult = zCredentialConfigurationSupportedDraft11To16.safeParse(credentialSupported)
+    const parseResult = zCredentialConfigurationSupportedDraft11ToV1.safeParse(credentialSupported)
     if (!parseResult.success) {
       throw new ValidationError(
         `Error transforming credential supported with id '${credentialSupported.id}' to credential configuration supported format`,
@@ -86,4 +90,80 @@ export function credentialsSupportedToCredentialConfigurationsSupported(
   }
 
   return credentialConfigurationsSupported
+}
+
+/**
+ * Transforms draft 14 claims object syntax to the new array-based claims description syntax
+ *
+ * @param claims - The claims object in draft 14 format
+ * @returns Array of claims descriptions or undefined if validation fails
+ */
+export function claimsObjectToClaimsArray(claims: unknown): Array<IssuerMetadataClaimsDescription> | undefined {
+  // Validate input
+  const parseResult = zCredentialConfigurationSupportedClaimsDraft14.safeParse(claims)
+  if (!parseResult.success) {
+    return undefined
+  }
+
+  const result: Array<IssuerMetadataClaimsDescription> = []
+
+  /**
+   * Recursively process claims object, building up the path from parent keys
+   */
+  function processClaimsObject(
+    claimsObj: Record<string, unknown>,
+    parentPath: Array<string | number | null> = []
+  ): void {
+    for (const [key, value] of Object.entries(claimsObj)) {
+      const currentPath = [...parentPath, key]
+
+      // Check if this is a leaf node (has claim properties like mandatory, value_type, display)
+      if (
+        value &&
+        typeof value === 'object' &&
+        !Array.isArray(value) &&
+        ('mandatory' in value || 'value_type' in value || 'display' in value)
+      ) {
+        const claimValue = value as Record<string, unknown>
+
+        // Create the claim description
+        const claimDescription: IssuerMetadataClaimsDescription = {
+          path: currentPath as [string | number | null, ...(string | number | null)[]],
+        }
+
+        // Add optional properties
+        if (typeof claimValue.mandatory === 'boolean') {
+          claimDescription.mandatory = claimValue.mandatory
+        }
+
+        if (Array.isArray(claimValue.display)) {
+          claimDescription.display = claimValue.display as Array<{
+            name?: string
+            locale?: string
+          }>
+        }
+
+        // Note: value_type is not included in the new syntax
+
+        result.push(claimDescription)
+
+        // Check if there are nested claims (excluding the known properties)
+        const nestedClaims = Object.entries(claimValue).filter(
+          ([k]) => k !== 'mandatory' && k !== 'value_type' && k !== 'display'
+        )
+
+        if (nestedClaims.length > 0) {
+          const nestedObj = Object.fromEntries(nestedClaims)
+          processClaimsObject(nestedObj, currentPath)
+        }
+      } else if (value && typeof value === 'object' && !Array.isArray(value)) {
+        // This is a nested object without claim properties, recurse
+        processClaimsObject(value as Record<string, unknown>, currentPath)
+      }
+    }
+  }
+
+  processClaimsObject(parseResult.data)
+
+  return result
 }

@@ -1,5 +1,8 @@
 import z from 'zod'
-import { zCredentialConfigurationSupportedClaimsDraft14 } from '../../../metadata/credential-issuer/z-claims-description'
+import {
+  zCredentialConfigurationSupportedClaimsDraft14,
+  zIssuerMetadataClaimsDescription,
+} from '../../../metadata/credential-issuer/z-claims-description'
 import {
   zCredentialConfigurationSupportedCommon,
   zCredentialConfigurationSupportedCommonCredentialMetadata,
@@ -25,13 +28,14 @@ export type LegacySdJwtVcFormatIdentifier = z.infer<typeof zLegacySdJwtVcFormatI
  * of the OpenID for Verifiable Presentations specification. Please update your
  * implementations accordingly.
  */
-export const zLegacySdJwtVcCredentialIssuerMetadataDraft16 = zCredentialConfigurationSupportedCommon.extend({
+export const zLegacySdJwtVcCredentialIssuerMetadataV1 = zCredentialConfigurationSupportedCommon.extend({
   vct: z.string(),
   format: zLegacySdJwtVcFormatIdentifier,
   order: z.optional(z.array(z.string())),
+  credential_signing_alg_values_supported: z.array(z.string()).optional(),
   credential_metadata: zCredentialConfigurationSupportedCommonCredentialMetadata
     .extend({
-      claims: z.array(zCredentialConfigurationSupportedClaimsDraft14).optional(),
+      claims: z.array(zIssuerMetadataClaimsDescription).optional(),
     })
     .optional(),
   credential_definition: z.optional(z.never()),

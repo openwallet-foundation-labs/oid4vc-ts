@@ -1,4 +1,4 @@
-import { type Fetch, URL, joinUriParts } from '@openid4vc/utils'
+import { type Fetch, joinUriParts, OpenId4VcBaseError, URL } from '@openid4vc/utils'
 import { Oauth2Error } from '../../error/Oauth2Error'
 import { fetchWellKnownMetadata } from '../fetch-well-known-metadata'
 import { type AuthorizationServerMetadata, zAuthorizationServerMetadata } from './z-authorization-server-metadata'
@@ -14,32 +14,13 @@ export async function fetchAuthorizationServerMetadata(
   issuer: string,
   fetch?: Fetch
 ): Promise<AuthorizationServerMetadata | null> {
-  const openIdConfigurationWellKnownMetadataUrl = joinUriParts(issuer, [wellKnownOpenIdConfigurationServerSuffix])
-
   const parsedIssuerUrl = new URL(issuer)
 
+  const openIdConfigurationWellKnownMetadataUrl = joinUriParts(issuer, [wellKnownOpenIdConfigurationServerSuffix])
   const authorizationServerWellKnownMetadataUrl = joinUriParts(parsedIssuerUrl.origin, [
     wellKnownAuthorizationServerSuffix,
     parsedIssuerUrl.pathname,
   ])
-
-  // First try oauth-authorization-server
-  const authorizationServerResult = await fetchWellKnownMetadata(
-    authorizationServerWellKnownMetadataUrl,
-    zAuthorizationServerMetadata,
-    fetch
-  )
-
-  if (authorizationServerResult) {
-    if (authorizationServerResult.issuer !== issuer) {
-      // issuer param MUST match
-      throw new Oauth2Error(
-        `The 'issuer' parameter '${authorizationServerResult.issuer}' in the well known authorization server metadata at '${authorizationServerWellKnownMetadataUrl}' does not match the provided issuer '${issuer}'.`
-      )
-    }
-
-    return authorizationServerResult
-  }
 
   // NOTE: there is a difference in how to construct well-known OAuth2 and well-known openid
   // url. For OAuth you place `.well-known/oauth-authorization-server` between the origin and
@@ -47,43 +28,64 @@ export async function fetchAuthorizationServerMetadata(
   // host as well), and thus we use this as a last fallback if it's different for now (in case of subpath).
   const nonCompliantAuthorizationServerWellKnownMetadataUrl = joinUriParts(issuer, [wellKnownAuthorizationServerSuffix])
 
-  const alternativeAuthorizationServerResult =
-    nonCompliantAuthorizationServerWellKnownMetadataUrl !== authorizationServerWellKnownMetadataUrl
-      ? await fetchWellKnownMetadata(
-          nonCompliantAuthorizationServerWellKnownMetadataUrl,
-          zAuthorizationServerMetadata,
-          fetch
-        )
-      : undefined
+  let firstError: Error | null = null
 
-  if (alternativeAuthorizationServerResult) {
-    if (alternativeAuthorizationServerResult.issuer !== issuer) {
-      // issuer param MUST match
-      throw new Oauth2Error(
-        `The 'issuer' parameter '${alternativeAuthorizationServerResult.issuer}' in the well known authorization server metadata at '${nonCompliantAuthorizationServerWellKnownMetadataUrl}' does not match the provided issuer '${issuer}'.`
-      )
-    }
-
-    return alternativeAuthorizationServerResult
-  }
-
-  const openIdConfigurationResult = await fetchWellKnownMetadata(
-    openIdConfigurationWellKnownMetadataUrl,
+  // First try oauth-authorization-server
+  let authorizationServerResult = await fetchWellKnownMetadata(
+    authorizationServerWellKnownMetadataUrl,
     zAuthorizationServerMetadata,
-    fetch
-  )
-
-  // issuer param MUST match
-  if (openIdConfigurationResult) {
-    if (openIdConfigurationResult.issuer !== issuer) {
-      throw new Oauth2Error(
-        `The 'issuer' parameter '${openIdConfigurationResult.issuer}' in the well known openid configuration metadata at '${openIdConfigurationWellKnownMetadataUrl}' does not match the provided issuer '${issuer}'.`
-      )
+    {
+      fetch,
     }
-    return openIdConfigurationResult
+  ).catch((error) => {
+    if (error instanceof OpenId4VcBaseError) throw error
+
+    // An exception occurs if a CORS-policy blocks the request, i.e. because the URL is invalid due to the legacy path being used
+    // The legacy path should still be tried therefore we store the first error to rethrow it later if needed
+    firstError = error
+  })
+
+  if (
+    !authorizationServerResult &&
+    nonCompliantAuthorizationServerWellKnownMetadataUrl !== authorizationServerWellKnownMetadataUrl
+  ) {
+    authorizationServerResult = await fetchWellKnownMetadata(
+      nonCompliantAuthorizationServerWellKnownMetadataUrl,
+      zAuthorizationServerMetadata,
+      {
+        fetch,
+      }
+    ).catch((error) => {
+      // Similar to above, if there was a library error, we throw it.
+      // However in other cases we swallow it, we only keep the first error
+      if (error instanceof OpenId4VcBaseError) throw error
+    })
   }
 
-  return null
+  if (!authorizationServerResult) {
+    authorizationServerResult = await fetchWellKnownMetadata(
+      openIdConfigurationWellKnownMetadataUrl,
+      zAuthorizationServerMetadata,
+      {
+        fetch,
+      }
+    ).catch((error) => {
+      throw firstError ?? error
+    })
+  }
+
+  if (!authorizationServerResult && firstError) {
+    throw firstError
+  }
+
+  if (authorizationServerResult && authorizationServerResult.issuer !== issuer) {
+    // issuer param MUST match
+    throw new Oauth2Error(
+      `The 'issuer' parameter '${authorizationServerResult.issuer}' in the well known authorization server metadata at '${authorizationServerWellKnownMetadataUrl}' does not match the provided issuer '${issuer}'.`
+    )
+  }
+
+  return authorizationServerResult
 }
 
 export function getAuthorizationServerMetadataFromList(

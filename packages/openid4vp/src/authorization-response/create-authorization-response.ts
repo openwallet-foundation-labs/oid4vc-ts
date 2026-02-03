@@ -1,12 +1,12 @@
 import {
   type CallbackContext,
+  fetchJwks,
   type Jwk,
   type JwkSet,
   type JwtSigner,
   Oauth2Error,
   Oauth2ErrorCodes,
   Oauth2ServerErrorResponseError,
-  fetchJwks,
 } from '@openid4vc/oauth2'
 import { dateToSeconds, encodeToBase64Url } from '@openid4vc/utils'
 import { addSecondsToDate } from '../../../utils/src/date'

@@ -15,6 +15,7 @@ export type MsoMdocFormatIdentifier = z.infer<typeof zMsoMdocFormatIdentifier>
 export const zMsoMdocCredentialIssuerMetadata = zCredentialConfigurationSupportedCommon.extend({
   format: zMsoMdocFormatIdentifier,
   doctype: z.string(),
+  credential_signing_alg_values_supported: z.array(z.number()).optional(),
   credential_metadata: zCredentialConfigurationSupportedCommonCredentialMetadata
     .extend({
       claims: z.array(zMsoMdocIssuerMetadataClaimsDescription).optional(),
@@ -39,5 +40,5 @@ export const zMsoMdocCredentialRequestFormatDraft14 = z.object({
   format: zMsoMdocFormatIdentifier,
   doctype: z.string(),
   // Format based request is removed in Draft 15, so only old claims syntax supported.
-  claims: z.optional(zCredentialConfigurationSupportedClaimsDraft14),
+  claims: zCredentialConfigurationSupportedClaimsDraft14.optional(),
 })

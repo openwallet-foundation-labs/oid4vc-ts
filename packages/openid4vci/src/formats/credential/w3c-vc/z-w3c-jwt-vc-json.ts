@@ -12,9 +12,9 @@ export type JwtVcJsonFormatIdentifier = z.infer<typeof zJwtVcJsonFormatIdentifie
 
 const zJwtVcJsonCredentialDefinition = z
   .object({
-    type: z.array(z.string()).nonempty(),
+    type: z.tuple([z.string()], z.string()),
   })
-  .passthrough()
+  .loose()
 
 const zJwtVcJsonCredentialDefinitionDraft14 = zJwtVcJsonCredentialDefinition.extend({
   credentialSubject: zW3cVcCredentialSubjectDraft14.optional(),
@@ -23,9 +23,10 @@ const zJwtVcJsonCredentialDefinitionDraft14 = zJwtVcJsonCredentialDefinition.ext
 export const zJwtVcJsonCredentialIssuerMetadata = zCredentialConfigurationSupportedCommon.extend({
   format: zJwtVcJsonFormatIdentifier,
   credential_definition: zJwtVcJsonCredentialDefinition,
+  credential_signing_alg_values_supported: z.array(z.string()).optional(),
   credential_metadata: zCredentialConfigurationSupportedCommonCredentialMetadata
     .extend({
-      claims: zIssuerMetadataClaimsDescription.optional(),
+      claims: z.array(zIssuerMetadataClaimsDescription).optional(),
     })
     .optional(),
 })
@@ -33,7 +34,7 @@ export const zJwtVcJsonCredentialIssuerMetadata = zCredentialConfigurationSuppor
 export const zJwtVcJsonCredentialIssuerMetadataDraft15 = zCredentialConfigurationSupportedCommonDraft15.extend({
   format: zJwtVcJsonFormatIdentifier,
   credential_definition: zJwtVcJsonCredentialDefinition,
-  claims: zIssuerMetadataClaimsDescription.optional(),
+  claims: z.array(zIssuerMetadataClaimsDescription).optional(),
 })
 
 export const zJwtVcJsonCredentialIssuerMetadataDraft14 = zCredentialConfigurationSupportedCommonDraft15.extend({
@@ -48,10 +49,10 @@ export const zJwtVcJsonCredentialIssuerMetadataDraft11 = z
     order: z.array(z.string()).optional(),
     // Credential definition was spread on top level instead of a separatey property in v11
     // As well as using types instead of type
-    types: z.array(z.string()),
+    types: z.tuple([z.string()], z.string()),
     credentialSubject: zW3cVcCredentialSubjectDraft14.optional(),
   })
-  .passthrough()
+  .loose()
 
 export const zJwtVcJsonCredentialIssuerMetadataDraft11To14 = zJwtVcJsonCredentialIssuerMetadataDraft11.transform(
   ({ types, credentialSubject, ...rest }) => ({
@@ -65,7 +66,7 @@ export const zJwtVcJsonCredentialIssuerMetadataDraft11To14 = zJwtVcJsonCredentia
 )
 
 export const zJwtVcJsonCredentialIssuerMetadataDraft14To11 = zJwtVcJsonCredentialIssuerMetadataDraft14
-  .passthrough()
+  .loose()
   .transform(({ credential_definition: { type, ...credentialDefinition }, ...rest }) => ({
     ...rest,
     types: type,
@@ -83,10 +84,10 @@ export const zJwtVcJsonCredentialRequestDraft11 = z
     format: zJwtVcJsonFormatIdentifier,
     // Credential definition was spread on top level instead of a separatey property in v11
     // As well as using types instead of type
-    types: z.array(z.string()),
+    types: z.tuple([z.string()], z.string()),
     credentialSubject: z.optional(zW3cVcCredentialSubjectDraft14),
   })
-  .passthrough()
+  .loose()
 
 export const zJwtVcJsonCredentialRequestDraft11To14 = zJwtVcJsonCredentialRequestDraft11.transform(
   ({ types, credentialSubject, ...rest }) => {
@@ -102,7 +103,7 @@ export const zJwtVcJsonCredentialRequestDraft11To14 = zJwtVcJsonCredentialReques
 )
 
 export const zJwtVcJsonCredentialRequestDraft14To11 = zJwtVcJsonCredentialRequestFormatDraft14
-  .passthrough()
+  .loose()
   .transform(({ credential_definition: { type, ...credentialDefinition }, ...rest }) => ({
     ...rest,
     types: type,

@@ -1,13 +1,22 @@
-import { ContentType, Headers, createZodFetcher, objectToQueryParams, parseWithErrorHandling } from '@openid4vc/utils'
-import { InvalidFetchResponseError } from '@openid4vc/utils'
+import {
+  ContentType,
+  createZodFetcher,
+  Headers,
+  InvalidFetchResponseError,
+  objectToQueryParams,
+  parseWithErrorHandling,
+} from '@openid4vc/utils'
 import { ValidationError } from '../../../utils/src/error/ValidationError'
 import type { CallbackContext } from '../callbacks'
-import { type RequestDpopOptions, createDpopHeadersForRequest, extractDpopNonceFromHeaders } from '../dpop/dpop'
+import { createDpopHeadersForRequest, extractDpopNonceFromHeaders, type RequestDpopOptions } from '../dpop/dpop'
 import { authorizationServerRequestWithDpopRetry } from '../dpop/dpop-retry'
 import { Oauth2ClientErrorResponseError } from '../error/Oauth2ClientErrorResponseError'
+import { Oauth2Error } from '../error/Oauth2Error'
 import type { AuthorizationServerMetadata } from '../metadata/authorization-server/z-authorization-server-metadata'
 import {
   authorizationCodeGrantIdentifier,
+  clientCredentialsGrantIdentifier,
+  getGrantTypesSupported,
   preAuthorizedCodeGrantIdentifier,
   refreshTokenGrantIdentifier,
 } from '../z-grant-type'
@@ -159,6 +168,38 @@ export async function retrieveRefreshTokenAccessToken(
   })
 }
 
+export interface RetrieveClientCredentialsAccessTokenOptions extends RetrieveAccessTokenBaseOptions {
+  /**
+   * The scope of the access request
+   */
+  scope?: string
+
+  /**
+   * Additional payload to include in the access token request. Items will be encoded and sent
+   * using x-www-form-urlencoded format. Nested items (JSON) will be stringified and url encoded.
+   */
+  additionalRequestPayload?: Record<string, unknown>
+}
+
+export async function retrieveClientCredentialsAccessToken(
+  options: RetrieveClientCredentialsAccessTokenOptions
+): Promise<RetrieveAccessTokenReturn> {
+  const request = {
+    grant_type: clientCredentialsGrantIdentifier,
+    scope: options.scope,
+    resource: options.resource,
+    ...options.additionalRequestPayload,
+  } satisfies AccessTokenRequest
+
+  return retrieveAccessToken({
+    authorizationServerMetadata: options.authorizationServerMetadata,
+    request,
+    dpop: options.dpop,
+    callbacks: options.callbacks,
+    resource: options.resource,
+  })
+}
+
 interface RetrieveAccessTokenOptions extends RetrieveAccessTokenBaseOptions {
   /**
    * The access token request body
@@ -177,6 +218,13 @@ async function retrieveAccessToken(options: RetrieveAccessTokenOptions): Promise
     options.request,
     'Error validating access token request'
   )
+
+  const supportedGrantTypes = getGrantTypesSupported(options.authorizationServerMetadata.grant_types_supported)
+  if (!supportedGrantTypes.includes(accessTokenRequest.grant_type)) {
+    throw new Oauth2Error(
+      `The authorization server '${options.authorizationServerMetadata.issuer}' does not support the '${accessTokenRequest.grant_type}' grant type. Supported grant types are: ${supportedGrantTypes.join(', ')}`
+    )
+  }
 
   // For backwards compat with draft 11 (we send both)
   if (accessTokenRequest.tx_code) {

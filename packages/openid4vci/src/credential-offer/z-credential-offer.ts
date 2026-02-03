@@ -12,7 +12,7 @@ const zTxCode = z
     length: z.number().int().optional(),
     description: z.string().max(300).optional(),
   })
-  .passthrough()
+  .loose()
 
 export type CredentialOfferPreAuthorizedCodeGrantTxCode = z.input<typeof zTxCode>
 
@@ -23,7 +23,7 @@ export const zCredentialOfferGrants = z
         issuer_state: z.string().optional(),
         authorization_server: zHttpsUrl.optional(),
       })
-      .passthrough()
+      .loose()
       .optional(),
     [preAuthorizedCodeGrantIdentifier]: z
       .object({
@@ -31,10 +31,10 @@ export const zCredentialOfferGrants = z
         tx_code: zTxCode.optional(),
         authorization_server: zHttpsUrl.optional(),
       })
-      .passthrough()
+      .loose()
       .optional(),
   })
-  .passthrough()
+  .loose()
 
 export type CredentialOfferGrants = z.input<typeof zCredentialOfferGrants>
 
@@ -47,7 +47,7 @@ const zCredentialOfferObjectDraft14 = z
     credential_configuration_ids: z.array(z.string()),
     grants: z.optional(zCredentialOfferGrants),
   })
-  .passthrough()
+  .loose()
 export type CredentialOfferObject = z.input<typeof zCredentialOfferObjectDraft14>
 
 export const zCredentialOfferObjectDraft11To14 = z
@@ -67,12 +67,12 @@ export const zCredentialOfferObjectDraft11To14 = z
             'pre-authorized_code': z.string(),
             user_pin_required: z.optional(z.boolean()),
           })
-          .passthrough()
+          .loose()
           .optional(),
       })
     ),
   })
-  .passthrough()
+  .loose()
   .transform(({ credentials, grants, ...rest }) => {
     const v14: CredentialOfferObject = {
       ...rest,

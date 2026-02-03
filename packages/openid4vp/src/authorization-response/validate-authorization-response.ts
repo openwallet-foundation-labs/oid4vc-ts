@@ -1,12 +1,16 @@
 import { Oauth2Error } from '@openid4vc/oauth2'
 import type { Openid4vpAuthorizationRequest } from '../authorization-request/z-authorization-request'
 import type { Openid4vpAuthorizationRequestDcApi } from '../authorization-request/z-authorization-request-dc-api'
+import type { Openid4vpAuthorizationRequestIae } from '../authorization-request/z-authorization-request-iae'
 import { parseDcqlVpToken, parsePexVpToken } from '../vp-token/parse-vp-token'
 import type { ValidateOpenid4VpAuthorizationResponseResult } from './validate-authorization-response-result'
 import type { Openid4vpAuthorizationResponse } from './z-authorization-response'
 
 export interface ValidateOpenid4vpAuthorizationResponseOptions {
-  authorizationRequestPayload: Openid4vpAuthorizationRequest | Openid4vpAuthorizationRequestDcApi
+  authorizationRequestPayload:
+    | Openid4vpAuthorizationRequest
+    | Openid4vpAuthorizationRequestDcApi
+    | Openid4vpAuthorizationRequestIae
   authorizationResponsePayload: Openid4vpAuthorizationResponse
 }
 

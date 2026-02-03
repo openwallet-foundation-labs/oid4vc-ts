@@ -1,7 +1,13 @@
-import { type Jwk, type JwtSigner, decodeJwt, jwtHeaderFromJwtSigner } from '@openid4vc/oauth2'
-
-import { type CallbackContext, jwtSignerFromJwt, verifyJwt } from '@openid4vc/oauth2'
-import { type StringWithAutoCompletion, dateToSeconds, parseWithErrorHandling } from '@openid4vc/utils'
+import {
+  type CallbackContext,
+  decodeJwt,
+  type Jwk,
+  type JwtSigner,
+  jwtHeaderFromJwtSigner,
+  jwtSignerFromJwt,
+  verifyJwt,
+} from '@openid4vc/oauth2'
+import { dateToSeconds, parseWithErrorHandling, type StringWithAutoCompletion } from '@openid4vc/utils'
 import { Openid4vciError } from '../error/Openid4vciError'
 import {
   type Iso18045,

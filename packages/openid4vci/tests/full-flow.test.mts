@@ -1,4 +1,7 @@
 import {
+  authorizationCodeGrantIdentifier,
+  calculateJwkThumbprint,
+  clientAuthenticationClientAttestationJwt,
   HashAlgorithm,
   type Jwk,
   type JwkSet,
@@ -6,25 +9,23 @@ import {
   Oauth2Client,
   Oauth2ResourceServer,
   PkceCodeChallengeMethod,
-  SupportedAuthenticationScheme,
-  authorizationCodeGrantIdentifier,
-  calculateJwkThumbprint,
-  clientAuthenticationClientAttestationJwt,
   preAuthorizedCodeGrantIdentifier,
+  SupportedAuthenticationScheme,
+  SupportedClientAuthenticationMethod,
 } from '@openid4vc/oauth2'
-import { SupportedClientAuthenticationMethod } from '@openid4vc/oauth2'
-import { ContentType, type HttpMethod, addSecondsToDate, decodeUtf8String, encodeToBase64Url } from '@openid4vc/utils'
-import { http, HttpResponse } from 'msw'
+import { addSecondsToDate, ContentType, decodeUtf8String, encodeToBase64Url, type HttpMethod } from '@openid4vc/utils'
+import { HttpResponse, http } from 'msw'
 import { setupServer } from 'msw/node'
 import { afterAll, afterEach, beforeAll, describe, expect, test } from 'vitest'
 import { getSignJwtCallback, parseXwwwFormUrlEncoded, callbacks as partialCallbacks } from '../../oauth2/tests/util.mjs'
 import {
   type CredentialConfigurationSupportedWithFormats,
-  Openid4vciClient,
-  Openid4vciDraftVersion,
-  Openid4vciIssuer,
-  Openid4vciWalletProvider,
   extractScopesForCredentialConfigurationIds,
+  type IssuerMetadataResult,
+  Openid4vciClient,
+  Openid4vciIssuer,
+  Openid4vciVersion,
+  Openid4vciWalletProvider,
 } from '../src/index.js'
 
 const dpopJwk = {
@@ -93,6 +94,8 @@ const authorizationServerMetadata = authorizationServer.createAuthorizationServe
   pushed_authorization_request_endpoint: 'https://oauth2-auth-server.com/par',
   code_challenge_methods_supported: [PkceCodeChallengeMethod.S256],
   token_endpoint_auth_methods_supported: [SupportedClientAuthenticationMethod.ClientAttestationJwt],
+  authorization_response_iss_parameter_supported: true,
+  grant_types_supported: [authorizationCodeGrantIdentifier, preAuthorizedCodeGrantIdentifier],
 })
 
 const credentialConfigurationsSupported = {
@@ -120,7 +123,9 @@ const credentialIssuerMetadata = issuer.createCredentialIssuerMetadata({
 const issuerMetadata = {
   credentialIssuer: credentialIssuerMetadata,
   authorizationServers: [authorizationServerMetadata],
-}
+  originalDraftVersion: Openid4vciVersion.Draft14,
+  knownCredentialConfigurations: credentialConfigurationsSupported,
+} satisfies IssuerMetadataResult
 
 describe('Full E2E test', () => {
   beforeAll(() => {
@@ -305,7 +310,8 @@ describe('Full E2E test', () => {
           issuerMetadata: {
             authorizationServers: [],
             credentialIssuer: credentialIssuerMetadata,
-            originalDraftVersion: Openid4vciDraftVersion.Draft14,
+            originalDraftVersion: Openid4vciVersion.Draft14,
+            knownCredentialConfigurations: credentialConfigurationsSupported,
           },
           credentialRequest: credentialRequest as Record<string, unknown>,
         })
@@ -352,7 +358,7 @@ describe('Full E2E test', () => {
           },
         })
 
-        const credentialResponse = issuer.createCredentialResponse({
+        const { credentialResponse } = await issuer.createCredentialResponse({
           credential: 'some-credential',
           cNonce: 'd9457e7c-4cf7-461c-a8d0-94221ba865e7',
           cNonceExpiresInSeconds: 500,
@@ -507,14 +513,15 @@ describe('Full E2E test', () => {
       http.post(`${authorizationServerMetadata.pushed_authorization_request_endpoint}`, async ({ request }) => {
         const parRequest = parseXwwwFormUrlEncoded(await request.text())
 
-        const { authorizationRequest, clientAttestation, dpop } = authorizationServer.parsePushedAuthorizationRequest({
-          authorizationRequest: parRequest,
-          request: {
-            headers: request.headers,
-            method: request.method as HttpMethod,
-            url: request.url,
-          },
-        })
+        const { authorizationRequest, clientAttestation, dpop } =
+          await authorizationServer.parsePushedAuthorizationRequest({
+            authorizationRequest: parRequest,
+            request: {
+              headers: request.headers,
+              method: request.method as HttpMethod,
+              url: request.url,
+            },
+          })
 
         const verifiedParRequest = await authorizationServer.verifyPushedAuthorizationRequest({
           authorizationRequest,
@@ -747,7 +754,8 @@ describe('Full E2E test', () => {
           issuerMetadata: {
             authorizationServers: [],
             credentialIssuer: credentialIssuerMetadata,
-            originalDraftVersion: Openid4vciDraftVersion.Draft14,
+            originalDraftVersion: Openid4vciVersion.Draft14,
+            knownCredentialConfigurations: credentialConfigurationsSupported,
           },
           credentialRequest: credentialRequest as Record<string, unknown>,
         })
@@ -794,7 +802,7 @@ describe('Full E2E test', () => {
           },
         })
 
-        const credentialResponse = issuer.createCredentialResponse({
+        const { credentialResponse } = await issuer.createCredentialResponse({
           credential: 'some-credential',
           cNonce: 'd9457e7c-4cf7-461c-a8d0-94221ba865e7',
           cNonceExpiresInSeconds: 500,
@@ -879,6 +887,16 @@ describe('Full E2E test', () => {
       'https://oauth2-auth-server.com/authorize?request_uri=https%3A%2F%2Foauth2-auth-server.com%2Fauthorize%3Frequest_uri%3Durn%3Asomething&client_id=wallet'
     )
 
+    const authorizationResponse = client.parseAndVerifyAuthorizationResponseRedirectUrl({
+      authorizationServerMetadata,
+      url: `https://redirect.com?code=some-authorization-code&iss=${encodeURIComponent(authorizationServerMetadata.issuer)}`,
+    })
+
+    // This won't happen, but for typing
+    if (!authorizationResponse.code) {
+      throw new Error('Authorization response contains error')
+    }
+
     const {
       accessTokenResponse,
       authorizationServer: authorizationServerIdentifier,
@@ -886,7 +904,7 @@ describe('Full E2E test', () => {
     } = await client.retrieveAuthorizationCodeAccessTokenFromOffer({
       credentialOffer: resolvedCredentialOffer,
       issuerMetadata,
-      authorizationCode: 'some-authorization-code',
+      authorizationCode: authorizationResponse.code,
       pkceCodeVerifier: pkce?.codeVerifier,
       redirectUri: 'https://redirect-uri.com',
       // TODO: how to select the alg

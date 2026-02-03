@@ -1,12 +1,12 @@
 import { describe, expect, test } from 'vitest'
 import { getSignJwtCallback, callbacks as partialCallbacks } from '../../tests/util.mjs'
-import { Oauth2AuthorizationServer } from '../Oauth2AuthorizationServer.js'
-import type { Jwk } from '../common/jwk/z-jwk.js'
-import { decodeJwt } from '../common/jwt/decode-jwt.js'
-import { createDpopJwt } from '../dpop/dpop.js'
-import type { AuthorizationServerMetadata } from '../metadata/authorization-server/z-authorization-server-metadata.js'
-import { PkceCodeChallengeMethod, createPkce } from '../pkce.js'
-import { authorizationCodeGrantIdentifier, preAuthorizedCodeGrantIdentifier } from '../z-grant-type.js'
+import type { Jwk } from '../common/jwk/z-jwk'
+import { decodeJwt } from '../common/jwt/decode-jwt'
+import { createDpopJwt } from '../dpop/dpop'
+import type { AuthorizationServerMetadata } from '../metadata/authorization-server/z-authorization-server-metadata'
+import { Oauth2AuthorizationServer } from '../Oauth2AuthorizationServer'
+import { createPkce, PkceCodeChallengeMethod } from '../pkce'
+import { authorizationCodeGrantIdentifier, preAuthorizedCodeGrantIdentifier } from '../z-grant-type'
 
 const dpopSignerJwk = {
   kty: 'EC',
@@ -165,6 +165,7 @@ describe('Oauth2AuthorizationServer', () => {
         sub: 'something',
       },
       signature: expect.any(String),
+      compact: expect.any(String),
     })
   })
 
@@ -306,6 +307,7 @@ describe('Oauth2AuthorizationServer', () => {
         sub: 'a9ad80ef-18b6-4087-9b88-55f5b14a33da',
       },
       signature: expect.any(String),
+      compact: expect.any(String),
     })
   })
 })

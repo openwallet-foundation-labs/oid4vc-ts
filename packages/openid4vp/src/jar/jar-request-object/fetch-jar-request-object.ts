@@ -1,5 +1,5 @@
 import { Oauth2ErrorCodes, Oauth2ServerErrorResponseError } from '@openid4vc/oauth2'
-import { ContentType, type Fetch, createFetcher, objectToQueryParams } from '@openid4vc/utils'
+import { ContentType, createFetcher, type Fetch, objectToQueryParams } from '@openid4vc/utils'
 import type { ClientIdPrefix } from '../../client-identifier-prefix/z-client-id-prefix'
 import type { WalletMetadata } from '../../models/z-wallet-metadata'
 

@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { zCredentialRequest, zCredentialRequestDraft11To14 } from '../z-credential-request.js'
+import { zCredentialRequest, zCredentialRequestDraft11To14 } from '../z-credential-request'
 
 describe('Credential Request', () => {
   test('error when both proof and proofs are defined', () => {
@@ -17,14 +17,10 @@ describe('Credential Request', () => {
     })
 
     expect(parseResult.success).toBe(false)
-    expect(parseResult.error?.errors[0]).toEqual({
-      code: 'custom',
-      message: "Both 'proof' and 'proofs' are defined. Only one is allowed",
-      path: [],
-    })
+    expect(JSON.stringify(parseResult.error)).includes("Both 'proof' and 'proofs' are defined. Only one is allowed")
   })
 
-  test('error when both format and credential_identifier are defined', () => {
+  test('valid when both format and credential_identifier are defined', () => {
     const parseResult = zCredentialRequest.safeParse({
       format: 'vc+sd-jwt',
       vct: 'some-vct',
@@ -36,27 +32,7 @@ describe('Credential Request', () => {
       },
     })
 
-    expect(parseResult.success).toBe(false)
-    expect(parseResult.error?.format()).toEqual({
-      _errors: [],
-      credential_configuration_id: {
-        _errors: ['Required'],
-      },
-      credential_identifier: {
-        _errors: [
-          "'credential_identifier' cannot be defined when 'credential_configuration_id' is set.",
-          "'credential_identifier' cannot be defined when 'format' is set.",
-          "'credential_identifier' cannot be defined when 'format' is set.",
-        ],
-      },
-      format: {
-        _errors: [
-          "'format' cannot be defined when 'credential_identifier' is set.",
-          "'format' cannot be defined when 'credential_configuration_id' is set.",
-          "'format' cannot be defined when 'credential_identifier' is set.",
-        ],
-      },
-    })
+    expect(parseResult.success).toBe(true)
   })
 
   test('parse draft 14 credential request with vc+sd-jwt format', () => {

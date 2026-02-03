@@ -2,12 +2,12 @@ import { preAuthorizedCodeGrantIdentifier } from '@openid4vc/oauth2'
 import { addSecondsToDate } from '@openid4vc/utils'
 import { describe, expect, test } from 'vitest'
 import { callbacks, getSignJwtCallback } from '../../../oauth2/tests/util.mjs'
-import { Openid4vciIssuer } from '../Openid4vciIssuer.js'
 import { parseCredentialRequest } from '../credential-request/parse-credential-request.js'
 import { createCredentialRequestJwtProof } from '../formats/proof-type/jwt/jwt-proof-type.js'
 import { createKeyAttestationJwt } from '../key-attestation/key-attestation.js'
 import type { IssuerMetadataResult } from '../metadata/fetch-issuer-metadata.js'
-import { Openid4vciDraftVersion } from '../version.js'
+import { Openid4vciIssuer } from '../Openid4vciIssuer.js'
+import { Openid4vciVersion } from '../version.js'
 
 const credentialRequestProofJwk = {
   kty: 'EC',
@@ -91,7 +91,8 @@ const issuerMetadata = {
       token_endpoint: 'https://one.com/token',
     },
   ],
-  originalDraftVersion: Openid4vciDraftVersion.Draft11,
+  originalDraftVersion: Openid4vciVersion.Draft11,
+  knownCredentialConfigurations: {},
 } as const satisfies IssuerMetadataResult
 
 describe('Openid4vciIssuer', () => {
@@ -163,7 +164,8 @@ describe('Openid4vciIssuer', () => {
       issuerMetadata: {
         authorizationServers: [],
         credentialIssuer: credentialIssuerMetadata,
-        originalDraftVersion: Openid4vciDraftVersion.Draft14,
+        originalDraftVersion: Openid4vciVersion.Draft14,
+        knownCredentialConfigurations: {},
       },
       credentialRequest: {
         format: 'vc+sd-jwt',
@@ -237,7 +239,7 @@ describe('Openid4vciIssuer', () => {
       },
     })
 
-    const credentialResponse = issuer.createCredentialResponse({
+    const { credentialResponse } = await issuer.createCredentialResponse({
       cNonce: 'some-new-nonce',
       cNonceExpiresInSeconds: 500,
       credential: 'the-credential',

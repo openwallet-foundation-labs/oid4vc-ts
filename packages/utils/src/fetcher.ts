@@ -12,7 +12,7 @@ export type ZodFetcher = <Schema extends z.ZodTypeAny>(
   schema: Schema,
   expectedContentType: ContentType | ContentType[],
   ...args: Parameters<Fetch>
-) => Promise<{ response: Awaited<ReturnType<Fetch>>; result?: z.SafeParseReturnType<Schema, z.infer<Schema>> }>
+) => Promise<{ response: Awaited<ReturnType<Fetch>>; result?: z.ZodSafeParseResult<z.infer<Schema>> }>
 
 /**
  * The default fetcher used by createZodFetcher when no
@@ -72,7 +72,7 @@ export function createZodFetcher(fetcher?: Fetch): ZodFetcher {
       )
     }
 
-    if (expectedContentTypeArray.includes(ContentType.OAuthAuthorizationRequestJwt)) {
+    if (isResponseContentType([ContentType.OAuthAuthorizationRequestJwt, ContentType.Jwt], response)) {
       return {
         response,
         result: response.ok ? schema.safeParse(await response.text()) : undefined,

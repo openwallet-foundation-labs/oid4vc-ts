@@ -39,6 +39,7 @@ export type DecodeJwtResult<
   header: InferSchemaOrDefaultOutput<HeaderSchema, typeof zJwtHeader>
   payload: InferSchemaOrDefaultOutput<PayloadSchema, typeof zJwtPayload>
   signature: string
+  compact: string
 }
 
 export function decodeJwt<
@@ -67,6 +68,7 @@ export function decodeJwt<
     header: header as InferSchemaOrDefaultOutput<HeaderSchema, typeof zJwtHeader>,
     payload: payload as InferSchemaOrDefaultOutput<PayloadSchema, typeof zJwtPayload>,
     signature: jwtParts[2],
+    compact: options.jwt,
   }
 }
 
@@ -154,7 +156,7 @@ export function jwtSignerFromJwt({
       found.push({
         method: 'did',
         valid: false,
-        error: `kid in header starst with did that is different from did value in 'iss'`,
+        error: `kid in header starts with did that is different from did value in 'iss'`,
       })
     } else if (!header.kid?.startsWith('did:') && !header.kid?.startsWith('#')) {
       found.push({

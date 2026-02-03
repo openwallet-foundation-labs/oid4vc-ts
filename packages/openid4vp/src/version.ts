@@ -1,22 +1,35 @@
 import { Oauth2ErrorCodes, Oauth2ServerErrorResponseError } from '@openid4vc/oauth2'
 import type { Openid4vpAuthorizationRequest } from './authorization-request/z-authorization-request'
 import {
-  type Openid4vpAuthorizationRequestDcApi,
   isOpenid4vpAuthorizationRequestDcApi,
+  type Openid4vpAuthorizationRequestDcApi,
 } from './authorization-request/z-authorization-request-dc-api'
+import {
+  isOpenid4vpAuthorizationRequestIae,
+  type Openid4vpAuthorizationRequestIae,
+} from './authorization-request/z-authorization-request-iae'
 import { zClientIdPrefix } from './client-identifier-prefix/z-client-id-prefix'
 
 /**
  * The Openid4vpVersionNumber
  *
- * 100 means 1.0 final, all others are draft versions
+ * 100 means 1.0 final
+ * 101 means 1.1 draft 1
+ * 110 will mean 1.1 final
+ * all others are pre-1.0 draft versions
  */
-export type Openid4vpVersionNumber = 18 | 19 | 20 | 21 | 22 | 23 | 24 | 25 | 26 | 27 | 28 | 100
+export type Openid4vpVersionNumber = 18 | 19 | 20 | 21 | 22 | 23 | 24 | 25 | 26 | 27 | 28 | 100 | 101
 
 export function parseAuthorizationRequestVersion(
-  request: Openid4vpAuthorizationRequest | Openid4vpAuthorizationRequestDcApi
+  request: Openid4vpAuthorizationRequest | Openid4vpAuthorizationRequestDcApi | Openid4vpAuthorizationRequestIae
 ): Openid4vpVersionNumber {
   const requirements: ['<' | '>=', Openid4vpVersionNumber][] = []
+
+  // 1.1 draft
+  if (isOpenid4vpAuthorizationRequestIae(request)) {
+    requirements.push(['>=', 101])
+  }
+
   // 29
   if (request.verifier_info) {
     requirements.push(['>=', 100])
@@ -28,7 +41,7 @@ export function parseAuthorizationRequestVersion(
   // 28
   if (
     request.client_metadata?.vp_formats_supported?.mso_mdoc?.deviceauth_alg_values ||
-    request.client_metadata?.vp_formats_supported?.mso_mdoc?.deviceauth_alg_values
+    request.client_metadata?.vp_formats_supported?.mso_mdoc?.issuerauth_alg_values
   ) {
     requirements.push(['>=', 28])
   }
@@ -177,7 +190,7 @@ export function parseAuthorizationRequestVersion(
   const highestPossibleVersion =
     lessThanVersions.length > 0
       ? (Math.max(Math.min(...lessThanVersions) - 1, 18) as Openid4vpVersionNumber)
-      : (100 as const) // Default to highest version
+      : (101 as const) // Default to highest version
 
   // Find the maximum version that satisfies all "greater than or equal to" constraints
   const lowestRequiredVersion =

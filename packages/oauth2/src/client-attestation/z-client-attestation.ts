@@ -1,8 +1,7 @@
-import { zJwtHeader, zJwtPayload } from '../common/jwt/z-jwt'
-
-import { zHttpsUrl, zInteger } from '@openid4vc/utils'
+import { zHttpsUrl, zNumericDate } from '@openid4vc/utils'
 import z from 'zod'
 import { zJwk } from '../common/jwk/z-jwk'
+import { zJwtHeader, zJwtPayload } from '../common/jwt/z-jwt'
 
 export const zOauthClientAttestationHeader = z.literal('OAuth-Client-Attestation')
 export const oauthClientAttestationHeader = zOauthClientAttestationHeader.value
@@ -12,18 +11,18 @@ export const zClientAttestationJwtPayload = z
     ...zJwtPayload.shape,
     iss: z.string(),
     sub: z.string(),
-    exp: zInteger,
+    exp: zNumericDate,
     cnf: z
       .object({
         jwk: zJwk,
       })
-      .passthrough(),
+      .loose(),
 
     // OID4VCI Wallet Attestation Extensions
     wallet_name: z.string().optional(),
-    wallet_link: z.string().url().optional(),
+    wallet_link: z.url().optional(),
   })
-  .passthrough()
+  .loose()
 export type ClientAttestationJwtPayload = z.infer<typeof zClientAttestationJwtPayload>
 
 export const zClientAttestationJwtHeader = z
@@ -31,7 +30,7 @@ export const zClientAttestationJwtHeader = z
     ...zJwtHeader.shape,
     typ: z.literal('oauth-client-attestation+jwt'),
   })
-  .passthrough()
+  .loose()
 
 export type ClientAttestationJwtHeader = z.infer<typeof zClientAttestationJwtHeader>
 
@@ -42,13 +41,13 @@ export const zClientAttestationPopJwtPayload = z
   .object({
     ...zJwtPayload.shape,
     iss: z.string(),
-    exp: zInteger,
-    aud: zHttpsUrl,
+    exp: zNumericDate,
+    aud: z.union([zHttpsUrl, z.array(zHttpsUrl)]),
 
     jti: z.string(),
     nonce: z.optional(z.string()),
   })
-  .passthrough()
+  .loose()
 export type ClientAttestationPopJwtPayload = z.infer<typeof zClientAttestationPopJwtPayload>
 
 export const zClientAttestationPopJwtHeader = z
@@ -56,5 +55,5 @@ export const zClientAttestationPopJwtHeader = z
     ...zJwtHeader.shape,
     typ: z.literal('oauth-client-attestation-pop+jwt'),
   })
-  .passthrough()
+  .loose()
 export type ClientAttestationPopJwtHeader = z.infer<typeof zClientAttestationPopJwtHeader>

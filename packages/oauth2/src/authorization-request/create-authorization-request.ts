@@ -1,10 +1,15 @@
-import { ContentType, Headers, createZodFetcher, objectToQueryParams } from '@openid4vc/utils'
-import { InvalidFetchResponseError } from '@openid4vc/utils'
+import {
+  ContentType,
+  createZodFetcher,
+  Headers,
+  InvalidFetchResponseError,
+  objectToQueryParams,
+} from '@openid4vc/utils'
 import { ValidationError } from '../../../utils/src/error/ValidationError'
 import { type CallbackContext, HashAlgorithm } from '../callbacks'
 import { calculateJwkThumbprint } from '../common/jwk/jwk-thumbprint'
 import { zOauth2ErrorResponse } from '../common/z-oauth2-error'
-import { type RequestDpopOptions, createDpopHeadersForRequest, extractDpopNonceFromHeaders } from '../dpop/dpop'
+import { createDpopHeadersForRequest, extractDpopNonceFromHeaders, type RequestDpopOptions } from '../dpop/dpop'
 import { authorizationServerRequestWithDpopRetry } from '../dpop/dpop-retry'
 import { Oauth2ClientErrorResponseError } from '../error/Oauth2ClientErrorResponseError'
 import { Oauth2Error } from '../error/Oauth2Error'
@@ -40,6 +45,11 @@ export interface CreateAuthorizationRequestUrlOptions {
    * Scope to request for the authorization request
    */
   scope?: string
+
+  /**
+   * State for the authorization request
+   */
+  state?: string
 
   /**
    * The resource to which access is being requested. This can help the authorization
@@ -104,10 +114,11 @@ export async function createAuthorizationRequestUrl(options: CreateAuthorization
     redirect_uri: options.redirectUri,
     resource: options.resource,
     scope: options.scope,
+    state: options.state,
     code_challenge: pkce?.codeChallenge,
     code_challenge_method: pkce?.codeChallengeMethod,
   }
-  let pushedAuthorizationRequest: PushedAuthorizationRequest | undefined = undefined
+  let pushedAuthorizationRequest: PushedAuthorizationRequest | undefined
   let dpop: RequestDpopOptions | undefined = options.dpop
 
   if (authorizationServerMetadata.require_pushed_authorization_requests || pushedAuthorizationRequestEndpoint) {
@@ -192,7 +203,7 @@ async function pushAuthorizationRequest(options: PushAuthorizationRequestOptions
 
   if (options.authorizationRequest.request_uri) {
     throw new Oauth2Error(
-      `Authorization request contains 'request_uri' parameter. This is not allowed for pushed authorization reuqests.`
+      `Authorization request contains 'request_uri' parameter. This is not allowed for pushed authorization requests.`
     )
   }
 

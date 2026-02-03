@@ -17,14 +17,14 @@ export const zAuthorizationChallengeRequest = z
     // DRAFT presentation during issuance
     presentation_during_issuance_session: z.optional(z.string()),
   })
-  .passthrough()
+  .loose()
 export type AuthorizationChallengeRequest = z.infer<typeof zAuthorizationChallengeRequest>
 
 export const zAuthorizationChallengeResponse = z
   .object({
     authorization_code: z.string(),
   })
-  .passthrough()
+  .loose()
 export type AuthorizationChallengeResponse = z.infer<typeof zAuthorizationChallengeResponse>
 
 export const zAuthorizationChallengeErrorResponse = z
@@ -37,5 +37,5 @@ export const zAuthorizationChallengeErrorResponse = z
     // DRAFT: presentation during issuance
     presentation: z.optional(z.string()),
   })
-  .passthrough()
+  .loose()
 export type AuthorizationChallengeErrorResponse = z.infer<typeof zAuthorizationChallengeErrorResponse>

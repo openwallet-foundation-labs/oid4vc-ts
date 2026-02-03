@@ -1,4 +1,4 @@
-import { type StringWithAutoCompletion, parseWithErrorHandling } from '@openid4vc/utils'
+import { parseWithErrorHandling, type StringWithAutoCompletion } from '@openid4vc/utils'
 import { zAccessTokenErrorResponse } from '../access-token/z-access-token'
 import type { Oauth2ErrorCodes } from '../common/z-oauth2-error'
 import {
@@ -27,7 +27,7 @@ export interface CreatePushedAuthorizationResponseOptions {
 /**
  * Create an pushed authorization response
  *
- * @throws {ValidationError} if an error occured during verification of the {@link PushedAuthorizationResponse}
+ * @throws {ValidationError} if an error occurred during verification of the {@link PushedAuthorizationResponse}
  */
 export function createPushedAuthorizationResponse(options: CreatePushedAuthorizationResponseOptions) {
   const pushedAuthorizationResponse = parseWithErrorHandling(zPushedAuthorizationResponse, {
@@ -59,7 +59,7 @@ export interface CreatePushedAuthorizationErrorResponseOptions {
 /**
  * Create a pushed authorization error response
  *
- * @throws {ValidationError} if an error occured during validation of the {@link PushedAuthorizationErrorResponse}
+ * @throws {ValidationError} if an error occurred during validation of the {@link PushedAuthorizationErrorResponse}
  */
 export function createPushedAuthorizationErrorResponse(options: CreatePushedAuthorizationErrorResponseOptions) {
   const pushedAuthorizationErrorResponse = parseWithErrorHandling(zAccessTokenErrorResponse, {

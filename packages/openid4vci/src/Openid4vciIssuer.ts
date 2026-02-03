@@ -5,7 +5,7 @@ import {
   Oauth2JwtVerificationError,
   Oauth2ServerErrorResponseError,
 } from '@openid4vc/oauth2'
-import { ValidationError, parseWithErrorHandling } from '@openid4vc/utils'
+import { parseWithErrorHandling, ValidationError } from '@openid4vc/utils'
 import type { VerifyClientAttestationOptions } from '../../oauth2/src/client-attestation/client-attestation'
 import { type CreateCredentialOfferOptions, createCredentialOffer } from './credential-offer/credential-offer'
 import {
@@ -33,7 +33,29 @@ import {
   type VerifyCredentialRequestJwtProofOptions,
   verifyCredentialRequestJwtProof,
 } from './formats/proof-type/jwt/jwt-proof-type'
+import {
+  type CreateInteractiveAuthorizationCodeResponseOptions,
+  type CreateInteractiveAuthorizationErrorResponseOptions,
+  type CreateInteractiveAuthorizationOpenid4vpInteractionOptions,
+  type CreateInteractiveAuthorizationRedirectToWebInteractionOptions,
+  createInteractiveAuthorizationCodeResponse,
+  createInteractiveAuthorizationErrorResponse,
+  createInteractiveAuthorizationOpenid4vpInteraction,
+  createInteractiveAuthorizationRedirectToWebInteraction,
+} from './interactive-authorization/create-interactive-authorization-response'
+import {
+  type ParseInteractiveAuthorizationRequestOptions,
+  parseInteractiveAuthorizationRequest,
+} from './interactive-authorization/parse-interactive-authorization-request'
+import {
+  type VerifyInteractiveAuthorizationInitialRequestOptions,
+  verifyInteractiveAuthorizationInitialRequest,
+} from './interactive-authorization/verify-interactive-authorization-request'
 import { extractKnownCredentialConfigurationSupportedFormats } from './metadata/credential-issuer/credential-issuer-metadata'
+import {
+  type CreateSignedCredentialIssuerMetadataJwtOptions,
+  createSignedCredentialIssuerMetadataJwt,
+} from './metadata/credential-issuer/signed-credential-issuer-metadata'
 import {
   type CredentialIssuerMetadata,
   zCredentialIssuerMetadata,
@@ -44,9 +66,9 @@ import { type CreateNonceResponseOptions, createNonceResponse } from './nonce/no
 
 export interface Openid4vciIssuerOptions {
   /**
-   * Callbacks required for the openid4vc issuer
+   * Callbacks required for the openid4vc issuer.
    */
-  callbacks: Omit<CallbackContext, 'decryptJwe' | 'encryptJwe'>
+  callbacks: Omit<CallbackContext, 'decryptJwe'>
 }
 
 export class Openid4vciIssuer {
@@ -71,6 +93,18 @@ export class Openid4vciIssuer {
       credentialIssuerMetadata,
       'Error validating credential issuer metadata'
     )
+  }
+
+  /**
+   * Validates credential issuer metadata structure is correct and creates signed credential issuer metadata JWT
+   */
+  public createSignedCredentialIssuerMetadataJwt(
+    options: Omit<CreateSignedCredentialIssuerMetadataJwtOptions, 'callbacks'>
+  ): Promise<string> {
+    return createSignedCredentialIssuerMetadataJwt({
+      callbacks: this.options.callbacks,
+      ...options,
+    })
   }
 
   public async createCredentialOffer(
@@ -228,16 +262,24 @@ export class Openid4vciIssuer {
 
   /**
    * @throws ValidationError - when validation of the credential response fails
+   * @throws Openid4vciError - when encryption is requested but no encryptJwe callback is available
    */
-  public createCredentialResponse(options: CreateCredentialResponseOptions) {
-    return createCredentialResponse(options)
+  public createCredentialResponse(options: Omit<CreateCredentialResponseOptions, 'callbacks'>) {
+    return createCredentialResponse({
+      ...options,
+      callbacks: options.credentialResponseEncryption ? { encryptJwe: this.options.callbacks.encryptJwe } : undefined,
+    })
   }
 
   /**
    * @throws ValidationError - when validation of the credential response fails
+   * @throws Openid4vciError - when encryption is requested but no encryptJwe callback is available
    */
-  public createDeferredCredentialResponse(options: CreateDeferredCredentialResponseOptions) {
-    return createDeferredCredentialResponse(options)
+  public createDeferredCredentialResponse(options: Omit<CreateDeferredCredentialResponseOptions, 'callbacks'>) {
+    return createDeferredCredentialResponse({
+      ...options,
+      callbacks: options.credentialResponseEncryption ? { encryptJwe: this.options.callbacks.encryptJwe } : undefined,
+    } as CreateDeferredCredentialResponseOptions)
   }
 
   /**
@@ -251,5 +293,84 @@ export class Openid4vciIssuer {
     return new Oauth2AuthorizationServer({
       callbacks: this.options.callbacks,
     }).verifyClientAttestation(options)
+  }
+
+  /**
+   * Parse an Interactive Authorization Request
+   *
+   * This method parses and validates an Interactive Authorization Endpoint request.
+   * It automatically detects whether this is an initial request, a follow-up request,
+   * or a JAR (JWT-secured) request based on the parameters present.
+   */
+  public async parseInteractiveAuthorizationRequest(
+    options: Omit<ParseInteractiveAuthorizationRequestOptions, 'callbacks'>
+  ) {
+    return parseInteractiveAuthorizationRequest({
+      callbacks: this.options.callbacks,
+      ...options,
+    })
+  }
+
+  /**
+   * Verify an initial (possibly signed) Interactive Authorization Request
+   *
+   * This method verifies the interactive authorization request including:
+   * - JAR (JWT-secured Authorization Request) signature verification (if present)
+   * - Client attestation (if present)
+   * - DPoP binding (if present)
+   * - Authorization request parameters
+   */
+  public async verifyInteractiveAuthorizationInitialRequest(
+    options: Omit<VerifyInteractiveAuthorizationInitialRequestOptions, 'callbacks'>
+  ) {
+    return verifyInteractiveAuthorizationInitialRequest({
+      callbacks: this.options.callbacks,
+      ...options,
+    })
+  }
+
+  /**
+   * Create a successful Interactive Authorization Code Response
+   *
+   * This response indicates that the authorization process is complete
+   * and returns an authorization code that can be exchanged for an access token.
+   */
+  public createInteractiveAuthorizationCodeResponse(options: CreateInteractiveAuthorizationCodeResponseOptions) {
+    return createInteractiveAuthorizationCodeResponse(options)
+  }
+
+  /**
+   * Create an Interactive Authorization Interaction Required Response
+   * requesting an OpenID4VP presentation
+   *
+   * This response indicates that the wallet must present credentials
+   * via OpenID4VP before authorization can be granted.
+   */
+  public createInteractiveAuthorizationOpenid4vpInteraction(
+    options: CreateInteractiveAuthorizationOpenid4vpInteractionOptions
+  ) {
+    return createInteractiveAuthorizationOpenid4vpInteraction(options)
+  }
+
+  /**
+   * Create an Interactive Authorization Interaction Required Response
+   * requesting a redirect to web
+   *
+   * This response indicates that the authorization process must continue
+   * via interactions with the user in a web browser.
+   */
+  public createInteractiveAuthorizationRedirectToWebInteraction(
+    options: CreateInteractiveAuthorizationRedirectToWebInteractionOptions
+  ) {
+    return createInteractiveAuthorizationRedirectToWebInteraction(options)
+  }
+
+  /**
+   * Create an Interactive Authorization Error Response
+   *
+   * This response indicates that an error occurred during the authorization process.
+   */
+  public createInteractiveAuthorizationErrorResponse(options: CreateInteractiveAuthorizationErrorResponseOptions) {
+    return createInteractiveAuthorizationErrorResponse(options)
   }
 }

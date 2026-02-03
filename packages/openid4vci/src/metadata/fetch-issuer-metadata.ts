@@ -1,14 +1,22 @@
 import {
   type AuthorizationServerMetadata,
-  Oauth2Error,
+  type CallbackContext,
   fetchAuthorizationServerMetadata,
+  Oauth2Error,
   zAuthorizationServerMetadata,
 } from '@openid4vc/oauth2'
-import type { Fetch } from '@openid4vc/utils'
+
 import { parseWithErrorHandling } from '@openid4vc/utils'
-import type { Openid4vciDraftVersion } from '../version'
-import { fetchCredentialIssuerMetadata } from './credential-issuer/credential-issuer-metadata'
-import type { CredentialIssuerMetadata } from './credential-issuer/z-credential-issuer-metadata'
+import type { Openid4vciVersion } from '../version'
+import {
+  type CredentialIssuerMetadataSigned,
+  extractKnownCredentialConfigurationSupportedFormats,
+  fetchCredentialIssuerMetadata,
+} from './credential-issuer/credential-issuer-metadata'
+import type {
+  CredentialConfigurationsSupportedWithFormats,
+  CredentialIssuerMetadata,
+} from './credential-issuer/z-credential-issuer-metadata'
 
 export interface ResolveIssuerMetadataOptions {
   /**
@@ -28,15 +36,39 @@ export interface ResolveIssuerMetadataOptions {
   allowAuthorizationMetadataFromCredentialIssuerMetadata?: boolean
 
   /**
-   * Custom fetch implementation to use
+   * Callbacks for fetching the credential issur metadata.
+   * If no `verifyJwt` callback is provided, the request
+   * will not include the `application/jwt` Accept header
+   * for signed metadata.
    */
-  fetch?: Fetch
+  callbacks: Partial<Pick<CallbackContext, 'fetch' | 'verifyJwt'>>
+
+  /**
+   * Only used for verifying signed issuer metadata. If not provided
+   * current time will be used
+   */
+  now?: Date
 }
 
 export interface IssuerMetadataResult {
-  originalDraftVersion?: Openid4vciDraftVersion
+  originalDraftVersion: Openid4vciVersion
   credentialIssuer: CredentialIssuerMetadata
+
+  /**
+   * Metadata about the signed credential issuer metadata,
+   * if the issuer metadata was signed
+   */
+  signedCredentialIssuer?: CredentialIssuerMetadataSigned
+
   authorizationServers: AuthorizationServerMetadata[]
+
+  /**
+   * Known credential configurations includes all the credential configurations with a known credential format
+   * that pass the validation requirements from the OpenID4VCI specification. Recognized formats that do not
+   * adhere to the format specific metadata requirements are not included, but also won't result in an error, to
+   * to still allow interacting with issuers using invalid metadata for specific configurations.
+   */
+  knownCredentialConfigurations: CredentialConfigurationsSupportedWithFormats
 }
 
 export async function resolveIssuerMetadata(
@@ -46,12 +78,15 @@ export async function resolveIssuerMetadata(
   const allowAuthorizationMetadataFromCredentialIssuerMetadata =
     options?.allowAuthorizationMetadataFromCredentialIssuerMetadata ?? true
 
-  const credentialIssuerMetadataWithDraftVersion = await fetchCredentialIssuerMetadata(credentialIssuer, options?.fetch)
+  const credentialIssuerMetadataWithDraftVersion = await fetchCredentialIssuerMetadata(credentialIssuer, {
+    callbacks: options?.callbacks,
+    now: options?.now,
+  })
   if (!credentialIssuerMetadataWithDraftVersion) {
     throw new Oauth2Error(`Well known credential issuer metadata for issuer '${credentialIssuer}' not found.`)
   }
 
-  const { credentialIssuerMetadata, originalDraftVersion } = credentialIssuerMetadataWithDraftVersion
+  const { credentialIssuerMetadata, originalDraftVersion, signed } = credentialIssuerMetadataWithDraftVersion
 
   // If no authoriation servers are defined, use the credential issuer as the authorization server
   const authorizationServers = credentialIssuerMetadata.authorization_servers ?? [credentialIssuer]
@@ -65,7 +100,10 @@ export async function resolveIssuerMetadata(
       continue
     }
 
-    let authorizationServerMetadata = await fetchAuthorizationServerMetadata(authorizationServer, options?.fetch)
+    let authorizationServerMetadata = await fetchAuthorizationServerMetadata(
+      authorizationServer,
+      options?.callbacks.fetch
+    )
     if (
       !authorizationServerMetadata &&
       authorizationServer === credentialIssuer &&
@@ -90,9 +128,17 @@ export async function resolveIssuerMetadata(
     authoriationServersMetadata.push(authorizationServerMetadata)
   }
 
+  // Collect all known credential configurations with formats
+  const knownCredentialConfigurations = extractKnownCredentialConfigurationSupportedFormats(
+    credentialIssuerMetadata.credential_configurations_supported
+  )
+
   return {
     originalDraftVersion,
     credentialIssuer: credentialIssuerMetadata,
+    signedCredentialIssuer: signed,
+
     authorizationServers: authoriationServersMetadata,
+    knownCredentialConfigurations,
   }
 }

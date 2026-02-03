@@ -1,13 +1,14 @@
-import type { ZodError, z } from 'zod'
+import type { ZodError } from 'zod'
 import { formatZodError } from '../zod-error'
+import { OpenId4VcBaseError } from './OpenId4VcBaseError'
 
-export class ValidationError extends Error {
+export class ValidationError extends OpenId4VcBaseError {
   public zodError: ZodError | undefined
 
-  constructor(message: string, zodError?: z.ZodError) {
+  constructor(message: string, zodError?: ZodError) {
     super(message)
 
-    const formattedError = formatZodError(zodError)
+    const formattedError = zodError ? formatZodError(zodError) : ''
     this.message = `${message}\n${formattedError}`
 
     Object.defineProperty(this, 'zodError', {

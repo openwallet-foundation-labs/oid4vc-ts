@@ -1,13 +1,19 @@
-import { decodeJwt, preAuthorizedCodeGrantIdentifier } from '@openid4vc/oauth2'
-import { clientAuthenticationAnonymous } from '@openid4vc/oauth2'
+import {
+  type AuthorizationServerMetadata,
+  clientAuthenticationAnonymous,
+  decodeJwt,
+  preAuthorizedCodeGrantIdentifier,
+} from '@openid4vc/oauth2'
 import { parseWithErrorHandling } from '@openid4vc/utils'
-import { http, HttpResponse } from 'msw'
+import { HttpResponse, http } from 'msw'
 import { setupServer } from 'msw/node'
 import { afterAll, afterEach, beforeAll, describe, expect, test } from 'vitest'
 import { zAuthorizationChallengeRequest } from '../../../oauth2/src/authorization-challenge/z-authorization-challenge.js'
 import { callbacks, getSignJwtCallback, parseXwwwFormUrlEncoded } from '../../../oauth2/tests/util.mjs'
-import { AuthorizationFlow, Openid4vciClient } from '../Openid4vciClient.js'
+import { Openid4vciVersion } from '../index.js'
 import { extractScopesForCredentialConfigurationIds } from '../metadata/credential-issuer/credential-configurations.js'
+import type { CredentialIssuerMetadata } from '../metadata/credential-issuer/z-credential-issuer-metadata.js'
+import { AuthorizationFlow, Openid4vciClient } from '../Openid4vciClient.js'
 import { bdrDraft13 } from './__fixtures__/bdr.js'
 import { paradymDraft11, paradymDraft13 } from './__fixtures__/paradym.js'
 import { presentationDuringIssuance } from './__fixtures__/presentationDuringIssuance.js'
@@ -35,6 +41,9 @@ describe('Openid4vciClient', () => {
       http.get(`${paradymDraft13.credentialOfferObject.credential_issuer}/.well-known/openid-credential-issuer`, () =>
         HttpResponse.json(paradymDraft13.credentialIssuerMetadata)
       ),
+      http.get('https://agent.paradym.id/.well-known/openid-credential-issuer/oid4vci/draft-13-issuer', () =>
+        HttpResponse.text(undefined, { status: 404 })
+      ),
       http.get(`${paradymDraft13.credentialOfferObject.credential_issuer}/.well-known/openid-configuration`, () =>
         HttpResponse.text(undefined, { status: 404 })
       ),
@@ -42,7 +51,11 @@ describe('Openid4vciClient', () => {
         HttpResponse.text(undefined, { status: 404 })
       ),
       http.get('https://agent.paradym.id/.well-known/oauth-authorization-server/oid4vci/draft-13-issuer', () =>
-        HttpResponse.text(undefined, { status: 404 })
+        HttpResponse.json({
+          issuer: paradymDraft13.credentialIssuerMetadata.credential_issuer,
+          token_endpoint: paradymDraft13.credentialIssuerMetadata.token_endpoint,
+          grant_types_supported: [preAuthorizedCodeGrantIdentifier],
+        } satisfies AuthorizationServerMetadata)
       ),
       http.post(paradymDraft13.credentialIssuerMetadata.token_endpoint, async ({ request }) => {
         expect(parseXwwwFormUrlEncoded(await request.text())).toEqual({
@@ -118,6 +131,7 @@ describe('Openid4vciClient', () => {
         nonce: '463253917094869172078310',
       },
       signature: expect.any(String),
+      compact: expect.any(String),
     })
 
     const credentialResponse = await client.retrieveCredentials({
@@ -140,6 +154,9 @@ describe('Openid4vciClient', () => {
       http.get(`${paradymDraft11.credentialOfferObject.credential_issuer}/.well-known/openid-credential-issuer`, () =>
         HttpResponse.json(paradymDraft11.credentialIssuerMetadata)
       ),
+      http.get('https://agent.paradym.id/.well-known/openid-credential-issuer/oid4vci/draft-11-issuer', () =>
+        HttpResponse.text(undefined, { status: 404 })
+      ),
       http.get(`${paradymDraft11.credentialOfferObject.credential_issuer}/.well-known/openid-configuration`, () =>
         HttpResponse.text(undefined, { status: 404 })
       ),
@@ -147,7 +164,11 @@ describe('Openid4vciClient', () => {
         HttpResponse.text(undefined, { status: 404 })
       ),
       http.get('https://agent.paradym.id/.well-known/oauth-authorization-server/oid4vci/draft-11-issuer', () =>
-        HttpResponse.text(undefined, { status: 404 })
+        HttpResponse.json({
+          issuer: paradymDraft11.credentialIssuerMetadata.credential_issuer,
+          token_endpoint: paradymDraft11.credentialIssuerMetadata.token_endpoint,
+          grant_types_supported: [preAuthorizedCodeGrantIdentifier],
+        } satisfies AuthorizationServerMetadata)
       ),
       http.post(paradymDraft11.credentialIssuerMetadata.token_endpoint, async ({ request }) => {
         expect(parseXwwwFormUrlEncoded(await request.text())).toEqual({
@@ -204,7 +225,7 @@ describe('Openid4vciClient', () => {
       display: [{ name: 'Animo', logo: { alt_text: 'Logo of Animo Solutions', url: 'https://github.com/animo.png' } }],
       credential_configurations_supported: {
         clv2gbawu000tfkrk5l067h1h: {
-          format: 'vc+sd-jwt',
+          format: 'dc+sd-jwt',
           cryptographic_binding_methods_supported: ['did:key', 'did:jwk', 'did:web'],
           credential_signing_alg_values_supported: ['EdDSA', 'ES256'],
           credential_metadata: {
@@ -220,7 +241,7 @@ describe('Openid4vciClient', () => {
           vct: 'https://metadata.paradym.id/types/iuoQGyxlww-ParadymContributor',
         },
         clvi9a5od00127pap4obzoeuf: {
-          format: 'vc+sd-jwt',
+          format: 'dc+sd-jwt',
           cryptographic_binding_methods_supported: ['did:key', 'did:jwk', 'did:web'],
           credential_signing_alg_values_supported: ['EdDSA', 'ES256'],
           credential_metadata: {
@@ -237,7 +258,7 @@ describe('Openid4vciClient', () => {
           vct: 'https://metadata.paradym.id/types/6fTEgFULv2-EmployeeBadge',
         },
         clx4z0auo00a6f0sibkutdqor: {
-          format: 'vc+sd-jwt',
+          format: 'dc+sd-jwt',
           cryptographic_binding_methods_supported: ['did:key', 'did:jwk', 'did:web'],
           credential_signing_alg_values_supported: ['EdDSA', 'ES256'],
           credential_metadata: {
@@ -287,6 +308,7 @@ describe('Openid4vciClient', () => {
         nonce: '463253917094869172078310',
       },
       signature: expect.any(String),
+      compact: expect.any(String),
     })
 
     const credentialResponse = await client.retrieveCredentials({
@@ -303,6 +325,9 @@ describe('Openid4vciClient', () => {
 
   test('receive a credential from bdr using draft 13', async () => {
     server.resetHandlers(
+      http.get(`https://demo.pid-issuer.bundesdruckerei.de/.well-known/openid-credential-issuer/c`, () =>
+        HttpResponse.json(undefined, { status: 404 })
+      ),
       http.get(`${bdrDraft13.credentialOfferObject.credential_issuer}/.well-known/openid-credential-issuer`, () =>
         HttpResponse.json(bdrDraft13.credentialIssuerMetadata)
       ),
@@ -352,6 +377,7 @@ describe('Openid4vciClient', () => {
             htm: 'POST',
           },
           signature: expect.any(String),
+          compact: expect.any(String),
         })
         expect(parseXwwwFormUrlEncoded(await request.text())).toEqual({
           client_id: 'some-random-client-id',
@@ -394,6 +420,7 @@ describe('Openid4vciClient', () => {
             ath: 'i5Jbpn1_j8TgO3O4K6Y9D_f9k1lkOPMqa0uCo8nIRd4',
           },
           signature: expect.any(String),
+          compact: expect.any(String),
         })
         expect(await request.json()).toEqual({
           format: 'vc+sd-jwt',
@@ -497,6 +524,7 @@ describe('Openid4vciClient', () => {
         nonce: 'sjNMiqyfmBeD1qioCVyqvS',
       },
       signature: expect.any(String),
+      compact: expect.any(String),
     })
 
     const credentialResponse = await client.retrieveCredentials({
@@ -552,6 +580,7 @@ describe('Openid4vciClient', () => {
           expect(authorizationChallengeRequest).toEqual({
             client_id: 'some-random-client-id',
             scope: 'pid',
+            redirect_uri: 'https://example.com/redirect',
             code_challenge: expect.any(String),
             code_challenge_method: 'S256',
             resource: credentialOffer.credential_issuer,
@@ -672,6 +701,7 @@ describe('Openid4vciClient', () => {
         nonce: 'sjNMiqyfmBeD1qioCVyqvS',
       },
       signature: expect.any(String),
+      compact: expect.any(String),
     })
 
     const credentialResponse = await client.retrieveCredentials({
@@ -684,5 +714,246 @@ describe('Openid4vciClient', () => {
       },
     })
     expect(credentialResponse.credentialResponse).toStrictEqual(presentationDuringIssuance.credentialResponse)
+  })
+
+  test('correctly fetches issuer and authorization metadata', async () => {
+    const issuerMetadata = {
+      credential_issuer: 'https://example.com/issuer-id',
+      authorization_servers: ['https://example.com/issuer-id'],
+      credential_endpoint: 'https://example.com/issuer-id/credential',
+      credential_configurations_supported: {},
+    } satisfies CredentialIssuerMetadata
+
+    const authorizationMetadata = {
+      issuer: 'https://example.com/issuer-id',
+      token_endpoint: 'https://example.com/issuer-id/token',
+    } satisfies AuthorizationServerMetadata
+
+    server.resetHandlers(
+      // New/correct syntax for issuer metadata
+      http.get('https://example.com/.well-known/openid-credential-issuer/issuer-id', () =>
+        HttpResponse.json(issuerMetadata)
+      ),
+      // Correct syntax for authorization server metadata
+      http.get('https://example.com/.well-known/oauth-authorization-server/issuer-id', () =>
+        HttpResponse.json(authorizationMetadata)
+      )
+    )
+
+    const client = new Openid4vciClient({
+      callbacks: {
+        ...callbacks,
+        fetch,
+        signJwt: () => {
+          throw new Error('Not implemented')
+        },
+      },
+    })
+
+    const resolvedIssuerMetadata = await client.resolveIssuerMetadata(issuerMetadata.credential_issuer)
+    expect(resolvedIssuerMetadata).toStrictEqual({
+      originalDraftVersion: Openid4vciVersion.Draft14,
+      credentialIssuer: issuerMetadata,
+      signedCredentialIssuer: undefined,
+      authorizationServers: [authorizationMetadata],
+      knownCredentialConfigurations: {},
+    })
+
+    server.resetHandlers(
+      // New/correct syntax for issuer metadata
+      http.get('https://example.com/.well-known/openid-credential-issuer/issuer-id', () =>
+        HttpResponse.text(undefined, { status: 404 })
+      ),
+      // Correct syntax for authorization server metadata
+      http.get('https://example.com/.well-known/oauth-authorization-server/issuer-id', () =>
+        HttpResponse.json(undefined, { status: 404 })
+      ),
+
+      // http.get('https://example.com/.well-known/openid-configuration', () =>
+      //   HttpResponse.text(undefined, { status: 404 })
+      // ),
+
+      // Old syntax for issuer metadata
+      http.get('https://example.com/issuer-id/.well-known/openid-credential-issuer', () =>
+        HttpResponse.json(issuerMetadata)
+      ),
+      // incorrect/lgeacy syntax for authorization server metadata
+      http.get('https://example.com/issuer-id/.well-known/oauth-authorization-server', () =>
+        HttpResponse.json(authorizationMetadata)
+      )
+    )
+
+    const resolvedIssuerMetadata2 = await client.resolveIssuerMetadata(issuerMetadata.credential_issuer)
+    expect(resolvedIssuerMetadata2).toStrictEqual({
+      originalDraftVersion: Openid4vciVersion.Draft14,
+      credentialIssuer: issuerMetadata,
+      authorizationServers: [authorizationMetadata],
+      signedCredentialIssuer: undefined,
+      knownCredentialConfigurations: {},
+    })
+
+    server.resetHandlers(
+      // New/correct syntax for issuer metadata
+      http.get('https://example.com/.well-known/openid-credential-issuer/issuer-id', () =>
+        HttpResponse.text(undefined, { status: 404 })
+      ),
+      // Correct syntax for authorization server metadata
+      http.get('https://example.com/.well-known/oauth-authorization-server/issuer-id', () =>
+        HttpResponse.json(undefined, { status: 404 })
+      ),
+
+      // Old syntax for issuer metadata
+      http.get('https://example.com/issuer-id/.well-known/openid-credential-issuer', () =>
+        HttpResponse.json(issuerMetadata)
+      ),
+      // incorrect/lgeacy syntax for authorization server metadata
+      http.get('https://example.com/issuer-id/.well-known/oauth-authorization-server', () =>
+        HttpResponse.json(undefined, { status: 404 })
+      ),
+
+      // Old openid syntax for authorization server metadata
+      http.get('https://example.com/issuer-id/.well-known/openid-configuration', () =>
+        HttpResponse.json(authorizationMetadata)
+      )
+    )
+
+    const resolvedIssuerMetadata3 = await client.resolveIssuerMetadata(issuerMetadata.credential_issuer)
+    expect(resolvedIssuerMetadata3).toStrictEqual({
+      originalDraftVersion: Openid4vciVersion.Draft14,
+      credentialIssuer: issuerMetadata,
+      signedCredentialIssuer: undefined,
+      authorizationServers: [authorizationMetadata],
+      knownCredentialConfigurations: {},
+    })
+
+    // Fallback to the issuer metadata if no authorization server metadata found
+    server.resetHandlers(
+      // New/correct syntax for issuer metadata
+      http.get('https://example.com/.well-known/openid-credential-issuer/issuer-id', () =>
+        HttpResponse.text(undefined, { status: 404 })
+      ),
+      // Correct syntax for authorization server metadata
+      http.get('https://example.com/.well-known/oauth-authorization-server/issuer-id', () =>
+        HttpResponse.json(undefined, { status: 404 })
+      ),
+
+      // Old syntax for issuer metadata
+      http.get('https://example.com/issuer-id/.well-known/openid-credential-issuer', () =>
+        HttpResponse.json({ ...issuerMetadata, token_endpoint: 'https://example.com/issuer-id/token' })
+      ),
+      // incorrect/lgeacy syntax for authorization server metadata
+      http.get('https://example.com/issuer-id/.well-known/oauth-authorization-server', () =>
+        HttpResponse.json(undefined, { status: 404 })
+      ),
+
+      // Old openid syntax for authorization server metadata
+      http.get('https://example.com/issuer-id/.well-known/openid-configuration', () =>
+        HttpResponse.json(undefined, { status: 404 })
+      )
+    )
+
+    const resolvedIssuerMetadata4 = await client.resolveIssuerMetadata(issuerMetadata.credential_issuer)
+    expect(resolvedIssuerMetadata4).toStrictEqual({
+      originalDraftVersion: Openid4vciVersion.Draft14,
+      credentialIssuer: { ...issuerMetadata, token_endpoint: 'https://example.com/issuer-id/token' },
+      signedCredentialIssuer: undefined,
+      authorizationServers: [
+        {
+          issuer: 'https://example.com/issuer-id',
+          token_endpoint: 'https://example.com/issuer-id/token',
+        },
+      ],
+      knownCredentialConfigurations: {},
+    })
+
+    server.resetHandlers(
+      // New/correct syntax for issuer metadata
+      http.get('https://example.com/.well-known/openid-credential-issuer/issuer-id', () =>
+        HttpResponse.text(undefined, { status: 404 })
+      ),
+      // Old syntax for issuer metadata
+      http.get('https://example.com/issuer-id/.well-known/openid-credential-issuer', () =>
+        HttpResponse.json(undefined, { status: 404 })
+      )
+    )
+
+    await expect(client.resolveIssuerMetadata(issuerMetadata.credential_issuer)).rejects.toThrow(
+      "Well known credential issuer metadata for issuer 'https://example.com/issuer-id' not found."
+    )
+
+    server.resetHandlers(
+      // New/correct syntax for issuer metadata
+      http.get('https://example.com/.well-known/openid-credential-issuer/issuer-id', () =>
+        HttpResponse.json(issuerMetadata)
+      ),
+      // Correct syntax for authorization server metadata
+      http.get('https://example.com/.well-known/oauth-authorization-server/issuer-id', () =>
+        HttpResponse.json(undefined, { status: 404 })
+      ),
+
+      // incorrect/lgeacy syntax for authorization server metadata
+      http.get('https://example.com/issuer-id/.well-known/oauth-authorization-server', () =>
+        HttpResponse.json(undefined, { status: 404 })
+      ),
+
+      // Old openid syntax for authorization server metadata
+      http.get('https://example.com/issuer-id/.well-known/openid-configuration', () =>
+        HttpResponse.json(undefined, { status: 404 })
+      )
+    )
+
+    await expect(client.resolveIssuerMetadata(issuerMetadata.credential_issuer)).rejects.toThrow(
+      "Well known authorization server metadata for authorization server 'https://example.com/issuer-id' not found, and could also not extract required values from the credential issuer metadata as a fallback."
+    )
+
+    // Fetches issuer metadata if the credential configuration is invalid
+    const issuerMetadataInvalidCredentials = {
+      credential_issuer: 'https://example.com/issuer-id',
+      authorization_servers: ['https://example.com/issuer-id'],
+      credential_endpoint: 'https://example.com/issuer-id/credential',
+      credential_configurations_supported: {
+        'invalid-credential-configuration': {
+          format: 'jwt_vc_json-ld',
+          cryptographic_binding_methods_supported: ['did'],
+          credential_signing_alg_values_supported: ['EdDSA'],
+          credential_definition: {
+            type: ['VerifiableCredential', 'BankId'],
+          },
+        },
+      },
+    } satisfies CredentialIssuerMetadata
+
+    server.resetHandlers(
+      // New/correct syntax for issuer metadata
+      http.get('https://example.com/.well-known/openid-credential-issuer/issuer-id', () =>
+        HttpResponse.json(issuerMetadataInvalidCredentials)
+      ),
+      // Correct syntax for authorization server metadata
+      http.get('https://example.com/.well-known/oauth-authorization-server/issuer-id', () =>
+        HttpResponse.json(authorizationMetadata)
+      )
+    )
+
+    const clientInvalid = new Openid4vciClient({
+      callbacks: {
+        ...callbacks,
+        fetch,
+        signJwt: () => {
+          throw new Error('Not implemented')
+        },
+      },
+    })
+
+    // expect the "knownCredentialConfigurations" to be empty as the only credential configuration is invalid (@context is missing)
+    const resolvedIssuerMetadataInvalid = await clientInvalid.resolveIssuerMetadata(
+      issuerMetadataInvalidCredentials.credential_issuer
+    )
+    expect(resolvedIssuerMetadataInvalid).toStrictEqual({
+      originalDraftVersion: Openid4vciVersion.Draft14,
+      credentialIssuer: issuerMetadataInvalidCredentials,
+      signedCredentialIssuer: undefined,
+      authorizationServers: [authorizationMetadata],
+      knownCredentialConfigurations: {},
+    })
   })
 })

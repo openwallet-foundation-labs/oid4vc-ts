@@ -1,4 +1,4 @@
-import { http, HttpResponse } from 'msw'
+import { HttpResponse, http } from 'msw'
 import { setupServer } from 'msw/node'
 import { afterAll, afterEach, beforeAll, describe, expect, test } from 'vitest'
 import { getSignJwtCallback, callbacks as partialCallbacks } from '../../oauth2/tests/util.mjs'
@@ -140,11 +140,14 @@ describe('Full E2E openid4vp test', () => {
     const resolved = await resolveOpenid4vpAuthorizationRequest({
       authorizationRequestPayload,
       callbacks,
+      responseMode: {
+        type: 'direct_post',
+      },
     })
 
     expect(resolved).toEqual({
       transactionData: undefined,
-      version: 100,
+      version: 101,
       authorizationRequestPayload: {
         response_type: 'vp_token',
         client_id: 'client_id',

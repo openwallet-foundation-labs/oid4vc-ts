@@ -1,5 +1,5 @@
 import { zCompactJwt, zJwtHeader, zJwtPayload } from '@openid4vc/oauth2'
-import { zHttpsUrl, zInteger } from '@openid4vc/utils'
+import { zHttpsUrl, zNumericDate } from '@openid4vc/utils'
 import z from 'zod'
 
 export const zJwtProofTypeIdentifier = z.literal('jwt')
@@ -12,13 +12,11 @@ export const zCredentialRequestProofJwt = z.object({
 })
 
 export const zCredentialRequestJwtProofTypeHeader = zJwtHeader
-  .merge(
-    z.object({
-      key_attestation: z.optional(zCompactJwt),
-      typ: z.literal('openid4vci-proof+jwt'),
-    })
-  )
-  .passthrough()
+  .extend({
+    key_attestation: z.optional(zCompactJwt),
+    typ: z.literal('openid4vci-proof+jwt'),
+  })
+  .loose()
   .refine(({ kid, jwk }) => jwk === undefined || kid === undefined, {
     message: `Both 'jwk' and 'kid' are defined. Only one is allowed`,
   })
@@ -31,9 +29,9 @@ export type CredentialRequestJwtProofTypeHeader = z.infer<typeof zCredentialRequ
 export const zCredentialRequestJwtProofTypePayload = z
   .object({
     ...zJwtPayload.shape,
-    aud: zHttpsUrl,
-    iat: zInteger,
+    aud: z.union([zHttpsUrl, z.array(zHttpsUrl)]),
+    iat: zNumericDate,
   })
-  .passthrough()
+  .loose()
 
 export type CredentialRequestJwtProofTypePayload = z.infer<typeof zCredentialRequestJwtProofTypePayload>

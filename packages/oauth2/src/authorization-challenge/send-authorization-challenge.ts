@@ -1,14 +1,14 @@
 import {
   ContentType,
-  Headers,
-  ValidationError,
   createZodFetcher,
+  Headers,
+  InvalidFetchResponseError,
   objectToQueryParams,
   parseWithErrorHandling,
+  ValidationError,
 } from '@openid4vc/utils'
-import { InvalidFetchResponseError } from '@openid4vc/utils'
 import type { CallbackContext } from '../callbacks'
-import { type RequestDpopOptions, createDpopHeadersForRequest, extractDpopNonceFromHeaders } from '../dpop/dpop'
+import { createDpopHeadersForRequest, extractDpopNonceFromHeaders, type RequestDpopOptions } from '../dpop/dpop'
 import { authorizationServerRequestWithDpopRetry } from '../dpop/dpop-retry'
 import { Oauth2ClientAuthorizationChallengeError } from '../error/Oauth2ClientAuthorizationChallengeError'
 import { Oauth2Error } from '../error/Oauth2Error'
@@ -43,13 +43,24 @@ export interface SendAuthorizationChallengeRequestOptions {
   scope?: string
 
   /**
+   * State for the authorization challenge request
+   */
+  state?: string
+
+  /**
    * The resource to which access is being requested. This can help the authorization
    * server in determining the resource server to handle the authorization request for
    */
   resource?: string
 
   /**
-   * Presentation during issuance sessios if credentials were presented
+   * Redirect uri to include in the authorization challenge request. Maybe be used by the
+   * server when falling back to a PAR request.
+   */
+  redirectUri?: string
+
+  /**
+   * Presentation during issuance session if credentials were presented
    * as part of an issuance session
    */
   presentationDuringIssuanceSession?: string
@@ -76,7 +87,7 @@ export interface SendAuthorizationChallengeRequestOptions {
  *
  * @throws {Oauth2ClientAuthorizationChallengeError} if the request failed and a {@link AuthorizationChallengeErrorResponse} is returned
  * @throws {InvalidFetchResponseError} if the request failed but no error response could be parsed
- * @throws {ValidationError} if a successful response was received but an error occured during verification of the {@link AuthorizationChallengeResponse}
+ * @throws {ValidationError} if a successful response was received but an error occurred during verification of the {@link AuthorizationChallengeResponse}
  */
 export async function sendAuthorizationChallengeRequest(options: SendAuthorizationChallengeRequestOptions) {
   const fetchWithZod = createZodFetcher(options.callbacks.fetch)
@@ -85,7 +96,7 @@ export async function sendAuthorizationChallengeRequest(options: SendAuthorizati
   const authorizationChallengeEndpoint = authorizationServerMetadata.authorization_challenge_endpoint
   if (!authorizationChallengeEndpoint) {
     throw new Oauth2Error(
-      `Unable to send authorization challange. Authorization server '${authorizationServerMetadata.issuer}' has no 'authorization_challenge_endpoint'`
+      `Unable to send authorization challenge. Authorization server '${authorizationServerMetadata.issuer}' has no 'authorization_challenge_endpoint'`
     )
   }
 
@@ -104,7 +115,9 @@ export async function sendAuthorizationChallengeRequest(options: SendAuthorizati
     ...options.additionalRequestPayload,
     auth_session: options.authSession,
     scope: options.scope,
+    redirect_uri: options.redirectUri,
     resource: options.resource,
+    state: options.state,
     code_challenge: pkce?.codeChallenge,
     code_challenge_method: pkce?.codeChallengeMethod,
     presentation_during_issuance_session: options.presentationDuringIssuanceSession,

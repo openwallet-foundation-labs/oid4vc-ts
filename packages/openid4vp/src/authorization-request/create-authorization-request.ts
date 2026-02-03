@@ -1,24 +1,33 @@
-import { type CallbackContext, Oauth2Error } from '@openid4vc/oauth2'
-import { URL, URLSearchParams, objectToQueryParams, parseWithErrorHandling } from '@openid4vc/utils'
 import {
+  type CallbackContext,
   type CreateJarAuthorizationRequestOptions,
   createJarAuthorizationRequest,
-} from '../jar/create-jar-authorization-request'
+} from '@openid4vc/oauth2'
+import { objectToQueryParams, parseWithErrorHandling, URL, URLSearchParams } from '@openid4vc/utils'
 import {
-  type WalletVerificationOptions,
   validateOpenid4vpAuthorizationRequestPayload,
+  type WalletVerificationOptions,
 } from './validate-authorization-request'
 import { validateOpenid4vpAuthorizationRequestDcApiPayload } from './validate-authorization-request-dc-api'
+import { validateOpenid4vpAuthorizationRequestIaePayload } from './validate-authorization-request-iae'
 import { type Openid4vpAuthorizationRequest, zOpenid4vpAuthorizationRequest } from './z-authorization-request'
 import {
-  type Openid4vpAuthorizationRequestDcApi,
   isOpenid4vpAuthorizationRequestDcApi,
+  type Openid4vpAuthorizationRequestDcApi,
   zOpenid4vpAuthorizationRequestDcApi,
 } from './z-authorization-request-dc-api'
+import {
+  isOpenid4vpAuthorizationRequestIae,
+  type Openid4vpAuthorizationRequestIae,
+  zOpenid4vpAuthorizationRequestIae,
+} from './z-authorization-request-iae'
 
 export interface CreateOpenid4vpAuthorizationRequestOptions {
   scheme?: string
-  authorizationRequestPayload: Openid4vpAuthorizationRequest | Openid4vpAuthorizationRequestDcApi
+  authorizationRequestPayload:
+    | Openid4vpAuthorizationRequest
+    | Openid4vpAuthorizationRequestDcApi
+    | Openid4vpAuthorizationRequestIae
   jar?: Pick<
     CreateJarAuthorizationRequestOptions,
     'additionalJwtPayload' | 'requestUri' | 'jwtSigner' | 'expiresInSeconds'
@@ -55,7 +64,10 @@ export async function createOpenid4vpAuthorizationRequest(options: CreateOpenid4
 
   let additionalJwtPayload: Record<string, unknown> | undefined
 
-  let authorizationRequestPayload: Openid4vpAuthorizationRequest | Openid4vpAuthorizationRequestDcApi
+  let authorizationRequestPayload:
+    | Openid4vpAuthorizationRequest
+    | Openid4vpAuthorizationRequestDcApi
+    | Openid4vpAuthorizationRequestIae
   if (isOpenid4vpAuthorizationRequestDcApi(options.authorizationRequestPayload)) {
     authorizationRequestPayload = parseWithErrorHandling(
       zOpenid4vpAuthorizationRequestDcApi,
@@ -63,16 +75,22 @@ export async function createOpenid4vpAuthorizationRequest(options: CreateOpenid4
       'Invalid authorization request. Could not parse openid4vp dc_api authorization request.'
     )
 
-    if (jar && !authorizationRequestPayload.expected_origins) {
-      throw new Oauth2Error(
-        `The 'expected_origins' parameter MUST be present when using the dc_api response mode in combination with jar.`
-      )
-    }
-
     validateOpenid4vpAuthorizationRequestDcApiPayload({
       params: authorizationRequestPayload,
       isJarRequest: Boolean(jar),
       disableOriginValidation: true,
+    })
+  } else if (isOpenid4vpAuthorizationRequestIae(options.authorizationRequestPayload)) {
+    authorizationRequestPayload = parseWithErrorHandling(
+      zOpenid4vpAuthorizationRequestIae,
+      options.authorizationRequestPayload,
+      'Invalid authorization request. Could not parse openid4vp iae_post authorization request.'
+    )
+
+    validateOpenid4vpAuthorizationRequestIaePayload({
+      params: authorizationRequestPayload,
+      isJarRequest: Boolean(jar),
+      disableExpectedUrlValidation: true,
     })
   } else {
     authorizationRequestPayload = parseWithErrorHandling(
@@ -87,9 +105,9 @@ export async function createOpenid4vpAuthorizationRequest(options: CreateOpenid4
   }
 
   if (jar) {
-    if (!jar.additionalJwtPayload?.aud) {
-      additionalJwtPayload = { ...jar.additionalJwtPayload, aud: jar.requestUri }
-    }
+    additionalJwtPayload = !jar.additionalJwtPayload?.aud
+      ? { ...jar.additionalJwtPayload, aud: jar.requestUri }
+      : jar.additionalJwtPayload
 
     const jarResult = await createJarAuthorizationRequest({
       ...jar,
