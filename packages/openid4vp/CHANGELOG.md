@@ -1,5 +1,22 @@
 # @openid4vc/openid4vp
 
+## 0.5.0
+
+### Minor Changes
+
+- ba93c72: it is now required to pass the `responseMode` object to the `resolveOpenid4vpAuthorizationRequest` method. The `responseMode` should contain a type indicating the expected response mode group (`direct_post`, `iae` or `dc_api`) along with response-mode specific parameters (e.g. `expectedOrigin`). This replaces the top-level `origin` parameter, and ensures only expected response modes are used within a context (since you are aware when calling the method whether you're in a DC/IAE or normal context).
+
+### Patch Changes
+
+- ba93c72: fix: tigethened validation to disallow usage of `request_uri` in DC API request
+- ba93c72: feat: add support for the new Interactive Authorization Endpoint from OpenID4VCI 1.1 draft to allow presentation during issuance. NOTE: this feature is experimental and not stable in OpenID4VCI yet, it may be changed in this library in an incompatible way in a patch release.
+- Updated dependencies [4877518]
+- Updated dependencies [6d35a38]
+- Updated dependencies [ba93c72]
+- Updated dependencies [1a8372b]
+  - @openid4vc/oauth2@0.5.0
+  - @openid4vc/utils@0.5.0
+
 ## 0.4.5
 
 ### Patch Changes

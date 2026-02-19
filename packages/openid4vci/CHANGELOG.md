@@ -1,5 +1,26 @@
 # @openid4vc/openid4vci
 
+## 0.5.0
+
+### Minor Changes
+
+- 6d35a38: refactor: To support credential response encryption, the `createCredentialResponse` now returns an object containing the `credentialResponse` parameter and optionally a `credentialResponseJwt`.
+- 1a8372b: Parses and Verify grant types against grant_types_supported.
+  This can cause issues if the authorization server does not have the
+  correct grant_types_supported configured correctly.
+
+### Patch Changes
+
+- 4877518: fix: make an exception for openid4vci-proof+jwt jwt typ where iss value does not match the did in the jwt proof header
+- 6d35a38: feat: add support for request & reponse encryption
+- ba93c72: feat: add support for the new Interactive Authorization Endpoint from OpenID4VCI 1.1 draft to allow presentation during issuance. NOTE: this feature is experimental and not stable in OpenID4VCI yet, it may be changed in this library in an incompatible way in a patch release.
+- Updated dependencies [4877518]
+- Updated dependencies [6d35a38]
+- Updated dependencies [ba93c72]
+- Updated dependencies [1a8372b]
+  - @openid4vc/oauth2@0.5.0
+  - @openid4vc/utils@0.5.0
+
 ## 0.4.5
 
 ### Patch Changes
