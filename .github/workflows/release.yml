@@ -46,28 +46,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Check if packages were published and extract version
-        id: check_published
-        run: |
-          # Check if the changeset publish log file exists and contains publishing messages
-          if [ -f changeset-publish.log ]; then
-            # Look for publishing messages in the format: info Publishing "@openid4vc/oauth2" at "x.x.x"
-            if grep -q 'info Publishing "@openid4vc/oauth2"' changeset-publish.log; then
-              VERSION=$(grep -oP 'info Publishing "@openid4vc/oauth2" at "\K[^"]+' changeset-publish.log)
-              echo "PUBLISHED=true" >> $GITHUB_ENV
-              echo "PACKAGE_VERSION=$VERSION" >> $GITHUB_ENV
-              echo "Published version: $VERSION"
-            else
-              echo "PUBLISHED=false" >> $GITHUB_ENV
-              echo "No packages were published"
-            fi
-          else
-            echo "PUBLISHED=false" >> $GITHUB_ENV
-            echo "Log file not found"
-          fi
+      - name: Get current package version
+        id: get_version
+        run: echo "PACKAGE_VERSION=$(node -p "require('./packages/openid4vci/package.json').version")" >> $GITHUB_ENV
 
       - name: Create Github Release
-        if: env.PUBLISHED == 'true'
+        if: "startsWith(github.event.head_commit.message, 'chore(release): new version')"
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ env.PACKAGE_VERSION }}
