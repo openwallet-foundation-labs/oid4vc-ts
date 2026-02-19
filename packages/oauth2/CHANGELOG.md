@@ -1,5 +1,12 @@
 # @openid4vc/oauth2
 
+## 0.4.6
+
+### Patch Changes
+
+- 421dc86: fix: make an exception for openid4vci-proof+jwt jwt typ where iss value does not match the did in the jwt proof header
+  - @openid4vc/utils@0.4.6
+
 ## 0.4.5
 
 ### Patch Changes
