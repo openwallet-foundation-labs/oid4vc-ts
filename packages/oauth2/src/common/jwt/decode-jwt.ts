@@ -152,7 +152,14 @@ export function jwtSignerFromJwt({
   }
 
   if (header.kid?.startsWith('did:') || payload.iss?.startsWith('did:')) {
-    if (payload.iss && header.kid?.startsWith('did:') && !header.kid.startsWith(payload.iss)) {
+    // NOTE: special exclusion for openid4vci-proof+jwt type as it requires the `iss` to be set to the `client_id` in case
+    // of authorization code flow.
+    if (
+      payload.iss &&
+      header.kid?.startsWith('did:') &&
+      !header.kid.startsWith(payload.iss) &&
+      header.typ !== 'openid4vci-proof+jwt'
+    ) {
       found.push({
         method: 'did',
         valid: false,

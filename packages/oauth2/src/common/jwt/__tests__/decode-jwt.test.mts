@@ -42,6 +42,19 @@ FAILED: method did - kid in header starts with did that is different from did va
       )
     })
 
+    test('did in kid mismatch with iss but allowed since header typ is openid4vci-proof+jwt', () => {
+      expect(
+        jwtSignerFromJwt({
+          header: { kid: 'did:web:example.nl#123', alg: 'ES256', typ: 'openid4vci-proof+jwt' },
+          payload: { iss: 'some_client_id' },
+        })
+      ).toEqual({
+        method: 'did',
+        didUrl: 'did:web:example.nl#123',
+        alg: 'ES256',
+      })
+    })
+
     test('iss did but kid does not start with #', () => {
       expect(() =>
         jwtSignerFromJwt({
