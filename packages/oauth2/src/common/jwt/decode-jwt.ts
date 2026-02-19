@@ -233,8 +233,9 @@ type IsSchemaProvided<T> = T extends undefined ? false : true
 export type InferSchemaOrDefaultOutput<
   ProvidedSchema extends BaseSchema | undefined,
   DefaultSchema extends BaseSchema,
-> = IsSchemaProvided<ProvidedSchema> extends true
-  ? ProvidedSchema extends BaseSchema
-    ? z.infer<ProvidedSchema>
-    : never
-  : z.infer<DefaultSchema>
+> =
+  IsSchemaProvided<ProvidedSchema> extends true
+    ? ProvidedSchema extends BaseSchema
+      ? z.infer<ProvidedSchema>
+      : never
+    : z.infer<DefaultSchema>

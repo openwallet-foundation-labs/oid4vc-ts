@@ -5,14 +5,14 @@ on:
 
   pull_request:
     branches:
-      - main
+      - v0.4.x
+    types: [opened, synchronize, reopened, labeled]
   push:
     branches:
-      - main
+      - v0.4.x
 
 jobs:
   validate:
-    if: github.event_name != 'pull_request_review' ||  github.event.pull_request.head.ref == 'changeset-release/main'
     runs-on: ubuntu-24.04
     name: Validate
     steps:
@@ -41,7 +41,6 @@ jobs:
   tests:
     runs-on: ubuntu-24.04
     name: Tests
-    if: github.event_name != 'pull_request_review' ||  github.event.pull_request.head.ref == 'changeset-release/main'
 
     strategy:
       fail-fast: false

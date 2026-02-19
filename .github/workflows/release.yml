@@ -3,7 +3,7 @@ name: Release
 on:
   push:
     branches:
-      - main
+      - v0.4.x
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
@@ -60,7 +60,6 @@ jobs:
     runs-on: ubuntu-24.04
     name: Release Unstable
     needs: release-stable
-    if: always() && github.event_name == 'push' && needs.release-stable.outputs.published == 'false'
     permissions:
       contents: write
       id-token: write # Needed for npm trusted publishing
