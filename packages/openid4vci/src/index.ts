@@ -12,15 +12,15 @@ export {
   type GetCredentialConfigurationsMatchingRequestFormatOptions,
   getCredentialConfigurationsMatchingRequestFormat,
 } from './credential-request/credential-request-configurations'
+export type {
+  CreateCredentialResponseOptions,
+  CreateCredentialResponseReturn,
+} from './credential-request/credential-response'
 export type { ParseCredentialRequestReturn } from './credential-request/parse-credential-request'
 export type {
   RetrieveCredentialsResponseNotOk,
   RetrieveCredentialsResponseOk,
 } from './credential-request/retrieve-credentials'
-export type {
-  CreateCredentialResponseOptions,
-  CreateCredentialResponseReturn,
-} from './credential-request/credential-response'
 export type {
   CredentialRequest,
   CredentialRequestFormatSpecific,
