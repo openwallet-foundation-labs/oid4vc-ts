@@ -18,6 +18,10 @@ export type {
   RetrieveCredentialsResponseOk,
 } from './credential-request/retrieve-credentials'
 export type {
+  CreateCredentialResponseOptions,
+  CreateCredentialResponseReturn,
+} from './credential-request/credential-response'
+export type {
   CredentialRequest,
   CredentialRequestFormatSpecific,
   CredentialRequestWithFormats,
