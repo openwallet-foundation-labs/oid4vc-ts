@@ -41,7 +41,6 @@ export const zClientAttestationPopJwtPayload = z
   .object({
     ...zJwtPayload.shape,
     iss: z.string(),
-    exp: zNumericDate,
     aud: z.union([zHttpsUrl, z.array(zHttpsUrl)]),
 
     jti: z.string(),
