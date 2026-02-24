@@ -45,10 +45,6 @@ export async function verifyAttestation(options: VerifyAttestationOptions) {
 export interface VerifyAttestationJwtOptions {
   attestationJwt: string
   clientId: string
-  /**
-   * @deprecated Use `allowedSkewInSeconds` instead
-   */
-  clockSkewSec?: number
   allowedSkewInSeconds?: number
   callbacks: Pick<CallbackContext, 'verifyJwt'>
 }
@@ -69,7 +65,7 @@ export async function verifyAttestationJWT(options: VerifyAttestationJwtOptions)
     verifyJwtCallback: options.callbacks.verifyJwt,
     now: new Date(),
     expectedSubject: options.clientId,
-    allowedSkewInSeconds: options.allowedSkewInSeconds ?? options.clockSkewSec,
+    allowedSkewInSeconds: options.allowedSkewInSeconds,
     requiredClaims: ['iss', 'sub', 'exp', 'cnf'],
   })
 
