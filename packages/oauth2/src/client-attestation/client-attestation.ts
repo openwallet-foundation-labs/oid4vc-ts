@@ -28,6 +28,15 @@ export interface VerifyClientAttestationJwtOptions {
   now?: Date
 
   /**
+   * Allowed skew time in seconds for validity of token. Used for `exp` and `nbf`
+   * verification.
+   *
+   * @default 0
+   */
+  allowedSkewInSeconds?: number
+
+
+  /**
    * Callbacks used for verifying client attestation pop jwt.
    */
   callbacks: Pick<CallbackContext, 'verifyJwt'>
@@ -167,6 +176,14 @@ export interface VerifyClientAttestationOptions {
    * Date to use for expiration. If not provided current date will be used.
    */
   now?: Date
+
+  /**
+   * Allowed skew time in seconds for validity of token. Used for `exp` and `nbf`
+   * verification.
+   *
+   * @default 0
+   */
+  allowedSkewInSeconds?: number
 }
 
 export async function verifyClientAttestation({
@@ -175,12 +192,14 @@ export async function verifyClientAttestation({
   clientAttestationPopJwt,
   callbacks,
   now,
+  allowedSkewInSeconds,
 }: VerifyClientAttestationOptions) {
   try {
     const clientAttestation = await verifyClientAttestationJwt({
       callbacks,
       clientAttestationJwt,
       now,
+      allowedSkewInSeconds,
     })
 
     const clientAttestationPop = await verifyClientAttestationPopJwt({
@@ -189,6 +208,7 @@ export async function verifyClientAttestation({
       clientAttestation,
       clientAttestationPopJwt,
       now,
+      allowedSkewInSeconds,
     })
 
     return {

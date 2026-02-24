@@ -89,6 +89,14 @@ export interface VerifyClientAttestationPopJwtOptions {
   now?: Date
 
   /**
+   * Allowed skew time in seconds for validity of token. Used for `exp` and `nbf`
+   * verification.
+   *
+   * @default 0
+   */
+  allowedSkewInSeconds?: number
+
+  /**
    * Callbacks used for verifying client attestation pop jwt.
    */
   callbacks: Pick<CallbackContext, 'verifyJwt'>
@@ -130,6 +138,7 @@ export async function verifyClientAttestationPopJwt(options: VerifyClientAttesta
     compact: options.clientAttestationPopJwt,
     verifyJwtCallback: options.callbacks.verifyJwt,
     errorMessage: 'client attestation pop jwt verification failed',
+    allowedSkewInSeconds: options.allowedSkewInSeconds,
   })
 
   return {
