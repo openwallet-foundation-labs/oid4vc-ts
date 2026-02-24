@@ -35,7 +35,6 @@ export interface VerifyClientAttestationJwtOptions {
    */
   allowedSkewInSeconds?: number
 
-
   /**
    * Callbacks used for verifying client attestation pop jwt.
    */
