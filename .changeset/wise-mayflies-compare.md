@@ -1,6 +1,6 @@
 ---
-"@openid4vc/oauth2": minor
-"@openid4vc/openid4vci": minor
+"@openid4vc/oauth2": patch
+"@openid4vc/openid4vci": patch
 ---
 
 Parses and Verify grant types against grant_types_supported.
