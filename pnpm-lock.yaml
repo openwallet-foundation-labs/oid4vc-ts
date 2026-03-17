@@ -45,7 +45,7 @@ importers:
         specifier: ^25.5.0
         version: 25.5.0
       jose:
-        specifier: 6.2.1
+        specifier: 'catalog:'
         version: 6.2.1
       msw:
         specifier: ^2.12.12
