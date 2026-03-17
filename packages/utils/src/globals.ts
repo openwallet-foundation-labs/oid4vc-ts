@@ -15,4 +15,4 @@ const _Headers = Headers as typeof globalThis.Headers
 export type FetchHeaders = globalThis.Headers
 export type FetchRequestInit = RequestInit
 
-export { _URLSearchParams as URLSearchParams, _URL as URL, _Headers as Headers }
+export { _Headers as Headers, _URL as URL, _URLSearchParams as URLSearchParams }
