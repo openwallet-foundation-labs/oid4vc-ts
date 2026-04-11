@@ -46,9 +46,6 @@ export const zAuthorizationServerMetadata = z
     // From OpenID4VCI specification
     'pre-authorized_grant_anonymous_access_supported': z.optional(z.boolean()),
 
-    // Attestation Based Client Auth (draft 5)
-    client_attestation_pop_nonce_required: z.boolean().optional(),
-
     // RFC9207
     authorization_response_iss_parameter_supported: z.boolean().optional(),
   })
