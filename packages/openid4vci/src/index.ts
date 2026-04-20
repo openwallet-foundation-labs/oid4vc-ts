@@ -12,6 +12,10 @@ export {
   type GetCredentialConfigurationsMatchingRequestFormatOptions,
   getCredentialConfigurationsMatchingRequestFormat,
 } from './credential-request/credential-request-configurations'
+export type {
+  CreateCredentialResponseOptions,
+  CreateCredentialResponseReturn,
+} from './credential-request/credential-response'
 export type { ParseCredentialRequestReturn } from './credential-request/parse-credential-request'
 export type {
   RetrieveCredentialsResponseNotOk,
@@ -105,6 +109,7 @@ export type {
   CredentialIssuerMetadata,
   CredentialIssuerMetadataDisplayEntry,
 } from './metadata/credential-issuer/z-credential-issuer-metadata'
+export { zCredentialIssuerMetadataDraft14Draft15V1 as zCredentialIssuerMetadataSchema } from './metadata/credential-issuer/z-credential-issuer-metadata'
 export type { IssuerMetadataResult } from './metadata/fetch-issuer-metadata'
 export type { NonceResponse } from './nonce/z-nonce'
 export type { SendNotificationResponseNotOk, SendNotificationResponseOk } from './notification/notification'

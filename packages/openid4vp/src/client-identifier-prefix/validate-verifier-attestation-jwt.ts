@@ -45,15 +45,10 @@ export async function verifyAttestation(options: VerifyAttestationOptions) {
 export interface VerifyAttestationJwtOptions {
   attestationJwt: string
   clientId: string
-  clockSkewSec?: number
+  allowedSkewInSeconds?: number
   callbacks: Pick<CallbackContext, 'verifyJwt'>
 }
-export async function verifyAttestationJWT(options: {
-  attestationJwt: string
-  clientId: string
-  clockSkewSec?: number
-  callbacks: Pick<CallbackContext, 'verifyJwt'>
-}) {
+export async function verifyAttestationJWT(options: VerifyAttestationJwtOptions) {
   const errors = []
 
   const { header, payload } = decodeJwt({
@@ -70,7 +65,7 @@ export async function verifyAttestationJWT(options: {
     verifyJwtCallback: options.callbacks.verifyJwt,
     now: new Date(),
     expectedSubject: options.clientId,
-    allowedSkewInSeconds: options.clockSkewSec || 300,
+    allowedSkewInSeconds: options.allowedSkewInSeconds,
     requiredClaims: ['iss', 'sub', 'exp', 'cnf'],
   })
 
