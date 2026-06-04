@@ -42,8 +42,12 @@ export type CredentialRequestProofs = z.infer<typeof zCredentialRequestProofs>
 export const zCredentialResponseEncryption = z
   .object({
     jwk: zJwk,
-    alg: z.string(),
+    // `alg` is no longer required: per OpenID4VCI V1 the key management algorithm is carried in the
+    // `jwk`. It is kept as an optional sibling for backwards compatibility with draft 14/15, where it
+    // was a required top-level member.
+    alg: z.optional(z.string()),
     enc: z.string(),
+    zip: z.optional(z.string()),
   })
   .loose()
 
