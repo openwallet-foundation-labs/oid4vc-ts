@@ -10,6 +10,31 @@ import {
   zDeferredCredentialResponse,
 } from './z-credential-response'
 
+/**
+ * Builds the JWE encryptor for credential response encryption.
+ *
+ * Per OpenID4VCI V1 the key management `alg` is carried inside the `jwk`
+ * (`credential_response_encryption.jwk.alg`), not as a sibling of `jwk`. For backwards compatibility
+ * with draft 14/15 wallets, which send `alg` as a required top-level member, we fall back to it.
+ */
+function getCredentialResponseJweEncryptor(credentialResponseEncryption: CredentialResponseEncryption): JweEncryptor {
+  const { jwk, enc } = credentialResponseEncryption
+  const alg = jwk.alg ?? credentialResponseEncryption.alg
+
+  if (!alg) {
+    throw new Openid4vciError(
+      `Unable to encrypt the credential response. The 'jwk' in 'credential_response_encryption' is missing the required 'alg' parameter.`
+    )
+  }
+
+  return {
+    method: 'jwk',
+    publicJwk: jwk,
+    alg,
+    enc,
+  }
+}
+
 export interface CreateCredentialResponseOptions {
   credentialRequest: ParseCredentialRequestReturn
 
@@ -86,12 +111,7 @@ export async function createCredentialResponse(
       )
     }
 
-    const jweEncryptor: JweEncryptor = {
-      method: 'jwk',
-      publicJwk: options.credentialResponseEncryption.jwk,
-      alg: options.credentialResponseEncryption.alg,
-      enc: options.credentialResponseEncryption.enc,
-    }
+    const jweEncryptor = getCredentialResponseJweEncryptor(options.credentialResponseEncryption)
 
     const { jwe } = await options.callbacks.encryptJwe(jweEncryptor, JSON.stringify(credentialResponse))
 
@@ -181,12 +201,7 @@ export async function createDeferredCredentialResponse(
       )
     }
 
-    const jweEncryptor: JweEncryptor = {
-      method: 'jwk',
-      publicJwk: options.credentialResponseEncryption.jwk,
-      alg: options.credentialResponseEncryption.alg,
-      enc: options.credentialResponseEncryption.enc,
-    }
+    const jweEncryptor = getCredentialResponseJweEncryptor(options.credentialResponseEncryption)
 
     const { jwe } = await options.callbacks.encryptJwe(jweEncryptor, JSON.stringify(deferredCredentialResponse))
 
