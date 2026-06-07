@@ -23,7 +23,7 @@ export async function fetchClientMetadata(options: {
     })
   }
 
-  if (!result || !result.success) {
+  if (!result?.success) {
     throw new Oauth2ServerErrorResponseError({
       error_description: `Parsing client metadata from '${clientMetadataUri}' failed.`,
       error: Oauth2ErrorCodes.InvalidRequestObject,
