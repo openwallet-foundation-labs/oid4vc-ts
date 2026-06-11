@@ -1,4 +1,11 @@
-import { type CallbackContext, decodeJwtHeader, Oauth2Error, zCompactJwe, zCompactJwt } from '@openid4vc/oauth2'
+import {
+  type CallbackContext,
+  decodeJwtHeader,
+  Oauth2ErrorCodes,
+  Oauth2ServerErrorResponseError,
+  zCompactJwe,
+  zCompactJwt,
+} from '@openid4vc/oauth2'
 import { parseWithErrorHandling } from '@openid4vc/utils'
 import z from 'zod'
 import type { Openid4vpAuthorizationRequest } from '../authorization-request/z-authorization-request'
@@ -50,8 +57,14 @@ export async function parseJarmAuthorizationResponse(
   })
 
   if (!authorizationRequestPayload.response_mode || !isJarmResponseMode(authorizationRequestPayload.response_mode)) {
-    throw new Oauth2Error(
-      `Invalid response mode for jarm response. Response mode: '${authorizationRequestPayload.response_mode ?? 'fragment'}'`
+    throw new Oauth2ServerErrorResponseError(
+      {
+        error: Oauth2ErrorCodes.InvalidRequest,
+        error_description: `The 'response_mode' parameter is not a valid JARM response mode.`,
+      },
+      {
+        internalMessage: `The 'response_mode' parameter is not a valid JARM response mode. Current: ${authorizationRequestPayload.response_mode ?? 'fragment'}`,
+      }
     )
   }
 

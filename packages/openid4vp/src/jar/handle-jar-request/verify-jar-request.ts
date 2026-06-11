@@ -7,7 +7,6 @@ import {
   type JwtSigner,
   type JwtSignerWithJwk,
   jwtSignerFromJwt,
-  Oauth2Error,
   Oauth2ErrorCodes,
   Oauth2ServerErrorResponseError,
   signedAuthorizationRequestJwtHeaderTyp,
@@ -214,9 +213,10 @@ async function verifyJarRequestObject(options: {
   // The logic to determine the signer for a JWT is different for signed authorization request and federation
   if (clientIdPrefix === 'openid_federation') {
     if (!jwt.header.kid) {
-      throw new Oauth2Error(
-        `When OpenID Federation is used for signed authorization request, the 'kid' parameter is required.`
-      )
+      throw new Oauth2ServerErrorResponseError({
+        error: Oauth2ErrorCodes.InvalidRequestObject,
+        error_description: `When OpenID Federation is used for a signed authorization request, the 'kid' parameter is required.`,
+      })
     }
 
     jwtSigner = {
