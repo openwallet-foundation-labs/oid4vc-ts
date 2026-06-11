@@ -1,4 +1,4 @@
-import { Oauth2Error } from '@openid4vc/oauth2'
+import { Oauth2ErrorCodes, Oauth2ServerErrorResponseError } from '@openid4vc/oauth2'
 
 export type JarMetadata = {
   ProtectedBy: 'signature' | 'signature_encryption'
@@ -27,10 +27,16 @@ export async function validateJarRequestAgainstSession(options: ValidateJarReque
   const { jarMetadata, jarSessionMetadata } = options
 
   if (jarSessionMetadata.ProtectedBy !== jarMetadata.ProtectedBy) {
-    throw new Oauth2Error(`The protected_by value does not match the session's protected_by value.`)
+    throw new Oauth2ServerErrorResponseError({
+      error: Oauth2ErrorCodes.InvalidRequestObject,
+      error_description: `The 'protected_by' value of the JAR request does not match the value of the session.`,
+    })
   }
 
   if (jarSessionMetadata.SendBy !== jarMetadata.SendBy) {
-    throw new Oauth2Error(`The send_by value does not match the session's send_by value.`)
+    throw new Oauth2ServerErrorResponseError({
+      error: Oauth2ErrorCodes.InvalidRequestObject,
+      error_description: `The 'send_by' value of the JAR request does not match the value of the session.`,
+    })
   }
 }

@@ -4,7 +4,8 @@ import {
   decodeJwtHeader,
   type Jwk,
   jwtSignerFromJwt,
-  Oauth2Error,
+  Oauth2ErrorCodes,
+  Oauth2ServerErrorResponseError,
   zCompactJwe,
   zCompactJwt,
   zJwtHeader,
@@ -67,7 +68,10 @@ const decryptJarmAuthorizationResponseJwt = async (options: {
 
   const result = await callbacks.decryptJwe(jarmAuthorizationResponseJwt, { jwk: encryptionJwk })
   if (!result.decrypted) {
-    throw new Oauth2Error('Failed to decrypt jarm auth response.')
+    throw new Oauth2ServerErrorResponseError({
+      error: Oauth2ErrorCodes.InvalidRequest,
+      error_description: 'Failed to decrypt the JARM authorization response.',
+    })
   }
 
   return {
@@ -112,7 +116,10 @@ export async function verifyJarmAuthorizationResponse(options: VerifyJarmAuthori
 
   const responseIsSigned = zCompactJwt.safeParse(decryptedRequestData.payload).success
   if (!requestDataIsEncrypted && !responseIsSigned) {
-    throw new Oauth2Error('Jarm Auth Response must be either encrypted, signed, or signed and encrypted.')
+    throw new Oauth2ServerErrorResponseError({
+      error: Oauth2ErrorCodes.InvalidRequest,
+      error_description: 'The JARM authorization response must be either encrypted, signed, or signed and encrypted.',
+    })
   }
 
   let jarmAuthorizationResponse: JarmAuthorizationResponse | JarmAuthorizationResponseEncryptedOnly
@@ -133,7 +140,10 @@ export async function verifyJarmAuthorizationResponse(options: VerifyJarmAuthori
     })
 
     if (!verificationResult.verified) {
-      throw new Oauth2Error('Jarm Auth Response is not valid.')
+      throw new Oauth2ServerErrorResponseError({
+        error: Oauth2ErrorCodes.InvalidRequest,
+        error_description: 'The signature of the JARM authorization response is not valid.',
+      })
     }
 
     jarmAuthorizationResponse = response
