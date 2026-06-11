@@ -1,5 +1,27 @@
 # @openid4vc/oauth2
 
+## 0.5.0
+
+### Minor Changes
+
+- 675b5b2: Pass allowedSkewInSeconds to verifyClientAttestation and verifyAttestationJWT functions, and deprecate clockSkewSec in favor of allowedSkewInSeconds for better naming consistency.
+- fa29ab6: chore: drop node 18 support. Lowest supported Node.JS version is now 20.19 +
+- 1a8372b: Parses and Verify grant types against grant_types_supported.
+  This can cause issues if the authorization server does not have the
+  correct grant_types_supported configured correctly.
+
+### Patch Changes
+
+- 4877518: fix: make an exception for openid4vci-proof+jwt jwt typ where iss value does not match the did in the jwt proof header
+- 6d35a38: feat: add support for request & reponse encryption
+- fa29ab6: feat: add support for Node 26
+- ba93c72: feat: add support for the new Interactive Authorization Endpoint from OpenID4VCI 1.1 draft to allow presentation during issuance. NOTE: this feature is experimental and not stable in OpenID4VCI yet, it may be changed in this library in an incompatible way in a patch release.
+- 3fb55be: Remove exp field from wallet attestation JWT payload schema
+  Export CreateCredentialResponseOptions type
+- Updated dependencies [fa29ab6]
+- Updated dependencies [fa29ab6]
+  - @openid4vc/utils@0.5.0
+
 ## 0.4.5
 
 ### Patch Changes

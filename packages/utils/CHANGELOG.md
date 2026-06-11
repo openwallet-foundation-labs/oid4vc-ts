@@ -1,5 +1,15 @@
 # @openid4vc/utils
 
+## 0.5.0
+
+### Minor Changes
+
+- fa29ab6: chore: drop node 18 support. Lowest supported Node.JS version is now 20.19 +
+
+### Patch Changes
+
+- fa29ab6: feat: add support for Node 26
+
 ## 0.4.5
 
 ### Patch Changes
