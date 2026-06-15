@@ -3,6 +3,7 @@ import {
   type CallbackContext,
   fetchAuthorizationServerMetadata,
   Oauth2Error,
+  preAuthorizedCodeGrantIdentifier,
   zAuthorizationServerMetadata,
 } from '@openid4vc/oauth2'
 
@@ -88,10 +89,10 @@ export async function resolveIssuerMetadata(
 
   const { credentialIssuerMetadata, originalDraftVersion, signed } = credentialIssuerMetadataWithDraftVersion
 
-  // If no authoriation servers are defined, use the credential issuer as the authorization server
+  // If no authorization servers are defined, use the credential issuer as the authorization server
   const authorizationServers = credentialIssuerMetadata.authorization_servers ?? [credentialIssuer]
 
-  const authoriationServersMetadata: AuthorizationServerMetadata[] = []
+  const authorizationServersMetadata: AuthorizationServerMetadata[] = []
   for (const authorizationServer of authorizationServers) {
     if (
       options?.restrictToAuthorizationServers &&
@@ -114,6 +115,11 @@ export async function resolveIssuerMetadata(
         {
           token_endpoint: credentialIssuerMetadata.token_endpoint,
           issuer: credentialIssuer,
+          // NOTE: we made grant_types_supported required, but this breaks a legacy fallback we have
+          // removing the fallback is a breaking change and will be done once we remove support for older
+          // draft versions. For now not having authorization server metadata means you only support
+          // pre authorized code flow
+          grant_types_supported: credentialIssuerMetadata.grant_types_supported ?? [preAuthorizedCodeGrantIdentifier],
         },
         `Well known authorization server metadata for authorization server '${authorizationServer}' not found, and could also not extract required values from the credential issuer metadata as a fallback.`
       )
@@ -125,7 +131,7 @@ export async function resolveIssuerMetadata(
       )
     }
 
-    authoriationServersMetadata.push(authorizationServerMetadata)
+    authorizationServersMetadata.push(authorizationServerMetadata)
   }
 
   // Collect all known credential configurations with formats
@@ -138,7 +144,7 @@ export async function resolveIssuerMetadata(
     credentialIssuer: credentialIssuerMetadata,
     signedCredentialIssuer: signed,
 
-    authorizationServers: authoriationServersMetadata,
+    authorizationServers: authorizationServersMetadata,
     knownCredentialConfigurations,
   }
 }
