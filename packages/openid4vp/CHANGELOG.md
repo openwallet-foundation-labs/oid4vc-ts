@@ -1,5 +1,12 @@
 # @openid4vc/openid4vp
 
+## 0.5.1
+
+### Patch Changes
+
+- @openid4vc/oauth2@0.5.1
+- @openid4vc/utils@0.5.1
+
 ## 0.5.0
 
 ### Minor Changes
