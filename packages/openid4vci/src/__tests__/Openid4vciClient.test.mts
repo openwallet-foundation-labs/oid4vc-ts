@@ -857,10 +857,12 @@ describe('Openid4vciClient', () => {
       originalDraftVersion: Openid4vciVersion.Draft14,
       credentialIssuer: { ...issuerMetadata, token_endpoint: 'https://example.com/issuer-id/token' },
       signedCredentialIssuer: undefined,
+
       authorizationServers: [
         {
           issuer: 'https://example.com/issuer-id',
           token_endpoint: 'https://example.com/issuer-id/token',
+          grant_types_supported: ['urn:ietf:params:oauth:grant-type:pre-authorized_code'],
         },
       ],
       knownCredentialConfigurations: {},
