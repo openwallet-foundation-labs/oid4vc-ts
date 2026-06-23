@@ -1,8 +1,15 @@
 packages:
   - packages/**
 
+overrides:
+  js-yaml: 3.14.2
+
 catalog:
   buffer: ^6.0.3
   jose: ^6.2.3
   zod: ^4.4.3
   zod-validation-error: ^5.0.0
+
+allowBuilds:
+  esbuild: set this to true or false
+  msw: true
