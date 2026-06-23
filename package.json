@@ -2,7 +2,7 @@
   "name": "oid4vc-ts",
   "private": true,
   "description": "Environment agnostic TypeScript implementation of OpenID4VC specifications",
-  "packageManager": "pnpm@11.8.0",
+  "packageManager": "pnpm@11.15.1",
   "repository": {
     "url": "https://github.com/openwallet-foundation-labs/oid4vc-ts",
     "type": "git"
@@ -21,15 +21,15 @@
   "devDependencies": {
     "@biomejs/biome": "2.5.2",
     "@changesets/cli": "^2.31.0",
+    "@openid4vc/oauth2": "workspace:*",
+    "@openid4vc/openid4vp": "workspace:*",
+    "@openid4vc/utils": "workspace:*",
     "@types/node": "^26.1.0",
+    "jose": "catalog:",
     "msw": "^2.15.0",
     "tsdown": "^0.22.3",
     "typescript": "~6.0.3",
-    "vitest": "^4.1.10",
-    "@openid4vc/oauth2": "workspace:*",
-    "@openid4vc/utils": "workspace:*",
-    "@openid4vc/openid4vp": "workspace:*",
-    "jose": "catalog:"
+    "vitest": "^4.1.10"
   },
   "engines": {
     "node": ">=22"
