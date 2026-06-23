@@ -1,4 +1,4 @@
-import { Oauth2Error } from '@openid4vc/oauth2'
+import { Oauth2ErrorCodes, Oauth2ServerErrorResponseError } from '@openid4vc/oauth2'
 import type { Openid4vpAuthorizationRequest } from '../authorization-request/z-authorization-request'
 import type { Openid4vpAuthorizationRequestDcApi } from '../authorization-request/z-authorization-request-dc-api'
 import type { Openid4vpAuthorizationRequestIae } from '../authorization-request/z-authorization-request-iae'
@@ -27,17 +27,31 @@ export function validateOpenid4vpAuthorizationResponsePayload(
   const { authorizationRequestPayload, authorizationResponsePayload } = options
 
   if (authorizationRequestPayload.state && authorizationRequestPayload.state !== authorizationResponsePayload.state) {
-    throw new Oauth2Error('OpenId4Vp Authorization Response state mismatch.')
+    throw new Oauth2ServerErrorResponseError(
+      {
+        error: Oauth2ErrorCodes.InvalidRequest,
+        error_description: `The 'state' parameter in the authorization response does not match the 'state' parameter in the authorization request.`,
+      },
+      {
+        internalMessage: `The 'state' parameter in the authorization response does not match the 'state' parameter in the authorization request. Expected '${authorizationRequestPayload.state}' but received '${authorizationResponsePayload.state}'.`,
+      }
+    )
   }
 
   // TODO: implement id_token handling
   if (authorizationResponsePayload.id_token) {
-    throw new Oauth2Error('OpenId4Vp Authorization Response id_token is not supported.')
+    throw new Oauth2ServerErrorResponseError({
+      error: Oauth2ErrorCodes.InvalidRequest,
+      error_description: `The 'id_token' parameter in the authorization response is not supported.`,
+    })
   }
 
   if (authorizationResponsePayload.presentation_submission) {
     if (!authorizationRequestPayload.presentation_definition) {
-      throw new Oauth2Error('OpenId4Vp Authorization Request is missing the required presentation_definition.')
+      throw new Oauth2ServerErrorResponseError({
+        error: Oauth2ErrorCodes.InvalidRequest,
+        error_description: `The authorization response contains a 'presentation_submission', but the authorization request is missing the required 'presentation_definition'.`,
+      })
     }
 
     return {
@@ -73,7 +87,8 @@ export function validateOpenid4vpAuthorizationResponsePayload(
     }
   }
 
-  throw new Oauth2Error(
-    'Invalid OpenId4Vp Authorization Response. Response neither contains a presentation_submission nor request contains a dcql_query.'
-  )
+  throw new Oauth2ServerErrorResponseError({
+    error: Oauth2ErrorCodes.InvalidRequest,
+    error_description: `Invalid authorization response. The authorization response is missing a 'presentation_submission' and the authorization request is missing a 'dcql_query'.`,
+  })
 }

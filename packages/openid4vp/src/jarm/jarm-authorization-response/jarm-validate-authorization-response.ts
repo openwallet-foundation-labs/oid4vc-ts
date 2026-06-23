@@ -1,4 +1,4 @@
-import { Oauth2Error } from '@openid4vc/oauth2'
+import { Oauth2ErrorCodes, Oauth2ServerErrorResponseError } from '@openid4vc/oauth2'
 import { dateToSeconds } from '@openid4vc/utils'
 import {
   type JarmAuthorizationResponse,
@@ -22,16 +22,25 @@ export const jarmAuthorizationResponseValidate = (options: {
     (Array.isArray(authorizationResponse.aud) && !authorizationResponse.aud.includes(expectedClientId)) ||
     (typeof authorizationResponse.aud === 'string' && authorizationResponse.aud !== expectedClientId)
   ) {
-    throw new Oauth2Error(
-      `Invalid 'aud' claim in JARM authorization response. Expected '${
-        expectedClientId
-      }' received '${JSON.stringify(authorizationResponse.aud)}'.`
+    throw new Oauth2ServerErrorResponseError(
+      {
+        error: Oauth2ErrorCodes.InvalidRequest,
+        error_description: `Invalid 'aud' claim in the JARM authorization response.`,
+      },
+      {
+        internalMessage: `Invalid 'aud' claim in JARM authorization response. Expected '${
+          expectedClientId
+        }' received '${JSON.stringify(authorizationResponse.aud)}'.`,
+      }
     )
   }
 
   // 4. The client checks the JWT's exp element to determine if the JWT is still valid. If the check fails, the client MUST abort processing and refuse the response.
   // 120 seconds clock skew
   if (authorizationResponse.exp !== undefined && authorizationResponse.exp < dateToSeconds()) {
-    throw new Oauth2Error('JARM auth response is expired.')
+    throw new Oauth2ServerErrorResponseError({
+      error: Oauth2ErrorCodes.InvalidRequest,
+      error_description: 'The JARM authorization response is expired.',
+    })
   }
 }

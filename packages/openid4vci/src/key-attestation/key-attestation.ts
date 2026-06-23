@@ -182,7 +182,7 @@ export async function verifyKeyAttestationJwt(options: VerifyKeyAttestationJwtOp
     payload,
     signer: jwtSignerFromJwt({ header, payload }),
     verifyJwtCallback: options.callbacks.verifyJwt,
-    errorMessage: 'Error verifiying key attestation jwt',
+    errorMessage: 'Error verifying key attestation jwt',
     expectedNonce: options.expectedNonce,
     now: options.now,
   })

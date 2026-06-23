@@ -1,5 +1,46 @@
 # @openid4vc/openid4vci
 
+## 0.5.1
+
+### Patch Changes
+
+- 375b422: fix: legacy fallback to extracting authorization server metadata from issuer metadata. This broke with making grant_types_suppoted required. To not introduce a breaking change, we now assume the issuer only supports pre-auth flow if the authorization server metadata is in the issuer metadata. This legacy behavior will be removed once support for pre v1.0 oid4vci draft versions will be removed
+  - @openid4vc/oauth2@0.5.1
+  - @openid4vc/utils@0.5.1
+
+## 0.5.0
+
+### Minor Changes
+
+- fa29ab6: chore: drop node 18 support. Lowest supported Node.JS version is now 20.19 +
+- 6d35a38: refactor: To support credential response encryption, the `createCredentialResponse` now returns an object containing the `credentialResponse` parameter and optionally a `credentialResponseJwt`.
+- 1a8372b: Parses and Verify grant types against grant_types_supported.
+  This can cause issues if the authorization server does not have the
+  correct grant_types_supported configured correctly.
+
+### Patch Changes
+
+- 4877518: fix: make an exception for openid4vci-proof+jwt jwt typ where iss value does not match the did in the jwt proof header
+- 6d35a38: feat: add support for request & reponse encryption
+- fa29ab6: feat: add support for Node 26
+- ba93c72: feat: add support for the new Interactive Authorization Endpoint from OpenID4VCI 1.1 draft to allow presentation during issuance. NOTE: this feature is experimental and not stable in OpenID4VCI yet, it may be changed in this library in an incompatible way in a patch release.
+- 3fb55be: Remove exp field from wallet attestation JWT payload schema
+  Export CreateCredentialResponseOptions type
+- 943be7d: fix: source credential response encryption `alg` from the JWK
+
+  `credential_response_encryption` no longer requires a top-level `alg` (per OpenID4VCI V1 the key management algorithm is carried in `jwk.alg`), so parsing no longer fails when it is absent. The optional `zip` parameter was added. The response encryptor now sources `alg` from `jwk.alg`, falling back to a top-level `alg` for backwards compatibility with draft 14/15 wallets (where it was a required member).
+
+- Updated dependencies [4877518]
+- Updated dependencies [6d35a38]
+- Updated dependencies [fa29ab6]
+- Updated dependencies [ba93c72]
+- Updated dependencies [675b5b2]
+- Updated dependencies [fa29ab6]
+- Updated dependencies [3fb55be]
+- Updated dependencies [1a8372b]
+  - @openid4vc/oauth2@0.5.0
+  - @openid4vc/utils@0.5.0
+
 ## 0.4.5
 
 ### Patch Changes

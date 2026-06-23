@@ -62,8 +62,7 @@ export class Oauth2Client {
 
   public isClientAttestationSupported(options: { authorizationServerMetadata: AuthorizationServerMetadata }) {
     if (
-      !options.authorizationServerMetadata.token_endpoint_auth_methods_supported ||
-      !options.authorizationServerMetadata.token_endpoint_auth_methods_supported.includes(
+      !options.authorizationServerMetadata.token_endpoint_auth_methods_supported?.includes(
         SupportedClientAuthenticationMethod.ClientAttestationJwt
       )
     ) {

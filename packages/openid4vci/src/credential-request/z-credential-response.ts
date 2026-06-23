@@ -85,7 +85,7 @@ export const zDeferredCredentialResponse = zBaseCredentialResponse.superRefine((
     })
   }
 
-  if (notification_id && credentials) {
+  if (notification_id && !credentials) {
     ctx.addIssue({
       code: 'custom',
       message: `'notification_id' MUST NOT be defined when 'credentials' is not defined.`,

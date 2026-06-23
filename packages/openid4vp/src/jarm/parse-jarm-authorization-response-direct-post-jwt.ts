@@ -1,4 +1,4 @@
-import { Oauth2Error, zCompactJwe, zCompactJwt } from '@openid4vc/oauth2'
+import { Oauth2ErrorCodes, Oauth2ServerErrorResponseError, zCompactJwe, zCompactJwt } from '@openid4vc/oauth2'
 import { ContentType, URLSearchParams } from '@openid4vc/utils'
 import z from 'zod'
 
@@ -6,12 +6,21 @@ export async function parseJarmAuthorizationResponseDirectPostJwt(request: Reque
   const contentType = request.headers.get('content-type')
 
   if (!contentType) {
-    throw new Oauth2Error('Content type is missing in jarm-request.')
+    throw new Oauth2ServerErrorResponseError({
+      error: Oauth2ErrorCodes.InvalidRequest,
+      error_description: `The 'content-type' header is missing in the JARM authorization response request.`,
+    })
   }
 
   if (!contentType.includes(ContentType.XWwwFormUrlencoded)) {
-    throw new Oauth2Error(
-      `Received invalid JARM auth request. Expected content-type application/x-www-form-urlencoded. Current: ${contentType}`
+    throw new Oauth2ServerErrorResponseError(
+      {
+        error: Oauth2ErrorCodes.InvalidRequest,
+        error_description: `Invalid 'content-type' header in the JARM authorization response request. Expected 'application/x-www-form-urlencoded'.`,
+      },
+      {
+        internalMessage: `Received invalid JARM auth request. Expected content-type application/x-www-form-urlencoded. Current: ${contentType}`,
+      }
     )
   }
 
@@ -20,7 +29,10 @@ export async function parseJarmAuthorizationResponseDirectPostJwt(request: Reque
   const requestData = Object.fromEntries(urlSearchParams)
 
   if (!requestData.response) {
-    throw new Oauth2Error(`Received invalid JARM request data. The 'response' JWT/JWT value is missing.`)
+    throw new Oauth2ServerErrorResponseError({
+      error: Oauth2ErrorCodes.InvalidRequest,
+      error_description: `Invalid JARM authorization response. The required 'response' parameter is missing.`,
+    })
   }
 
   const isJweOrJws = z.union([zCompactJwt, zCompactJwe]).safeParse(requestData.response)
@@ -28,7 +40,13 @@ export async function parseJarmAuthorizationResponseDirectPostJwt(request: Reque
     return { jarmAuthorizationResponseJwt: requestData.response }
   }
 
-  throw new Oauth2Error('Received invalid JARM auth response. Expected JWE or JWT.', {
-    cause: requestData,
-  })
+  throw new Oauth2ServerErrorResponseError(
+    {
+      error: Oauth2ErrorCodes.InvalidRequest,
+      error_description: `Invalid JARM authorization response. The 'response' parameter is not a valid JWE or JWT.`,
+    },
+    {
+      cause: requestData,
+    }
+  )
 }
