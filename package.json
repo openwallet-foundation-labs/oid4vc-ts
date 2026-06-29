@@ -19,13 +19,13 @@
     "changeset-version": "pnpm changeset version && pnpm style:fix"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.5.0",
+    "@biomejs/biome": "2.5.1",
     "@changesets/cli": "^2.31.0",
     "@types/node": "^25.9.3",
     "msw": "^2.14.6",
-    "tsdown": "^0.22.2",
+    "tsdown": "^0.22.3",
     "typescript": "~6.0.3",
-    "vitest": "^4.1.8",
+    "vitest": "^4.1.9",
     "@openid4vc/oauth2": "workspace:*",
     "@openid4vc/utils": "workspace:*",
     "@openid4vc/openid4vp": "workspace:*",
