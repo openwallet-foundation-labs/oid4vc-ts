@@ -4,7 +4,9 @@ import z from 'zod'
 import {
   zAttestationProofTypeIdentifier,
   zCredentialRequestProofAttestation,
+  zCredentialRequestProofDiVp,
   zCredentialRequestProofJwt,
+  zDiVpProofTypeIdentifier,
   zJwtProofTypeIdentifier,
 } from '../formats/proof-type'
 
@@ -14,7 +16,11 @@ const zCredentialRequestProofCommon = z
   })
   .loose()
 
-export const allCredentialRequestProofs = [zCredentialRequestProofJwt, zCredentialRequestProofAttestation] as const
+export const allCredentialRequestProofs = [
+  zCredentialRequestProofJwt,
+  zCredentialRequestProofAttestation,
+  zCredentialRequestProofDiVp,
+] as const
 
 export const zCredentialRequestProof = z.union([
   zCredentialRequestProofCommon,
@@ -25,6 +31,7 @@ const zCredentialRequestProofsCommon = z.record(z.string(), z.array(z.unknown())
 export const zCredentialRequestProofs = z.object({
   [zJwtProofTypeIdentifier.value]: z.optional(z.array(zCredentialRequestProofJwt.shape.jwt)),
   [zAttestationProofTypeIdentifier.value]: z.optional(z.array(zCredentialRequestProofAttestation.shape.attestation)),
+  [zDiVpProofTypeIdentifier.value]: z.optional(z.array(zCredentialRequestProofDiVp.shape.di_vp)),
 })
 
 type CredentialRequestProofCommon = z.infer<typeof zCredentialRequestProofCommon>

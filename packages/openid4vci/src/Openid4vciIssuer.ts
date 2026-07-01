@@ -30,6 +30,10 @@ import {
   verifyCredentialRequestAttestationProof,
 } from './formats/proof-type/attestation/attestation-proof-type'
 import {
+  type VerifyCredentialRequestDiVpProofOptions,
+  verifyCredentialRequestDiVpProof,
+} from './formats/proof-type/di-vp/di-vp-proof-type'
+import {
   type VerifyCredentialRequestJwtProofOptions,
   verifyCredentialRequestJwtProof,
 } from './formats/proof-type/jwt/jwt-proof-type'
@@ -203,6 +207,38 @@ export class Openid4vciIssuer {
 
         {
           internalMessage: 'Error verifying credential request proof attestation',
+          cause: error,
+        }
+      )
+    }
+  }
+
+  /**
+   * @throws Oauth2ServerErrorResponseError - if verification of the di_vp proof failed. You can
+   *  extract the credential error response from this.
+   */
+  public async verifyCredentialRequestDiVpProof(
+    options: Pick<VerifyCredentialRequestDiVpProofOptions, 'vp' | 'now' | 'expectedNonce' | 'nonceExpiresAt'> & {
+      issuerMetadata: IssuerMetadataResult
+    }
+  ) {
+    try {
+      return await verifyCredentialRequestDiVpProof({
+        callbacks: this.options.callbacks,
+        credentialIssuer: options.issuerMetadata.credentialIssuer.credential_issuer,
+        expectedNonce: options.expectedNonce,
+        nonceExpiresAt: options.nonceExpiresAt,
+        vp: options.vp,
+        now: options.now,
+      })
+    } catch (error) {
+      throw new Oauth2ServerErrorResponseError(
+        {
+          error: Oauth2ErrorCodes.InvalidProof,
+          error_description: error instanceof Openid4vciError ? error.message : 'Invalid proof',
+        },
+        {
+          internalMessage: 'Error verifying credential request di_vp proof',
           cause: error,
         }
       )
