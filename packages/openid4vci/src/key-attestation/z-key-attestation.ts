@@ -35,9 +35,9 @@ export const zKeyAttestationJwtPayload = z
     ...zJwtPayload.shape,
     iat: zNumericDate,
 
-    attested_keys: z.array(zJwk),
-    key_storage: z.optional(zIso18045OrStringArray),
-    user_authentication: z.optional(zIso18045OrStringArray),
+    attested_keys: z.array(zJwk).min(1),
+    key_storage: z.optional(zIso18045OrStringArray.min(1)),
+    user_authentication: z.optional(zIso18045OrStringArray.min(1)),
     certification: z.optional(z.url()),
   })
   .loose()
