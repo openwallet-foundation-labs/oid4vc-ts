@@ -1,5 +1,5 @@
 ---
-"@openid4vc/oauth2": minor
+"@openid4vc/oauth2": patch
 ---
 
 Align wallet (client) attestation with draft 09 of OAuth 2.0 Attestation-Based Client Authentication.
