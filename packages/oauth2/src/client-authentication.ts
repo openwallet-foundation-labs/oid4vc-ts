@@ -14,6 +14,8 @@ export enum SupportedClientAuthenticationMethod {
   ClientSecretBasic = 'client_secret_basic',
   ClientSecretPost = 'client_secret_post',
   ClientAttestationJwt = 'attest_jwt_client_auth',
+  // DPoP-bound variant introduced in draft 09.
+  ClientAttestationJwtDpop = 'attest_jwt_client_auth_dpop',
   None = 'none',
 }
 
@@ -222,6 +224,12 @@ export function clientAuthenticationAnonymous(): ClientAuthenticationCallback {
 export interface ClientAuthenticationClientAttestationJwtOptions {
   clientAttestationJwt: string
   callbacks: Pick<CallbackContext, 'signJwt' | 'generateRandom'>
+
+  /**
+   * Challenge provided by the authorization server (e.g. obtained from its `challenge_endpoint`)
+   * to include in the Client Attestation PoP JWT.
+   */
+  challenge?: string
 }
 
 /**
@@ -236,11 +244,9 @@ export function clientAuthenticationClientAttestationJwt(
       callbacks: options.callbacks,
       clientAttestation: options.clientAttestationJwt,
 
-      // TODO: support client attestation nonce
-      // We can fetch it before making the request if we don't have a nonce
-      // https://www.ietf.org/archive/id/draft-ietf-oauth-attestation-based-client-auth-05.html
-      // https://github.com/oauth-wg/draft-ietf-oauth-attestation-based-client-auth/issues/101
-      // nonce:
+      // TODO: support dynamically fetching the challenge from the `challenge_endpoint`
+      // https://www.ietf.org/archive/id/draft-ietf-oauth-attestation-based-client-auth-09.html
+      challenge: options.challenge,
     })
 
     headers.set(oauthClientAttestationHeader, options.clientAttestationJwt)

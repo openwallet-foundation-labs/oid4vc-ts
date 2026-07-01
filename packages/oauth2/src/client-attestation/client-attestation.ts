@@ -80,9 +80,13 @@ export interface CreateClientAttestationJwtOptions {
   expiresAt: Date
 
   /**
-   * Issuer of the client attestation, usually identifier of the client backend
+   * Issuer of the client attestation, usually identifier of the client backend.
+   *
+   * @deprecated The `iss` claim was removed from the Client Attestation JWT in draft 08. This
+   * option is retained for backwards compatibility with <= draft 07 verifiers; if provided the
+   * `iss` claim will still be included in the payload.
    */
-  issuer: string
+  issuer?: string
 
   /**
    * The client id of the client instance.
@@ -118,7 +122,9 @@ export async function createClientAttestationJwt(options: CreateClientAttestatio
   } satisfies ClientAttestationJwtHeader)
 
   const payload = parseWithErrorHandling(zClientAttestationJwtPayload, {
-    iss: options.issuer,
+    // `iss` was removed from the Client Attestation JWT in draft 08. Only include it when a
+    // legacy `issuer` is explicitly provided.
+    ...(options.issuer ? { iss: options.issuer } : {}),
     iat: dateToSeconds(options.issuedAt),
     exp: dateToSeconds(options.expiresAt),
     sub: options.clientId,
