@@ -47,13 +47,9 @@ export const zKeyAttestationJwtPayloadForUse = <Use extends KeyAttestationJwtUse
     .object({
       ...zKeyAttestationJwtPayload.shape,
 
-      // REQUIRED when used as proof_type.attesation directly
-      nonce:
-        use === 'proof_type.attestation'
-          ? z.string({
-              message: `Nonce must be defined when key attestation is used as 'proof_type.attestation' directly`,
-            })
-          : z.optional(z.string()),
+      // `nonce` is OPTIONAL per spec; it is only required when the Credential Issuer has a Nonce
+      // Endpoint. That freshness requirement is enforced via `expectedNonce` during verification,
+      // so it stays optional at the schema level (inherited from the base payload).
 
       // REQUIRED when used within header of proof_type.jwt
       exp: use === 'proof_type.jwt' ? zNumericDate : z.optional(zNumericDate),
