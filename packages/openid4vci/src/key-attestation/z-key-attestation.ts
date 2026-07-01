@@ -19,7 +19,7 @@ export const zKeyAttestationJwtHeader = z
   .refine(({ kid, jwk }) => jwk === undefined || kid === undefined, {
     message: `Both 'jwk' and 'kid' are defined. Only one is allowed`,
   })
-  .refine(({ trust_chain, kid }) => !trust_chain || !kid, {
+  .refine(({ trust_chain, kid }) => !trust_chain || kid !== undefined, {
     message: `When 'trust_chain' is provided, 'kid' is required`,
   })
 
