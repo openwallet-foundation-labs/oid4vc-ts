@@ -581,10 +581,8 @@ describe('Full E2E test', () => {
               typ: 'oauth-client-attestation-pop+jwt',
             },
             payload: {
-              iss: 'wallet',
               aud: 'https://oauth2-auth-server.com',
               iat: expect.any(Number),
-              exp: expect.any(Number),
               jti: expect.any(String),
             },
             signer: {

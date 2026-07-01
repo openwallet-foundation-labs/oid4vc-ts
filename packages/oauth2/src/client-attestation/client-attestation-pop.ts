@@ -1,4 +1,4 @@
-import { addSecondsToDate, dateToSeconds, encodeToBase64Url, parseWithErrorHandling } from '@openid4vc/utils'
+import { dateToSeconds, encodeToBase64Url, parseWithErrorHandling } from '@openid4vc/utils'
 import type { CallbackContext } from '../callbacks'
 import { decodeJwt } from '../common/jwt/decode-jwt'
 import { verifyJwt } from '../common/jwt/verify-jwt'
@@ -19,16 +19,14 @@ import {
 
 export interface RequestClientAttestationOptions {
   /**
-   * Dpop nonce to use for constructing the client attestation pop jwt
+   * The challenge provided by the authorization server to include in the client attestation pop jwt.
    */
-  nonce?: string
+  challenge?: string
 
   /**
-   * Expiration time of the client attestation pop jwt.
-   *
-   * @default 5 minutes after issuance date
+   * @deprecated Renamed to `challenge` in draft 06. If `challenge` is not set, this value is used.
    */
-  expiresAt?: Date
+  nonce?: string
 
   /**
    * The client attestation jwt to create the pop for.
@@ -53,10 +51,9 @@ export async function createClientAttestationForRequest(
     authorizationServer: options.authorizationServer,
     clientAttestation: options.clientAttestation.jwt,
     callbacks: options.callbacks,
-    expiresAt: options.clientAttestation.expiresAt,
     signer: options.clientAttestation.signer,
-    // TODO: support dynamic fetching of the nonce
-    nonce: options.clientAttestation.nonce,
+    // TODO: support dynamic fetching of the challenge from the `challenge_endpoint`
+    challenge: options.clientAttestation.challenge ?? options.clientAttestation.nonce,
   })
 
   return {
@@ -74,12 +71,29 @@ export interface VerifyClientAttestationPopJwtOptions {
   clientAttestationPopJwt: string
 
   /**
-   * The issuer identifier of the authorization server handling the client attestation
+   * The issuer identifier of the authorization server handling the client attestation.
    */
   authorizationServer: string
 
   /**
-   * Expected nonce in the payload. If not provided the nonce won't be validated.
+   * The expected value of the `aud` claim. Defaults to `authorizationServer`.
+   *
+   * draft 09 allows the audience to be a Resource Server identifier URL in addition to the
+   * authorization server issuer URL; set this when verifying a PoP JWT at a resource server.
+   */
+  expectedAudience?: string
+
+  /**
+   * Expected challenge in the payload. If not provided the challenge won't be validated.
+   *
+   * Matched against the `challenge` claim (draft 06+) and, for backwards compatibility,
+   * the legacy `nonce` claim.
+   */
+  expectedChallenge?: string
+
+  /**
+   * @deprecated Renamed to `expectedChallenge` in draft 06. If `expectedChallenge` is not set,
+   * this value is used.
    */
   expectedNonce?: string
 
@@ -118,10 +132,18 @@ export async function verifyClientAttestationPopJwt(options: VerifyClientAttesta
     payloadSchema: zClientAttestationPopJwtPayload,
   })
 
-  if (payload.iss !== options.clientAttestation.payload.sub) {
+  // `iss` was removed from the Client Attestation PoP JWT in draft 08. Only validate it against
+  // the client attestation `sub` when a legacy (<= draft 07) PoP JWT still includes it.
+  if (payload.iss !== undefined && payload.iss !== options.clientAttestation.payload.sub) {
     throw new Oauth2Error(
       `Client Attestation Pop jwt contains 'iss' (client_id) value '${payload.iss}', but expected 'sub' value from client attestation '${options.clientAttestation.payload.sub}'`
     )
+  }
+
+  // `challenge` (draft 06+) replaced `nonce`. Accept either claim for backwards compatibility.
+  const expectedChallenge = options.expectedChallenge ?? options.expectedNonce
+  if (expectedChallenge !== undefined && expectedChallenge !== (payload.challenge ?? payload.nonce)) {
+    throw new Oauth2Error("Client Attestation Pop jwt 'challenge' does not match expected value.")
   }
 
   const { signer } = await verifyJwt({
@@ -132,9 +154,8 @@ export async function verifyClientAttestationPopJwt(options: VerifyClientAttesta
     },
     now: options.now,
     header,
-    expectedNonce: options.expectedNonce,
     payload,
-    expectedAudience: options.authorizationServer,
+    expectedAudience: options.expectedAudience ?? options.authorizationServer,
     compact: options.clientAttestationPopJwt,
     verifyJwtCallback: options.callbacks.verifyJwt,
     errorMessage: 'client attestation pop jwt verification failed',
@@ -150,7 +171,12 @@ export async function verifyClientAttestationPopJwt(options: VerifyClientAttesta
 
 export interface CreateClientAttestationPopJwtOptions {
   /**
-   * Client attestation Pop nonce value
+   * The challenge provided by the authorization server to include in the client attestation pop jwt.
+   */
+  challenge?: string
+
+  /**
+   * @deprecated Renamed to `challenge` in draft 06. If `challenge` is not set, this value is used.
    */
   nonce?: string
 
@@ -163,11 +189,6 @@ export interface CreateClientAttestationPopJwtOptions {
    * Creation time of the JWT. If not provided the current date will be used
    */
   issuedAt?: Date
-
-  /**
-   * Expiration time of the JWT. If not proided 1 minute will be added to the `issuedAt`
-   */
-  expiresAt?: Date
 
   /**
    * The client attestation to create the Pop for
@@ -212,15 +233,13 @@ export async function createClientAttestationPopJwt(options: CreateClientAttesta
     alg: signer.alg,
   } satisfies ClientAttestationPopJwtHeader)
 
-  const expiresAt = options.expiresAt ?? addSecondsToDate(options.issuedAt ?? new Date(), 1 * 60)
-
+  // `iss` (removed in draft 08) and `exp` (removed in draft 06) are no longer part of the
+  // Client Attestation PoP JWT. `challenge` (draft 06+) replaces the legacy `nonce`.
   const payload = parseWithErrorHandling(zClientAttestationPopJwtPayload, {
     aud: options.authorizationServer,
-    iss: clientAttestation.payload.sub,
-    iat: dateToSeconds(options.issuedAt),
-    exp: dateToSeconds(expiresAt),
+    iat: dateToSeconds(options.issuedAt ?? new Date()),
     jti: encodeToBase64Url(await options.callbacks.generateRandom(32)),
-    nonce: options.nonce,
+    challenge: options.challenge ?? options.nonce,
     ...options.additionalPayload,
   } satisfies ClientAttestationPopJwtPayload)
 

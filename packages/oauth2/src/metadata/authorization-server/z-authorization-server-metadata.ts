@@ -6,6 +6,7 @@ const knownClientAuthenticationMethod = z.enum([
   'client_secret_basic',
   'client_secret_post',
   'attest_jwt_client_auth',
+  'attest_jwt_client_auth_dpop',
   'client_secret_jwt',
   'private_key_jwt',
 ])
@@ -46,7 +47,13 @@ export const zAuthorizationServerMetadata = z
     // From OpenID4VCI specification
     'pre-authorized_grant_anonymous_access_supported': z.optional(z.boolean()),
 
-    // Attestation Based Client Auth (draft 5)
+    // OAuth 2.0 Attestation-Based Client Authentication (draft 09)
+    client_attestation_signing_alg_values_supported: z.optional(z.array(zAlgValueNotNone)),
+    client_attestation_pop_signing_alg_values_supported: z.optional(z.array(zAlgValueNotNone)),
+    // Endpoint from which the client can obtain a fresh challenge for the Client Attestation PoP JWT.
+    challenge_endpoint: z.optional(zHttpsUrl),
+
+    // Non-standard (draft 05 era); retained for backwards compatibility. Not part of draft 06+.
     client_attestation_pop_nonce_required: z.boolean().optional(),
 
     // RFC9207
