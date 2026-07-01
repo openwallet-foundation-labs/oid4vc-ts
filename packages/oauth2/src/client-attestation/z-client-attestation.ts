@@ -9,7 +9,6 @@ export const oauthClientAttestationHeader = zOauthClientAttestationHeader.value
 export const zClientAttestationJwtPayload = z
   .object({
     ...zJwtPayload.shape,
-    iss: z.string(),
     sub: z.string(),
     exp: zNumericDate,
     cnf: z
@@ -37,13 +36,20 @@ export type ClientAttestationJwtHeader = z.infer<typeof zClientAttestationJwtHea
 export const zOauthClientAttestationPopHeader = z.literal('OAuth-Client-Attestation-PoP')
 export const oauthClientAttestationPopHeader = zOauthClientAttestationPopHeader.value
 
+// draft 09: header used by the authorization/resource server to provide a fresh challenge.
+export const zOauthClientAttestationChallengeHeader = z.literal('OAuth-Client-Attestation-Challenge')
+export const oauthClientAttestationChallengeHeader = zOauthClientAttestationChallengeHeader.value
+
 export const zClientAttestationPopJwtPayload = z
   .object({
     ...zJwtPayload.shape,
-    iss: z.string(),
     aud: z.union([zHttpsUrl, z.array(zHttpsUrl)]),
 
     jti: z.string(),
+
+    // `challenge` (draft 06+) replaced `nonce`. Both are accepted on verification; `nonce`
+    // is retained only for backwards compatibility with <= draft 05 PoP JWTs.
+    challenge: z.optional(z.string()),
     nonce: z.optional(z.string()),
   })
   .loose()
