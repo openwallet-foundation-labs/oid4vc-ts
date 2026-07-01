@@ -80,11 +80,11 @@ export interface CreateClientAttestationJwtOptions {
   expiresAt: Date
 
   /**
-   * Issuer of the client attestation, usually identifier of the client backend.
+   * Issuer of the client attestation, usually the identifier of the client backend (attester).
    *
-   * @deprecated The `iss` claim was removed from the Client Attestation JWT in draft 08. This
-   * option is retained for backwards compatibility with <= draft 07 verifiers; if provided the
-   * `iss` claim will still be included in the payload.
+   * The `iss` claim was removed from the Client Attestation JWT in draft 08, so it is only
+   * included in the payload when this option is provided. It is also useful for interoperability
+   * with <= draft 07 verifiers and when the KID is a relative DID URL to the issuer.
    */
   issuer?: string
 
