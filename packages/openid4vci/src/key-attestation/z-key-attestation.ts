@@ -8,11 +8,11 @@ export const zKeyAttestationJwtHeader = z
   .object({
     ...zJwtHeader.shape,
     typ: z
-      // Draft 15
-      .literal('keyattestation+jwt')
+      // OpenID4VCI 1.0/1.1 final
+      .literal('key-attestation+jwt')
       .or(
-        // Draft 16
-        z.literal('key-attestation+jwt')
+        // Legacy (<= draft 15) typ, accepted on verification for backwards compatibility
+        z.literal('keyattestation+jwt')
       ),
   })
   .loose()

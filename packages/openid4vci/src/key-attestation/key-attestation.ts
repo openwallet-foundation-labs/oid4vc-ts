@@ -87,7 +87,7 @@ export interface CreateKeyAttestationJwtOptions {
 export async function createKeyAttestationJwt(options: CreateKeyAttestationJwtOptions): Promise<string> {
   const header = parseWithErrorHandling(zKeyAttestationJwtHeader, {
     ...jwtHeaderFromJwtSigner(options.signer),
-    typ: 'keyattestation+jwt',
+    typ: 'key-attestation+jwt',
   } satisfies KeyAttestationJwtHeader)
 
   const payload = parseWithErrorHandling(zKeyAttestationJwtPayloadForUse(options.use), {
