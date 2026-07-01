@@ -8,18 +8,18 @@ export const zKeyAttestationJwtHeader = z
   .object({
     ...zJwtHeader.shape,
     typ: z
-      // Draft 15
-      .literal('keyattestation+jwt')
+      // OpenID4VCI 1.0/1.1 final
+      .literal('key-attestation+jwt')
       .or(
-        // Draft 16
-        z.literal('key-attestation+jwt')
+        // Legacy (<= draft 15) typ, accepted on verification for backwards compatibility
+        z.literal('keyattestation+jwt')
       ),
   })
   .loose()
   .refine(({ kid, jwk }) => jwk === undefined || kid === undefined, {
     message: `Both 'jwk' and 'kid' are defined. Only one is allowed`,
   })
-  .refine(({ trust_chain, kid }) => !trust_chain || !kid, {
+  .refine(({ trust_chain, kid }) => !trust_chain || kid !== undefined, {
     message: `When 'trust_chain' is provided, 'kid' is required`,
   })
 
@@ -35,9 +35,9 @@ export const zKeyAttestationJwtPayload = z
     ...zJwtPayload.shape,
     iat: zNumericDate,
 
-    attested_keys: z.array(zJwk),
-    key_storage: z.optional(zIso18045OrStringArray),
-    user_authentication: z.optional(zIso18045OrStringArray),
+    attested_keys: z.array(zJwk).min(1),
+    key_storage: z.optional(zIso18045OrStringArray.min(1)),
+    user_authentication: z.optional(zIso18045OrStringArray.min(1)),
     certification: z.optional(z.url()),
   })
   .loose()
@@ -47,13 +47,9 @@ export const zKeyAttestationJwtPayloadForUse = <Use extends KeyAttestationJwtUse
     .object({
       ...zKeyAttestationJwtPayload.shape,
 
-      // REQUIRED when used as proof_type.attesation directly
-      nonce:
-        use === 'proof_type.attestation'
-          ? z.string({
-              message: `Nonce must be defined when key attestation is used as 'proof_type.attestation' directly`,
-            })
-          : z.optional(z.string()),
+      // `nonce` is OPTIONAL per spec; it is only required when the Credential Issuer has a Nonce
+      // Endpoint. That freshness requirement is enforced via `expectedNonce` during verification,
+      // so it stays optional at the schema level (inherited from the base payload).
 
       // REQUIRED when used within header of proof_type.jwt
       exp: use === 'proof_type.jwt' ? zNumericDate : z.optional(zNumericDate),

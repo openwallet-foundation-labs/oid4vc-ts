@@ -221,7 +221,7 @@ describe('Openid4vciIssuer', () => {
         header: {
           alg: 'ES256',
           jwk: keyAttestationJwkPublic,
-          typ: 'keyattestation+jwt',
+          typ: 'key-attestation+jwt',
         },
         payload: {
           attested_keys: [credentialRequestProofJwkPublic],
