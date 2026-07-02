@@ -1,5 +1,7 @@
 import type { CallbackContext } from '@openid4vc/oauth2'
+import { parseWithErrorHandling } from '@openid4vc/utils'
 import { Openid4vciError } from '../../../error/Openid4vciError'
+import { DataIntegrityProof, zDataIntegrityProof } from './z-di-vp-proof-type'
 
 export interface VerifyCredentialRequestDiVpProofOptions {
   /**
@@ -39,21 +41,17 @@ export async function verifyCredentialRequestDiVpProof(options: VerifyCredential
     throw new Openid4vciError('Nonce used for credential request proof expired')
   }
 
-  const rawProof = options.vp.proof
-  const proof = (Array.isArray(rawProof) ? rawProof[0] : rawProof) as Record<string, unknown> | undefined
-
-  if (!proof || typeof proof !== 'object') {
+  const rawProof = (options.vp as { proof?: unknown }).proof
+  if (rawProof === undefined) {
     throw new Openid4vciError(`di_vp proof is missing a 'proof' entry`)
   }
-  if (proof.type !== 'DataIntegrityProof') {
-    throw new Openid4vciError(`di_vp proof 'proof.type' must be 'DataIntegrityProof'`)
-  }
-  if (!proof.cryptosuite || typeof proof.cryptosuite !== 'string') {
-    throw new Openid4vciError(`di_vp proof is missing required 'proof.cryptosuite'`)
-  }
-  if (proof.proofPurpose !== 'authentication') {
-    throw new Openid4vciError(`di_vp proof 'proof.proofPurpose' must be 'authentication'`)
-  }
+
+  const proof = parseWithErrorHandling(
+    zDataIntegrityProof,
+    Array.isArray(rawProof) ? rawProof[0] : rawProof,
+    'di_vp proof contains an invalid proof entry'
+  ) satisfies DataIntegrityProof;
+
   if (proof.domain !== options.credentialIssuer) {
     throw new Openid4vciError(`di_vp proof 'proof.domain' does not match the credential issuer identifier`)
   }
@@ -63,9 +61,6 @@ export async function verifyCredentialRequestDiVpProof(options: VerifyCredential
     }
   } else if (proof.challenge !== undefined) {
     throw new Openid4vciError(`di_vp proof 'proof.challenge' must not be present when no nonce was issued`)
-  }
-  if (!proof.verificationMethod || typeof proof.verificationMethod !== 'string') {
-    throw new Openid4vciError(`di_vp proof is missing required 'proof.verificationMethod'`)
   }
 
   if (!options.callbacks.verifyDataIntegrityProof) {
