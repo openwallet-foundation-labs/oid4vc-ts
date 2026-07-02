@@ -422,6 +422,87 @@ describe('Parse Credential Request', () => {
     })
   })
 
+  test('parse draft 14 credential request with known di_vp proof_type', () => {
+    expect(
+      parseCredentialRequest({
+        issuerMetadata: {
+          authorizationServers: [],
+          credentialIssuer: issuerMetadata,
+          originalDraftVersion: Openid4vciVersion.Draft14,
+          knownCredentialConfigurations: {
+            my_credential: {
+              format: 'dc+sd-jwt',
+              vct: 'hello',
+            },
+          },
+        },
+        credentialRequest: {
+          credential_identifier: 'some-identifier',
+          extra_prop: 'should-stay',
+          proof: {
+            proof_type: 'di_vp',
+            di_vp: {
+              '@context': ['https://www.w3.org/ns/credentials/v2'],
+              type: ['VerifiablePresentation'],
+              proof: {
+                type: 'DataIntegrityProof',
+                cryptosuite: 'eddsa-2022',
+                proofPurpose: 'authentication',
+                verificationMethod: 'did:key:z6Mk...#z6Mk...',
+                created: '2023-03-01T14:56:29.280619Z',
+                challenge: '82d4cb36-...',
+                domain: 'https://issuer.com',
+                proofValue: 'z5hrbHzZ...',
+              },
+            },
+          },
+        },
+      })
+    ).toStrictEqual({
+      proofs: {
+        di_vp: [
+          {
+            '@context': ['https://www.w3.org/ns/credentials/v2'],
+            type: ['VerifiablePresentation'],
+            proof: {
+              type: 'DataIntegrityProof',
+              cryptosuite: 'eddsa-2022',
+              proofPurpose: 'authentication',
+              verificationMethod: 'did:key:z6Mk...#z6Mk...',
+              created: '2023-03-01T14:56:29.280619Z',
+              challenge: '82d4cb36-...',
+              domain: 'https://issuer.com',
+              proofValue: 'z5hrbHzZ...',
+            },
+          },
+        ],
+      },
+      credentialIdentifier: 'some-identifier',
+      credentialRequest: {
+        credential_identifier: 'some-identifier',
+        extra_prop: 'should-stay',
+        proof: {
+          proof_type: 'di_vp',
+          di_vp: {
+            '@context': ['https://www.w3.org/ns/credentials/v2'],
+            type: ['VerifiablePresentation'],
+            proof: {
+              type: 'DataIntegrityProof',
+              cryptosuite: 'eddsa-2022',
+              proofPurpose: 'authentication',
+              verificationMethod: 'did:key:z6Mk...#z6Mk...',
+              created: '2023-03-01T14:56:29.280619Z',
+              challenge: '82d4cb36-...',
+              domain: 'https://issuer.com',
+              proofValue: 'z5hrbHzZ...',
+            },
+          },
+        },
+      },
+      credentialResponseEncryption: undefined,
+    })
+  })
+
   test('parse draft 14 credential request with unknown proof_type', () => {
     expect(
       parseCredentialRequest({

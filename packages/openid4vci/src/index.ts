@@ -46,7 +46,7 @@ export type {
   LegacySdJwtVcFormatIdentifier,
   MsoMdocFormatIdentifier,
 } from './formats/credential'
-export type { JwtProofTypeIdentifier, ProofTypeIdentifier } from './formats/proof-type'
+export type { DiVpProofTypeIdentifier, JwtProofTypeIdentifier, ProofTypeIdentifier } from './formats/proof-type'
 export type {
   CredentialRequestJwtProofTypeHeader,
   CredentialRequestJwtProofTypePayload,

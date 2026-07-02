@@ -43,6 +43,20 @@ export type VerifyJwtCallback = (
     }
 >
 
+export type VerifyDataIntegrityProofCallback = (
+  dataIntegrityProof: Record<string, unknown>,
+  document: Record<string, unknown>
+) => OrPromise<
+  | {
+      verified: true
+      signerJwk: Jwk
+    }
+  | {
+      verified: false
+      signerJwk?: Jwk
+    }
+>
+
 export interface DecryptJweCallbackOptions {
   jwk?: Jwk
 }
@@ -104,6 +118,12 @@ export interface CallbackContext {
    * Verify jwt callback for verification of Json Web Tokens
    */
   verifyJwt: VerifyJwtCallback
+
+  /**
+   * Verify a Data Integrity proof (e.g. the `proof` of a `di_vp` key proof's Verifiable
+   * Presentation). Optional because most issuers won't support the `di_vp` proof type.
+   */
+  verifyDataIntegrityProof?: VerifyDataIntegrityProofCallback
 
   /**
    * Generate random callback to generate random bytes. Used for
