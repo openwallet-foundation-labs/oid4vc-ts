@@ -1,7 +1,7 @@
 import type { CallbackContext } from '@openid4vc/oauth2'
 import { parseWithErrorHandling } from '@openid4vc/utils'
 import { Openid4vciError } from '../../../error/Openid4vciError'
-import { DataIntegrityProof, zDataIntegrityProof } from './z-di-vp-proof-type'
+import { type DataIntegrityProof, zDataIntegrityProof } from './z-di-vp-proof-type'
 
 export interface VerifyCredentialRequestDiVpProofOptions {
   /**
@@ -50,7 +50,7 @@ export async function verifyCredentialRequestDiVpProof(options: VerifyCredential
     zDataIntegrityProof,
     Array.isArray(rawProof) ? rawProof[0] : rawProof,
     'di_vp proof contains an invalid proof entry'
-  ) satisfies DataIntegrityProof;
+  ) satisfies DataIntegrityProof
 
   if (proof.domain !== options.credentialIssuer) {
     throw new Openid4vciError(`di_vp proof 'proof.domain' does not match the credential issuer identifier`)
