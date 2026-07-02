@@ -1,6 +1,7 @@
 import { parseWithErrorHandling } from '@openid4vc/utils'
 import z from 'zod'
 import { attestationProofTypeIdentifier } from '../formats/proof-type/attestation/z-attestation-proof-type'
+import { diVpProofTypeIdentifier } from '../formats/proof-type/di-vp/z-di-vp-proof-type'
 import { jwtProofTypeIdentifier } from '../formats/proof-type/jwt/z-jwt-proof-type'
 import { getKnownCredentialConfigurationSupportedById } from '../metadata/credential-issuer/credential-issuer-metadata'
 import type { CredentialConfigurationSupportedWithFormats } from '../metadata/credential-issuer/z-credential-issuer-metadata'
@@ -105,6 +106,8 @@ export function parseCredentialRequest(options: ParseCredentialRequestOptions): 
     proofs = { [jwtProofTypeIdentifier]: [knownProof.data.jwt] }
   } else if (knownProof.success && knownProof.data.proof_type === attestationProofTypeIdentifier) {
     proofs = { [attestationProofTypeIdentifier]: [knownProof.data.attestation] }
+  } else if (knownProof.success && knownProof.data.proof_type === diVpProofTypeIdentifier) {
+    proofs = { [diVpProofTypeIdentifier]: [knownProof.data.di_vp] }
   }
 
   const credentialResponseEncryption = credentialRequest.credential_response_encryption

@@ -72,6 +72,7 @@ export type {
   GenerateRandomCallback,
   HashCallback,
   SignJwtCallback,
+  VerifyDataIntegrityProofCallback,
   VerifyJwtCallback,
 } from './callbacks'
 export { HashAlgorithm } from './callbacks'
