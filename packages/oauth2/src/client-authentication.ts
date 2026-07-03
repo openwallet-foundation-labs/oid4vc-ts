@@ -160,6 +160,14 @@ export interface ClientAuthenticationCallbackOptions {
    * You can modify this object
    */
   body: Record<string, unknown>
+
+  /**
+   * A fresh Client Attestation challenge provided by the authorization server (draft 09), e.g.
+   * obtained from the `OAuth-Client-Attestation-Challenge` response header when retrying after a
+   * `use_attestation_challenge` error. When set it takes precedence over any statically configured
+   * challenge for methods that include a Client Attestation PoP.
+   */
+  attestationChallenge?: string
 }
 
 /**
@@ -238,15 +246,15 @@ export interface ClientAuthenticationClientAttestationJwtOptions {
 export function clientAuthenticationClientAttestationJwt(
   options: ClientAuthenticationClientAttestationJwtOptions
 ): ClientAuthenticationCallback {
-  return async ({ headers, authorizationServerMetadata }) => {
+  return async ({ headers, authorizationServerMetadata, attestationChallenge }) => {
     const clientAttestationPop = await createClientAttestationPopJwt({
       authorizationServer: authorizationServerMetadata.issuer,
       callbacks: options.callbacks,
       clientAttestation: options.clientAttestationJwt,
 
-      // TODO: support dynamically fetching the challenge from the `challenge_endpoint`
-      // https://www.ietf.org/archive/id/draft-ietf-oauth-attestation-based-client-auth-09.html
-      challenge: options.challenge,
+      // A server-provided challenge (draft 09, e.g. from the `OAuth-Client-Attestation-Challenge`
+      // response header on retry) takes precedence over a statically configured challenge.
+      challenge: attestationChallenge ?? options.challenge,
     })
 
     headers.set(oauthClientAttestationHeader, options.clientAttestationJwt)

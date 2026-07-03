@@ -20,6 +20,9 @@ export enum Oauth2ErrorCodes {
   InvalidDpopProof = 'invalid_dpop_proof',
   UseDpopNonce = 'use_dpop_nonce',
 
+  // Client Attestation (draft 09)
+  UseAttestationChallenge = 'use_attestation_challenge',
+
   // FiPA
   RedirectToWeb = 'redirect_to_web',
   InvalidSession = 'invalid_session',
