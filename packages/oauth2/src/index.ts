@@ -102,6 +102,7 @@ export { zClientAttestationChallengeResponse } from './client-attestation/z-clie
 export {
   type ClientAuthenticationCallback,
   type ClientAuthenticationCallbackOptions,
+  type ClientAuthenticationClientAttestationJwtDpopOptions,
   type ClientAuthenticationClientAttestationJwtOptions,
   type ClientAuthenticationClientSecretBasicOptions,
   type ClientAuthenticationClientSecretPostOptions,
@@ -109,6 +110,7 @@ export {
   type ClientAuthenticationNoneOptions,
   clientAuthenticationAnonymous,
   clientAuthenticationClientAttestationJwt,
+  clientAuthenticationClientAttestationJwtDpop,
   clientAuthenticationClientSecretBasic,
   clientAuthenticationClientSecretPost,
   clientAuthenticationDynamic,

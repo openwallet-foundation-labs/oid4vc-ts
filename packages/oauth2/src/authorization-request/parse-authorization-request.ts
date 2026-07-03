@@ -39,7 +39,12 @@ export interface ParseAuthorizationRequestResult {
    */
   clientAttestation?: {
     clientAttestationJwt: string
-    clientAttestationPopJwt: string
+
+    /**
+     * Absent for the DPoP-bound `attest_jwt_client_auth_dpop` method (draft 09), where the DPoP proof
+     * serves as the Client Attestation PoP.
+     */
+    clientAttestationPopJwt?: string
   }
 }
 

@@ -5,7 +5,12 @@ import { createClientAttestationPopJwt } from './client-attestation/client-attes
 import {
   oauthClientAttestationHeader,
   oauthClientAttestationPopHeader,
+  zClientAttestationJwtHeader,
+  zClientAttestationJwtPayload,
 } from './client-attestation/z-client-attestation'
+import { decodeJwt } from './common/jwt/decode-jwt'
+import type { JwtSignerJwk } from './common/jwt/z-jwt'
+import { createDpopJwt } from './dpop/dpop'
 import { Oauth2Error } from './error/Oauth2Error'
 import type { AuthorizationServerMetadata } from './metadata/authorization-server/z-authorization-server-metadata'
 import { preAuthorizedCodeGrantIdentifier } from './z-grant-type'
@@ -259,5 +264,62 @@ export function clientAuthenticationClientAttestationJwt(
 
     headers.set(oauthClientAttestationHeader, options.clientAttestationJwt)
     headers.set(oauthClientAttestationPopHeader, clientAttestationPop)
+  }
+}
+
+export interface ClientAuthenticationClientAttestationJwtDpopOptions {
+  clientAttestationJwt: string
+  callbacks: Pick<CallbackContext, 'signJwt' | 'generateRandom' | 'hash'>
+
+  /**
+   * The DPoP (client instance) key signer. In the DPoP-bound method the client instance key and the
+   * DPoP key are the same key. If not provided, the signer is derived from the `cnf.jwk` of the client
+   * attestation.
+   */
+  signer?: JwtSignerJwk
+
+  /**
+   * Challenge provided by the authorization server (e.g. obtained from its `challenge_endpoint`) to
+   * include in the DPoP proof. A server-provided challenge threaded through the client authentication
+   * callback takes precedence. The challenge is placed in the DPoP `nonce` claim.
+   */
+  challenge?: string
+}
+
+/**
+ * Client authentication using the `attest_jwt_client_auth_dpop` option (draft 09 §5.2).
+ *
+ * In this DPoP-bound variant the client instance key and the DPoP key are the same key, and a single
+ * DPoP proof serves as both the DPoP proof and the Client Attestation PoP. The request carries the
+ * `OAuth-Client-Attestation` and `DPoP` headers, but no separate `OAuth-Client-Attestation-PoP` header.
+ */
+export function clientAuthenticationClientAttestationJwtDpop(
+  options: ClientAuthenticationClientAttestationJwtDpopOptions
+): ClientAuthenticationCallback {
+  return async ({ headers, url, method, attestationChallenge }) => {
+    const clientAttestation = decodeJwt({
+      jwt: options.clientAttestationJwt,
+      headerSchema: zClientAttestationJwtHeader,
+      payloadSchema: zClientAttestationJwtPayload,
+    })
+
+    const signer = options.signer ?? {
+      method: 'jwk',
+      alg: clientAttestation.header.alg,
+      publicJwk: clientAttestation.payload.cnf.jwk,
+    }
+
+    const dpopJwt = await createDpopJwt({
+      request: { url, method },
+      signer,
+      // A server-provided challenge (draft 09, e.g. from the `OAuth-Client-Attestation-Challenge`
+      // response header on retry) takes precedence over a statically configured challenge. In the
+      // DPoP-bound method the challenge is carried in the DPoP `nonce` claim.
+      nonce: attestationChallenge ?? options.challenge,
+      callbacks: options.callbacks,
+    })
+
+    headers.set(oauthClientAttestationHeader, options.clientAttestationJwt)
+    headers.set('DPoP', dpopJwt)
   }
 }
