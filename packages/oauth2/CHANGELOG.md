@@ -1,5 +1,13 @@
 # @openid4vc/oauth2
 
+## 0.5.3
+
+### Patch Changes
+
+- 9c4c66c: Add support for di_vp proofs in credential requests
+- 6886ca5: Add `Oauth2Client.requestClientAttestationChallenge` to fetch a Client Attestation challenge from the authorization server's `challenge_endpoint`, and support the `use_attestation_challenge` reactive challenge retry (draft 09) so the challenge is automatically included in the Client Attestation PoP when the server requests one.
+  - @openid4vc/utils@0.5.3
+
 ## 0.5.2
 
 ### Patch Changes
