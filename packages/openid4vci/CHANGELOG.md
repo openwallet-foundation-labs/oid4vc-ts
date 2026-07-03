@@ -1,5 +1,15 @@
 # @openid4vc/openid4vci
 
+## 0.5.3
+
+### Patch Changes
+
+- 9c4c66c: Add support for di_vp proofs in credential requests
+- Updated dependencies [9c4c66c]
+- Updated dependencies [6886ca5]
+  - @openid4vc/oauth2@0.5.3
+  - @openid4vc/utils@0.5.3
+
 ## 0.5.2
 
 ### Patch Changes

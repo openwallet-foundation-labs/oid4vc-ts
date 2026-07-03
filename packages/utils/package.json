@@ -1,6 +1,6 @@
 {
   "name": "@openid4vc/utils",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "files": [
     "dist"
   ],
