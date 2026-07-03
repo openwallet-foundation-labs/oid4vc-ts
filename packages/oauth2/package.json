@@ -1,6 +1,6 @@
 {
   "name": "@openid4vc/oauth2",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "files": [
     "dist"
   ],
