@@ -82,13 +82,23 @@ export {
   type VerifiedClientAttestationJwt,
   verifyClientAttestationJwt,
 } from './client-attestation/client-attestation'
+export {
+  authorizationServerRequestWithClientAttestationChallengeRetry,
+  extractClientAttestationChallengeFromHeaders,
+  type RequestClientAttestationChallengeOptions,
+  requestClientAttestationChallenge,
+  type ShouldRetryAuthorizationServerRequestWithClientAttestationChallengeOptions,
+  shouldRetryAuthorizationServerRequestWithClientAttestationChallenge,
+} from './client-attestation/client-attestation-challenge'
 export type { RequestClientAttestationOptions } from './client-attestation/client-attestation-pop'
 export type {
+  ClientAttestationChallengeResponse,
   ClientAttestationJwtHeader,
   ClientAttestationJwtPayload,
   ClientAttestationPopJwtHeader,
   ClientAttestationPopJwtPayload,
 } from './client-attestation/z-client-attestation'
+export { zClientAttestationChallengeResponse } from './client-attestation/z-client-attestation'
 export {
   type ClientAuthenticationCallback,
   type ClientAuthenticationCallbackOptions,

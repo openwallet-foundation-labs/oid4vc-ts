@@ -23,6 +23,10 @@ import {
   verifyAuthorizationResponse,
 } from './authorization-response/verify-authorization-response'
 import type { CallbackContext } from './callbacks'
+import {
+  type RequestClientAttestationChallengeOptions,
+  requestClientAttestationChallenge,
+} from './client-attestation/client-attestation-challenge'
 import { SupportedClientAuthenticationMethod } from './client-authentication'
 import { Oauth2ErrorCodes } from './common/z-oauth2-error'
 import { extractDpopNonceFromHeaders } from './dpop/dpop'
@@ -161,6 +165,18 @@ export class Oauth2Client {
 
   public sendAuthorizationChallengeRequest(options: Omit<SendAuthorizationChallengeRequestOptions, 'callbacks'>) {
     return sendAuthorizationChallengeRequest({
+      ...options,
+      callbacks: this.options.callbacks,
+    })
+  }
+
+  /**
+   * Request a fresh Client Attestation challenge from the authorization server's `challenge_endpoint`
+   * (draft 09). The returned challenge can be passed to `clientAuthenticationClientAttestationJwt` so
+   * it is included in the Client Attestation PoP JWT.
+   */
+  public requestClientAttestationChallenge(options: Omit<RequestClientAttestationChallengeOptions, 'callbacks'>) {
+    return requestClientAttestationChallenge({
       ...options,
       callbacks: this.options.callbacks,
     })

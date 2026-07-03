@@ -40,6 +40,10 @@ export const oauthClientAttestationPopHeader = zOauthClientAttestationPopHeader.
 export const zOauthClientAttestationChallengeHeader = z.literal('OAuth-Client-Attestation-Challenge')
 export const oauthClientAttestationChallengeHeader = zOauthClientAttestationChallengeHeader.value
 
+// draft 09 §6.1: response body of the authorization server's `challenge_endpoint`.
+export const zClientAttestationChallengeResponse = z.object({ attestation_challenge: z.string() }).loose()
+export type ClientAttestationChallengeResponse = z.infer<typeof zClientAttestationChallengeResponse>
+
 export const zClientAttestationPopJwtPayload = z
   .object({
     ...zJwtPayload.shape,

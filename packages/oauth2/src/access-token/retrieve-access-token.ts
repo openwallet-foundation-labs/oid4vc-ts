@@ -8,6 +8,10 @@ import {
 } from '@openid4vc/utils'
 import { ValidationError } from '../../../utils/src/error/ValidationError'
 import type { CallbackContext } from '../callbacks'
+import {
+  authorizationServerRequestWithClientAttestationChallengeRetry,
+  extractClientAttestationChallengeFromHeaders,
+} from '../client-attestation/client-attestation-challenge'
 import { createDpopHeadersForRequest, extractDpopNonceFromHeaders, type RequestDpopOptions } from '../dpop/dpop'
 import { authorizationServerRequestWithDpopRetry } from '../dpop/dpop-retry'
 import { Oauth2ClientErrorResponseError } from '../error/Oauth2ClientErrorResponseError'
@@ -31,6 +35,13 @@ import {
 export interface RetrieveAccessTokenReturn {
   accessTokenResponse: AccessTokenResponse
   dpop?: RequestDpopOptions
+
+  /**
+   * A fresh Client Attestation challenge provided by the authorization server in the
+   * `OAuth-Client-Attestation-Challenge` response header (draft 09 §6.2). If present, the client
+   * should use this challenge for the next Client Attestation PoP JWT.
+   */
+  attestationChallenge?: string
 }
 
 interface RetrieveAccessTokenBaseOptions {
@@ -231,83 +242,88 @@ async function retrieveAccessToken(options: RetrieveAccessTokenOptions): Promise
     accessTokenRequest.user_pin = accessTokenRequest.tx_code
   }
 
-  return await authorizationServerRequestWithDpopRetry({
-    dpop: options.dpop,
-    request: async (dpop) => {
-      const dpopHeaders = dpop
-        ? await createDpopHeadersForRequest({
-            request: {
-              method: 'POST',
-              url: options.authorizationServerMetadata.token_endpoint,
-            },
-            signer: dpop.signer,
-            callbacks: options.callbacks,
-            nonce: dpop.nonce,
+  return await authorizationServerRequestWithClientAttestationChallengeRetry({
+    request: (attestationChallenge) =>
+      authorizationServerRequestWithDpopRetry({
+        dpop: options.dpop,
+        request: async (dpop) => {
+          const dpopHeaders = dpop
+            ? await createDpopHeadersForRequest({
+                request: {
+                  method: 'POST',
+                  url: options.authorizationServerMetadata.token_endpoint,
+                },
+                signer: dpop.signer,
+                callbacks: options.callbacks,
+                nonce: dpop.nonce,
+              })
+            : undefined
+
+          const headers = new Headers({
+            'Content-Type': ContentType.XWwwFormUrlencoded,
+            ...dpopHeaders,
           })
-        : undefined
 
-      const headers = new Headers({
-        'Content-Type': ContentType.XWwwFormUrlencoded,
-        ...dpopHeaders,
-      })
+          // Apply client authentication
+          await options.callbacks.clientAuthentication({
+            url: options.authorizationServerMetadata.token_endpoint,
+            method: 'POST',
+            authorizationServerMetadata: options.authorizationServerMetadata,
+            body: accessTokenRequest,
+            contentType: ContentType.XWwwFormUrlencoded,
+            headers,
+            attestationChallenge,
+          })
 
-      // Apply client authentication
-      await options.callbacks.clientAuthentication({
-        url: options.authorizationServerMetadata.token_endpoint,
-        method: 'POST',
-        authorizationServerMetadata: options.authorizationServerMetadata,
-        body: accessTokenRequest,
-        contentType: ContentType.XWwwFormUrlencoded,
-        headers,
-      })
-
-      const { response, result } = await fetchWithZod(
-        zAccessTokenResponse,
-        ContentType.Json,
-        options.authorizationServerMetadata.token_endpoint,
-        {
-          body: objectToQueryParams(accessTokenRequest).toString(),
-          method: 'POST',
-          headers,
-        }
-      )
-
-      if (!response.ok || !result) {
-        const tokenErrorResponse = zAccessTokenErrorResponse.safeParse(
-          await response
-            .clone()
-            .json()
-            .catch(() => null)
-        )
-        if (tokenErrorResponse.success) {
-          throw new Oauth2ClientErrorResponseError(
-            `Unable to retrieve access token from '${options.authorizationServerMetadata.token_endpoint}'. Received token error response with status ${response.status}`,
-            tokenErrorResponse.data,
-            response
-          )
-        }
-
-        throw new InvalidFetchResponseError(
-          `Unable to retrieve access token from '${options.authorizationServerMetadata.token_endpoint}'. Received response with status ${response.status}`,
-          await response.clone().text(),
-          response
-        )
-      }
-
-      if (!result.success) {
-        throw new ValidationError('Error validating access token response', result.error)
-      }
-
-      const dpopNonce = extractDpopNonceFromHeaders(response.headers) ?? undefined
-      return {
-        dpop: dpop
-          ? {
-              ...dpop,
-              nonce: dpopNonce,
+          const { response, result } = await fetchWithZod(
+            zAccessTokenResponse,
+            ContentType.Json,
+            options.authorizationServerMetadata.token_endpoint,
+            {
+              body: objectToQueryParams(accessTokenRequest).toString(),
+              method: 'POST',
+              headers,
             }
-          : undefined,
-        accessTokenResponse: result.data,
-      }
-    },
+          )
+
+          if (!response.ok || !result) {
+            const tokenErrorResponse = zAccessTokenErrorResponse.safeParse(
+              await response
+                .clone()
+                .json()
+                .catch(() => null)
+            )
+            if (tokenErrorResponse.success) {
+              throw new Oauth2ClientErrorResponseError(
+                `Unable to retrieve access token from '${options.authorizationServerMetadata.token_endpoint}'. Received token error response with status ${response.status}`,
+                tokenErrorResponse.data,
+                response
+              )
+            }
+
+            throw new InvalidFetchResponseError(
+              `Unable to retrieve access token from '${options.authorizationServerMetadata.token_endpoint}'. Received response with status ${response.status}`,
+              await response.clone().text(),
+              response
+            )
+          }
+
+          if (!result.success) {
+            throw new ValidationError('Error validating access token response', result.error)
+          }
+
+          const dpopNonce = extractDpopNonceFromHeaders(response.headers) ?? undefined
+          return {
+            dpop: dpop
+              ? {
+                  ...dpop,
+                  nonce: dpopNonce,
+                }
+              : undefined,
+            attestationChallenge: extractClientAttestationChallengeFromHeaders(response.headers) ?? undefined,
+            accessTokenResponse: result.data,
+          }
+        },
+      }),
   })
 }
