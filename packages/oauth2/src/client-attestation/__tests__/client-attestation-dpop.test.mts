@@ -119,9 +119,12 @@ describe('DPoP-bound client attestation (attest_jwt_client_auth_dpop)', () => {
       })
     }
 
-    function verify(dpopJwt: string, extra?: { expectedNonce?: string }) {
+    function verify(
+      dpopJwt: string,
+      extra?: { expectedNonce?: string; authorizationServerMetadata?: AuthorizationServerMetadata }
+    ) {
       return verifyPreAuthorizedCodeAccessTokenRequest({
-        authorizationServerMetadata,
+        authorizationServerMetadata: extra?.authorizationServerMetadata ?? authorizationServerMetadata,
         accessTokenRequest: {
           grant_type: preAuthorizedCodeGrantIdentifier,
           'pre-authorized_code': 'code-123',
@@ -172,6 +175,32 @@ describe('DPoP-bound client attestation (attest_jwt_client_auth_dpop)', () => {
       const dpopJwt = await createCombinedDpopProof(instance, 'the-challenge')
 
       await expect(verify(dpopJwt, { expectedNonce: 'a-different-challenge' })).rejects.toThrow()
+    })
+
+    test('rejects when the AS advertises client auth methods but not attest_jwt_client_auth_dpop', async () => {
+      const dpopJwt = await createCombinedDpopProof(instance)
+
+      await expect(
+        verify(dpopJwt, {
+          authorizationServerMetadata: {
+            ...authorizationServerMetadata,
+            token_endpoint_auth_methods_supported: ['attest_jwt_client_auth'],
+          },
+        })
+      ).rejects.toThrow("does not support the 'attest_jwt_client_auth_dpop'")
+    })
+
+    test('accepts when the AS advertises attest_jwt_client_auth_dpop', async () => {
+      const dpopJwt = await createCombinedDpopProof(instance)
+
+      const result = await verify(dpopJwt, {
+        authorizationServerMetadata: {
+          ...authorizationServerMetadata,
+          token_endpoint_auth_methods_supported: ['attest_jwt_client_auth_dpop'],
+        },
+      })
+
+      expect(result.clientAttestation?.clientAttestation.payload.sub).toBe('wallet')
     })
   })
 })

@@ -361,6 +361,7 @@ async function verifyAccessTokenRequestClientAttestation(
   if (!options.clientAttestationPopJwt) {
     return verifyAccessTokenRequestClientAttestationDpop(
       { ...options, clientAttestationJwt: options.clientAttestationJwt },
+      authorizationServerMetadata,
       callbacks,
       dpopJwkThumbprint,
       now
@@ -391,10 +392,21 @@ async function verifyAccessTokenRequestClientAttestation(
 
 async function verifyAccessTokenRequestClientAttestationDpop(
   options: VerifyAccessTokenRequestClientAttestation & { clientAttestationJwt: string },
+  authorizationServerMetadata: AuthorizationServerMetadata,
   callbacks: Pick<CallbackContext, 'verifyJwt' | 'hash'>,
   dpopJwkThumbprint?: string,
   now?: Date
 ) {
+  // Hardening: if the authorization server advertises client authentication methods but not the
+  // DPoP-bound method, reject. Advertising is only SHOULD in draft 09 §8, so an absent list is allowed.
+  const supportedMethods = authorizationServerMetadata.token_endpoint_auth_methods_supported
+  if (supportedMethods && !supportedMethods.includes(SupportedClientAuthenticationMethod.ClientAttestationJwtDpop)) {
+    throw new Oauth2ServerErrorResponseError({
+      error: Oauth2ErrorCodes.InvalidClient,
+      error_description: `The authorization server does not support the '${SupportedClientAuthenticationMethod.ClientAttestationJwtDpop}' client authentication method.`,
+    })
+  }
+
   // The DPoP proof is the Client Attestation PoP in this method, so a valid DPoP proof is required.
   if (!dpopJwkThumbprint) {
     throw new Oauth2ServerErrorResponseError({
