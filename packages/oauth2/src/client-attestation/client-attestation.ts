@@ -145,7 +145,7 @@ export function extractClientAttestationJwtsFromHeaders(
 ):
   | { valid: false }
   | { valid: true; clientAttestationHeader?: undefined; clientAttestationPopHeader?: undefined }
-  | { valid: true; clientAttestationHeader: string; clientAttestationPopHeader: string } {
+  | { valid: true; clientAttestationHeader: string; clientAttestationPopHeader?: string } {
   const clientAttestationHeader = headers.get(oauthClientAttestationHeader)
   const clientAttestationPopHeader = headers.get(oauthClientAttestationPopHeader)
 
@@ -153,14 +153,23 @@ export function extractClientAttestationJwtsFromHeaders(
     return { valid: true }
   }
 
-  if (!clientAttestationHeader || !clientAttestationPopHeader) {
+  // A Client Attestation PoP header without a Client Attestation header is always invalid.
+  if (!clientAttestationHeader) {
     return { valid: false }
   }
 
-  if (
-    !zCompactJwt.safeParse(clientAttestationHeader).success ||
-    !zCompactJwt.safeParse(clientAttestationPopHeader).success
-  ) {
+  if (!zCompactJwt.safeParse(clientAttestationHeader).success) {
+    return { valid: false } as const
+  }
+
+  // draft 09 `attest_jwt_client_auth_dpop`: the attestation header is present without a separate PoP
+  // header (the DPoP proof serves as the PoP). This is only accepted later if a matching DPoP proof
+  // is present.
+  if (!clientAttestationPopHeader) {
+    return { valid: true, clientAttestationHeader } as const
+  }
+
+  if (!zCompactJwt.safeParse(clientAttestationPopHeader).success) {
     return { valid: false } as const
   }
 

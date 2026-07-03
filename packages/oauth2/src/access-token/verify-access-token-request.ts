@@ -1,10 +1,15 @@
 import { type CallbackContext, HashAlgorithm } from '../callbacks'
-import { type VerifiedClientAttestationJwt, verifyClientAttestation } from '../client-attestation/client-attestation'
+import {
+  type VerifiedClientAttestationJwt,
+  verifyClientAttestation,
+  verifyClientAttestationJwt,
+} from '../client-attestation/client-attestation'
 import type { VerifiedClientAttestationPopJwt } from '../client-attestation/client-attestation-pop'
 import {
   oauthClientAttestationHeader,
   oauthClientAttestationPopHeader,
 } from '../client-attestation/z-client-attestation'
+import { SupportedClientAuthenticationMethod } from '../client-authentication'
 import { calculateJwkThumbprint } from '../common/jwk/jwk-thumbprint'
 import type { Jwk } from '../common/jwk/z-jwk'
 import type { RequestLike } from '../common/z-common'
@@ -44,6 +49,15 @@ export interface VerifyAccessTokenRequestDpop {
    * to handle the alg.
    */
   allowedSigningAlgs?: string[]
+
+  /**
+   * Expected nonce in the dpop proof. If not provided the nonce won't be validated.
+   *
+   * For the DPoP-bound `attest_jwt_client_auth_dpop` method (draft 09) the server-provided client
+   * attestation challenge is carried in the dpop `nonce` claim, so this can be set to the issued
+   * challenge to enforce it.
+   */
+  expectedNonce?: string
 }
 
 export interface VerifyAccessTokenRequestClientAttestation {
@@ -91,7 +105,11 @@ export interface VerifyAccessTokenRequestReturn {
 
   clientAttestation?: {
     clientAttestation: VerifiedClientAttestationJwt
-    clientAttestationPop: VerifiedClientAttestationPopJwt
+    /**
+     * Absent for the DPoP-bound `attest_jwt_client_auth_dpop` method (draft 09), where the verified
+     * DPoP proof serves as the Client Attestation PoP.
+     */
+    clientAttestationPop?: VerifiedClientAttestationPopJwt
   }
 }
 
@@ -327,8 +345,8 @@ async function verifyAccessTokenRequestClientAttestation(
   dpopJwkThumbprint?: string,
   now?: Date
 ) {
-  if (!options.clientAttestationJwt || !options.clientAttestationPopJwt) {
-    if (!options.required && !options.clientAttestationJwt && !options.clientAttestationPopJwt) {
+  if (!options.clientAttestationJwt) {
+    if (!options.required && !options.clientAttestationPopJwt) {
       return undefined
     }
 
@@ -336,6 +354,18 @@ async function verifyAccessTokenRequestClientAttestation(
       error: Oauth2ErrorCodes.InvalidClient,
       error_description: `Missing required client attestation parameters in access token request. Make sure to provide the '${oauthClientAttestationHeader}' and '${oauthClientAttestationPopHeader}' header values.`,
     })
+  }
+
+  // DPoP-bound method (`attest_jwt_client_auth_dpop`, draft 09 §5.2): the client attestation is present
+  // without a separate PoP header; the DPoP proof serves as the Client Attestation PoP.
+  if (!options.clientAttestationPopJwt) {
+    return verifyAccessTokenRequestClientAttestationDpop(
+      { ...options, clientAttestationJwt: options.clientAttestationJwt },
+      authorizationServerMetadata,
+      callbacks,
+      dpopJwkThumbprint,
+      now
+    )
   }
 
   const verifiedClientAttestation = await verifyClientAttestation({
@@ -346,44 +376,112 @@ async function verifyAccessTokenRequestClientAttestation(
     now,
   })
 
-  if (
-    options.expectedClientId &&
-    options.expectedClientId !== verifiedClientAttestation.clientAttestation.payload.sub
-  ) {
-    // Ensure the client id matches with the client id from the session
+  // Ensure the client id matches with the client id from the session
+  assertExpectedClientId(options.expectedClientId, verifiedClientAttestation.clientAttestation.payload.sub)
+
+  if (options.ensureConfirmationKeyMatchesDpopKey && dpopJwkThumbprint) {
+    await assertConfirmationKeyMatchesDpopKey(
+      verifiedClientAttestation.clientAttestation.payload.cnf.jwk,
+      dpopJwkThumbprint,
+      callbacks
+    )
+  }
+
+  return verifiedClientAttestation
+}
+
+async function verifyAccessTokenRequestClientAttestationDpop(
+  options: VerifyAccessTokenRequestClientAttestation & { clientAttestationJwt: string },
+  authorizationServerMetadata: AuthorizationServerMetadata,
+  callbacks: Pick<CallbackContext, 'verifyJwt' | 'hash'>,
+  dpopJwkThumbprint?: string,
+  now?: Date
+) {
+  // Hardening: if the authorization server advertises client authentication methods but not the
+  // DPoP-bound method, reject. Advertising is only SHOULD in draft 09 §8, so an absent list is allowed.
+  const supportedMethods = authorizationServerMetadata.token_endpoint_auth_methods_supported
+  if (supportedMethods && !supportedMethods.includes(SupportedClientAuthenticationMethod.ClientAttestationJwtDpop)) {
+    throw new Oauth2ServerErrorResponseError({
+      error: Oauth2ErrorCodes.InvalidClient,
+      error_description: `The authorization server does not support the '${SupportedClientAuthenticationMethod.ClientAttestationJwtDpop}' client authentication method.`,
+    })
+  }
+
+  // The DPoP proof is the Client Attestation PoP in this method, so a valid DPoP proof is required.
+  if (!dpopJwkThumbprint) {
+    throw new Oauth2ServerErrorResponseError({
+      error: Oauth2ErrorCodes.InvalidClient,
+      error_description: `Client attestation provided without an '${oauthClientAttestationPopHeader}' header, but no valid DPoP proof is present. The '${SupportedClientAuthenticationMethod.ClientAttestationJwtDpop}' method requires a DPoP proof.`,
+    })
+  }
+
+  let clientAttestation: VerifiedClientAttestationJwt
+  try {
+    clientAttestation = await verifyClientAttestationJwt({
+      callbacks,
+      clientAttestationJwt: options.clientAttestationJwt,
+      now,
+    })
+  } catch (error) {
+    if (error instanceof Oauth2Error) {
+      throw new Oauth2ServerErrorResponseError(
+        {
+          error: Oauth2ErrorCodes.InvalidClient,
+          error_description: `Error verifying client attestation. ${error.message}`,
+        },
+        { status: 401, cause: error }
+      )
+    }
+    throw error
+  }
+
+  // Ensure the client id matches with the client id from the session
+  assertExpectedClientId(options.expectedClientId, clientAttestation.payload.sub)
+
+  // draft 09 §7.3: the DPoP public key MUST match the `cnf` JWK of the Client Attestation. This is
+  // mandatory for the DPoP-bound method (not gated on `ensureConfirmationKeyMatchesDpopKey`).
+  await assertConfirmationKeyMatchesDpopKey(clientAttestation.payload.cnf.jwk, dpopJwkThumbprint, callbacks)
+
+  return { clientAttestation }
+}
+
+function assertExpectedClientId(expectedClientId: string | undefined, sub: string) {
+  if (expectedClientId && expectedClientId !== sub) {
     throw new Oauth2ServerErrorResponseError(
       {
         error: Oauth2ErrorCodes.InvalidClient,
-        error_description: `The client id '${verifiedClientAttestation.clientAttestation.payload.sub}' in the client attestation does not match the client id for the authorization.`,
+        error_description: `The client id '${sub}' in the client attestation does not match the client id for the authorization.`,
       },
       {
         status: 401,
       }
     )
   }
+}
 
-  if (options.ensureConfirmationKeyMatchesDpopKey && dpopJwkThumbprint) {
-    const clientAttestationJkt = await calculateJwkThumbprint({
-      hashAlgorithm: HashAlgorithm.Sha256,
-      hashCallback: callbacks.hash,
-      jwk: verifiedClientAttestation.clientAttestation.payload.cnf.jwk,
-    })
+async function assertConfirmationKeyMatchesDpopKey(
+  confirmationJwk: Jwk,
+  dpopJwkThumbprint: string,
+  callbacks: Pick<CallbackContext, 'hash'>
+) {
+  const clientAttestationJkt = await calculateJwkThumbprint({
+    hashAlgorithm: HashAlgorithm.Sha256,
+    hashCallback: callbacks.hash,
+    jwk: confirmationJwk,
+  })
 
-    if (clientAttestationJkt !== dpopJwkThumbprint) {
-      throw new Oauth2ServerErrorResponseError(
-        {
-          error: Oauth2ErrorCodes.InvalidRequest,
-          error_description:
-            'Expected the DPoP JWK thumbprint value to match the JWK thumbprint of the client attestation confirmation JWK. Ensure both DPoP and client attestation use the same key.',
-        },
-        {
-          status: 401,
-        }
-      )
-    }
+  if (clientAttestationJkt !== dpopJwkThumbprint) {
+    throw new Oauth2ServerErrorResponseError(
+      {
+        error: Oauth2ErrorCodes.InvalidRequest,
+        error_description:
+          'Expected the DPoP JWK thumbprint value to match the JWK thumbprint of the client attestation confirmation JWK. Ensure both DPoP and client attestation use the same key.',
+      },
+      {
+        status: 401,
+      }
+    )
   }
-
-  return verifiedClientAttestation
 }
 
 async function verifyAccessTokenRequestDpop(
@@ -406,6 +504,7 @@ async function verifyAccessTokenRequestDpop(
     request,
     allowedSigningAlgs: options.allowedSigningAlgs,
     expectedJwkThumbprint: options.expectedJwkThumbprint,
+    expectedNonce: options.expectedNonce,
   })
 
   return {
