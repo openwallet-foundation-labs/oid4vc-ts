@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'vitest'
+import { Openid4vpAuthorizationResponseError } from '../Openid4vpAuthorizationResponseError'
 import { parseOpenid4VpAuthorizationResponsePayload } from '../parse-authorization-response-payload'
 
 describe('parseOpenid4VpAuthorizationResponsePayload', () => {
@@ -24,6 +25,43 @@ describe('parseOpenid4VpAuthorizationResponsePayload', () => {
           },
         ],
       },
+    })
+  })
+
+  test('should throw an Openid4vpAuthorizationResponseError when the wallet returns an authorization error response', () => {
+    // Non-normative example of an Authorization Error Response from the OpenID4VP spec.
+    const parsedPayload = Object.fromEntries(
+      new URLSearchParams(
+        'error=invalid_request&error_description=unsupported%20client_id_prefix&state=eyJhb...6-sVA'
+      ).entries()
+    )
+
+    let error: unknown
+    try {
+      parseOpenid4VpAuthorizationResponsePayload(parsedPayload)
+    } catch (e) {
+      error = e
+    }
+
+    expect(error).toBeInstanceOf(Openid4vpAuthorizationResponseError)
+    expect((error as Openid4vpAuthorizationResponseError).errorResponse).toEqual({
+      error: 'invalid_request',
+      error_description: 'unsupported client_id_prefix',
+      state: 'eyJhb...6-sVA',
+    })
+  })
+
+  test('should throw an Openid4vpAuthorizationResponseError for an error response without additional parameters', () => {
+    let error: unknown
+    try {
+      parseOpenid4VpAuthorizationResponsePayload({ error: 'wallet_unavailable' })
+    } catch (e) {
+      error = e
+    }
+
+    expect(error).toBeInstanceOf(Openid4vpAuthorizationResponseError)
+    expect((error as Openid4vpAuthorizationResponseError).errorResponse).toEqual({
+      error: 'wallet_unavailable',
     })
   })
 })

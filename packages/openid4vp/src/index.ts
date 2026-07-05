@@ -38,6 +38,7 @@ export {
   type CreateOpenid4vpAuthorizationResponseResult,
   createOpenid4vpAuthorizationResponse,
 } from './authorization-response/create-authorization-response'
+export { Openid4vpAuthorizationResponseError } from './authorization-response/Openid4vpAuthorizationResponseError'
 export {
   type ParsedOpenid4vpAuthorizationResponse,
   type ParseOpenid4vpAuthorizationResponseOptions,
@@ -62,7 +63,9 @@ export type {
   ValidateOpenid4VpPexAuthorizationResponseResult,
 } from './authorization-response/validate-authorization-response-result'
 export {
+  type Openid4vpAuthorizationErrorResponse,
   type Openid4vpAuthorizationResponse,
+  zOpenid4vpAuthorizationErrorResponse,
   zOpenid4vpAuthorizationResponse,
 } from './authorization-response/z-authorization-response'
 export {
