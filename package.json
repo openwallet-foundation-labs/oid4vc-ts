@@ -19,11 +19,11 @@
     "changeset-version": "pnpm changeset version && pnpm style:fix"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.5.2",
-    "@changesets/cli": "^2.31.0",
-    "@types/node": "^26.1.0",
+    "@biomejs/biome": "2.5.4",
+    "@changesets/cli": "^2.31.1",
+    "@types/node": "^26.1.1",
     "msw": "^2.15.0",
-    "tsdown": "^0.22.3",
+    "tsdown": "^0.22.9",
     "typescript": "~6.0.3",
     "vitest": "^4.1.10",
     "@openid4vc/oauth2": "workspace:*",
