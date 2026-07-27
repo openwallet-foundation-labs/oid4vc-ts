@@ -19,24 +19,19 @@
     "changeset-version": "pnpm changeset version && pnpm style:fix"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.5.2",
-    "@changesets/cli": "^2.31.0",
-    "@types/node": "^26.1.0",
-    "msw": "^2.15.0",
-    "tsdown": "^0.22.3",
-    "typescript": "~6.0.3",
-    "vitest": "^4.1.10",
+    "@biomejs/biome": "2.5.5",
+    "@changesets/cli": "^2.31.1",
     "@openid4vc/oauth2": "workspace:*",
-    "@openid4vc/utils": "workspace:*",
     "@openid4vc/openid4vp": "workspace:*",
-    "jose": "catalog:"
+    "@openid4vc/utils": "workspace:*",
+    "@types/node": "^26.1.1",
+    "jose": "catalog:",
+    "msw": "^2.15.0",
+    "tsdown": "^0.22.14",
+    "typescript": "~6.0.3",
+    "vitest": "^4.1.10"
   },
   "engines": {
     "node": ">=20.19"
-  },
-  "pnpm": {
-    "overrides": {
-      "js-yaml": "3.14.2"
-    }
   }
 }

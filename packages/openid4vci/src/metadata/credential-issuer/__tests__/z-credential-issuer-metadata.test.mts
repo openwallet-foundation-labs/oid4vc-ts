@@ -62,7 +62,7 @@ describe('Credential Issuer Metadata', () => {
       path: [],
     })
 
-    expect((parseResultMdoc.error?.issues[0] as $ZodIssueInvalidUnion).errors[0]).toMatchObject([
+    expect((parseResultMdoc.error?.issues[0] as $ZodIssueInvalidUnion | undefined)?.errors[0]).toMatchObject([
       {
         code: 'invalid_type',
         expected: 'string',
