@@ -37,12 +37,12 @@ export interface ResolveIssuerMetadataOptions {
   allowAuthorizationMetadataFromCredentialIssuerMetadata?: boolean
 
   /**
-   * Callbacks for fetching the credential issur metadata.
+   * Callbacks for fetching the credential issuer metadata.
    * If no `verifyJwt` callback is provided, the request
    * will not include the `application/jwt` Accept header
    * for signed metadata.
    */
-  callbacks: Partial<Pick<CallbackContext, 'fetch' | 'verifyJwt'>>
+  callbacks: Partial<Pick<CallbackContext, 'fetch' | 'verifyJwt' | 'getAuthorizationServerMetadata'>>
 
   /**
    * Only used for verifying signed issuer metadata. If not provided
@@ -101,10 +101,7 @@ export async function resolveIssuerMetadata(
       continue
     }
 
-    let authorizationServerMetadata = await fetchAuthorizationServerMetadata(
-      authorizationServer,
-      options?.callbacks.fetch
-    )
+    let authorizationServerMetadata = await fetchAuthorizationServerMetadata(authorizationServer, options?.callbacks)
     if (
       !authorizationServerMetadata &&
       authorizationServer === credentialIssuer &&

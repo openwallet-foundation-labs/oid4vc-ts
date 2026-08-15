@@ -21,7 +21,7 @@ export interface VerifyJwtProfileAccessTokenOptions {
   /**
    * Callbacks used for verifying the access token
    */
-  callbacks: Pick<CallbackContext, 'verifyJwt' | 'fetch'>
+  callbacks: Pick<CallbackContext, 'verifyJwt' | 'fetch' | 'getJwks'>
 
   /**
    * If not provided current time will be used
@@ -69,7 +69,7 @@ export async function verifyJwtProfileAccessToken(options: VerifyJwtProfileAcces
     )
   }
 
-  const jwks = await fetchJwks(jwksUrl, options.callbacks.fetch)
+  const jwks = await fetchJwks(jwksUrl, options.callbacks)
   const publicJwk = extractJwkFromJwksForJwt({
     kid: decodedJwt.header.kid,
     jwks,

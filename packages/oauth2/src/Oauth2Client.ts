@@ -81,7 +81,7 @@ export class Oauth2Client {
   }
 
   public async fetchAuthorizationServerMetadata(issuer: string) {
-    return fetchAuthorizationServerMetadata(issuer, this.options.callbacks.fetch)
+    return fetchAuthorizationServerMetadata(issuer, this.options.callbacks)
   }
 
   /**

@@ -16,7 +16,7 @@ export interface VerifyIdTokenJwtOptions {
   /**
    * Callbacks used for verifying the id token
    */
-  callbacks: Pick<CallbackContext, 'verifyJwt' | 'fetch'>
+  callbacks: Pick<CallbackContext, 'verifyJwt' | 'fetch' | 'getJwks'>
 
   /**
    * If not provided current time will be used
@@ -66,7 +66,7 @@ export async function verifyIdTokenJwt(options: VerifyIdTokenJwtOptions) {
     throw new Oauth2Error(`Invalid 'azp' claim in id token jwt. Expected '${options.clientId}', got '${payload.azp}'.`)
   }
 
-  const jwks = await fetchJwks(jwksUrl, options.callbacks.fetch)
+  const jwks = await fetchJwks(jwksUrl, options.callbacks)
   const publicJwk = extractJwkFromJwksForJwt({
     kid: header.kid,
     jwks,
