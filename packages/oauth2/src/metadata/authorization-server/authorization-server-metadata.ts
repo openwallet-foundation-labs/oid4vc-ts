@@ -1,4 +1,5 @@
-import { type Fetch, joinUriParts, OpenId4VcBaseError, URL } from '@openid4vc/utils'
+import { type Fetch, joinUriParts, OpenId4VcBaseError, parseWithErrorHandling, URL } from '@openid4vc/utils'
+import type { CallbackContext } from '../../callbacks'
 import { Oauth2Error } from '../../error/Oauth2Error'
 import { fetchWellKnownMetadata } from '../fetch-well-known-metadata'
 import { type AuthorizationServerMetadata, zAuthorizationServerMetadata } from './z-authorization-server-metadata'
@@ -9,11 +10,40 @@ const wellKnownOpenIdConfigurationServerSuffix = '.well-known/openid-configurati
 /**
  * fetch authorization server metadata. It first tries to fetch the oauth-authorization-server metadata. If that returns
  *  a 404, the openid-configuration metadata will be fetched.
+ *
+ * If a `getAuthorizationServerMetadata` callback is provided and returns metadata for the `issuer`,
+ * that metadata is returned and no requests are performed. The `issuer` value of the returned
+ * metadata MUST still match the requested `issuer`.
  */
 export async function fetchAuthorizationServerMetadata(
   issuer: string,
-  fetch?: Fetch
+  callbacksOrFetch?: Fetch | Pick<CallbackContext, 'fetch' | 'getAuthorizationServerMetadata'>
 ): Promise<AuthorizationServerMetadata | null> {
+  const callbacks = typeof callbacksOrFetch === 'function' ? { fetch: callbacksOrFetch } : callbacksOrFetch
+  const providedMetadata = await callbacks?.getAuthorizationServerMetadata?.(issuer)
+
+  // `null` means the callback determined the metadata does not exist, so we don't fetch it again.
+  if (providedMetadata === null) return null
+
+  if (providedMetadata) {
+    // Validated the same way as metadata retrieved from the well known endpoints
+    const parsedMetadata = parseWithErrorHandling(
+      zAuthorizationServerMetadata,
+      providedMetadata,
+      `Validation of authorization server metadata provided by the 'getAuthorizationServerMetadata' callback for issuer '${issuer}' failed`
+    )
+
+    if (parsedMetadata.issuer !== issuer) {
+      // issuer param MUST match, also for metadata that was not fetched
+      throw new Oauth2Error(
+        `The 'issuer' parameter '${parsedMetadata.issuer}' in the authorization server metadata provided by the 'getAuthorizationServerMetadata' callback does not match the provided issuer '${issuer}'.`
+      )
+    }
+
+    return parsedMetadata
+  }
+
+  const fetch = callbacks?.fetch
   const parsedIssuerUrl = new URL(issuer)
 
   const openIdConfigurationWellKnownMetadataUrl = joinUriParts(issuer, [wellKnownOpenIdConfigurationServerSuffix])

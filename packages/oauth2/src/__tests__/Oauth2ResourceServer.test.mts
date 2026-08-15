@@ -132,4 +132,165 @@ describe('Oauth2ResourceServer', () => {
       sub: 'pre-auth-code',
     })
   })
+
+  test('verifies resource request using the getJwks callback, without fetching the jwks_uri', async () => {
+    let jwksRequestCount = 0
+    server.resetHandlers(
+      http.get(authorizationServerMetadata.jwks_uri, () => {
+        jwksRequestCount++
+        return HttpResponse.json({ keys: [accessTokenSignerJwkPublic] } satisfies JwkSet, {
+          headers: { 'Content-Type': ContentType.JwkSet },
+        })
+      })
+    )
+
+    const requestedJwksUris: string[] = []
+    const resourceServer = new Oauth2ResourceServer({
+      callbacks: {
+        ...callbacks,
+        fetch,
+        getJwks: (jwksUri) => {
+          requestedJwksUris.push(jwksUri)
+          return { keys: [accessTokenSignerJwkPublic] }
+        },
+      },
+    })
+
+    const { jwt } = await createAccessTokenJwt({
+      audience: 'https://resource-server.com',
+      authorizationServer: authorizationServerMetadata.issuer,
+      callbacks: {
+        ...callbacks,
+        signJwt: getSignJwtCallback([accessTokenSignerJwk]),
+      },
+      expiresInSeconds: 300,
+      signer: {
+        method: 'jwk',
+        alg: 'ES256',
+        publicJwk: accessTokenSignerJwkPublic,
+      },
+      subject: 'pre-auth-code',
+      now: new Date('2024-10-01'),
+    })
+
+    const { tokenPayload } = await resourceServer.verifyResourceRequest({
+      authorizationServers: [authorizationServerMetadata],
+      request: {
+        method: 'POST',
+        url: 'https://resource-server.com/endpoint',
+        headers: new Headers({ Authorization: `Bearer ${jwt}` }),
+      },
+      now: new Date('2024-10-01'),
+      resourceServer: 'https://resource-server.com',
+    })
+
+    expect(tokenPayload.sub).toEqual('pre-auth-code')
+    expect(requestedJwksUris).toEqual([authorizationServerMetadata.jwks_uri])
+    expect(jwksRequestCount).toEqual(0)
+  })
+
+  test('rejects a jwks from the getJwks callback that does not pass validation', async () => {
+    let jwksRequestCount = 0
+    server.resetHandlers(
+      http.get(authorizationServerMetadata.jwks_uri, () => {
+        jwksRequestCount++
+        return HttpResponse.json({ keys: [accessTokenSignerJwkPublic] } satisfies JwkSet, {
+          headers: { 'Content-Type': ContentType.JwkSet },
+        })
+      })
+    )
+
+    const resourceServer = new Oauth2ResourceServer({
+      callbacks: {
+        ...callbacks,
+        fetch,
+        // Not a valid jwk set, `keys` must be an array of jwks
+        getJwks: () => ({ keys: 'not-an-array' }) as unknown as JwkSet,
+      },
+    })
+
+    const { jwt } = await createAccessTokenJwt({
+      audience: 'https://resource-server.com',
+      authorizationServer: authorizationServerMetadata.issuer,
+      callbacks: {
+        ...callbacks,
+        signJwt: getSignJwtCallback([accessTokenSignerJwk]),
+      },
+      expiresInSeconds: 300,
+      signer: {
+        method: 'jwk',
+        alg: 'ES256',
+        publicJwk: accessTokenSignerJwkPublic,
+      },
+      subject: 'pre-auth-code',
+      now: new Date('2024-10-01'),
+    })
+
+    await expect(
+      resourceServer.verifyResourceRequest({
+        authorizationServers: [authorizationServerMetadata],
+        request: {
+          method: 'POST',
+          url: 'https://resource-server.com/endpoint',
+          headers: new Headers({ Authorization: `Bearer ${jwt}` }),
+        },
+        now: new Date('2024-10-01'),
+        resourceServer: 'https://resource-server.com',
+      })
+    ).rejects.toThrow()
+
+    // The invalid jwks is rejected, it does not silently fall back to fetching
+    expect(jwksRequestCount).toEqual(0)
+  })
+
+  test('falls back to fetching the jwks_uri if the getJwks callback returns undefined', async () => {
+    let jwksRequestCount = 0
+    server.resetHandlers(
+      http.get(authorizationServerMetadata.jwks_uri, () => {
+        jwksRequestCount++
+        return HttpResponse.json({ keys: [accessTokenSignerJwkPublic] } satisfies JwkSet, {
+          headers: { 'Content-Type': ContentType.JwkSet },
+        })
+      })
+    )
+
+    const resourceServer = new Oauth2ResourceServer({
+      callbacks: {
+        ...callbacks,
+        fetch,
+        getJwks: () => undefined,
+      },
+    })
+
+    const { jwt } = await createAccessTokenJwt({
+      audience: 'https://resource-server.com',
+      authorizationServer: authorizationServerMetadata.issuer,
+      callbacks: {
+        ...callbacks,
+        signJwt: getSignJwtCallback([accessTokenSignerJwk]),
+      },
+      expiresInSeconds: 300,
+      signer: {
+        method: 'jwk',
+        alg: 'ES256',
+        publicJwk: accessTokenSignerJwkPublic,
+      },
+      subject: 'pre-auth-code',
+      now: new Date('2024-10-01'),
+    })
+
+    const { tokenPayload } = await resourceServer.verifyResourceRequest({
+      authorizationServers: [authorizationServerMetadata],
+      request: {
+        method: 'POST',
+        url: 'https://resource-server.com/endpoint',
+        headers: new Headers({ Authorization: `Bearer ${jwt}` }),
+      },
+      now: new Date('2024-10-01'),
+      resourceServer: 'https://resource-server.com',
+    })
+
+    expect(tokenPayload.sub).toEqual('pre-auth-code')
+    expect(jwksRequestCount).toEqual(1)
+  })
 })

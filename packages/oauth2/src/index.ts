@@ -70,6 +70,8 @@ export type {
   DecryptJweCallbackOptions,
   EncryptJweCallback,
   GenerateRandomCallback,
+  GetAuthorizationServerMetadataCallback,
+  GetJwksCallback,
   HashCallback,
   SignJwtCallback,
   VerifyDataIntegrityProofCallback,

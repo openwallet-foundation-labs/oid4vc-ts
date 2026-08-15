@@ -53,7 +53,7 @@ export interface CreateOpenid4vpAuthorizationResponseOptions {
     audience?: string // The client_id of the client the response is intended for
     expiresInSeconds?: number // The expiration time of the JWT. A maximum JWT lifetime of 10 minutes is RECOMMENDED.
   }
-  callbacks: Pick<CallbackContext, 'signJwt' | 'encryptJwe' | 'fetch'>
+  callbacks: Pick<CallbackContext, 'signJwt' | 'encryptJwe' | 'fetch' | 'getJwks'>
 }
 
 export interface CreateOpenid4vpAuthorizationResponseResult {
@@ -117,7 +117,7 @@ export async function createOpenid4vpAuthorizationResponse(
   if (clientMetadata.jwks) {
     jwks = clientMetadata.jwks
   } else if (clientMetadata.jwks_uri) {
-    jwks = await fetchJwks(clientMetadata.jwks_uri, options.callbacks.fetch)
+    jwks = await fetchJwks(clientMetadata.jwks_uri, options.callbacks)
   } else {
     throw new Oauth2ServerErrorResponseError({
       error: Oauth2ErrorCodes.InvalidRequest,

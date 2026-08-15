@@ -27,10 +27,10 @@ export interface VerifyResourceRequestOptions {
   /**
    * Callbacks for verification of the access token.
    */
-  callbacks: Pick<CallbackContext, 'verifyJwt' | 'hash' | 'clientAuthentication' | 'fetch'>
+  callbacks: Pick<CallbackContext, 'verifyJwt' | 'hash' | 'clientAuthentication' | 'fetch' | 'getJwks'>
 
   /**
-   * allowed auth schems for the access token. If not provided
+   * allowed auth schemes for the access token. If not provided
    * all supported authentication schemes are allowed.
    */
   allowedAuthenticationSchemes?: SupportedAuthenticationScheme[]
@@ -48,7 +48,7 @@ export async function verifyResourceRequest(options: VerifyResourceRequestOption
     options.allowedAuthenticationSchemes ?? Object.values(SupportedAuthenticationScheme)
   if (allowedAuthenticationSchemes.length === 0) {
     throw new Oauth2Error(
-      `Emtpy array provided for 'allowedAuthenticationSchemes', provide at least one allowed authentication scheme, or remove the value to allow all supported authentication schemes`
+      `Empty array provided for 'allowedAuthenticationSchemes', provide at least one allowed authentication scheme, or remove the value to allow all supported authentication schemes`
     )
   }
 
