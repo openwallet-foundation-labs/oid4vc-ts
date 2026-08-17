@@ -39,12 +39,11 @@ jobs:
         id: changesets
         uses: changesets/action@v2
         with:
-          title: "chore(release): new version"
-          commit: "chore(release): new version"
-          publish: pnpm release
-          version: pnpm changeset-version
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          pr-title: "chore(release): new version"
+          commit-message: "chore(release): new version"
+          publish-script: pnpm release
+          version-script: pnpm changeset-version
 
       - name: Get current package version
         id: get_version
@@ -95,10 +94,10 @@ jobs:
           snapshot release
           EOF
 
-          pnpm changeset version-script --snapshot alpha
+          pnpm changeset version --snapshot alpha
           pnpm style:fix
           pnpm build
-          pnpm changeset publish-script --tag alpha
+          pnpm changeset publish --tag alpha
 
           CURRENT_PACKAGE_VERSION=$(node -p "require('./packages/openid4vci/package.json').version")
           git config --global user.name "github-actions[bot]"
