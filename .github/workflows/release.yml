@@ -95,10 +95,10 @@ jobs:
           snapshot release
           EOF
 
-          pnpm changeset version --snapshot alpha
+          pnpm changeset version-script --snapshot alpha
           pnpm style:fix
           pnpm build
-          pnpm changeset publish --tag alpha
+          pnpm changeset publish-script --tag alpha
 
           CURRENT_PACKAGE_VERSION=$(node -p "require('./packages/openid4vci/package.json').version")
           git config --global user.name "github-actions[bot]"
