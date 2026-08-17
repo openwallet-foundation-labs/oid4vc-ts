@@ -20,7 +20,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.5",
-    "@changesets/cli": "^2.31.1",
+    "@changesets/cli": "^3.0.0",
     "@openid4vc/oauth2": "workspace:*",
     "@openid4vc/openid4vp": "workspace:*",
     "@openid4vc/utils": "workspace:*",
