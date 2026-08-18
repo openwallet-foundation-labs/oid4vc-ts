@@ -44,6 +44,7 @@ jobs:
           commit-message: "chore(release): new version"
           publish-script: pnpm release
           version-script: pnpm changeset-version
+          push-with-git-cli: true
 
       - name: Get current package version
         id: get_version
