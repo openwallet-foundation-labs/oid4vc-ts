@@ -19,7 +19,7 @@
     "changeset-version": "pnpm changeset version && pnpm style:fix"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.5.5",
+    "@biomejs/biome": "2.5.8",
     "@changesets/cli": "^3.0.0",
     "@openid4vc/oauth2": "workspace:*",
     "@openid4vc/openid4vp": "workspace:*",
