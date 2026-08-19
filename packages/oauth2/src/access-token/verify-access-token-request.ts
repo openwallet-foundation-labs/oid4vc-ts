@@ -14,7 +14,7 @@ import { calculateJwkThumbprint } from '../common/jwk/jwk-thumbprint'
 import type { Jwk } from '../common/jwk/z-jwk'
 import type { RequestLike } from '../common/z-common'
 import { Oauth2ErrorCodes } from '../common/z-oauth2-error'
-import { verifyDpopJwt } from '../dpop/dpop'
+import { type DpopAssertJtiUniquenessCallback, verifyDpopJwt } from '../dpop/dpop'
 import { Oauth2Error } from '../error/Oauth2Error'
 import { Oauth2ServerErrorResponseError } from '../error/Oauth2ServerErrorResponseError'
 import type { AuthorizationServerMetadata } from '../metadata/authorization-server/z-authorization-server-metadata'
@@ -58,6 +58,23 @@ export interface VerifyAccessTokenRequestDpop {
    * challenge to enforce it.
    */
   expectedNonce?: string
+
+  /**
+   * Maximum accepted age in seconds for the DPoP proof based on the `iat` claim.
+   */
+  maxProofAgeSeconds?: number
+
+  /**
+   * Allowed clock skew in seconds used when validating DPoP `iat` freshness.
+   *
+   * @default 0
+   */
+  allowedClockSkewSeconds?: number
+
+  /**
+   * Optional callback to enforce one-time use of DPoP `jti` values.
+   */
+  assertJtiUniqueness?: DpopAssertJtiUniquenessCallback
 }
 
 export interface VerifyAccessTokenRequestClientAttestation {
@@ -505,6 +522,9 @@ async function verifyAccessTokenRequestDpop(
     allowedSigningAlgs: options.allowedSigningAlgs,
     expectedJwkThumbprint: options.expectedJwkThumbprint,
     expectedNonce: options.expectedNonce,
+    maxProofAgeSeconds: options.maxProofAgeSeconds,
+    allowedClockSkewSeconds: options.allowedClockSkewSeconds,
+    assertJtiUniqueness: options.assertJtiUniqueness,
   })
 
   return {

@@ -7,11 +7,34 @@ import type { CallbackContext } from '../callbacks'
 import type { Jwk } from '../common/jwk/z-jwk'
 import type { RequestLike } from '../common/z-common'
 import { Oauth2ErrorCodes } from '../common/z-oauth2-error'
-import { extractDpopJwtFromHeaders, verifyDpopJwt } from '../dpop/dpop'
+import {
+  extractDpopJwtFromHeaders,
+  type DpopAssertJtiUniquenessCallback,
+  verifyDpopJwt,
+} from '../dpop/dpop'
 import { Oauth2Error } from '../error/Oauth2Error'
 import { Oauth2JwtParseError } from '../error/Oauth2JwtParseError'
 import { Oauth2ResourceUnauthorizedError } from '../error/Oauth2ResourceUnauthorizedError'
 import type { AuthorizationServerMetadata } from '../metadata/authorization-server/z-authorization-server-metadata'
+
+export interface VerifyResourceRequestDpopOptions {
+  /**
+   * Maximum accepted age in seconds for the DPoP proof based on the `iat` claim.
+   */
+  maxProofAgeSeconds?: number
+
+  /**
+   * Allowed clock skew in seconds used when validating DPoP `iat` freshness.
+   *
+   * @default 0
+   */
+  allowedClockSkewSeconds?: number
+
+  /**
+   * Optional callback to enforce one-time use of DPoP `jti` values.
+   */
+  assertJtiUniqueness?: DpopAssertJtiUniquenessCallback
+}
 
 export interface VerifyResourceRequestOptions {
   /**
@@ -39,6 +62,11 @@ export interface VerifyResourceRequestOptions {
    * List of authorization servers that this resource endpoint supports
    */
   authorizationServers: AuthorizationServerMetadata[]
+
+  /**
+   * Additional DPoP verification options.
+   */
+  dpop?: VerifyResourceRequestDpopOptions
 
   now?: Date
 }
@@ -181,6 +209,9 @@ export async function verifyResourceRequest(options: VerifyResourceRequestOption
         now: options.now,
         expectedJwkThumbprint: tokenPayload.cnf?.jkt,
         allowedSigningAlgs: authorizationServer.dpop_signing_alg_values_supported,
+        maxProofAgeSeconds: options.dpop?.maxProofAgeSeconds,
+        allowedClockSkewSeconds: options.dpop?.allowedClockSkewSeconds,
+        assertJtiUniqueness: options.dpop?.assertJtiUniqueness,
       })
       dpopJwk = decodedDpopJwt.header.jwk
     } catch (error) {
