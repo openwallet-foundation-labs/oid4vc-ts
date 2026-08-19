@@ -3,6 +3,7 @@ import {
   decodeUtf8String,
   encodeToBase64Url,
   type FetchHeaders,
+  type OrPromise,
   parseWithErrorHandling,
   URL,
 } from '@openid4vc/utils'
@@ -113,7 +114,7 @@ export interface VerifyDpopJwtOptions {
   dpopJwt: string
 
   /**
-   * The requet for which to verify the dpop jwt
+   * The request for which to verify the dpop jwt
    */
   request: RequestLike
 
@@ -144,12 +145,45 @@ export interface VerifyDpopJwtOptions {
   expectedJwkThumbprint?: string
 
   /**
+   * Maximum accepted age in seconds for the DPoP proof based on the `iat` claim.
+   *
+   * If provided, the proof is rejected when it is older than this value.
+   */
+  maxProofAgeSeconds?: number
+
+  /**
+   * Allowed clock skew in seconds used when validating freshness based on `iat`.
+   *
+   * @default 0
+   */
+  allowedClockSkewSeconds?: number
+
+  /**
+   * Callback to enforce one-time usage of the DPoP proof `jti`.
+   *
+   * Return `true` to accept the proof as not replayed, `false` to reject as replayed.
+   */
+  assertJtiUniqueness?: DpopAssertJtiUniquenessCallback
+
+  /**
    * Callbacks used for verifying dpop jwt
    */
   callbacks: Pick<CallbackContext, 'verifyJwt' | 'hash'>
 
   now?: Date
 }
+
+export interface DpopAssertJtiUniquenessOptions {
+  jti: string
+  iat: number
+  htm: string
+  htu: string
+  jwkThumbprint: string
+  dpopJwt: string
+  now: Date
+}
+
+export type DpopAssertJtiUniquenessCallback = (options: DpopAssertJtiUniquenessOptions) => OrPromise<boolean>
 
 export async function verifyDpopJwt(options: VerifyDpopJwtOptions) {
   try {
@@ -190,6 +224,29 @@ export async function verifyDpopJwt(options: VerifyDpopJwtOptions) {
       throw new Oauth2Error(`Dpop jwt contains htu value '${payload.htu}', but expected htu value '${expectedHtu}'.`)
     }
 
+    const now = options.now ?? new Date()
+    if (options.maxProofAgeSeconds !== undefined) {
+      if (options.maxProofAgeSeconds < 0) {
+        throw new Oauth2Error(`maxProofAgeSeconds must be greater than or equal to 0, received '${options.maxProofAgeSeconds}'.`)
+      }
+
+      const nowInSeconds = dateToSeconds(now)
+      const allowedSkew = options.allowedClockSkewSeconds ?? 0
+      const proofAgeInSeconds = nowInSeconds - payload.iat
+
+      if (payload.iat > nowInSeconds + allowedSkew) {
+        throw new Oauth2Error(
+          `Dpop jwt contains iat value '${payload.iat}' that is in the future relative to now '${nowInSeconds}' with allowed skew '${allowedSkew}'.`
+        )
+      }
+
+      if (proofAgeInSeconds > options.maxProofAgeSeconds + allowedSkew) {
+        throw new Oauth2Error(
+          `Dpop jwt is too old. Proof age is '${proofAgeInSeconds}' seconds, but max allowed age is '${options.maxProofAgeSeconds}' seconds with allowed skew '${allowedSkew}'.`
+        )
+      }
+    }
+
     if (options.accessToken) {
       const expectedAth = encodeToBase64Url(
         await options.callbacks.hash(decodeUtf8String(options.accessToken), HashAlgorithm.Sha256)
@@ -214,6 +271,22 @@ export async function verifyDpopJwt(options: VerifyDpopJwtOptions) {
       throw new Oauth2Error(
         `Dpop is signed with jwk with thumbprint value '${jwkThumbprint}', but expect jwk thumbprint value '${options.expectedJwkThumbprint}'`
       )
+    }
+
+    if (options.assertJtiUniqueness) {
+      const isUnique = await options.assertJtiUniqueness({
+        jti: payload.jti,
+        iat: payload.iat,
+        htm: payload.htm,
+        htu: payload.htu,
+        jwkThumbprint,
+        dpopJwt: options.dpopJwt,
+        now,
+      })
+
+      if (!isUnique) {
+        throw new Oauth2Error(`Dpop jwt with jti value '${payload.jti}' has already been used.`)
+      }
     }
 
     await verifyJwt({
