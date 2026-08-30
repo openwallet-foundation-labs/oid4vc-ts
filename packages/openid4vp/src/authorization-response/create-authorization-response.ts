@@ -125,13 +125,25 @@ export async function createOpenid4vpAuthorizationResponse(
     })
   }
 
-  if (
-    clientMetadata.authorization_encrypted_response_alg ||
-    clientMetadata.authorization_encrypted_response_enc ||
-    clientMetadata.authorization_signed_response_alg
-  ) {
+  // From draft 28 the JARM response encryption parameters were replaced by
+  // `encrypted_response_enc_values_supported`, with the `alg` derived from the encryption JWK.
+  // Verifiers migrating between versions have been seen to send both generations at once, so when
+  // the 1.0 parameter is present it takes precedence and the legacy encryption parameters are ignored.
+  const useLegacyEncryptionMetadata = clientMetadata.encrypted_response_enc_values_supported === undefined
+  const legacyEncryptedResponseAlg = useLegacyEncryptionMetadata
+    ? clientMetadata.authorization_encrypted_response_alg
+    : undefined
+  const legacyEncryptedResponseEnc = useLegacyEncryptionMetadata
+    ? clientMetadata.authorization_encrypted_response_enc
+    : undefined
+
+  if (legacyEncryptedResponseAlg || legacyEncryptedResponseEnc || clientMetadata.authorization_signed_response_alg) {
     jarmAssertMetadataSupported({
-      clientMetadata: clientMetadata,
+      clientMetadata: {
+        ...clientMetadata,
+        authorization_encrypted_response_alg: legacyEncryptedResponseAlg,
+        authorization_encrypted_response_enc: legacyEncryptedResponseEnc,
+      },
       serverMetadata: jarm.serverMetadata,
     })
   }
@@ -142,9 +154,7 @@ export async function createOpenid4vpAuthorizationResponse(
     extractEncryptionJwkFromJwks(jwks, {
       supportedAlgValues:
         jarm.serverMetadata.authorization_encryption_alg_values_supported ??
-        (clientMetadata.authorization_encrypted_response_alg
-          ? [clientMetadata.authorization_encrypted_response_alg]
-          : undefined),
+        (legacyEncryptedResponseAlg ? [legacyEncryptedResponseAlg] : undefined),
     })
 
   if (!encJwk) {
@@ -164,7 +174,7 @@ export async function createOpenid4vpAuthorizationResponse(
       ) ?? clientMetadata.encrypted_response_enc_values_supported[0]
   } else {
     // Use old value, or otherwise fallback to default
-    enc = clientMetadata.authorization_encrypted_response_enc ?? 'A128GCM'
+    enc = legacyEncryptedResponseEnc ?? 'A128GCM'
   }
 
   assertValueSupported({
@@ -173,7 +183,7 @@ export async function createOpenid4vpAuthorizationResponse(
     errorMessage: `Invalid 'enc' value ${enc}. Supported values are ${jarm.serverMetadata.authorization_encryption_enc_values_supported.join(', ')}`,
   })
 
-  const alg = encJwk.alg ?? clientMetadata.authorization_encrypted_response_alg ?? 'ECDH-ES'
+  const alg = encJwk.alg ?? legacyEncryptedResponseAlg ?? 'ECDH-ES'
   assertValueSupported({
     actual: alg,
     supported: jarm.serverMetadata.authorization_encryption_alg_values_supported,

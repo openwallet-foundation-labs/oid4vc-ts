@@ -35,7 +35,13 @@ export function jarmAssertMetadataSupported(options: {
       })
     }
 
-    if (serverMetadata.authorization_encryption_enc_values_supported) {
+    // `authorization_encrypted_response_enc` is optional. Clients can omit it (and e.g. use the
+    // newer `encrypted_response_enc_values_supported` instead), in which case the `enc` value is
+    // negotiated separately and there's nothing to assert here.
+    if (
+      serverMetadata.authorization_encryption_enc_values_supported &&
+      parsedClientMetadata.client_metadata.authorization_encrypted_response_enc
+    ) {
       assertValueSupported({
         supported: serverMetadata.authorization_encryption_enc_values_supported,
         actual: parsedClientMetadata.client_metadata.authorization_encrypted_response_enc,
