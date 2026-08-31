@@ -185,9 +185,20 @@ describe('verifyDpopJwt', () => {
     })
 
     const seenJti = new Set<string>()
-    const assertJtiUniqueness = ({ jti }: { jti: string }) => {
-      if (seenJti.has(jti)) return false
-      seenJti.add(jti)
+    const assertJtiUniqueness = ({
+      header,
+      payload,
+      compact,
+    }: {
+      header: { typ: string }
+      payload: { jti: string }
+      compact: string
+    }) => {
+      expect(header.typ).toBe('dpop+jwt')
+      expect(compact).toBe(dpopJwt)
+
+      if (seenJti.has(payload.jti)) return false
+      seenJti.add(payload.jti)
       return true
     }
 

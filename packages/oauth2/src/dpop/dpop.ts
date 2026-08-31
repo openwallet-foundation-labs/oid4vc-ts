@@ -9,7 +9,7 @@ import {
 } from '@openid4vc/utils'
 import { type CallbackContext, HashAlgorithm } from '../callbacks'
 import { calculateJwkThumbprint } from '../common/jwk/jwk-thumbprint'
-import { decodeJwt } from '../common/jwt/decode-jwt'
+import { type DecodeJwtResult, decodeJwt } from '../common/jwt/decode-jwt'
 import { verifyJwt } from '../common/jwt/verify-jwt'
 import { type JwtSignerJwk, zCompactJwt } from '../common/jwt/z-jwt'
 import type { RequestLike } from '../common/z-common'
@@ -175,13 +175,8 @@ export interface VerifyDpopJwtOptions extends DpopVerificationOptions {
   now?: Date
 }
 
-export interface DpopAssertJtiUniquenessOptions {
-  jti: string
-  iat: number
-  htm: string
-  htu: string
+export interface DpopAssertJtiUniquenessOptions extends DecodeJwtResult<typeof zDpopJwtHeader, typeof zDpopJwtPayload> {
   jwkThumbprint: string
-  dpopJwt: string
   now: Date
 }
 
@@ -189,11 +184,12 @@ export type DpopAssertJtiUniquenessCallback = (options: DpopAssertJtiUniquenessO
 
 export async function verifyDpopJwt(options: VerifyDpopJwtOptions) {
   try {
-    const { header, payload } = decodeJwt({
+    const decodedDpopJwt = decodeJwt({
       jwt: options.dpopJwt,
       headerSchema: zDpopJwtHeader,
       payloadSchema: zDpopJwtPayload,
     })
+    const { header, payload } = decodedDpopJwt
 
     if (options.allowedSigningAlgs && !options.allowedSigningAlgs.includes(header.alg)) {
       throw new Oauth2Error(
@@ -279,12 +275,8 @@ export async function verifyDpopJwt(options: VerifyDpopJwtOptions) {
 
     if (options.assertJtiUniqueness) {
       const isUnique = await options.assertJtiUniqueness({
-        jti: payload.jti,
-        iat: payload.iat,
-        htm: payload.htm,
-        htu: payload.htu,
+        ...decodedDpopJwt,
         jwkThumbprint,
-        dpopJwt: options.dpopJwt,
         now,
       })
 
