@@ -14,7 +14,7 @@ import { calculateJwkThumbprint } from '../common/jwk/jwk-thumbprint'
 import type { Jwk } from '../common/jwk/z-jwk'
 import type { RequestLike } from '../common/z-common'
 import { Oauth2ErrorCodes } from '../common/z-oauth2-error'
-import { type DpopAssertJtiUniquenessCallback, verifyDpopJwt } from '../dpop/dpop'
+import { type DpopVerificationOptions, verifyDpopJwt } from '../dpop/dpop'
 import { Oauth2Error } from '../error/Oauth2Error'
 import { Oauth2ServerErrorResponseError } from '../error/Oauth2ServerErrorResponseError'
 import type { AuthorizationServerMetadata } from '../metadata/authorization-server/z-authorization-server-metadata'
@@ -26,7 +26,7 @@ import type {
 } from './parse-access-token-request'
 import type { AccessTokenRequest } from './z-access-token'
 
-export interface VerifyAccessTokenRequestDpop {
+export interface VerifyAccessTokenRequestDpop extends DpopVerificationOptions {
   /**
    * Whether dpop is required
    */
@@ -44,13 +44,6 @@ export interface VerifyAccessTokenRequestDpop {
   expectedJwkThumbprint?: string
 
   /**
-   * Allowed dpop signing alg values. If not provided
-   * any alg values are allowed and it's up to the `verifyJwtCallback`
-   * to handle the alg.
-   */
-  allowedSigningAlgs?: string[]
-
-  /**
    * Expected nonce in the dpop proof. If not provided the nonce won't be validated.
    *
    * For the DPoP-bound `attest_jwt_client_auth_dpop` method (draft 09) the server-provided client
@@ -58,23 +51,6 @@ export interface VerifyAccessTokenRequestDpop {
    * challenge to enforce it.
    */
   expectedNonce?: string
-
-  /**
-   * Maximum accepted age in seconds for the DPoP proof based on the `iat` claim.
-   */
-  maxProofAgeSeconds?: number
-
-  /**
-   * Allowed clock skew in seconds used when validating DPoP `iat` freshness.
-   *
-   * @default 0
-   */
-  allowedClockSkewSeconds?: number
-
-  /**
-   * Optional callback to enforce one-time use of DPoP `jti` values.
-   */
-  assertJtiUniqueness?: DpopAssertJtiUniquenessCallback
 }
 
 export interface VerifyAccessTokenRequestClientAttestation {

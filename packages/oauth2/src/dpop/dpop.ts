@@ -107,42 +107,13 @@ export async function createDpopJwt(options: CreateDpopJwtOptions) {
   return jwt
 }
 
-export interface VerifyDpopJwtOptions {
-  /**
-   * The compact dpop jwt.
-   */
-  dpopJwt: string
-
-  /**
-   * The request for which to verify the dpop jwt
-   */
-  request: RequestLike
-
+export interface DpopVerificationOptions {
   /**
    * Allowed dpop signing alg values. If not provided
    * any alg values are allowed and it's up to the `verifyJwtCallback`
    * to handle the alg.
    */
   allowedSigningAlgs?: string[]
-
-  /**
-   * Expected nonce in the payload. If not provided the nonce won't be validated.
-   */
-  expectedNonce?: string
-
-  /**
-   * Access token to which the dpop jwt is bound. If provided the sha-256 hash of the
-   * access token needs to match the 'ath' claim.
-   */
-  accessToken?: string
-
-  /**
-   * The expected jwk thumprint 'jti' confirmation method. If provided the thumprint of the
-   * jwk used to sign the dpop jwt must match this provided thumbprint value. The 'jti' value
-   * can be extracted from the access token payload, or if opaque tokens are used can be retrieved
-   * using token introspection.
-   */
-  expectedJwkThumbprint?: string
 
   /**
    * Maximum accepted age in seconds for the DPoP proof based on the `iat` claim.
@@ -164,6 +135,37 @@ export interface VerifyDpopJwtOptions {
    * Return `true` to accept the proof as not replayed, `false` to reject as replayed.
    */
   assertJtiUniqueness?: DpopAssertJtiUniquenessCallback
+}
+
+export interface VerifyDpopJwtOptions extends DpopVerificationOptions {
+  /**
+   * The compact dpop jwt.
+   */
+  dpopJwt: string
+
+  /**
+   * The request for which to verify the dpop jwt
+   */
+  request: RequestLike
+
+  /**
+   * Expected nonce in the payload. If not provided the nonce won't be validated.
+   */
+  expectedNonce?: string
+
+  /**
+   * Access token to which the dpop jwt is bound. If provided the sha-256 hash of the
+   * access token needs to match the 'ath' claim.
+   */
+  accessToken?: string
+
+  /**
+   * The expected jwk thumprint 'jti' confirmation method. If provided the thumprint of the
+   * jwk used to sign the dpop jwt must match this provided thumbprint value. The 'jti' value
+   * can be extracted from the access token payload, or if opaque tokens are used can be retrieved
+   * using token introspection.
+   */
+  expectedJwkThumbprint?: string
 
   /**
    * Callbacks used for verifying dpop jwt
@@ -227,7 +229,9 @@ export async function verifyDpopJwt(options: VerifyDpopJwtOptions) {
     const now = options.now ?? new Date()
     if (options.maxProofAgeSeconds !== undefined) {
       if (options.maxProofAgeSeconds < 0) {
-        throw new Oauth2Error(`maxProofAgeSeconds must be greater than or equal to 0, received '${options.maxProofAgeSeconds}'.`)
+        throw new Oauth2Error(
+          `maxProofAgeSeconds must be greater than or equal to 0, received '${options.maxProofAgeSeconds}'.`
+        )
       }
 
       const nowInSeconds = dateToSeconds(now)

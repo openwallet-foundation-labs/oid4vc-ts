@@ -7,34 +7,11 @@ import type { CallbackContext } from '../callbacks'
 import type { Jwk } from '../common/jwk/z-jwk'
 import type { RequestLike } from '../common/z-common'
 import { Oauth2ErrorCodes } from '../common/z-oauth2-error'
-import {
-  extractDpopJwtFromHeaders,
-  type DpopAssertJtiUniquenessCallback,
-  verifyDpopJwt,
-} from '../dpop/dpop'
+import { type DpopVerificationOptions, extractDpopJwtFromHeaders, verifyDpopJwt } from '../dpop/dpop'
 import { Oauth2Error } from '../error/Oauth2Error'
 import { Oauth2JwtParseError } from '../error/Oauth2JwtParseError'
 import { Oauth2ResourceUnauthorizedError } from '../error/Oauth2ResourceUnauthorizedError'
 import type { AuthorizationServerMetadata } from '../metadata/authorization-server/z-authorization-server-metadata'
-
-export interface VerifyResourceRequestDpopOptions {
-  /**
-   * Maximum accepted age in seconds for the DPoP proof based on the `iat` claim.
-   */
-  maxProofAgeSeconds?: number
-
-  /**
-   * Allowed clock skew in seconds used when validating DPoP `iat` freshness.
-   *
-   * @default 0
-   */
-  allowedClockSkewSeconds?: number
-
-  /**
-   * Optional callback to enforce one-time use of DPoP `jti` values.
-   */
-  assertJtiUniqueness?: DpopAssertJtiUniquenessCallback
-}
 
 export interface VerifyResourceRequestOptions {
   /**
@@ -66,7 +43,7 @@ export interface VerifyResourceRequestOptions {
   /**
    * Additional DPoP verification options.
    */
-  dpop?: VerifyResourceRequestDpopOptions
+  dpop?: DpopVerificationOptions
 
   now?: Date
 }

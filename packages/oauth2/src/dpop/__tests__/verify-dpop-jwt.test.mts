@@ -89,7 +89,7 @@ describe('verifyDpopJwt', () => {
         request,
         expectedJwkThumbprint,
       })
-    ).rejects.toThrow("expect jwk thumbprint value")
+    ).rejects.toThrow('expect jwk thumbprint value')
   })
 
   test('rejects proofs with wrong HTTP method', async () => {
