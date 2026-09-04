@@ -7,7 +7,7 @@ import type { CallbackContext } from '../callbacks'
 import type { Jwk } from '../common/jwk/z-jwk'
 import type { RequestLike } from '../common/z-common'
 import { Oauth2ErrorCodes } from '../common/z-oauth2-error'
-import { extractDpopJwtFromHeaders, verifyDpopJwt } from '../dpop/dpop'
+import { type DpopVerificationOptions, extractDpopJwtFromHeaders, verifyDpopJwt } from '../dpop/dpop'
 import { Oauth2Error } from '../error/Oauth2Error'
 import { Oauth2JwtParseError } from '../error/Oauth2JwtParseError'
 import { Oauth2ResourceUnauthorizedError } from '../error/Oauth2ResourceUnauthorizedError'
@@ -39,6 +39,11 @@ export interface VerifyResourceRequestOptions {
    * List of authorization servers that this resource endpoint supports
    */
   authorizationServers: AuthorizationServerMetadata[]
+
+  /**
+   * Additional DPoP verification options.
+   */
+  dpop?: DpopVerificationOptions
 
   now?: Date
 }
@@ -181,6 +186,9 @@ export async function verifyResourceRequest(options: VerifyResourceRequestOption
         now: options.now,
         expectedJwkThumbprint: tokenPayload.cnf?.jkt,
         allowedSigningAlgs: authorizationServer.dpop_signing_alg_values_supported,
+        maxProofAgeSeconds: options.dpop?.maxProofAgeSeconds,
+        allowedClockSkewSeconds: options.dpop?.allowedClockSkewSeconds,
+        assertJtiUniqueness: options.dpop?.assertJtiUniqueness,
       })
       dpopJwk = decodedDpopJwt.header.jwk
     } catch (error) {
