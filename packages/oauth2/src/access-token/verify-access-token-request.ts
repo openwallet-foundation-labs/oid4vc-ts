@@ -14,7 +14,7 @@ import { calculateJwkThumbprint } from '../common/jwk/jwk-thumbprint'
 import type { Jwk } from '../common/jwk/z-jwk'
 import type { RequestLike } from '../common/z-common'
 import { Oauth2ErrorCodes } from '../common/z-oauth2-error'
-import { verifyDpopJwt } from '../dpop/dpop'
+import { type DpopVerificationOptions, verifyDpopJwt } from '../dpop/dpop'
 import { Oauth2Error } from '../error/Oauth2Error'
 import { Oauth2ServerErrorResponseError } from '../error/Oauth2ServerErrorResponseError'
 import type { AuthorizationServerMetadata } from '../metadata/authorization-server/z-authorization-server-metadata'
@@ -26,7 +26,7 @@ import type {
 } from './parse-access-token-request'
 import type { AccessTokenRequest } from './z-access-token'
 
-export interface VerifyAccessTokenRequestDpop {
+export interface VerifyAccessTokenRequestDpop extends DpopVerificationOptions {
   /**
    * Whether dpop is required
    */
@@ -42,13 +42,6 @@ export interface VerifyAccessTokenRequestDpop {
    * request to the dpop key used for the access token request.
    */
   expectedJwkThumbprint?: string
-
-  /**
-   * Allowed dpop signing alg values. If not provided
-   * any alg values are allowed and it's up to the `verifyJwtCallback`
-   * to handle the alg.
-   */
-  allowedSigningAlgs?: string[]
 
   /**
    * Expected nonce in the dpop proof. If not provided the nonce won't be validated.
@@ -505,6 +498,9 @@ async function verifyAccessTokenRequestDpop(
     allowedSigningAlgs: options.allowedSigningAlgs,
     expectedJwkThumbprint: options.expectedJwkThumbprint,
     expectedNonce: options.expectedNonce,
+    maxProofAgeSeconds: options.maxProofAgeSeconds,
+    allowedClockSkewSeconds: options.allowedClockSkewSeconds,
+    assertJtiUniqueness: options.assertJtiUniqueness,
   })
 
   return {
