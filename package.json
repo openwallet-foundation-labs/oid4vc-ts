@@ -24,10 +24,10 @@
     "@openid4vc/oauth2": "workspace:*",
     "@openid4vc/openid4vp": "workspace:*",
     "@openid4vc/utils": "workspace:*",
-    "@types/node": "^26.1.1",
+    "@types/node": "^26.5.1",
     "jose": "catalog:",
     "msw": "^2.15.0",
-    "tsdown": "^0.22.14",
+    "tsdown": "^0.23.0",
     "typescript": "~6.0.3",
     "vitest": "^4.1.10"
   },
