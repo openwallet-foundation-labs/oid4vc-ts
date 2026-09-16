@@ -1,3 +1,8 @@
+# ⚠️ MOVED
+The OpenID4VC library has **moved** to the [Identity Common](https://github.com/openwallet-foundation-labs/identity-common-ts/tree/main/packages) repository. This repository will not see updates anymore. The packages are still published under the [@openid4vc](https://www.npmjs.com/org/openid4vc) scope.
+
+---
+
 <h1 align="center" ><b>OpenID for Verifiable Credentials - TypeScript</b></h1>
 
 <p align="center">
