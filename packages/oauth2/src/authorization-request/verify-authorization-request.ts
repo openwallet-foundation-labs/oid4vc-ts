@@ -9,11 +9,11 @@ import { calculateJwkThumbprint } from '../common/jwk/jwk-thumbprint'
 import type { Jwk } from '../common/jwk/z-jwk'
 import type { RequestLike } from '../common/z-common'
 import { Oauth2ErrorCodes } from '../common/z-oauth2-error'
-import { verifyDpopJwt } from '../dpop/dpop'
+import { type DpopVerificationOptions, verifyDpopJwt } from '../dpop/dpop'
 import { Oauth2ServerErrorResponseError } from '../error/Oauth2ServerErrorResponseError'
 import type { AuthorizationServerMetadata } from '../metadata/authorization-server/z-authorization-server-metadata'
 
-export interface VerifyAuthorizationRequestDpop {
+export interface VerifyAuthorizationRequestDpop extends DpopVerificationOptions {
   /**
    * Whether dpop is required.
    */
@@ -34,13 +34,6 @@ export interface VerifyAuthorizationRequestDpop {
    * be provided. If both are provided, the jwk thumbprints are matched
    */
   jwkThumbprint?: string
-
-  /**
-   * Allowed dpop signing alg values. If not provided
-   * any alg values are allowed and it's up to the `verifyJwtCallback`
-   * to handle the alg.
-   */
-  allowedSigningAlgs?: string[]
 }
 
 export interface VerifyAuthorizationRequestClientAttestation {
@@ -219,6 +212,9 @@ async function verifyAuthorizationRequestDpop(
         dpopJwt: options.jwt,
         request,
         allowedSigningAlgs: options.allowedSigningAlgs,
+        maxProofAgeSeconds: options.maxProofAgeSeconds,
+        allowedClockSkewSeconds: options.allowedClockSkewSeconds,
+        assertJtiUniqueness: options.assertJtiUniqueness,
         now,
       })
     : undefined
