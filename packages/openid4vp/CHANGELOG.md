@@ -1,5 +1,13 @@
 # @openid4vc/openid4vp
 
+## 0.5.6
+
+### Patch Changes
+
+- f8c611b: Ignore the pre-draft-27 `authorization_encrypted_response_alg` and `authorization_encrypted_response_enc` client metadata parameters when the verifier also sends the 1.0 `encrypted_response_enc_values_supported`. Previously a verifier sending both generations of the response encryption metadata could fail with `Invalid authorization_encryption_enc`.
+- @openid4vc/oauth2@0.5.6
+  - @openid4vc/utils@0.5.6
+
 ## 0.5.5
 
 ### Patch Changes
